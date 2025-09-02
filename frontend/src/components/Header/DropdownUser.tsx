@@ -1,10 +1,49 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom';
 import ClickOutside from '../ClickOutside';
 import UserOne from '../../images/user/user-01.png';
+import { useAuth } from '../../context/AuthContext';
+
 
 const DropdownUser = () => {
+  const { user, logout } = useAuth(); // 1. ใช้ useAuth เพื่อเข้าถึงข้อมูล user และฟังก์ชัน logout
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const navigate = useNavigate(); // 2. ใช้ useNavigate เพื่อเปลี่ยนเส้นทาง
+
+  const [userImage, setUserImage] = useState(UserOne); // สถานะสำหรับเก็บ URL ของรูปภาพผู้ใช้
+
+  useEffect(() => {
+    // ถ้ามี user และมี id
+    if (user && user.id) {
+      const fetchUserPhoto = async () => {
+        try {
+          const response = await fetch(`http://localhost:3001/api/user/${user.id}/photo`);
+          if (response.ok) {
+            const data = await response.json();
+
+            console.log("Base64 data received by Frontend:", data.imageData);
+
+            setUserImage(data.imageData); // นำ Base64 มาใส่ใน State
+          } else {
+            // ถ้าหาไม่เจอ ก็ใช้รูปภาพเริ่มต้น
+            setUserImage(UserOne);
+          }
+        } catch (error) {
+          console.error('Failed to fetch user photo:', error);
+          setUserImage(UserOne); // ถ้า error ก็ใช้รูปเริ่มต้น
+        }
+      };
+
+      fetchUserPhoto();
+    }
+  }, [user]); // useEffect นี้จะทำงานใหม่ทุกครั้งที่ข้อมูล user เปลี่ยนไป
+
+  const handleLogout = () => { // 3. ฟังก์ชันจัดการการ logout
+    logout();
+    navigate('/auth/signin'); // 4. เปลี่ยนเส้นทางไปยังหน้า signin หลังจาก logout
+  };
+
 
   return (
     <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">
@@ -15,14 +54,18 @@ const DropdownUser = () => {
       >
         <span className="hidden text-right lg:block">
           <span className="block text-sm font-medium text-black dark:text-white">
-            Thomas Anree
+            {/* 5. แสดงชื่อผู้ใช้จาก Context */}
+            {user ? user.name : 'Guest'}
           </span>
-          <span className="block text-xs">UX Designer</span>
+          <span className="block text-xs">
+            {user ? `ID: ${user.id}` : ''}
+          </span>
         </span>
 
         <span className="h-12 w-12 rounded-full">
-          <img src={UserOne} alt="User" />
+          <img src={userImage} alt="User" className="rounded-full" />
         </span>
+
 
         <svg
           className="hidden fill-current sm:block"
@@ -119,7 +162,10 @@ const DropdownUser = () => {
               </Link>
             </li>
           </ul>
-          <button className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3.5 py-4 px-6 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+          >
             <svg
               className="fill-current"
               width="22"

@@ -7,6 +7,8 @@ const authController = require('../controllers/auth.controller'); // 1. Import C
 router.post('/login', authController.login);
 
 
+router.get('/user/:id/photo', authController.getUserPhoto);
+
 // สามารถเพิ่ม route อื่นๆ ได้ เช่น register
 // router.post('/register', authController.register);
 

@@ -3,9 +3,11 @@ import React, { createContext, useState, useContext, ReactNode } from 'react';
 
 // สร้าง interface สำหรับข้อมูล user ที่เราจะเก็บ
 interface User {
+  id: number; // หรือ number ถ้า ID เป็นตัวเลข
+  name: string;
   email: string;
-  // เพิ่มข้อมูลอื่นๆ ได้ตามต้องการ เช่น name, role
 }
+
 
 // สร้าง interface สำหรับ Context
 interface AuthContextType {
@@ -15,7 +17,7 @@ interface AuthContextType {
 }
 
 // สร้าง Context พร้อมค่าเริ่มต้นเป็น null
-const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<AuthContextType | null>(null); //ข้อมมูล User ที่ login แล้ว
 
 // สร้าง Provider component
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
