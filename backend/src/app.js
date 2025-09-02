@@ -9,9 +9,10 @@ const port = 3001;
 app.use(cors());
 app.use(express.json());
 
-// 2. บอก Express ให้ใช้ Route ที่เราสร้าง
-// ทุก URL ที่ขึ้นต้นด้วย /api/auth ให้วิ่งไปหา authRoutes
-app.use('/api/auth', authRoutes);
+// 1. เกี่ยวกับ api ให้ส่งไปที่ /api/auth
+app.use('/api', authRoutes);
+
+
 
 app.get('/', (req, res) => {
   res.send('Hello from organized Backend!');

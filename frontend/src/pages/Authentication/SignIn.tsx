@@ -8,7 +8,7 @@ import Logo from '../../images/logo/logo.svg';
 
 
 const SignIn: React.FC = () => {
-  const [email, setEmail] = useState('');
+  const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -23,14 +23,14 @@ const SignIn: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ userId: userId, password }),
       });
 
       const data = await response.json();
 
       if (response.ok) { // ถ้าหลังบ้านตอบกลับมาว่าสำเร็จ (status 200)
         console.log('Backend response:', data);
-        login({ email: data.user.email }); // ใช้ข้อมูลจากหลังบ้านมา login
+        login(data.user);
         navigate('/');
       } else { // ถ้าหลังบ้านตอบกลับมาว่าไม่สำเร็จ
         alert(data.message); // แสดงข้อความ error จากหลังบ้าน
@@ -75,14 +75,14 @@ const SignIn: React.FC = () => {
               <form onSubmit={handleSignIn}>
                 <div className="mb-4">
                   <label className="mb-2.5 block font-medium text-black dark:text-white">
-                    Email
+                    User ID
                   </label>
                   <div className="relative">
                     <input
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      type="text"
+                      placeholder="Enter your User ID"
+                      value={userId}
+                      onChange={(e) => setUserId(e.target.value)}
                       className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                     />
 
