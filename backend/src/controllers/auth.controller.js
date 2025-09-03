@@ -9,7 +9,7 @@ const login = async (req, res) => {
   try {
     const { userId, password } = req.body;
 
-    console.log("Backend received:", { userId, password });
+    //console.log("Backend received:", { userId, password });
 
     const pool = await poolPromise;
 
@@ -26,8 +26,8 @@ const login = async (req, res) => {
     }
     const user = result.recordset[0];
 
-    console.log("Password from DB:", user.agt_member_password);
-    console.log("Password from Form:", password);
+    //console.log("Password from DB:", user.agt_member_password);
+    //console.log("Password from Form:", password);
 
     // 2. เปรียบเทียบรหัสผ่านแบบตรงๆ (Plain Text Comparison)
     const isMatch = password === user.agt_member_password;
@@ -83,7 +83,7 @@ const getUserPhoto = (req, res) => {
     if (fs.existsSync(photoPath)) {
       
        console.log('File exists. Attempting to read file...');
-       
+
       // อ่านไฟล์รูปภาพ
       const imageFile = fs.readFileSync(photoPath);
 
