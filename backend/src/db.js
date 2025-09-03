@@ -1,16 +1,22 @@
-const sql = require('mssql');
-const dbConfig = require('./config/db.config'); // ดึงค่า config ที่สร้างไว้
+// backend/src/db.js
+const sql = require("mssql");
+const dbConfig = require("./config/db.config.js");
 
-// สร้าง Connection Pool เพื่อใช้เชื่อมต่อฐานข้อมูล
-const poolPromise = new sql.ConnectionPool(dbConfig)
-  .connect()
-  .then(pool => {
-    console.log('Connected to MSSQL successfully!');
-    return pool;
-  })
-  .catch(err => console.log('Database Connection Failed! Error: ', err));
+// สร้าง pool แต่ยังไม่ connect
+const pool = new sql.ConnectionPool(dbConfig);
 
-// ส่งออก pool และ sql เพื่อให้ไฟล์อื่นนำไปใช้ query ได้
+// การทำแบบนี้จะทำให้ทั้งแอปพลิเคชันของเรารอจนกว่าฐานข้อมูลจะเชื่อมต่อเสร็จจริงๆ
+const poolConnect = pool.connect().then(p => {
+    console.log("Database Connected!");
+    return p;
+}).catch(err => {
+    console.error("Database Connection Failed!", err);
+    // ถ้าเชื่อมต่อไม่ได้ ให้ปิดโปรแกรมไปเลย ป้องกันการทำงานผิดพลาด
+    process.exit(1);
+});
+
 module.exports = {
-  sql, poolPromise
+    sql,
+    pool,
+    poolConnect // เราจะ export promise นี้ไปด้วย
 };

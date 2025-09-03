@@ -18,7 +18,7 @@ const SignIn: React.FC = () => {
 
     try {
       // 1. ส่ง request ไปที่ API ของหลังบ้าน
-      const response = await fetch('http://localhost:3001/api/login', {
+      const response = await fetch('http://localhost:4000/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

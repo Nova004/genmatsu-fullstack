@@ -18,7 +18,7 @@ const DropdownUser = () => {
     if (user && user.id) {
       const fetchUserPhoto = async () => {
         try {
-          const response = await fetch(`http://localhost:3001/api/user/${user.id}/photo`);
+          const response = await fetch(`http://localhost:4000/api/user/${user.id}/photo`);
           if (response.ok) {
             const data = await response.json();
 

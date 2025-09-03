@@ -10,6 +10,8 @@ import Chart from './pages/Chart';
 import ECommerce from './pages/Dashboard/ECommerce';
 import FormElements from './pages/Form/FormElements';
 import FormLayout from './pages/Form/FormLayout';
+import ProductionForm from './pages/Form/ProductionForm';
+
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Tables from './pages/Tables';
@@ -17,6 +19,8 @@ import Alerts from './pages/UiElements/Alerts';
 import Buttons from './pages/UiElements/Buttons';
 import DefaultLayout from './layout/DefaultLayout';
 import ProtectedRoute from './routes/ProtectedRoute';
+
+
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -56,7 +60,7 @@ function App() {
 
       {/* --- Route หลักที่ต้อง Login ถึงจะเข้าได้ --- */}
       <Route
-        path="/*" 
+        path="/*"
         element={
           <ProtectedRoute>
             <DefaultLayout>
@@ -104,6 +108,15 @@ function App() {
                     <>
                       <PageTitle title="Form Layout" />
                       <FormLayout />
+                    </>
+                  }
+                />
+                <Route
+                  path="/forms/production"
+                  element={
+                    <>
+                      <PageTitle title="Production Form" />
+                      <ProductionForm />
                     </>
                   }
                 />
