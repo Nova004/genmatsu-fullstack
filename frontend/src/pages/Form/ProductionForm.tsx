@@ -1,7 +1,7 @@
 // frontend/src/pages/Form/ProductionForm.tsx
 import React, { useEffect, useState } from 'react';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
-import DefaultLayout from '../../layout/DefaultLayout';
+
 
 // สร้าง Type เพื่อให้ TypeScript รู้จักโครงสร้างของข้อมูลเรา
 interface Field {
@@ -181,7 +181,7 @@ const ProductionForm = () => {
   );
 
   return (
-    <DefaultLayout>
+    <>
       <Breadcrumb pageName="Production Record" />
 
       {loading && <div className="text-center p-10">Loading Form...</div>}
@@ -216,7 +216,7 @@ const ProductionForm = () => {
           </div>
         </div>
       )}
-    </DefaultLayout>
+    </>
   );
 };
 
