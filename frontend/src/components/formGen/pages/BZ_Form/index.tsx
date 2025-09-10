@@ -16,9 +16,12 @@ const ProgressBar = ({ currentStep, totalSteps }: { currentStep: number, totalSt
 
 function BZ_Form() {
   const [step, setStep] = useState(1);
-  const totalSteps = 4; //  <-- แก้ไขตรงนี้เป็น 4
+  const totalSteps = 4;
 
-  const { register, handleSubmit, trigger } = useForm<IManufacturingReportForm>({
+  // ======================================================
+  // === 1. เพิ่ม watch และ setValue ตรงนี้ ===
+  // ======================================================
+  const { register, handleSubmit, trigger, watch, setValue } = useForm<IManufacturingReportForm>({
     defaultValues: {
       mcOperators: Array(3).fill({ id: '', name: '', number: '' }),
       assistants: Array(5).fill({ id: '', name: '', number: '' }),
@@ -40,17 +43,16 @@ function BZ_Form() {
   };
 
   const handleNext = async () => {
-    let isValid = true; // สมมติว่าผ่านก่อน
-    
-    // สามารถเพิ่ม Validation ของแต่ละหน้าได้ตามต้องการ
+    let isValid = true;
+
     if (step === 1) {
       isValid = await trigger(['basicData.date', 'basicData.machineName', 'basicData.lotNo']);
     }
-    
+
     if (isValid && step < totalSteps) {
       setStep(prev => prev + 1);
     } else if (!isValid) {
-        alert('กรุณากรอกข้อมูลสำคัญให้ครบถ้วน');
+      alert('กรุณากรอกข้อมูลสำคัญให้ครบถ้วน');
     }
   };
 
@@ -81,8 +83,8 @@ function BZ_Form() {
 
         {/* === เนื้อหาฟอร์ม (แสดงตามหน้า) === */}
         <div className="my-6">
-          {step === 1 && <FormStep1 register={register} />}
-          {step === 2 && <FormStep2 register={register} />}
+          {step === 1 && <FormStep1 register={register} watch={watch} setValue={setValue} />}
+          {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} />}
           {step === 3 && <FormStep3 register={register} />}
           {step === 4 && <FormStep4 register={register} />}
         </div>

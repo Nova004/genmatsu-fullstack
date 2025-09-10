@@ -1,6 +1,6 @@
 // src/pages/BZ_Form/types.ts
 
-import { UseFormRegister } from "react-hook-form";
+import { UseFormRegister, UseFormWatch, UseFormSetValue } from "react-hook-form";
 
 // --- Interface สำหรับข้อมูลทั้งหมดในฟอร์ม ---
 export interface IManufacturingReportForm {
@@ -17,12 +17,12 @@ export interface IManufacturingReportForm {
     sodiumChloride: number | null;
     magnesiumHydroxide: number | null;
     remainedGenmatsu: { lot: string; actual: number | null; };
-    shelfLife: number | null;
+    shelfLife: number | null; // <-- แก้ไขตรงนี้ให้เหลืออันเดียว
     ncrGenmatsu: { lot: string; actual: number | null; };
   };
   cg1cWeighting: {
-    row1: { cg1c: number | null; bagNo: string; net: number | null; };
-    row2: { cg1c: number | null; bagNo: string; net: number | null; };
+    row1: { cg1c: number | null; bagNo: string; bagWeight: string; net: number | null; };
+    row2: { cg1c: number | null; bagNo: string; bagWeight: string; net: number | null; };
     total: number | null;
   };
   calculations: {
@@ -45,9 +45,7 @@ export interface IManufacturingReportForm {
   }[];
   operationRemark: string;
 
-  // ======================================================
-  // === ส่วนของ Step 4 ที่ต้องมีอยู่ในแผนที่ ===
-  // ======================================================
+  // Step 4
   packingResults: {
     diameter: number | null;
     quantityOfProduct: {
@@ -63,28 +61,29 @@ export interface IManufacturingReportForm {
     qty: number | null;
     canNo: string;
   }[];
-  // ======================================================
 }
 
 
 // --- Props Interfaces สำหรับ Component ย่อย ---
-export interface EmployeeInputRowProps { 
-  groupName: 'mcOperators' | 'assistants'; 
-  index: number; 
-  register: UseFormRegister<IManufacturingReportForm>; 
+export interface EmployeeInputRowProps {
+  groupName: 'mcOperators' | 'assistants';
+  index: number;
+  register: UseFormRegister<IManufacturingReportForm>;
+  watch: UseFormWatch<IManufacturingReportForm>;    // <-- เพิ่ม watch
+  setValue: UseFormSetValue<IManufacturingReportForm>; // <-- เพิ่ม setValue
 }
 
-export interface ConditionCheckItemProps { 
-  index: number; 
-  title: string; 
-  description: string; 
-  warning?: string; 
-  reference?: string; 
-  register: UseFormRegister<IManufacturingReportForm>; 
+export interface ConditionCheckItemProps {
+  index: number;
+  title: string;
+  description: string;
+  warning?: string;
+  reference?: string;
+  register: UseFormRegister<IManufacturingReportForm>;
 }
 
-export interface FormStepProps { 
-  register: UseFormRegister<IManufacturingReportForm>; 
+export interface FormStepProps {
+  register: UseFormRegister<IManufacturingReportForm>;
 }
 
 export interface PalletTableProps {

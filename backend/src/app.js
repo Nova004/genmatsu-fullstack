@@ -16,6 +16,9 @@ app.use("/api", authRoutes);
 // api ใหม่สำหรับจัดการฟอร์ม
 app.use("/api", formRoutes); 
 
+const userRoutes = require('./api/user.routes');  // นำเข้า user routes
+app.use('/api', userRoutes);  // ใช้ user routes
+
 app.get("/", (req, res) => {
   res.send("Hello from organized Backend!");
 });

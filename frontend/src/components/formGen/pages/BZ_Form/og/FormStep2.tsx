@@ -15,12 +15,13 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue }) => {
   // --- "สายลับ" คอยแอบดูค่าที่ต้องการ ---
   const cg1cRow1 = watch('cg1cWeighting.row1.cg1c');
   const cg1cRow2 = watch('cg1cWeighting.row2.cg1c');
-
+  // นายสามารถเพิ่ม "สายลับ" เพื่อดูค่าอื่นๆ ได้อีกตามต้องการ
+  // const magnesium = watch('rawMaterials.magnesiumHydroxide');
 
   // --- "ยามเฝ้าระวัง" ก้อนที่ 1: สำหรับคำนวณ Total Weight ---
   useEffect(() => {
-    const net1 = Number(cg1cRow1) - 2 || 0;
-    const net2 = Number(cg1cRow2) - 2 || 0;
+    const net1 = Number(cg1cRow1) || 0;
+    const net2 = Number(cg1cRow2) || 0;
     const total = net1 + net2;
 
     // --- "ผู้สั่งการ" สั่งอัปเดตค่า ---
@@ -53,60 +54,61 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue }) => {
         {/* --- ตารางที่ 1: Raw Material Name --- */}
         <div className="mb-6 overflow-x-auto">
           <table className="w-full table-auto">
-            <thead>
-              <tr className="bg-gray-2 text-left dark:bg-meta-4">
-                <th className={`${thClass}`} colSpan={2}>Raw Material Name</th>
-                <th className={thClass}>STD</th>
-                <th className={thClass}>Actual Weight</th>
-                <th className={thClass}>Unit</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className={tdLeftClass} colSpan={2}>Diatomaceous Earth (CG-1C)</td>
-                <td className={tdCenterClass}>800 ± 24</td>
-                <td className={tdCenterClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('rawMaterials.diaEarth')} /></td>
-                <td className={tdCenterClass}>KG</td>
-              </tr>
-              <tr>
-                <td className={tdLeftClass} colSpan={2}>Sodium Chloride (โซเดียมคลอไรด์)</td>
-                <td className={tdCenterClass}>480-580</td>
-                <td className={tdCenterClass} rowSpan={2}><input type="number" className={disabledInputClass} readOnly disabled {...register('rawMaterials.sodiumChloride')} /></td>
-                <td className={tdCenterClass}>L</td>
-              </tr>
-              <tr>
-                <td className={tdLeftClass} colSpan={2}>(ช่วงมาตรฐานค่าความถ่วงจำเพาะ )</td>
-                <td className={tdCenterClass}>1.104 - 1.115</td>
-                <td className={tdCenterClass}>KG</td>
-              </tr>
-              <tr>
-                <td className={tdLeftClass} colSpan={2}>Magnesium Hydroxide (Mg (OH)2)</td>
-                <td className={tdCenterClass}>20 ± 0.1</td>
-                <td className={tdCenterClass}><input type="number" step="0.01" className={inputClass} {...register('rawMaterials.magnesiumHydroxide', { valueAsNumber: true })} /></td>
-                <td className={tdCenterClass}>KG</td>
-              </tr>
-              <tr>
-                <td className={tdLeftClass}>Remained Genmatsu , Lot No.</td>
-                <td className={tdCenterClass}><input type="text" className={inputClass} {...register('rawMaterials.remainedGenmatsu.lot')} /></td>
-                <td className={tdCenterClass}>12</td>
-                <td className={tdCenterClass}><input type="number" className={inputClass} {...register('rawMaterials.remainedGenmatsu.actual', { valueAsNumber: true })} /></td>
-                <td className={tdCenterClass}>KG</td>
-              </tr>
+             {/* ... โค้ด JSX ของตารางที่ 1 (เหมือนเดิม) ... */}
+             <thead>
+               <tr className="bg-gray-2 text-left dark:bg-meta-4">
+                 <th className={`${thClass}`} colSpan={2}>Raw Material Name</th>
+                 <th className={thClass}>STD</th>
+                 <th className={thClass}>Actual Weight</th>
+                 <th className={thClass}>Unit</th>
+               </tr>
+             </thead>
+             <tbody>
+               <tr>
+                 <td className={tdLeftClass} colSpan={2}>Diatomaceous Earth (CG-1C)</td>
+                 <td className={tdCenterClass}>800 ± 24</td>
+                 <td className={tdCenterClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('rawMaterials.diaEarth')} /></td>
+                 <td className={tdCenterClass}>KG</td>
+               </tr>
+               <tr>
+                 <td className={tdLeftClass} colSpan={2}>Sodium Chloride (โซเดียมคลอไรด์)</td>
+                 <td className={tdCenterClass}>480-580</td>
+                 <td className={tdCenterClass} rowSpan={2}><input type="number" className={disabledInputClass} readOnly disabled {...register('rawMaterials.sodiumChloride')} /></td>
+                 <td className={tdCenterClass}>L</td>
+               </tr>
+               <tr>
+                 <td className={tdLeftClass} colSpan={2}>(ช่วงมาตรฐานค่าความถ่วงจำเพาะ )</td>
+                 <td className={tdCenterClass}>1.104 - 1.115</td>
+                 <td className={tdCenterClass}>KG</td>
+               </tr>
+               <tr>
+                 <td className={tdLeftClass} colSpan={2}>Magnesium Hydroxide (Mg (OH)2)</td>
+                 <td className={tdCenterClass}>20 ± 0.1</td>
+                 <td className={tdCenterClass}><input type="number" step="0.01" className={inputClass} {...register('rawMaterials.magnesiumHydroxide', { valueAsNumber: true })} /></td>
+                 <td className={tdCenterClass}>KG</td>
+               </tr>
+               <tr>
+                 <td className={tdLeftClass}>Remained Genmatsu , Lot No.</td>
+                 <td className={tdCenterClass}><input type="text" className={inputClass} {...register('rawMaterials.remainedGenmatsu.lot')} /></td>
+                 <td className={tdCenterClass}>12</td>
+                 <td className={tdCenterClass}><input type="number" className={inputClass} {...register('rawMaterials.remainedGenmatsu.actual', { valueAsNumber: true })} /></td>
+                 <td className={tdCenterClass}>KG</td>
+               </tr>
               {/* --- แก้ไข "Shef life" ตามโค้ดล่าสุดของนาย --- */}
-              <tr>
-                <td className={tdLeftClass} colSpan={2}>Shef life</td>
-                <td className={tdCenterClass}>≤90</td>
-                <td className={tdCenterClass}><input type="number" className={inputClass} {...register('rawMaterials.shelfLife', { valueAsNumber: true })} /></td>
-                <td className={tdCenterClass}>KG</td>
-              </tr>
-              <tr>
-                <td className={tdLeftClass}>NCR Genmatsu , Lot No.</td>
-                <td className={tdCenterClass}><input type="text" className={inputClass} {...register('rawMaterials.ncrGenmatsu.lot')} /></td>
-                <td className={tdCenterClass}>≤60</td>
-                <td className={tdCenterClass}><input type="number" className={inputClass} {...register('rawMaterials.ncrGenmatsu.actual', { valueAsNumber: true })} /></td>
-                <td className={tdCenterClass}>KG</td>
-              </tr>
-            </tbody>
+               <tr>
+                 <td className={tdLeftClass} colSpan={2}>Shef life</td>
+                 <td className={tdCenterClass}>≤90</td>
+                 <td className={tdCenterClass}><input type="number" className={inputClass} {...register('rawMaterials.shelfLife', { valueAsNumber: true })} /></td>
+                 <td className={tdCenterClass}>KG</td>
+               </tr>
+               <tr>
+                 <td className={tdLeftClass}>NCR Genmatsu , Lot No.</td>
+                 <td className={tdCenterClass}><input type="text" className={inputClass} {...register('rawMaterials.ncrGenmatsu.lot')} /></td>
+                 <td className={tdCenterClass}>≤60</td>
+                 <td className={tdCenterClass}><input type="number" className={inputClass} {...register('rawMaterials.ncrGenmatsu.actual', { valueAsNumber: true })} /></td>
+                 <td className={tdCenterClass}>KG</td>
+               </tr>
+             </tbody>
           </table>
         </div>
 

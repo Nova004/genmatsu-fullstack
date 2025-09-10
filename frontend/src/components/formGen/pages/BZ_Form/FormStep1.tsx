@@ -1,11 +1,21 @@
 // src/pages/BZ_Form/FormStep1.tsx
 
 import React from 'react';
-import { FormStepProps } from './types';
+import { FormStepProps, IManufacturingReportForm } from './types';
+import { UseFormWatch, UseFormSetValue } from 'react-hook-form';
 import EmployeeInputRow from '../../components/forms/EmployeeInputRow';
 import ConditionCheckItem from '../../components/forms/ConditionCheckItem';
 
-const FormStep1: React.FC<FormStepProps> = ({ register }) => {
+// สร้าง Interface สำหรับ Props ของหน้านี้โดยเฉพาะ
+interface FormStep1Props extends FormStepProps {
+  watch: UseFormWatch<IManufacturingReportForm>;
+  setValue: UseFormSetValue<IManufacturingReportForm>;
+}
+
+// ======================================================
+// === 1. แก้ไขตรงนี้: ให้รับ Props ตาม Interface ตัวใหม่ (FormStep1Props) ===
+// ======================================================
+const FormStep1: React.FC<FormStep1Props> = ({ register, watch, setValue }) => {
   const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
   
   return (
@@ -31,13 +41,34 @@ const FormStep1: React.FC<FormStepProps> = ({ register }) => {
         <div className="mb-6 grid grid-cols-1 gap-6 border-b border-stroke pb-6 dark:border-strokedark lg:grid-cols-6">
           <div className="flex items-center justify-center text-center font-medium text-black dark:text-white lg:col-span-1">M/C operator</div>
           <div className="flex flex-col gap-5 lg:col-span-5">
-            {[...Array(3)].map((_, index) => <EmployeeInputRow key={`mc-${index}`} groupName="mcOperators" index={index} register={register} />)}
+            {/* ====================================================== */}
+            {/* === 2. แก้ไขตรงนี้: ส่ง watch และ setValue เข้าไปด้วย === */}
+            {/* ====================================================== */}
+            {[...Array(3)].map((_, index) => (
+              <EmployeeInputRow 
+                key={`mc-${index}`} 
+                groupName="mcOperators" 
+                index={index} 
+                register={register} 
+                watch={watch} 
+                setValue={setValue} 
+              />
+            ))}
           </div>
         </div>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-6">
           <div className="flex items-center justify-center text-center font-medium text-black dark:text-white lg:col-span-1">Assistant M/C</div>
           <div className="flex flex-col gap-5 lg:col-span-5">
-            {[...Array(5)].map((_, index) => <EmployeeInputRow key={`asst-${index}`} groupName="assistants" index={index} register={register} />)}
+            {[...Array(5)].map((_, index) => (
+              <EmployeeInputRow 
+                key={`asst-${index}`} 
+                groupName="assistants" 
+                index={index} 
+                register={register} 
+                watch={watch} 
+                setValue={setValue} 
+              />
+            ))}
           </div>
         </div>
       </div>
