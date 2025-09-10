@@ -63,6 +63,12 @@ export interface IManufacturingReportForm {
   }[];
 }
 
+export interface IMasterFormItem {
+  item_id: number;
+  display_order: number;
+  config_json: any; // เราใช้ any ไปก่อนเพื่อความยืดหยุ่น
+  is_active: boolean;
+}
 
 // --- Props Interfaces สำหรับ Component ย่อย ---
 export interface EmployeeInputRowProps {
