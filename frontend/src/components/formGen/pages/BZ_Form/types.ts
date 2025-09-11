@@ -71,18 +71,21 @@ export interface IColumnInputConfig {
   step?: string;
   field_name: string;
   unit: string;
-   validation?: IValidationRules; 
+  validation?: IValidationRules;
 }
 
 export interface IColumnConfig {
-  type: 'DESCRIPTION' | 'SINGLE_INPUT_GROUP';
+ type: 'DESCRIPTION' | 'SINGLE_INPUT_GROUP' | 'MULTI_INPUT_GROUP'; 
   span?: number;
   value?: string;
+  description?: string; // <-- เพิ่ม property นี้
   input?: IColumnInputConfig;
+  inputs?: IColumnInputConfig[];
+  validation?: IValidationRules;
 }
 
 export interface ITimeInputConfig {
-    enabled: boolean;
+  enabled: boolean;
 }
 
 export interface IConfigJson {
@@ -95,8 +98,8 @@ export interface IConfigJson {
 
 export interface IValidationRules {
   type: 'RANGE_TOLERANCE' | 'RANGE_DIRECT' | 'MAX_VALUE';
-  min?: number; 
-  max?: number; 
+  min?: number;
+  max?: number;
   errorMessage: string;
 }
 

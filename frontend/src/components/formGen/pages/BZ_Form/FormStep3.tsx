@@ -126,6 +126,57 @@ const FormStep3: React.FC<FormStep3Props> = ({ register, errors }) => { // <-- �
                             </td>
                           );
 
+                        case 'MULTI_INPUT_GROUP':
+                          if (!col.inputs) {
+                            return <td key={colIndex}>Config Error: Inputs array is missing.</td>;
+                          }
+                          return (
+                            <td key={colIndex} className={tdLeftClass} colSpan={col.span || 1}>
+                              <div className="flex flex-wrap items-center gap-x-4 gap-y-2"> {/* ปรับ gap เล็กน้อย */}
+
+                                {/* เพิ่มส่วนนี้เพื่อแสดง description */}
+                                {col.description && <span className="font-medium mr-2">{col.description}</span>}
+
+                                {col.inputs.map((inputItem, inputIdx) => {
+                                  const multiFieldName = inputItem.field_name.replace('{index}', String(index));
+                                  const multiFieldError = multiFieldName.split('.').reduce((obj: any, key) => obj && obj[key], errors);
+
+                                  return (
+                                    <div key={inputIdx} className="relative pt-2 pb-6">
+                                      <div className="flex items-center">
+                                        <span className="mr-2 whitespace-nowrap">{inputItem.label}</span>
+                                        <input
+                                          type={inputItem.type || 'text'}
+                                          className={inputClass}
+                                          style={{   minWidth: '60px', maxWidth: '80px'  }} // กำหนดความกว้างขั้นต่ำ
+                                          {...register(multiFieldName as any, {
+                                            valueAsNumber: inputItem.type === 'number',
+                                            validate: (value) => {
+                                              const rules = col.validation;
+                                              if (!rules || value === null || value === '' || value === undefined) return true;
+                                              switch (rules.type) {
+                                                case 'MAX_VALUE':
+                                                  if (rules.max !== undefined) {
+                                                    return (value <= rules.max) || rules.errorMessage;
+                                                  }
+                                                  return true;
+
+                                                default:
+                                                  return true;
+                                              }
+                                            }
+                                          })}
+                                        />
+                                        <span className="ml-2">{inputItem.unit}</span>
+                                      </div>
+                                      {multiFieldError && <span className="absolute left-0 -bottom-1 text-sm text-meta-1">{multiFieldError.message as string}</span>}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </td>
+                          );
+
                         default:
                           return <td key={colIndex}>Unsupported column type</td>;
                       }
