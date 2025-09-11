@@ -1,40 +1,39 @@
-// src/pages/BZ_Form/FormStep2.tsx
-
 import React, { useState, useEffect } from 'react';
-import { UseFormWatch, UseFormSetValue } from 'react-hook-form';
+import { UseFormWatch, UseFormSetValue, FieldErrors } from 'react-hook-form';
 import { FormStepProps, IManufacturingReportForm, IMasterFormItem } from './types';
 
-
-// สร้าง Interface สำหรับ Props ของหน้านี้โดยเฉพาะ เพื่อให้ Type ถูกต้อง
+// สร้าง Interface สำหรับ Props ของหน้านี้โดยเฉพาะ
 interface FormStep2Props extends FormStepProps {
   watch: UseFormWatch<IManufacturingReportForm>;
   setValue: UseFormSetValue<IManufacturingReportForm>;
+  errors: FieldErrors<IManufacturingReportForm>;
 }
 
-const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue }) => {
-
-  // 1. สร้าง State เพื่อเก็บ "พิมพ์เขียว" ที่จะโหลดมาจาก Backend
-  const [rawMaterialConfig, setRawMaterialConfig] = useState<IMasterFormItem[]>([]);
+const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue, errors }) => {
+  // ======================================================
+  // === ดึงตารางจาก ฐานข้อมูล ===
+  // ======================================================
+  const [rawMaterialConfig, setRawMaterialConfig] = useState<IMasterFormItem[]>([]); // เก็บข้อมูลที่มาจาก Master Form
   const [isLoading, setIsLoading] = useState(true);
+  const [customErrors, setCustomErrors] = useState<{ [key: string]: string | null }>({});
 
-  // 2. ใช้ useEffect เพื่อยิง API ไปขอ "พิมพ์เขียว" แค่ครั้งเดียวตอนหน้าโหลด
   useEffect(() => {
     const fetchMasterData = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch('http://localhost:4000/api/master/template/BZ_Step2_RawMaterials'); //  <-- แก้ Port ให้ถูกต้อง
+        const response = await fetch('http://localhost:4000/api/master/template/BZ_Step2_RawMaterials');
         const data = await response.json();
-        setRawMaterialConfig(data); // เก็บ "พิมพ์เขียว" ไว้ใน State
-      } catch (error) {
-        console.error("Failed to fetch master data", error);
-      } finally {
-        setIsLoading(false);
-      }
+        setRawMaterialConfig(data);
+      } catch (error) { console.error("Failed to fetch master data", error); }
+      finally { setIsLoading(false); }
     };
     fetchMasterData();
-  }, []); // [] หมายถึงให้ทำงานแค่ครั้งเดียว
+  }, []);
 
-  // --- Logic การคำนวณ Real-time (เหมือนเดิม) ---
+  // ======================================================
+  // === การคำนวน ใน form ===
+  // ======================================================
+
   const cg1cRow1 = watch('cg1cWeighting.row1.cg1c');
   const cg1cRow2 = watch('cg1cWeighting.row2.cg1c');
 
@@ -49,6 +48,21 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue }) => {
   }, [cg1cRow1, cg1cRow2, setValue]);
 
 
+  // --- "ตรวจสอบความถูกต้องของ rawMaterials.diaEarth ---
+  const calculatedDiaEarth = watch('rawMaterials.diaEarth'); 
+
+  useEffect(() => {
+    const fieldConfig = rawMaterialConfig.find(f => f.config_json.inputs[0]?.field_name === 'rawMaterials.diaEarth');  
+    if (fieldConfig && fieldConfig.config_json.validation && calculatedDiaEarth !== null) {
+      const rules = fieldConfig.config_json.validation;
+      let isValid = calculatedDiaEarth >= rules.min && calculatedDiaEarth <= rules.max;
+      setCustomErrors(prevErrors => ({ ...prevErrors, 'rawMaterials.diaEarth': isValid ? null : rules.errorMessage }));
+    } else {
+      setCustomErrors(prevErrors => ({ ...prevErrors, 'rawMaterials.diaEarth': null }));
+    }
+  }, [calculatedDiaEarth, rawMaterialConfig]);
+
+
   const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-3 py-2 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
   const disabledInputClass = `${inputClass} bg-gray-2 dark:bg-meta-4 cursor-default`;
   const thClass = "border-b border-stroke px-4 py-3 text-center font-medium text-black dark:border-strokedark dark:text-white";
@@ -56,13 +70,50 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue }) => {
   const tdCenterClass = `${tdClass} text-center align-middle`;
   const tdLeftClass = `${tdClass} align-middle`;
 
+  // --- ฟังก์ชันสำหรับสร้าง Input Field พร้อม Validation ---
+  const renderValidatedInput = (config: any, inputIndex: number = 0) => {
+    const inputConfig = config.inputs[inputIndex];
+    if (!inputConfig) return null;
+
+    const fieldName = inputConfig.field_name;
+    const validationRules = inputConfig.validation || config.validation;
+
+    const fieldError = fieldName.split('.').reduce((obj: any, key: string) => obj && obj[key], errors);
+
+    return (
+      <div className='relative pt-2 pb-6'>
+        <input
+          type={inputConfig.type || 'text'}
+          className={inputConfig.is_disabled ? disabledInputClass : inputClass}
+          disabled={inputConfig.is_disabled}
+          {...register(fieldName, {
+            valueAsNumber: inputConfig.type === 'number',
+            validate: (value) => {
+              if (!validationRules || value === null || value === '' || value === undefined) return true;
+
+              switch (validationRules.type) {
+                case 'RANGE_TOLERANCE':
+                case 'RANGE_DIRECT':
+                  return (value >= validationRules.min && value <= validationRules.max) || validationRules.errorMessage;
+                case 'MAX_VALUE':
+                  return (value <= validationRules.max) || validationRules.errorMessage;
+                default:
+                  return true;
+              }
+            }
+          })}
+        />
+        {fieldError && <span className="absolute left-0 -bottom-1 text-sm text-meta-1">{fieldError.message as string}</span>}
+      </div>
+    );
+  };
+
   return (
     <div>
       <div className="border-b-2 border-stroke py-2 text-center dark:border-strokedark">
         <h5 className="font-medium text-black dark:text-white">Quantity of used raw material</h5>
       </div>
       <div className="rounded-b-sm border border-t-0 border-stroke p-5 dark:border-strokedark">
-        {/* --- ตารางที่ 1: Raw Material Name (สร้างแบบไดนามิก) --- */}
         <div className="mb-6 overflow-x-auto">
           <table className="w-full table-auto">
             <thead>
@@ -78,7 +129,6 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue }) => {
 
               {!isLoading && rawMaterialConfig.map(field => {
                 const config = field.config_json;
-                // --- ใช้ switch case เพื่อสร้างแถวตาม row_type ---
                 switch (config.row_type) {
                   case 'SINGLE_INPUT':
                     return (
@@ -86,7 +136,18 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue }) => {
                         <td className={tdLeftClass} colSpan={2}>{config.label}</td>
                         <td className={tdCenterClass}>{config.std_value}</td>
                         <td className={tdCenterClass}>
-                          <input type={config.inputs[0].type} className={config.inputs[0].is_disabled ? disabledInputClass : inputClass} disabled={config.inputs[0].is_disabled} {...register(config.inputs[0].field_name, { valueAsNumber: true })} />
+                          {config.inputs[0].field_name === 'rawMaterials.diaEarth' ? (
+                            <div className='relative pt-2 pb-6'>
+                              <input type="number" className={disabledInputClass} readOnly disabled {...register('rawMaterials.diaEarth')} />
+                              {customErrors['rawMaterials.diaEarth'] && (
+                                <span className="absolute left-0 -bottom-1 text-sm text-meta-1">
+                                  {customErrors['rawMaterials.diaEarth']}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            renderValidatedInput(config)
+                          )}
                         </td>
                         <td className={tdCenterClass}>{config.unit}</td>
                       </tr>
@@ -97,7 +158,7 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue }) => {
                         <td className={tdLeftClass} colSpan={2}>{config.label}</td>
                         <td className={tdCenterClass}>{config.std_value}</td>
                         <td className={tdCenterClass} rowSpan={2}>
-                          <input type={config.inputs[0].type} className={disabledInputClass} disabled readOnly {...register(config.inputs[0].field_name)} />
+                          {renderValidatedInput(config)}
                         </td>
                         <td className={tdCenterClass}>{config.unit}</td>
                       </tr>
@@ -115,15 +176,16 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue }) => {
                       <tr key={field.item_id}>
                         <td className={tdLeftClass}>{config.label}</td>
                         <td className={tdCenterClass}>
-                          <input type={config.inputs[0].type} className={inputClass} {...register(config.inputs[0].field_name)} />
+                          {renderValidatedInput(config, 0)}
                         </td>
                         <td className={tdCenterClass}>{config.std_value}</td>
                         <td className={tdCenterClass}>
-                          <input type={config.inputs[1].type} className={inputClass} {...register(config.inputs[1].field_name, { valueAsNumber: true })} />
+                          {renderValidatedInput(config, 1)}
                         </td>
                         <td className={tdCenterClass}>{config.unit}</td>
                       </tr>
                     );
+
                   default:
                     return null;
                 }
@@ -132,7 +194,6 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue }) => {
           </table>
         </div>
 
-        {/* --- ตารางที่ 2: Calculations (ยังคงเป็น Hardcode เพราะ Logic ซับซ้อน) --- */}
         <div className="overflow-x-auto">
           <table className="w-full table-auto">
             <tbody>

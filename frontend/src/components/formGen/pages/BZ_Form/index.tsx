@@ -19,9 +19,10 @@ function BZ_Form() {
   const totalSteps = 4;
 
   // ======================================================
-  // === 1. เพิ่ม watch และ setValue ตรงนี้ ===
+  // === แก้ไขตรงนี้: เพิ่ม mode: 'onChange' เข้าไป ===
   // ======================================================
-  const { register, handleSubmit, trigger, watch, setValue } = useForm<IManufacturingReportForm>({
+  const { register, handleSubmit, trigger, watch, setValue, formState: { errors } } = useForm<IManufacturingReportForm>({ 
+    mode: 'onChange', 
     defaultValues: {
       mcOperators: Array(3).fill({ id: '', name: '', number: '' }),
       assistants: Array(5).fill({ id: '', name: '', number: '' }),
@@ -84,7 +85,7 @@ function BZ_Form() {
         {/* === เนื้อหาฟอร์ม (แสดงตามหน้า) === */}
         <div className="my-6">
           {step === 1 && <FormStep1 register={register} watch={watch} setValue={setValue} />}
-          {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} />}
+          {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} />}
           {step === 3 && <FormStep3 register={register} />}
           {step === 4 && <FormStep4 register={register} />}
         </div>
