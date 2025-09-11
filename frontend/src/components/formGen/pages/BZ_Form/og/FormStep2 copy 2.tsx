@@ -1,8 +1,6 @@
-// src/pages/BZ_Form/FormStep2.tsx
-
 import React, { useState, useEffect } from 'react';
 import { UseFormWatch, UseFormSetValue, FieldErrors } from 'react-hook-form';
-import { FormStepProps, IManufacturingReportForm, IMasterFormItem, IStep2ConfigJson } from './types';
+import { FormStepProps, IManufacturingReportForm, IMasterFormItem } from './types';
 
 interface FormStep2Props extends FormStepProps {
   watch: UseFormWatch<IManufacturingReportForm>;
@@ -14,6 +12,7 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue, errors
 
   const [rawMaterialConfig, setRawMaterialConfig] = useState<IMasterFormItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [customErrors, setCustomErrors] = useState<{ [key: string]: string | null }>({});
 
   useEffect(() => {
     const fetchMasterData = async () => {
@@ -21,20 +20,24 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue, errors
       try {
         const response = await fetch('http://localhost:4000/api/master/template/BZ_Step2_RawMaterials/latest');
         const data = await response.json();
+
+        // ======================================================
+        // === แก้ไขตรงนี้: ให้หยิบแค่ data.items มาใช้งาน ===
+        // ======================================================
         if (data && data.items) {
           setRawMaterialConfig(data.items);
         }
+
       } catch (error) {
-        console.error("Failed to fetch master data for Step 2", error);
-        setRawMaterialConfig([]);
-      } finally {
-        setIsLoading(false);
+        console.error("Failed to fetch master data", error);
+        setRawMaterialConfig([]); // ถ้า fetch ไม่ได้ ให้เซ็ตเป็น array ว่างๆ ป้องกัน error
       }
+      finally { setIsLoading(false); }
     };
     fetchMasterData();
   }, []);
 
-  // --- Logic การคำนวณ Real-time ---
+  // --- Logic การคำนวณ Real-time (เหมือนเดิม) ---
   const cg1cRow1 = watch('cg1cWeighting.row1.cg1c');
   const cg1cRow2 = watch('cg1cWeighting.row2.cg1c');
 
@@ -45,8 +48,8 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue, errors
     setValue('cg1cWeighting.row1.net', net1 > 0 ? net1 : null);
     setValue('cg1cWeighting.row2.net', net2 > 0 ? net2 : null);
     setValue('cg1cWeighting.total', total > 0 ? total : null);
-    // สั่งให้ validate field diaEarth ทันทีที่ค่าจากการคำนวณเปลี่ยนไป
-    setValue('rawMaterials.diaEarth', total > 0 ? total : null, { shouldValidate: true }); 
+    setValue('rawMaterials.diaEarth', total > 0 ? total : null);
+
   }, [cg1cRow1, cg1cRow2, setValue]);
 
   const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-3 py-2 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
@@ -57,12 +60,13 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue, errors
   const tdLeftClass = `${tdClass} align-middle`;
 
   // --- ฟังก์ชันสำหรับสร้าง Input Field พร้อม Validation ---
-  const renderValidatedInput = (config: IStep2ConfigJson, inputIndex: number = 0) => {
+  const renderValidatedInput = (config: any, inputIndex: number = 0) => {
     const inputConfig = config.inputs[inputIndex];
     if (!inputConfig) return null;
 
     const fieldName = inputConfig.field_name;
     const validationRules = inputConfig.validation || config.validation;
+
     const fieldError = fieldName.split('.').reduce((obj: any, key: string) => obj && obj[key], errors);
 
     return (
@@ -71,24 +75,22 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue, errors
           type={inputConfig.type || 'text'}
           className={inputConfig.is_disabled ? disabledInputClass : inputClass}
           disabled={inputConfig.is_disabled}
-          {...register(fieldName as any, {
+          {...register(fieldName, {
             valueAsNumber: inputConfig.type === 'number',
             validate: (value) => {
               if (!validationRules || value === null || value === '' || value === undefined) return true;
+
               switch (validationRules.type) {
-                case 'RANGE_TOLERANCE':
                 case 'RANGE_DIRECT':
                   if (validationRules.min !== undefined && validationRules.max !== undefined) {
                     return (value >= validationRules.min && value <= validationRules.max) || validationRules.errorMessage;
                   }
-                  return true;
+                  return true; // ป้องกัน data พัง
                 case 'MAX_VALUE':
                   if (validationRules.max !== undefined) {
                     return (value <= validationRules.max) || validationRules.errorMessage;
                   }
-                  return true;
-                default:
-                  return true;
+                  return true; // ป้องกัน data พัง
               }
             }
           })}
@@ -118,49 +120,30 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue, errors
               {isLoading && (<tr><td colSpan={5} className="text-center p-4">Loading Master Form...</td></tr>)}
 
               {!isLoading && rawMaterialConfig.map(field => {
-                const config = field.config_json as IStep2ConfigJson;
-                
+                const config = field.config_json;
                 switch (config.row_type) {
                   case 'SINGLE_INPUT':
-                    if (config.inputs[0]?.field_name === 'rawMaterials.diaEarth') {
-                      const fieldError = errors.rawMaterials?.diaEarth;
-                      return (
-                        <tr key={field.item_id}>
-                          <td className={tdLeftClass} colSpan={2}>{config.label}</td>
-                          <td className={tdCenterClass}>{config.std_value}</td>
-                          <td className={tdCenterClass}>
-                            <div className='relative pt-2 pb-6'>
-                              <input type="number" className={disabledInputClass} readOnly disabled 
-                                {...register('rawMaterials.diaEarth', {
-                                  valueAsNumber: true,
-                                  validate: (value) => {
-                                    const rules = config.validation;
-                                    if (!rules || value === null || value === undefined) return true;
-                                    if (rules.min !== undefined && rules.max !== undefined) {
-                                      return (value >= rules.min && value <= rules.max) || rules.errorMessage;
-                                    }
-                                    return true;
-                                  }
-                                })} 
-                              />
-                              {fieldError && <span className="absolute left-0 -bottom-1 text-sm text-meta-1">{fieldError.message}</span>}
-                            </div>
-                          </td>
-                          <td className={tdCenterClass}>{config.unit}</td>
-                        </tr>
-                      );
-                    }
                     return (
                       <tr key={field.item_id}>
                         <td className={tdLeftClass} colSpan={2}>{config.label}</td>
                         <td className={tdCenterClass}>{config.std_value}</td>
                         <td className={tdCenterClass}>
-                          {renderValidatedInput(config)}
+                          {config.inputs[0].field_name === 'rawMaterials.diaEarth' ? (
+                            <div className='relative pt-2 pb-6'>
+                              <input type="number" className={disabledInputClass} readOnly disabled {...register('rawMaterials.diaEarth')} />
+                              {customErrors['rawMaterials.diaEarth'] && (
+                                <span className="absolute left-0 -bottom-1 text-sm text-meta-1">
+                                  {customErrors['rawMaterials.diaEarth']}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            renderValidatedInput(config)
+                          )}
                         </td>
                         <td className={tdCenterClass}>{config.unit}</td>
                       </tr>
                     );
-
                   case 'SINGLE_INPUT_SPAN':
                     return (
                       <tr key={field.item_id}>
@@ -172,7 +155,6 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue, errors
                         <td className={tdCenterClass}>{config.unit}</td>
                       </tr>
                     );
-
                   case 'SUB_ROW':
                     return (
                       <tr key={field.item_id}>
@@ -181,7 +163,6 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue, errors
                         <td className={tdCenterClass}>{config.unit}</td>
                       </tr>
                     );
-                    
                   case 'DUAL_INPUT':
                     return (
                       <tr key={field.item_id}>

@@ -1,5 +1,3 @@
-// src/pages/BZ_Form/types.ts
-
 import { UseFormRegister, UseFormWatch, UseFormSetValue } from "react-hook-form";
 
 // --- Interface สำหรับข้อมูลทั้งหมดในฟอร์ม ---
@@ -17,7 +15,7 @@ export interface IManufacturingReportForm {
     sodiumChloride: number | null;
     magnesiumHydroxide: number | null;
     remainedGenmatsu: { lot: string; actual: number | null; };
-    shelfLife: number | null; // <-- แก้ไขตรงนี้ให้เหลืออันเดียว
+    shelfLife: number | null;
     ncrGenmatsu: { lot: string; actual: number | null; };
   };
   cg1cWeighting: {
@@ -64,11 +62,66 @@ export interface IManufacturingReportForm {
 }
 
 
+// --- Interfaces for Master Form Structure (Step 3) ---
+// ส่วนที่เพิ่มเข้ามาใหม่เพื่อกำหนดโครงสร้างที่ชัดเจนให้กับ config_json
 
+export interface IColumnInputConfig {
+  label: string;
+  type: 'text' | 'number';
+  step?: string;
+  field_name: string;
+  unit: string;
+   validation?: IValidationRules; 
+}
+
+export interface IColumnConfig {
+  type: 'DESCRIPTION' | 'SINGLE_INPUT_GROUP';
+  span?: number;
+  value?: string;
+  input?: IColumnInputConfig;
+}
+
+export interface ITimeInputConfig {
+    enabled: boolean;
+}
+
+export interface IConfigJson {
+  columns: IColumnConfig[];
+  inputs: {
+    startTime?: ITimeInputConfig;
+    finishTime?: ITimeInputConfig;
+  };
+}
+
+export interface IValidationRules {
+  type: 'RANGE_TOLERANCE' | 'RANGE_DIRECT' | 'MAX_VALUE';
+  min?: number; 
+  max?: number; 
+  errorMessage: string;
+}
+
+export interface IStep2InputConfig {
+  field_name: string; // ควรแก้ให้เป็น Path<IManufacturingReportForm> ในอนาคต
+  type: 'text' | 'number';
+  is_disabled?: boolean;
+  validation?: IValidationRules;
+}
+
+// Interface หลักสำหรับ config_json ของ Step 2
+export interface IStep2ConfigJson {
+  row_type: 'SINGLE_INPUT' | 'SINGLE_INPUT_SPAN' | 'SUB_ROW' | 'DUAL_INPUT';
+  label: string;
+  std_value: string | number;
+  unit: string;
+  inputs: IStep2InputConfig[];
+  validation?: IValidationRules; // Validation รวมสำหรับทั้งแถว
+}
+
+// --- Interface หลักสำหรับ Master Data ---
 export interface IMasterFormItem {
   item_id: number;
   display_order: number;
-  config_json: any; // เราใช้ any ไปก่อนเพื่อความยืดหยุ่น
+  config_json: IConfigJson | IStep2ConfigJson | any; // ใช้ any เป็น fallback ชั่วคราว
   is_active: boolean;
 }
 
@@ -77,8 +130,8 @@ export interface EmployeeInputRowProps {
   groupName: 'mcOperators' | 'assistants';
   index: number;
   register: UseFormRegister<IManufacturingReportForm>;
-  watch: UseFormWatch<IManufacturingReportForm>;    // <-- เพิ่ม watch
-  setValue: UseFormSetValue<IManufacturingReportForm>; // <-- เพิ่ม setValue
+  watch: UseFormWatch<IManufacturingReportForm>;
+  setValue: UseFormSetValue<IManufacturingReportForm>;
 }
 
 export interface ConditionCheckItemProps {
@@ -100,6 +153,3 @@ export interface PalletTableProps {
   numberOfRows: number;
   fieldName: "palletInfo";
 }
-
-
-

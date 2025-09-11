@@ -86,7 +86,7 @@ function BZ_Form() {
         <div className="my-6">
           {step === 1 && <FormStep1 register={register} watch={watch} setValue={setValue} />}
           {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} />}
-          {step === 3 && <FormStep3 register={register} />}
+          {step === 3 && <FormStep3 register={register} errors={errors} />}
           {step === 4 && <FormStep4 register={register} />}
         </div>
 

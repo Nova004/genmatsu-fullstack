@@ -1,10 +1,16 @@
 // src/pages/BZ_Form/FormStep3.tsx
 
 import React, { useState, useEffect } from 'react';
-import { FormStepProps, IMasterFormItem } from './types';
+import { FieldErrors } from 'react-hook-form'; // 1. Import FieldErrors
+import { FormStepProps, IMasterFormItem, IConfigJson } from './types';
 
-const FormStep3: React.FC<FormStepProps> = ({ register }) => {
-  
+// 2. อัปเดต Props ให้รับ 'errors' เข้ามา
+interface FormStep3Props extends FormStepProps {
+  errors: FieldErrors<any>;
+}
+
+const FormStep3: React.FC<FormStep3Props> = ({ register, errors }) => { // <-- รับ errors มาใช้
+
   const [operationStepsConfig, setOperationStepsConfig] = useState<IMasterFormItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -51,58 +57,94 @@ const FormStep3: React.FC<FormStepProps> = ({ register }) => {
               {isLoading && (
                 <tr><td colSpan={5} className="text-center p-4">Loading Master Form...</td></tr>
               )}
-              
+
               {!isLoading && operationStepsConfig.map((item, index) => {
-                const config = item.config_json;
+                const config = item.config_json as IConfigJson; // Type Assertion เพื่อความชัดเจน
+
+                if (!config || typeof config !== 'object' || !('columns' in config)) {
+                  return null;
+                }
+
                 const isStartTimeDisabled = !config.inputs.startTime?.enabled;
                 const isFinishTimeDisabled = !config.inputs.finishTime?.enabled;
-                
+
                 return (
                   <tr key={item.item_id}>
                     <td className={tdCenterClass}>{index + 1}</td>
-                    
-                    {/* --- "จิตรกร" เริ่มวาดภาพตาม "แบบแปลน" --- */}
+
                     {config.columns.map((col, colIndex) => {
                       switch (col.type) {
                         case 'DESCRIPTION':
                           return <td key={colIndex} className={tdLeftClass} colSpan={col.span || 1}>{col.value}</td>;
-                        
+
                         case 'SINGLE_INPUT_GROUP':
+                          if (!col.input) {
+                            return <td key={colIndex}>Config Error: Input is missing.</td>;
+                          }
+
+                          // 3. เตรียมตัวแปรสำหรับหา error ของ field นี้
+                          const fieldName = col.input.field_name.replace('{index}', String(index));
+                          const fieldError = fieldName.split('.').reduce((obj: any, key) => obj && obj[key], errors);
+
                           return (
                             <td key={colIndex} className={tdLeftClass} colSpan={col.span || 1}>
-                              <div className="flex w-full">
-                                <span className="inline-flex items-center whitespace-nowrap rounded-l-md border border-r-0 border-stroke bg-gray-2 px-3 text-sm text-black dark:border-strokedark dark:bg-meta-4 dark:text-white">{col.input.label}</span>
-                                <input 
-                                  type={col.input.type || 'text'}
-                                  step={col.input.step || 'any'}
-                                  className={`${inputClass} rounded-l-none rounded-r-none`} 
-                                  {...register(col.input.field_name.replace('{index}', index), { valueAsNumber: col.input.type === 'number' })} 
-                                />
-                                <span className="inline-flex items-center whitespace-nowrap rounded-r-md border border-l-0 border-stroke bg-gray-2 px-3 text-sm text-black dark:border-strokedark dark:bg-meta-4 dark:text-white">{col.input.unit}</span>
+                              {/* 5. เพิ่ม Wrapper สำหรับจัดตำแหน่ง Error Message */}
+                              <div className="relative pt-2 pb-6">
+                                <div className="flex w-full">
+                                  <span className="inline-flex items-center whitespace-nowrap rounded-l-md border border-r-0 border-stroke bg-gray-2 px-3 text-sm text-black dark:border-strokedark dark:bg-meta-4 dark:text-white">{col.input.label}</span>
+                                  <input
+                                    type={col.input.type || 'text'}
+                                    step={col.input.step || 'any'}
+                                    className={`${inputClass} rounded-l-none rounded-r-none`}
+                                    // 4. เพิ่ม Logic การ Validate เข้าไปใน register
+                                    {...register(fieldName as any, {
+                                      valueAsNumber: col.input.type === 'number',
+                                      validate: (value) => {
+                                        const rules = col.input?.validation;
+                                        // ถ้าไม่มีกฎ หรือยังไม่ได้กรอกค่า ให้ผ่าน
+                                        if (!rules || value === null || value === '' || value === undefined) return true;
+
+                                        // ตรวจสอบกฎตามประเภท
+                                        switch (rules.type) {
+                                          case 'RANGE_DIRECT':
+                                            // เพิ่มการตรวจสอบว่า min และ max ไม่ใช่ undefined ก่อนใช้งาน
+                                            if (rules.min !== undefined && rules.max !== undefined) {
+                                              return (value >= rules.min && value <= rules.max) || rules.errorMessage;
+                                            }
+                                            return true; // ถ้า min หรือ max ไม่มีค่า ก็ให้ผ่านไปก่อน (หรือจะ return error message ก็ได้)
+                                          default:
+                                            return true;
+                                        }
+                                      }
+                                    })}
+                                  />
+                                  <span className="inline-flex items-center whitespace-nowrap rounded-r-md border border-l-0 border-stroke bg-gray-2 px-3 text-sm text-black dark:border-strokedark dark:bg-meta-4 dark:text-white">{col.input.unit}</span>
+                                </div>
+                                {/* 6. แสดง Error Message ถ้ามี */}
+                                {fieldError && <span className="absolute left-0 -bottom-1 text-sm text-meta-1">{fieldError.message as string}</span>}
                               </div>
                             </td>
                           );
-                        
-                        // นายสามารถเพิ่ม case สำหรับ col.type อื่นๆ ได้ในอนาคต
+
                         default:
                           return <td key={colIndex}>Unsupported column type</td>;
                       }
                     })}
 
                     <td className={tdCenterClass}>
-                      <input 
-                        type="time" 
-                        className={isStartTimeDisabled ? disabledInputClass : inputClass} 
+                      <input
+                        type="time"
+                        className={isStartTimeDisabled ? disabledInputClass : inputClass}
                         disabled={isStartTimeDisabled}
-                        {...register(`operationResults.${index}.startTime`)} 
+                        {...register(`operationResults.${index}.startTime`)}
                       />
                     </td>
                     <td className={tdCenterClass}>
-                      <input 
-                        type="time" 
-                        className={isFinishTimeDisabled ? disabledInputClass : inputClass} 
+                      <input
+                        type="time"
+                        className={isFinishTimeDisabled ? disabledInputClass : inputClass}
                         disabled={isFinishTimeDisabled}
-                        {...register(`operationResults.${index}.finishTime`)} 
+                        {...register(`operationResults.${index}.finishTime`)}
                       />
                     </td>
                   </tr>
