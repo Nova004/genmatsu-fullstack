@@ -63,6 +63,8 @@ export interface IManufacturingReportForm {
   }[];
 }
 
+
+
 export interface IMasterFormItem {
   item_id: number;
   display_order: number;
@@ -98,3 +100,6 @@ export interface PalletTableProps {
   numberOfRows: number;
   fieldName: "palletInfo";
 }
+
+
+

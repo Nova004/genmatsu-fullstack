@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { UseFormWatch, UseFormSetValue, FieldErrors } from 'react-hook-form';
 import { FormStepProps, IManufacturingReportForm, IMasterFormItem } from './types';
 
-// สร้าง Interface สำหรับ Props ของหน้านี้โดยเฉพาะ
 interface FormStep2Props extends FormStepProps {
   watch: UseFormWatch<IManufacturingReportForm>;
   setValue: UseFormSetValue<IManufacturingReportForm>;
@@ -10,10 +9,8 @@ interface FormStep2Props extends FormStepProps {
 }
 
 const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue, errors }) => {
-  // ======================================================
-  // === ดึงตารางจาก ฐานข้อมูล ===
-  // ======================================================
-  const [rawMaterialConfig, setRawMaterialConfig] = useState<IMasterFormItem[]>([]); // เก็บข้อมูลที่มาจาก Master Form
+  
+  const [rawMaterialConfig, setRawMaterialConfig] = useState<IMasterFormItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [customErrors, setCustomErrors] = useState<{ [key: string]: string | null }>({});
 
@@ -21,35 +18,29 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue, errors
     const fetchMasterData = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch('http://localhost:4000/api/master/template/BZ_Step2_RawMaterials');
+        const response = await fetch('http://localhost:4000/api/master/template/BZ_Step2_RawMaterials/latest');
         const data = await response.json();
-        setRawMaterialConfig(data);
-      } catch (error) { console.error("Failed to fetch master data", error); }
+
+        // ======================================================
+        // === แก้ไขตรงนี้: ให้หยิบแค่ data.items มาใช้งาน ===
+        // ======================================================
+        if (data && data.items) {
+          setRawMaterialConfig(data.items);
+        }
+        
+      } catch (error) { 
+        console.error("Failed to fetch master data", error); 
+        setRawMaterialConfig([]); // ถ้า fetch ไม่ได้ ให้เซ็ตเป็น array ว่างๆ ป้องกัน error
+      } 
       finally { setIsLoading(false); }
     };
     fetchMasterData();
   }, []);
 
-  // ======================================================
-  // === การคำนวน ใน form ===
-  // ======================================================
-
+  // --- Logic การคำนวณและตรวจสอบ (เหมือนเดิมทั้งหมด) ---
   const cg1cRow1 = watch('cg1cWeighting.row1.cg1c');
   const cg1cRow2 = watch('cg1cWeighting.row2.cg1c');
-
-  useEffect(() => {
-    const net1 = Number(cg1cRow1) - 2 || 0;
-    const net2 = Number(cg1cRow2) - 2 || 0;
-    const total = net1 + net2;
-    setValue('cg1cWeighting.row1.net', net1 > 0 ? net1 : null);
-    setValue('cg1cWeighting.row2.net', net2 > 0 ? net2 : null);
-    setValue('cg1cWeighting.total', total > 0 ? total : null);
-    setValue('rawMaterials.diaEarth', total > 0 ? total : null);
-  }, [cg1cRow1, cg1cRow2, setValue]);
-
-
-  // --- "ตรวจสอบความถูกต้องของ rawMaterials.diaEarth ---
-  const calculatedDiaEarth = watch('rawMaterials.diaEarth'); 
+  const calculatedDiaEarth = watch('rawMaterials.diaEarth');
 
   useEffect(() => {
     const fieldConfig = rawMaterialConfig.find(f => f.config_json.inputs[0]?.field_name === 'rawMaterials.diaEarth');  

@@ -4,8 +4,9 @@ const express = require('express');
 const router = express.Router();
 const masterController = require('../controllers/master.controller');
 
-// กำหนดเส้นทาง: GET /api/master/template/:template_name
-// เมื่อมีคนเรียกมาที่ URL นี้ ให้ไปเรียกใช้ฟังก์ชัน getTemplateByName
-router.get('/master/template/:template_name', masterController.getTemplateByName);
+// --- แก้ไขเส้นทางนี้ ให้มี /latest และเรียกใช้ฟังก์ชันใหม่ ---
+router.get('/master/template/:template_name/latest', masterController.getLatestTemplateByName);
+
+// (ในอนาคตเราจะเพิ่มเส้นทางสำหรับ getTemplateById ที่นี่)
 
 module.exports = router;

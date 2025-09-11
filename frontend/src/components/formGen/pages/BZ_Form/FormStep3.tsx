@@ -1,24 +1,31 @@
 // src/pages/BZ_Form/FormStep3.tsx
 
-import React from 'react';
-import { FormStepProps } from './types';
-
-// ข้อมูลสำหรับสร้างตารางแต่ละแถว
-const operationSteps = [
-  { no: 1, description: 'ใส่เก็น BZ ที่เหลือจากการผลิตในครั้งก่อนเท CG-1C ลงไป 2 ถุง' },
-  { no: 2, description: 'เปิดเครื่องปั่นใช้เวลา 15 นาที' },
-  { no: 3, description: 'หยุดเครื่องและตัก CG-1C มาเช็คค่าความชื้น' },
-  { no: 4, description: 'เปิดเครื่องแล้วใส่สารละลายน้ำเกลือ' },
-  { no: 5, description: 'เมื่อใส่สารละลายน้ำเกลือเสร็จให้เปิดลม 20 วินาที ให้เครื่องทำงานไปอีก 5 นาที' },
-  { no: 6, description: 'ใส่แม็กนีเซียมและใส่ Genmatsu NCR (ถ้ามี) ให้เครื่องทำงานไปอีก 10 นาที' },
-  { no: 7, description: 'หยุดเครื่อง, ปิดเครื่องไว้ 20 นาที' },
-  { no: 8, description: 'เปิดให้เครื่องทำงาน 1 นาที' },
-  { no: 9, description: 'หยุดเครื่องและตักตัวอย่างมาเช็คค่าความชื้น', hasHumidity: true }, // รายการพิเศษ
-  { no: 10, description: 'เริ่มการบรรจุ (เก็บตัวอย่างในกระป๋องที่ 60 )' },
-];
+import React, { useState, useEffect } from 'react';
+import { FormStepProps, IMasterFormItem } from './types';
 
 const FormStep3: React.FC<FormStepProps> = ({ register }) => {
+  
+  const [operationStepsConfig, setOperationStepsConfig] = useState<IMasterFormItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMasterData = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch('http://localhost:4000/api/master/template/BZ_Step3_Operations/latest');
+        const data = await response.json();
+        setOperationStepsConfig(data.items);
+      } catch (error) {
+        console.error("Failed to fetch master data for Step 3", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchMasterData();
+  }, []);
+
   const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-3 py-2 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
+  const disabledInputClass = `${inputClass} bg-gray-2 dark:bg-meta-4 cursor-default`;
   const thClass = "border-b border-stroke px-4 py-3 text-center font-medium text-black dark:border-strokedark dark:text-white";
   const tdClass = "border-b border-stroke px-4 py-3 text-black dark:border-strokedark dark:text-white";
   const tdCenterClass = `${tdClass} text-center align-middle`;
@@ -41,31 +48,68 @@ const FormStep3: React.FC<FormStepProps> = ({ register }) => {
               </tr>
             </thead>
             <tbody>
-              {operationSteps.map((step, index) => (
-                <tr key={step.no}>
-                  <td className={tdCenterClass}>{step.no}</td>
-                  
-                  {/* สำหรับรายการที่ 9 ที่มีช่อง "ค่าความชื้น" */}
-                  {step.hasHumidity ? (
-                    <>
-                      <td className={tdLeftClass}>{step.description}</td>
-                      <td className={tdLeftClass}>
-                        <div className="flex w-full">
-                          <span className="inline-flex items-center whitespace-nowrap rounded-l-md border border-r-0 border-stroke bg-gray-2 px-3 text-sm text-black dark:border-strokedark dark:bg-meta-4 dark:text-white">ค่าความชื้น</span>
-                          <input type="number" step="0.1" className={`${inputClass} rounded-l-none rounded-r-none`} {...register(`operationResults.${index}.humidity`, { valueAsNumber: true })} />
-                          <span className="inline-flex items-center whitespace-nowrap rounded-r-md border border-l-0 border-stroke bg-gray-2 px-3 text-sm text-black dark:border-strokedark dark:bg-meta-4 dark:text-white">(STD 33.0 - 36.0 %)</span>
-                        </div>
-                      </td>
-                    </>
-                  ) : (
-                    <td className={tdLeftClass} colSpan={2}>{step.description}</td>
-                  )}
+              {isLoading && (
+                <tr><td colSpan={5} className="text-center p-4">Loading Master Form...</td></tr>
+              )}
+              
+              {!isLoading && operationStepsConfig.map((item, index) => {
+                const config = item.config_json;
+                const isStartTimeDisabled = !config.inputs.startTime?.enabled;
+                const isFinishTimeDisabled = !config.inputs.finishTime?.enabled;
+                
+                return (
+                  <tr key={item.item_id}>
+                    <td className={tdCenterClass}>{index + 1}</td>
+                    
+                    {/* --- "จิตรกร" เริ่มวาดภาพตาม "แบบแปลน" --- */}
+                    {config.columns.map((col, colIndex) => {
+                      switch (col.type) {
+                        case 'DESCRIPTION':
+                          return <td key={colIndex} className={tdLeftClass} colSpan={col.span || 1}>{col.value}</td>;
+                        
+                        case 'SINGLE_INPUT_GROUP':
+                          return (
+                            <td key={colIndex} className={tdLeftClass} colSpan={col.span || 1}>
+                              <div className="flex w-full">
+                                <span className="inline-flex items-center whitespace-nowrap rounded-l-md border border-r-0 border-stroke bg-gray-2 px-3 text-sm text-black dark:border-strokedark dark:bg-meta-4 dark:text-white">{col.input.label}</span>
+                                <input 
+                                  type={col.input.type || 'text'}
+                                  step={col.input.step || 'any'}
+                                  className={`${inputClass} rounded-l-none rounded-r-none`} 
+                                  {...register(col.input.field_name.replace('{index}', index), { valueAsNumber: col.input.type === 'number' })} 
+                                />
+                                <span className="inline-flex items-center whitespace-nowrap rounded-r-md border border-l-0 border-stroke bg-gray-2 px-3 text-sm text-black dark:border-strokedark dark:bg-meta-4 dark:text-white">{col.input.unit}</span>
+                              </div>
+                            </td>
+                          );
+                        
+                        // นายสามารถเพิ่ม case สำหรับ col.type อื่นๆ ได้ในอนาคต
+                        default:
+                          return <td key={colIndex}>Unsupported column type</td>;
+                      }
+                    })}
 
-                  <td className={tdCenterClass}><input type="time" className={inputClass} {...register(`operationResults.${index}.startTime`)} /></td>
-                  <td className={tdCenterClass}><input type="time" className={inputClass} {...register(`operationResults.${index}.finishTime`)} /></td>
-                </tr>
-              ))}
-              {/* แถวสำหรับ Remark */}
+                    <td className={tdCenterClass}>
+                      <input 
+                        type="time" 
+                        className={isStartTimeDisabled ? disabledInputClass : inputClass} 
+                        disabled={isStartTimeDisabled}
+                        {...register(`operationResults.${index}.startTime`)} 
+                      />
+                    </td>
+                    <td className={tdCenterClass}>
+                      <input 
+                        type="time" 
+                        className={isFinishTimeDisabled ? disabledInputClass : inputClass} 
+                        disabled={isFinishTimeDisabled}
+                        {...register(`operationResults.${index}.finishTime`)} 
+                      />
+                    </td>
+                  </tr>
+                )
+              })}
+
+              {/* แถวสำหรับ Remark (ยังคง Hardcode ไว้) */}
               <tr>
                 <td className={tdLeftClass} colSpan={5}>
                   <div className="flex w-full">
