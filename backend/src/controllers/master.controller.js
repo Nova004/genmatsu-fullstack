@@ -60,12 +60,31 @@ exports.getAllLatestTemplates = async (req, res) => {
   try {
     await poolConnect;
     const result = await pool.request().query(`
-      SELECT template_id, template_name, description 
-      FROM Form_Master_Templates 
-      WHERE is_latest = 1 
-      ORDER BY template_name;
+      SELECT 
+        template_id, 
+        template_name, 
+        description,
+        template_category -- ดึงคอลัมน์ใหม่มาด้วย
+      FROM 
+        Form_Master_Templates 
+      WHERE 
+        is_latest = 1 
+      ORDER BY 
+        template_category, template_name;
     `);
-    res.status(200).json(result.recordset);
+
+    // --- Logic การจัดกลุ่มข้อมูล ---
+    const groupedTemplates = result.recordset.reduce((acc, template) => {
+      const category = template.template_category || 'Uncategorized'; // ถ้าไม่มีหมวดหมู่ ให้ใช้ชื่อนี้
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(template);
+      return acc;
+    }, {});
+
+    res.status(200).json(groupedTemplates);
+
   } catch (error) {
     console.error('Error fetching all latest templates:', error);
     res.status(500).json({ message: 'Error fetching templates', error: error.message });
