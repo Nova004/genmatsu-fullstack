@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react';
 import Breadcrumb from '../../../Breadcrumbs/Breadcrumb';
 import { IMasterFormItem } from '../BZ_Form/types';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import EditItemModal from './EditItemModal';
+
+import AddItemModal from './AddItemModal';
 
 interface TemplateInfo {
   template_id: number;
@@ -22,9 +25,12 @@ const FormMasterEditor: React.FC = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [templateItems, setTemplateItems] = useState<IMasterFormItem[]>([]);
   const [isItemsLoading, setIsItemsLoading] = useState<boolean>(false);
-
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [initialItemsOrder, setInitialItemsOrder] = useState<IMasterFormItem[]>([]); // State สำหรับเก็บลำดับดั้งเดิม
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [editingItem, setEditingItem] = useState<IMasterFormItem | null>(null);
+  const [isAddItemModalOpen, setIsAddItemModalOpen] = useState<boolean>(false);
+
 
   useEffect(() => {
     const fetchTemplates = async () => {
@@ -127,6 +133,27 @@ const FormMasterEditor: React.FC = () => {
     }
   };
 
+  const handleEditClick = (itemToEdit: IMasterFormItem) => {
+    setEditingItem(itemToEdit);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingItem(null);
+  };
+
+  const handleUpdateItem = (updatedItem: IMasterFormItem) => {
+    // อัปเดตข้อมูลใน array 'templateItems'
+    setTemplateItems(prevItems =>
+      prevItems.map(item =>
+        item.item_id === updatedItem.item_id ? updatedItem : item
+      )
+    );
+    handleCloseModal(); // ปิด Modal หลังจาก Save
+  };
+
+
   const onDragEnd = (result: DropResult) => {
     const { source, destination } = result;
     if (!destination || (destination.droppableId === source.droppableId && destination.index === source.index)) {
@@ -138,14 +165,27 @@ const FormMasterEditor: React.FC = () => {
     setTemplateItems(items);
   };
 
+  const handleAddNewItem = (newItem: Partial<IMasterFormItem>) => {
+    // เพิ่ม item ใหม่เข้าไปท้ายสุดของ array
+    // ใช้ Date.now() เป็น key ชั่วคราวเพื่อให้ React render ได้ถูกต้อง
+    setTemplateItems(prevItems => [...prevItems, { ...newItem, item_id: Date.now() } as IMasterFormItem]);
+    setIsAddItemModalOpen(false);
+  };
 
-  const hasOrderChanged = () => {
+
+  const hasUnsavedChanges = () => {
+    // 1. เช็คว่าจำนวน item เปลี่ยนไปหรือไม่ (เช่น การลบในอนาคต)
     if (templateItems.length !== initialItemsOrder.length) return true;
-    for (let i = 0; i < templateItems.length; i++) {
-      if (templateItems[i].item_id !== initialItemsOrder[i].item_id) {
-        return true;
-      }
+
+    // 2. เช็คว่าเนื้อหาภายในมีการเปลี่ยนแปลงหรือไม่
+    // โดยการแปลง object ทั้งหมดเป็น string แล้วเปรียบเทียบกัน เป็นวิธีที่ง่ายและแม่นยำ
+    const currentItemsString = JSON.stringify(templateItems);
+    const initialItemsString = JSON.stringify(initialItemsOrder);
+
+    if (currentItemsString !== initialItemsString) {
+      return true;
     }
+
     return false;
   };
 
@@ -210,7 +250,16 @@ const FormMasterEditor: React.FC = () => {
               <h4 className="font-medium text-black dark:text-white">
                 Template Items
               </h4>
-              {selectedTemplate && hasOrderChanged() && (
+              {/* --- ปุ่ม Add New Item --- */}
+              {selectedTemplate && (
+                <button
+                  onClick={() => setIsAddItemModalOpen(true)}
+                  className="rounded-md bg-primary px-6 py-2 font-medium text-white hover:bg-opacity-90 disabled:cursor-not-allowed disabled:bg-opacity-50"
+                >
+                  Add New Item
+                </button>
+              )}
+              {selectedTemplate && hasUnsavedChanges() && (
                 <button
                   onClick={handleSaveChanges}
                   disabled={isSaving}
@@ -247,7 +296,9 @@ const FormMasterEditor: React.FC = () => {
                                   {getDisplayValue(item)}
                                 </div>
                                 <div className="flex gap-2">
-                                  <button className="text-primary hover:underline">Edit</button>
+                                  <button onClick={() => handleEditClick(item)} className="text-primary hover:underline">
+                                    Edit
+                                  </button>
                                   <button className="text-danger hover:underline">Delete</button>
                                 </div>
                               </li>
@@ -268,6 +319,19 @@ const FormMasterEditor: React.FC = () => {
           </div>
         </div>
       </div>
+      {/* 5. Render Modal Component ตาม State */}
+      <EditItemModal
+        isOpen={isModalOpen}
+        item={editingItem}
+        onClose={handleCloseModal}
+        onSave={handleUpdateItem}
+      />
+      <AddItemModal
+        isOpen={isAddItemModalOpen}
+        onClose={() => setIsAddItemModalOpen(false)}
+        onSave={handleAddNewItem}
+        templateType={selectedTemplate}
+      />
     </>
   );
 };
