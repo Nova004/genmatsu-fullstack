@@ -21,10 +21,10 @@ function BZ_Form() {
   // ======================================================
   // === แก้ไขตรงนี้: เพิ่ม mode: 'onChange' เข้าไป ===
   // ======================================================
-  const { register, handleSubmit, trigger, watch, setValue, formState: { errors } } = useForm<IManufacturingReportForm>({ 
+  const { register, handleSubmit, trigger, watch, setValue, formState: { errors } } = useForm<IManufacturingReportForm>({  
     mode: 'onChange', 
     defaultValues: {
-      mcOperators: Array(3).fill({ id: '', name: '', number: '' }),
+      mcOperators: Array(3).fill({ id: '', name: '', number: '' }), 
       assistants: Array(5).fill({ id: '', name: '', number: '' }),
       conditions: Array(3).fill({ status: null, remark: '' }),
       rawMaterials: { diaEarth: null, sodiumChloride: null, magnesiumHydroxide: null, remainedGenmatsu: { lot: '', actual: null }, shelfLife: null, ncrGenmatsu: { lot: '', actual: null }, },
