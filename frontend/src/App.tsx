@@ -12,6 +12,8 @@ import FormElements from './pages/Form/FormElements';
 import FormLayout from './pages/Form/FormLayout';
 import ProductionForm from './pages/Form/ProductionForm';
 
+import FormMasterEditor from './components/formGen/pages/Master/FormMasterEditor';
+
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Tables from './pages/Tables';
@@ -102,6 +104,7 @@ function App() {
                     </>
                   }
                 />
+
                 <Route
                   path="forms/form-layout"
                   element={
@@ -120,6 +123,17 @@ function App() {
                     </>
                   }
                 />
+
+                <Route
+                  path="/master/form-editor"
+                  element={
+                    <>
+                      <PageTitle title="Form Master Editor | Genmatsu" />
+                      <FormMasterEditor />
+                    </>
+                  }
+                />
+                
                 <Route
                   path="tables"
                   element={

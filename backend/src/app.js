@@ -22,8 +22,8 @@ app.use("/api", formRoutes);
 const userRoutes = require('./api/user.routes');  // นำเข้า user routes
 app.use('/api', userRoutes);  // ใช้ user routes
 
-const masterRoutes = require('./api/master.routes');
-app.use('/api', masterRoutes); //  <-- 2. เพิ่มบรรทัดนี้
+const masterRoutes = require('./api/master.routes'); 
+app.use('/api/master', masterRoutes);
 
 
 app.get("/", (req, res) => {
