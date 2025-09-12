@@ -18,13 +18,11 @@ type GroupedTemplates = {
 const FormMasterEditor: React.FC = () => {
   const [groupedTemplates, setGroupedTemplates] = useState<GroupedTemplates>({});
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(true);
+
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [templateItems, setTemplateItems] = useState<IMasterFormItem[]>([]);
   const [isItemsLoading, setIsItemsLoading] = useState<boolean>(false);
-
-  const [isSaving, setIsSaving] = useState<boolean>(false);
-  const [initialItemsOrder, setInitialItemsOrder] = useState<IMasterFormItem[]>([]); // State สำหรับเก็บลำดับดั้งเดิม
 
   useEffect(() => {
     const fetchTemplates = async () => {
@@ -41,7 +39,7 @@ const FormMasterEditor: React.FC = () => {
     };
     fetchTemplates();
   }, []);
-
+  
   const handleCategoryChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const category = event.target.value;
     setSelectedCategory(category);
@@ -55,62 +53,22 @@ const FormMasterEditor: React.FC = () => {
 
     if (!templateName) {
       setTemplateItems([]);
-      setInitialItemsOrder([]); // เคลียร์ลำดับเก่าด้วย
       return;
     }
+
     setIsItemsLoading(true);
     try {
       const response = await fetch(`http://localhost:4000/api/master/template/${templateName}/latest`);
       const data = await response.json();
       setTemplateItems(data.items);
-      setInitialItemsOrder(data.items); // <-- บันทึกลำดับดั้งเดิมไว้เปรียบเทียบ
     } catch (error) {
       console.error(`Failed to fetch items for template ${templateName}`, error);
       setTemplateItems([]);
-      setInitialItemsOrder([]);
     } finally {
       setIsItemsLoading(false);
     }
   };
-
-  // --- ฟังก์ชันใหม่สำหรับบันทึกการเปลี่ยนแปลง ---
-  const handleSaveChanges = async () => {
-    if (!selectedTemplate || templateItems.length === 0) {
-      alert("No template selected or no items to save.");
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      const response = await fetch('http://localhost:4000/api/master/template/update', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          templateName: selectedTemplate,
-          items: templateItems, // ส่ง Array ที่เรียงลำดับใหม่แล้วไป
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || 'Failed to save changes.');
-      }
-
-      alert('Successfully saved! A new version of the template has been created.');
-      // โหลดข้อมูลใหม่หลังจากบันทึกสำเร็จ
-      handleTemplateChange({ target: { value: selectedTemplate } } as any);
-
-    } catch (error: any) {
-      console.error("Error saving template:", error);
-      alert(`Error: ${error.message}`);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
+  
   const getDisplayValue = (item: IMasterFormItem): string => {
     try {
       const config = item.config_json as any;
@@ -138,17 +96,6 @@ const FormMasterEditor: React.FC = () => {
     setTemplateItems(items);
   };
 
-
-  const hasOrderChanged = () => {
-    if (templateItems.length !== initialItemsOrder.length) return true;
-    for (let i = 0; i < templateItems.length; i++) {
-      if (templateItems[i].item_id !== initialItemsOrder[i].item_id) {
-        return true;
-      }
-    }
-    return false;
-  };
-
   return (
     <>
       <Breadcrumb pageName="Form Master Editor" />
@@ -159,7 +106,7 @@ const FormMasterEditor: React.FC = () => {
             Master Template Editor
           </h3>
         </div>
-
+        
         <div className="p-6.5">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="mb-4.5">
@@ -167,7 +114,7 @@ const FormMasterEditor: React.FC = () => {
                 1. Select Category
               </label>
               <div className="relative z-20 bg-transparent dark:bg-form-input">
-                <select
+                <select 
                   value={selectedCategory}
                   onChange={handleCategoryChange}
                   disabled={isLoadingTemplates}
@@ -187,7 +134,7 @@ const FormMasterEditor: React.FC = () => {
                 2. Select Template to Edit
               </label>
               <div className="relative z-20 bg-transparent dark:bg-form-input">
-                <select
+                <select 
                   value={selectedTemplate}
                   onChange={handleTemplateChange}
                   disabled={!selectedCategory}
@@ -204,67 +151,64 @@ const FormMasterEditor: React.FC = () => {
               </div>
             </div>
           </div>
-
+          
           <div className="mt-10">
-            <div className="mb-4 flex items-center justify-between">
-              <h4 className="font-medium text-black dark:text-white">
-                Template Items
-              </h4>
-              {selectedTemplate && hasOrderChanged() && (
-                <button
-                  onClick={handleSaveChanges}
-                  disabled={isSaving}
-                  className="rounded-md bg-primary px-6 py-2 font-medium text-white hover:bg-opacity-90 disabled:cursor-not-allowed disabled:bg-opacity-50"
-                >
-                  {isSaving ? 'Saving...' : 'Save Changes'}
-                </button>
-              )}
-            </div>
-            <div className="mt-4 p-4 border border-stroke rounded-md">
-              {isItemsLoading ? (
-                <p className="text-center">Loading Items...</p>
-              ) : selectedTemplate && templateItems.length > 0 ? (
-                <DragDropContext onDragEnd={onDragEnd}>
-                  <Droppable droppableId="template-items">
-                    {(provided) => (
-                      <ul
-                        className="flex flex-col gap-3"
-                        {...provided.droppableProps}
-                        ref={provided.innerRef}
-                      >
-                        {templateItems.map((item, index) => (
-                          <Draggable key={item.item_id} draggableId={String(item.item_id)} index={index}>
-                            {(provided, snapshot) => (
-                              <li
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                className={`flex items-center gap-4 rounded-md p-3 transition-colors ${snapshot.isDragging ? 'bg-blue-100 dark:bg-blue-900' : 'bg-gray-100 dark:bg-meta-4'
+             <div className="mb-4 flex items-center justify-between">
+                <h4 className="font-medium text-black dark:text-white">
+                    Template Items
+                </h4>
+                {selectedTemplate && templateItems.length > 0 && (
+                    <button className="rounded-md bg-primary px-6 py-2 font-medium text-white hover:bg-opacity-90">
+                        Save Changes
+                    </button>
+                )}
+             </div>
+             <div className="mt-4 p-4 border border-stroke rounded-md">
+                {isItemsLoading ? (
+                  <p className="text-center">Loading Items...</p>
+                ) : selectedTemplate && templateItems.length > 0 ? (
+                  <DragDropContext onDragEnd={onDragEnd}>
+                    <Droppable droppableId="template-items">
+                      {(provided) => (
+                        <ul 
+                          className="flex flex-col gap-3"
+                          {...provided.droppableProps}
+                          ref={provided.innerRef}
+                        >
+                          {templateItems.map((item, index) => (
+                            <Draggable key={item.item_id} draggableId={String(item.item_id)} index={index}>
+                              {(provided, snapshot) => (
+                                <li
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  className={`flex items-center gap-4 rounded-md p-3 transition-colors ${
+                                    snapshot.isDragging ? 'bg-blue-100 dark:bg-blue-900' : 'bg-gray-100 dark:bg-meta-4'
                                   }`}
-                              >
-                                <div className="font-bold text-gray-500 dark:text-gray-400">#{index + 1}</div>
-                                <div className="flex-1 text-black dark:text-white">
-                                  {getDisplayValue(item)}
-                                </div>
-                                <div className="flex gap-2">
-                                  <button className="text-primary hover:underline">Edit</button>
-                                  <button className="text-danger hover:underline">Delete</button>
-                                </div>
-                              </li>
-                            )}
-                          </Draggable>
-                        ))}
-                        {provided.placeholder}
-                      </ul>
-                    )}
-                  </Droppable>
-                </DragDropContext>
-              ) : (
-                <p className="text-center text-gray-500">
-                  {isLoadingTemplates ? 'Loading Templates...' : 'Select a template to view and edit its items.'}
-                </p>
-              )}
-            </div>
+                                >
+                                  <div className="font-bold text-gray-500 dark:text-gray-400">#{index + 1}</div>
+                                  <div className="flex-1 text-black dark:text-white">
+                                    {getDisplayValue(item)}
+                                  </div>
+                                  <div className="flex gap-2">
+                                     <button className="text-primary hover:underline">Edit</button>
+                                     <button className="text-danger hover:underline">Delete</button>
+                                  </div>
+                                </li>
+                              )}
+                            </Draggable>
+                          ))}
+                          {provided.placeholder}
+                        </ul>
+                      )}
+                    </Droppable>
+                  </DragDropContext>
+                ) : (
+                  <p className="text-center text-gray-500">
+                      {isLoadingTemplates ? 'Loading Templates...' : 'Select a template to view and edit its items.'}
+                  </p>
+                )}
+             </div>
           </div>
         </div>
       </div>

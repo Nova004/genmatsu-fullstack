@@ -9,6 +9,10 @@ router.get('/template/:templateName/latest', masterController.getLatestTemplateB
 
 router.get('/templates', masterController.getAllLatestTemplates);
 
+// === เพิ่ม Route ใหม่สำหรับ "บันทึกการเปลี่ยนแปลง" ===
+router.post('/template/update', masterController.updateTemplateAsNewVersion);
+
+
 // (ในอนาคตเราจะเพิ่มเส้นทางสำหรับ getTemplateById ที่นี่)
 
 module.exports = router;
