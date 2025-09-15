@@ -10,11 +10,10 @@ import 'flatpickr/dist/flatpickr.min.css';
 import { AuthProvider } from './context/AuthContext'; // <--- Import เข้ามา
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render( // <--- นำไปเเสดงที่ไหน Root 
-  <React.StrictMode>
+ 
     <Router>
       <AuthProvider> {/* <--- นำมาครอบ App */}
         <App />
       </AuthProvider>
-    </Router>
-  </React.StrictMode>,
+    </Router>,
 );
