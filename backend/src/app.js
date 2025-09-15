@@ -20,7 +20,7 @@ app.use("/api", authRoutes);
 app.use("/api", formRoutes); 
 
 const userRoutes = require('./api/user.routes');  // นำเข้า user routes
-app.use('/api', userRoutes);  // ใช้ user routes
+app.use('/api/users', userRoutes);
 
 const masterRoutes = require('./api/master.routes'); 
 app.use('/api/master', masterRoutes);

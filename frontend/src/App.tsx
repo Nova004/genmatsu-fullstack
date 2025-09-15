@@ -22,6 +22,8 @@ import Buttons from './pages/UiElements/Buttons';
 import DefaultLayout from './layout/DefaultLayout';
 import ProtectedRoute from './routes/ProtectedRoute';
 
+import UserMaster from './components/formGen/pages/Master/UserMaster';
+
 
 
 function App() {
@@ -123,7 +125,6 @@ function App() {
                     </>
                   }
                 />
-
                 <Route
                   path="/master/form-editor"
                   element={
@@ -133,7 +134,15 @@ function App() {
                     </>
                   }
                 />
-                
+                <Route
+                  path="/master/user-master"
+                  element={
+                    <>
+                      <PageTitle title="User Master | Genmatsu" />
+                      <UserMaster />
+                    </>
+                  }
+                />
                 <Route
                   path="tables"
                   element={

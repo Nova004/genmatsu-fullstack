@@ -1,11 +1,16 @@
-// src/api/user.routes.js
+// backend/src/api/user.routes.js
 
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/user.controller');
 
-// กำหนดเส้นทาง: GET /api/users/:id
-// เมื่อมีคนเรียกมาที่ URL นี้ ให้ไปเรียกใช้ฟังก์ชัน findUserById
-router.get('/users/:id', userController.findUserById);
+// GET /api/users/
+router.get('/', userController.getAllUsers);
+
+// GET /api/users/search
+router.get('/search', userController.searchUsers);
+
+// PUT /api/users/:id -> สำหรับอัปเดต Employee No.
+router.put('/:id', userController.updateUserEmployeeNo);
 
 module.exports = router;
