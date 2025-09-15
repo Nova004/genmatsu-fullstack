@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Breadcrumb from '../../../Breadcrumbs/Breadcrumb';
 import { IMasterFormItem } from '../BZ_Form/types';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import EditItemModal from './EditItemModal';
 
 interface TemplateInfo {
   template_id: number;
@@ -22,9 +23,10 @@ const FormMasterEditor: React.FC = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [templateItems, setTemplateItems] = useState<IMasterFormItem[]>([]);
   const [isItemsLoading, setIsItemsLoading] = useState<boolean>(false);
-
   const [isSaving, setIsSaving] = useState<boolean>(false);
-  const [initialItemsOrder, setInitialItemsOrder] = useState<IMasterFormItem[]>([]); // State สำหรับเก็บลำดับดั้งเดิม
+  const [initialItemsOrder, setInitialItemsOrder] = useState<IMasterFormItem[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [editingItem, setEditingItem] = useState<IMasterFormItem | null>(null);
 
   useEffect(() => {
     const fetchTemplates = async () => {
@@ -47,6 +49,7 @@ const FormMasterEditor: React.FC = () => {
     setSelectedCategory(category);
     setSelectedTemplate('');
     setTemplateItems([]);
+    setInitialItemsOrder([]);
   };
 
   const handleTemplateChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -55,7 +58,7 @@ const FormMasterEditor: React.FC = () => {
 
     if (!templateName) {
       setTemplateItems([]);
-      setInitialItemsOrder([]); // เคลียร์ลำดับเก่าด้วย
+      setInitialItemsOrder([]);
       return;
     }
     setIsItemsLoading(true);
@@ -63,7 +66,8 @@ const FormMasterEditor: React.FC = () => {
       const response = await fetch(`http://localhost:4000/api/master/template/${templateName}/latest`);
       const data = await response.json();
       setTemplateItems(data.items);
-      setInitialItemsOrder(data.items); // <-- บันทึกลำดับดั้งเดิมไว้เปรียบเทียบ
+      // ใช้ JSON.parse(JSON.stringify(...)) เพื่อสร้าง deep copy ที่สมบูรณ์
+      setInitialItemsOrder(JSON.parse(JSON.stringify(data.items))); 
     } catch (error) {
       console.error(`Failed to fetch items for template ${templateName}`, error);
       setTemplateItems([]);
@@ -73,36 +77,50 @@ const FormMasterEditor: React.FC = () => {
     }
   };
 
-  // --- ฟังก์ชันใหม่สำหรับบันทึกการเปลี่ยนแปลง ---
+  const handleEditClick = (itemToEdit: IMasterFormItem) => {
+    setEditingItem(itemToEdit);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingItem(null);
+  };
+
+  // ======================================================
+  // === 1. แก้ไขฟังก์ชันนี้ให้ทำการอัปเดต State จริงๆ ===
+  // ======================================================
+  const handleUpdateItem = (updatedItem: IMasterFormItem) => {
+    setTemplateItems(prevItems => 
+      prevItems.map(item => 
+        // ถ้า item_id ตรงกัน ให้แทนที่ด้วยข้อมูลใหม่, 아니면 item เดิม
+        item.item_id === updatedItem.item_id ? updatedItem : item
+      )
+    );
+    handleCloseModal();
+  };
+
   const handleSaveChanges = async () => {
     if (!selectedTemplate || templateItems.length === 0) {
       alert("No template selected or no items to save.");
       return;
     }
-
     setIsSaving(true);
     try {
       const response = await fetch('http://localhost:4000/api/master/template/update', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           templateName: selectedTemplate,
-          items: templateItems, // ส่ง Array ที่เรียงลำดับใหม่แล้วไป
+          items: templateItems,
         }),
       });
-
       const result = await response.json();
-
       if (!response.ok) {
         throw new Error(result.message || 'Failed to save changes.');
       }
-
       alert('Successfully saved! A new version of the template has been created.');
-      // โหลดข้อมูลใหม่หลังจากบันทึกสำเร็จ
       handleTemplateChange({ target: { value: selectedTemplate } } as any);
-
     } catch (error: any) {
       console.error("Error saving template:", error);
       alert(`Error: ${error.message}`);
@@ -138,34 +156,32 @@ const FormMasterEditor: React.FC = () => {
     setTemplateItems(items);
   };
 
-
-  const hasOrderChanged = () => {
+  // ======================================================
+  // === 2. อัปเกรดฟังก์ชันนี้ให้ตรวจจับการเปลี่ยนแปลงทั้งหมด ===
+  // ======================================================
+  const hasUnsavedChanges = () => {
     if (templateItems.length !== initialItemsOrder.length) return true;
-    for (let i = 0; i < templateItems.length; i++) {
-      if (templateItems[i].item_id !== initialItemsOrder[i].item_id) {
-        return true;
-      }
-    }
-    return false;
+
+    // เปรียบเทียบข้อมูลทั้งหมดโดยแปลงเป็น String
+    const currentItemsString = JSON.stringify(templateItems);
+    const initialItemsString = JSON.stringify(initialItemsOrder);
+    
+    return currentItemsString !== initialItemsString;
   };
 
   return (
     <>
       <Breadcrumb pageName="Form Master Editor" />
-
       <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
         <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
           <h3 className="font-medium text-black dark:text-white">
             Master Template Editor
           </h3>
         </div>
-
         <div className="p-6.5">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="mb-4.5">
-              <label className="mb-2.5 block text-black dark:text-white">
-                1. Select Category
-              </label>
+              <label className="mb-2.5 block text-black dark:text-white">1. Select Category</label>
               <div className="relative z-20 bg-transparent dark:bg-form-input">
                 <select
                   value={selectedCategory}
@@ -181,11 +197,8 @@ const FormMasterEditor: React.FC = () => {
                 <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">{/* SVG Icon */}</span>
               </div>
             </div>
-
             <div className="mb-4.5">
-              <label className="mb-2.5 block text-black dark:text-white">
-                2. Select Template to Edit
-              </label>
+              <label className="mb-2.5 block text-black dark:text-white">2. Select Template to Edit</label>
               <div className="relative z-20 bg-transparent dark:bg-form-input">
                 <select
                   value={selectedTemplate}
@@ -204,13 +217,13 @@ const FormMasterEditor: React.FC = () => {
               </div>
             </div>
           </div>
-
           <div className="mt-10">
             <div className="mb-4 flex items-center justify-between">
               <h4 className="font-medium text-black dark:text-white">
                 Template Items
               </h4>
-              {selectedTemplate && hasOrderChanged() && (
+              {/* 3. เปลี่ยนเงื่อนไขมาใช้ฟังก์ชันใหม่ */}
+              {selectedTemplate && hasUnsavedChanges() && (
                 <button
                   onClick={handleSaveChanges}
                   disabled={isSaving}
@@ -239,16 +252,19 @@ const FormMasterEditor: React.FC = () => {
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
-                                className={`flex items-center gap-4 rounded-md p-3 transition-colors ${snapshot.isDragging ? 'bg-blue-100 dark:bg-blue-900' : 'bg-gray-100 dark:bg-meta-4'
-                                  }`}
+                                className={`flex items-center gap-4 rounded-md p-3 transition-colors ${snapshot.isDragging ? 'bg-blue-100 dark:bg-blue-900' : 'bg-gray-100 dark:bg-meta-4'}`}
                               >
                                 <div className="font-bold text-gray-500 dark:text-gray-400">#{index + 1}</div>
                                 <div className="flex-1 text-black dark:text-white">
                                   {getDisplayValue(item)}
                                 </div>
                                 <div className="flex gap-2">
-                                  <button className="text-primary hover:underline">Edit</button>
-                                  <button className="text-danger hover:underline">Delete</button>
+                                  <button
+                                    onClick={() => handleEditClick(item)}
+                                    className="text-primary hover:underline"
+                                  >
+                                    Edit
+                                  </button>
                                 </div>
                               </li>
                             )}
@@ -268,6 +284,12 @@ const FormMasterEditor: React.FC = () => {
           </div>
         </div>
       </div>
+      <EditItemModal 
+        isOpen={isModalOpen}
+        item={editingItem}
+        onClose={handleCloseModal}
+        onSave={handleUpdateItem}
+      />
     </>
   );
 };
