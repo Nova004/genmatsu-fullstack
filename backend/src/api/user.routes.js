@@ -13,6 +13,7 @@ router.get('/search', userController.searchUsers);
 // PUT /api/users/:id -> สำหรับอัปเดต Employee No.
 router.put('/:id', userController.updateUserEmployeeNo);
 
-router.get('/users/:id', userController.findUserById);
+// GET /api/users/:id -> สำหรับค้นหา User จาก ID
+router.get('/:id', userController.findUserById); // <-- แก้ไขตรงนี้
 
 module.exports = router;

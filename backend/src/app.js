@@ -3,27 +3,20 @@ const express = require("express");
 const cors = require("cors");
 const authRoutes = require("./api/auth.routes");
 const formRoutes = require("./api/form.routes");
-const { db } = require("./config/db.config");
+const masterRoutes = require("./api/master.routes");
+const userRoutes = require("./api/user.routes"); // นำเข้า user routes
 
 const app = express();
-const port = 4000; // แนะนำให้ใช้ port 4000 ตาม package.json ของคุณ
+const port = 4000;
 
 app.use(cors());
 app.use(express.json());
 
-// api ของเดิมสำหรับ login
-app.use("/api", authRoutes);
-
-// api ใหม่สำหรับจัดการฟอร์ม
-app.use("/api", formRoutes);
-
-const userRoutes = require("./api/user.routes"); // นำเข้า user routes
-app.use("/api/users", userRoutes); 
-
-app.use("/api", userRoutes); // คนหา ข้อมูล user จาก ID
-
-const masterRoutes = require("./api/master.routes");
+// --- API Routes ---
+app.use("/api/auth", authRoutes);
+app.use("/api/forms", formRoutes);
 app.use("/api/master", masterRoutes);
+app.use("/api/users", userRoutes); // <-- เหลือแค่บรรทัดนี้สำหรับ User
 
 app.get("/", (req, res) => {
   res.send("Hello from organized Backend!");
