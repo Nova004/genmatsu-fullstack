@@ -5,152 +5,6 @@ import { UseFormWatch, UseFormSetValue, FieldErrors } from 'react-hook-form';
 import { FormStepProps, IManufacturingReportForm, IMasterFormItem, IStep2ConfigJson } from './types';
 import axios from 'axios';
 
-// =================================================================
-// ╔═══════════════════════════════════════════════════════════════╗
-// ║                     CUSTOM HOOKS (ส่วนจัดการ Logic)            
-// ╚═══════════════════════════════════════════════════════════════╝
-// =================================================================
-
-/**
- * 🚀 HOOK 1: จัดการการคำนวณน้ำหนัก CG-1C (Net & Total) และอัปเดตค่า Diatomaceous Earth
- */
-const useCg1cWeightingCalculation = (
-  watch: UseFormWatch<IManufacturingReportForm>,
-  setValue: UseFormSetValue<IManufacturingReportForm>
-) => {
-  const cg1cRow1 = watch('cg1cWeighting.row1.cg1c');
-  const cg1cRow2 = watch('cg1cWeighting.row2.cg1c');
-
-  useEffect(() => {
-    const net1 = Number(cg1cRow1) - 2 || 0;
-    const net2 = Number(cg1cRow2) - 2 || 0;
-    const total = net1 + net2;
-
-    setValue('cg1cWeighting.row1.net', net1 > 0 ? net1 : null);
-    setValue('cg1cWeighting.row2.net', net2 > 0 ? net2 : null);
-    setValue('cg1cWeighting.total', total > 0 ? total : null);
-    setValue('rawMaterials.diaEarth', total > 0 ? total : null, { shouldValidate: true });
-  }, [cg1cRow1, cg1cRow2, setValue]);
-};
-
-/**
- * 🚀 HOOK 2: จัดการการค้นหาค่าจากตาราง NaCl Brewing แบบ Debounce
- */
-const useNaclBrewingLookup = (
-  watch: UseFormWatch<IManufacturingReportForm>,
-  setValue: UseFormSetValue<IManufacturingReportForm>
-) => {
-  const cg1cWaterContent = watch('calculations.cg1cWaterContent');
-
-  useEffect(() => {
-    if (cg1cWaterContent === null || cg1cWaterContent === undefined || isNaN(cg1cWaterContent)) {
-      setValue('calculations.naclBrewingTable', null);
-      return;
-    }
-
-    const fetchBrewingValue = async () => {
-      try {
-        const response = await axios.get(`/api/nacl/lookup/${cg1cWaterContent}`);
-        const naclValue = response.data?.NaCl_NaCl_Water;
-        setValue('calculations.naclBrewingTable', naclValue !== undefined ? naclValue : null);
-      } catch (error) {
-        console.error("NaCl lookup failed:", error);
-        setValue('calculations.naclBrewingTable', null);
-      }
-    };
-
-    const delayDebounceFn = setTimeout(() => fetchBrewingValue(), 500);
-    return () => clearTimeout(delayDebounceFn);
-  }, [cg1cWaterContent, setValue]);
-};
-
-/**
- * 🚀 HOOK 3: จัดการการคำนวณตามสูตร Excel ที่มีความต่อเนื่องกันทั้งหมด
- */
-export const useExcelFormulaCalculations = (
-  watch: UseFormWatch<IManufacturingReportForm>,
-  setValue: UseFormSetValue<IManufacturingReportForm>
-) => {
-  // --- "ดักฟัง" ค่าทั้งหมดที่ต้องใช้ในสูตร ---
-  const naclBrewingTable = watch('calculations.naclBrewingTable');
-  const totalWeight = watch('cg1cWeighting.total');
-  const naclSpecGrav = watch('calculations.nacl15SpecGrav');
-  const magnesiumHydroxide = watch('rawMaterials.magnesiumHydroxide');
-  const ncrGenmatsu = watch('rawMaterials.ncrGenmatsu.actual');
-  const stdYield = 800;
-
-  useEffect(() => {
-    // --- แปลงค่าทั้งหมดเป็นตัวเลข ---
-    const numNaclBrewingTable = Number(naclBrewingTable) || 0;
-    const numTotalWeight = Number(totalWeight) || 0;
-    const numNaclSpecGrav = Number(naclSpecGrav) || 0;
-    const numMagnesiumHydroxide = Number(magnesiumHydroxide) || 0;
-    const numNcrGenmatsu = Number(ncrGenmatsu) || 0;
-
-
-    // =================================================================
-    // === 🔽 ส่วนที่แก้ไข: แยกการคำนวณตามที่คุณต้องการ 🔽 ===
-    // =================================================================
-
-    // --- คำนวณสูตรดั้งเดิมสำหรับ Sodium Chloride ---
-    let sodiumChlorideResult: number | null = null;
-    if (numNaclBrewingTable > 0 && stdYield > 0 && numNaclSpecGrav > 0) {
-      // สูตร: (Q18 * Y20) / (Y18 * Q19)
-      const rawResult = (numTotalWeight * numNaclBrewingTable) / (stdYield * numNaclSpecGrav);
-      sodiumChlorideResult = Number(rawResult.toFixed(2));
-    }
-    // นำผลลัพธ์จากสูตรดั้งเดิมไปใส่ในช่อง Sodium Chloride
-    setValue('rawMaterials.sodiumChloride', sodiumChlorideResult, { shouldValidate: true });
-
-
-    // --- คำนวณสูตรที่ 1 & 2 (naclWaterCalc) ---
-    // ส่วนนี้จะคำนวณค่า W23 เหมือนเดิม เพื่อใช้ในขั้นตอนถัดไป
-    let naclWaterCalcResult: number | null = null;
-    if (numNaclBrewingTable > 0 && stdYield > 0) {
-      const rawResult = (numTotalWeight * numNaclBrewingTable) / stdYield;
-      naclWaterCalcResult = Number(rawResult.toFixed(2));
-    }
-    setValue('calculations.naclWaterCalc', naclWaterCalcResult);
-
-    // --- คำนวณสูตรที่ 3 (waterCalc) ---
-    let waterCalcResult: number | null = null;
-    if (naclWaterCalcResult !== null) {
-      const rawResult = naclWaterCalcResult * 0.85;
-      waterCalcResult = Number(rawResult.toFixed(2));
-    }
-    setValue('calculations.waterCalc', waterCalcResult);
-
-    // --- คำนวณสูตรที่ 4 (saltCalc) ---
-    let saltCalcResult: number | null = null;
-    if (naclWaterCalcResult !== null) {
-      const rawResult = naclWaterCalcResult * 0.15;
-      saltCalcResult = Number(rawResult.toFixed(2));
-    }
-    setValue('calculations.saltCalc', saltCalcResult);
-
-    // --- คำนวณสูตรที่ 5 (finalTotalWeight) ---
-    let finalTotalWeight: number | null = null;
-    if (totalWeight !== null && totalWeight !== undefined) {
-      const total = numTotalWeight + (naclWaterCalcResult || 0) + numMagnesiumHydroxide + numNcrGenmatsu;
-      finalTotalWeight = Number(total.toFixed(2));
-    }
-    setValue('calculations.finalTotalWeight', finalTotalWeight);
-
-  }, [
-    naclBrewingTable,
-    totalWeight,
-    naclSpecGrav,
-    magnesiumHydroxide,
-    ncrGenmatsu,
-    setValue
-  ]);
-};
-
-// =================================================================
-// ╔═══════════════════════════════════════════════════════════════╗
-// ║                     MAIN COMPONENT (ส่วนแสดงผล)                
-// ╚═══════════════════════════════════════════════════════════════╝
-// =================================================================
 interface FormStep2Props extends FormStepProps {
   watch: UseFormWatch<IManufacturingReportForm>;
   setValue: UseFormSetValue<IManufacturingReportForm>;
@@ -162,13 +16,18 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue, errors
   const [rawMaterialConfig, setRawMaterialConfig] = useState<IMasterFormItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // --- Logic 1: ดึงข้อมูล Master Form จาก API ---
+
+  // --- ดึงข้อมูล Master Form จาก API เมื่อ component โหลดครั้งแรก ---
   useEffect(() => {
     const fetchMasterData = async () => {
       setIsLoading(true);
       try {
+        // 1. ใช้ axios.get และ URL ที่สั้นลง (เพราะมี Proxy)
         const response = await axios.get('/api/master/template/BZ_Step2_RawMaterials/latest');
+
+        // 2. ข้อมูล items จะอยู่ใน response.data.items โดยตรง
         setRawMaterialConfig(response.data?.items || []);
+
       } catch (error) {
         console.error("Failed to fetch master data for Step 2", error);
         setRawMaterialConfig([]);
@@ -180,11 +39,122 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue, errors
   }, []);
 
 
+  // --- Logic การคำนวณ Real-time ---
+  const cg1cRow1 = watch('cg1cWeighting.row1.cg1c');
+  const cg1cRow2 = watch('cg1cWeighting.row2.cg1c');
 
-  // --- Logic 2: เรียกใช้ Custom Hooks ที่เราสร้างไว้ ---
-  useCg1cWeightingCalculation(watch, setValue);
-  useNaclBrewingLookup(watch, setValue);
-  useExcelFormulaCalculations(watch, setValue);
+  useEffect(() => {
+    const net1 = Number(cg1cRow1) - 2 || 0;
+    const net2 = Number(cg1cRow2) - 2 || 0;
+    const total = net1 + net2;
+    setValue('cg1cWeighting.row1.net', net1 > 0 ? net1 : null);
+    setValue('cg1cWeighting.row2.net', net2 > 0 ? net2 : null);
+    setValue('cg1cWeighting.total', total > 0 ? total : null);
+    // สั่งให้ validate field diaEarth ทันทีที่ค่าจากการคำนวณเปลี่ยนไป
+    setValue('rawMaterials.diaEarth', total > 0 ? total : null, { shouldValidate: true });
+  }, [cg1cRow1, cg1cRow2, setValue]);
+
+
+  // =================================================================
+  // === ส่วนที่เพิ่มเข้ามา: Logic การดึงค่าจากตาราง NaCl brewing ===
+  // =================================================================
+
+  const cg1cWaterContent = watch('calculations.cg1cWaterContent');
+
+  useEffect(() => {
+    // ถ้าไม่มีค่า หรือไม่ใช่ตัวเลข ก็ไม่ต้องทำอะไร
+    if (cg1cWaterContent === null || cg1cWaterContent === undefined || isNaN(cg1cWaterContent)) {
+      setValue('calculations.naclBrewingTable', null); // ล้างค่าในช่อง brewing table
+      return;
+    }
+
+    const fetchBrewingValue = async () => {
+      try {
+        const response = await axios.get(`/api/nacl/lookup/${cg1cWaterContent}`);
+
+        if (response.data && response.data.NaCl_NaCl_Water !== undefined) {
+          // ถ้าเจอข้อมูล ให้นำไปใส่ในช่อง brewing table
+          setValue('calculations.naclBrewingTable', response.data.NaCl_NaCl_Water);
+        } else {
+          setValue('calculations.naclBrewingTable', null); // ถ้า API ตอบกลับมาแปลกๆ ให้ล้างค่า
+        }
+
+      } catch (error) {
+        console.error("NaCl lookup failed:", error);
+        // ถ้าหาไม่เจอ (API ตอบ 404) หรือ Error ให้ล้างค่าในช่อง
+        setValue('calculations.naclBrewingTable', null);
+      }
+    };
+
+    const delayDebounceFn = setTimeout(() => {
+      fetchBrewingValue();
+    }, 500);
+
+    // Cleanup function: จะทำงานเมื่อ user พิมพ์ตัวอักษรใหม่
+    // เพื่อยกเลิก timeout เก่า ป้องกันการยิง API ซ้ำซ้อน
+    return () => clearTimeout(delayDebounceFn);
+
+  }, [cg1cWaterContent, setValue]); // useEffect นี้จะทำงานทุกครั้งที่ค่า cg1cWaterContent เปลี่ยน
+
+
+  // =================================================================
+  // === 2. ส่วนที่เพิ่มเข้ามา: Logic การคำนวณตามสูตร Excel ===
+  // =================================================================
+
+  // "ดักฟัง" ค่าทั้งหมดที่ต้องใช้ในสูตร
+  const naclBrewingTable = watch('calculations.naclBrewingTable'); // $Y$20
+  const totalWeight = watch('cg1cWeighting.total');                // $Q$18
+  const naclSpecGrav = watch('calculations.nacl15SpecGrav');     // $Q$19
+  const stdYield = 800;                                             // $Y$18 (ค่าคงที่)
+
+  const [naclWaterCalculation, setNaclWaterCalculation] = useState<number | null>(null); // สร้าง state สำหรับเก็บค่าการคำนวณ
+
+  useEffect(() => {
+    // แปลงค่าทั้งหมดให้เป็นตัวเลข และให้เป็น 0 หากไม่มีค่า
+    const numNaclBrewingTable = Number(naclBrewingTable) || 0;
+    const numTotalWeight = Number(totalWeight) || 0;
+    const numNaclSpecGrav = Number(naclSpecGrav) || 0;
+
+    // ตรวจสอบเงื่อนไข IF($Y$20="","",...)
+    // และป้องกันการหารด้วยศูนย์
+    if (numNaclBrewingTable === 0 || numNaclSpecGrav === 0) {
+      setNaclWaterCalculation(null);
+      return;
+    }
+    // ทำการคำนวณตามสูตร
+    const result = (numTotalWeight * numNaclBrewingTable) / (stdYield * numNaclSpecGrav);
+
+    // เก็บผลลัพธ์ไว้ใน State
+    setNaclWaterCalculation(result);
+
+    // (ตัวอย่าง) แสดงผลลัพธ์ใน Console เพื่อตรวจสอบ
+    console.log(`Calculation Result: (${numTotalWeight} * ${numNaclBrewingTable}) / (${stdYield} * ${numNaclSpecGrav}) = ${result}`);
+
+  }, [naclBrewingTable, totalWeight, naclSpecGrav, stdYield]); // useEffect นี้จะทำงานเมื่อค่าใดค่าหนึ่งในนี้เปลี่ยน
+
+
+   useEffect(() => {
+    // 1. ดึงค่าที่จำเป็นมาใช้
+    const numNaclWaterCalculation = Number(naclWaterCalculation) || 0; // W21
+    const numNaclSpecGrav = Number(naclSpecGrav) || 0;             // Q19
+
+    // 2. ตรวจสอบเงื่อนไข IF(W21="","",...)
+    if (naclWaterCalculation === null) {
+      setValue('calculations.naclWaterCalc', null); // ถ้าค่า W21 เป็นค่าว่าง ให้ล้างค่าในช่องผลลัพธ์
+      return;
+    }
+
+    // 3. ทำการคำนวณตามสูตร
+    const result = numNaclWaterCalculation * numNaclSpecGrav;
+
+    // 4. นำผลลัพธ์ไปใส่ในช่อง 'calculations.naclWaterCalc'
+    setValue('calculations.naclWaterCalc', result);
+    
+    // (ตัวอย่าง) แสดงผลลัพธ์ใน Console เพื่อตรวจสอบ
+    console.log(`Final Calc: ${numNaclWaterCalculation} * ${numNaclSpecGrav} = ${result}`);
+
+  }, [naclWaterCalculation, naclSpecGrav, setValue]); // useEffect นี้จะทำงานเมื่อค่า 2 ตัวนี้เปลี่ยน
+
 
 
   const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-3 py-2 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";

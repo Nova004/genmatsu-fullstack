@@ -1,6 +1,7 @@
 // frontend/src/pages/Form/ProductionForm.tsx
 import React, { useEffect, useState } from 'react';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
+import axios from 'axios';
 
 
 // สร้าง Type เพื่อให้ TypeScript รู้จักโครงสร้างของข้อมูลเรา
@@ -40,14 +41,14 @@ const ProductionForm = () => {
   useEffect(() => {
     const fetchFormTemplate = async () => {
       try {
-        const response = await fetch(`http://localhost:4000/api/forms/templates/${formTemplateId}`);
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
+        // 1. ใช้ axios.get และ URL ที่สั้นลง
+        const response = await axios.get(`/api/forms/templates/${formTemplateId}`);
+
+        // 2. ข้อมูล form template จะอยู่ใน response.data โดยตรง
+        const data = response.data;
         setFormStructure(data);
 
-        // --- ส่วนที่เพิ่มเข้ามา: สร้าง formData เริ่มต้นจากโครงสร้าง JSON ---
+        // --- Logic การสร้าง formData เริ่มต้นยังคงเหมือนเดิมทุกประการ ---
         const initialData: any = {};
         data.StructureDefinition.sections.forEach((section: Section) => {
           if (section.type === 'table') {
@@ -55,7 +56,7 @@ const ProductionForm = () => {
           } else if (section.fields) {
             initialData[section.id] = {};
             section.fields.forEach((field: Field) => {
-              initialData[section.id][field.name] = ''; // กำหนดค่าเริ่มต้นเป็นค่าว่าง
+              initialData[section.id][field.name] = '';
             });
           }
         });
@@ -63,6 +64,8 @@ const ProductionForm = () => {
         // ------------------------------------------------------------------
 
       } catch (err: any) {
+        // 3. catch จะทำงานทันทีถ้า API มีปัญหา (เช่น หา template ไม่เจอ)
+        console.error("Failed to fetch form template:", err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -162,7 +165,7 @@ const ProductionForm = () => {
               {section.columns?.map(col => (
                 <td key={col.name} className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                   {col.type === 'readonly' ? (
-                     <p className="text-black dark:text-white">{row[col.name]}</p>
+                    <p className="text-black dark:text-white">{row[col.name]}</p>
                   ) : (
                     <input
                       type={col.type}
@@ -212,7 +215,7 @@ const ProductionForm = () => {
                 {JSON.stringify(formData, null, 2)}
               </pre>
             </div>
-            
+
           </div>
         </div>
       )}

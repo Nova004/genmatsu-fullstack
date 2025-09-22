@@ -5,6 +5,8 @@ import { useAuth } from '../../context/AuthContext';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import LogoDark from '../../images/logo/logo-dark.svg';
 import Logo from '../../images/logo/logo.svg';
+import axios from 'axios';
+import { fireToast } from '../../hooks/fireToast';
 
 
 const SignIn: React.FC = () => {
@@ -15,32 +17,27 @@ const SignIn: React.FC = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
-      // 1. ส่ง request ไปที่ API ของหลังบ้าน
-      const response = await fetch('http://localhost:4000/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userId: userId, password }),
+
+      const response = await axios.post('/api/auth/login', {
+        userId: userId,
+        password: password,
       });
+      console.log('Backend response:', response.data);
+      login(response.data.user);
+      navigate('/'); // ไปยังหน้าหลักหลัง login สำเร็จ
 
-      const data = await response.json();
+    } catch (error: any) {
+      // 3. catch จะทำงานทันทีถ้า Login ไม่สำเร็จ
+      console.error('Login failed:', error);
 
-      if (response.ok) { // ถ้าหลังบ้านตอบกลับมาว่าสำเร็จ (status 200)
-        console.log('Backend response:', data);
-        login(data.user);
-        navigate('/');
-      } else { // ถ้าหลังบ้านตอบกลับมาว่าไม่สำเร็จ
-        alert(data.message); // แสดงข้อความ error จากหลังบ้าน
-      }
-    } catch (error) {
-      console.error('Failed to connect to the server:', error);
-      alert('Cannot connect to the backend server. Is it running?');
+      // ดึงข้อความ error จากที่ backend ส่งมา (ถ้ามี)
+      const errorMessage = error.response?.data?.message || 'Failed to connect to the server.';
+
+      // 4. ใช้ fireToast แทน alert
+      fireToast('error', errorMessage);
     }
   };
-
   return (
     <>
       <Breadcrumb pageName="Sign In" />

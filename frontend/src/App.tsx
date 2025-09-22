@@ -11,9 +11,7 @@ import ECommerce from './pages/Dashboard/ECommerce';
 import FormElements from './pages/Form/FormElements';
 import FormLayout from './pages/Form/FormLayout';
 import ProductionForm from './pages/Form/ProductionForm';
-
 import FormMasterEditor from './components/formGen/pages/Master/FormMasterEditor';
-
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Tables from './pages/Tables';
@@ -21,8 +19,9 @@ import Alerts from './pages/UiElements/Alerts';
 import Buttons from './pages/UiElements/Buttons';
 import DefaultLayout from './layout/DefaultLayout';
 import ProtectedRoute from './routes/ProtectedRoute';
-
 import UserMaster from './components/formGen/pages/Master/UserMaster';
+import NaClMaster from './components/formGen/pages/Master/NaClMaster';
+import { Toaster } from 'react-hot-toast';
 
 
 
@@ -41,6 +40,12 @@ function App() {
   return loading ? (
     <Loader />
   ) : (
+    <>
+     <Toaster // 👈 2. เพิ่ม Component นี้เข้ามา
+        position="top-right"
+        reverseOrder={false}
+        containerClassName="overflow-auto"
+      />
     <Routes>
       {/* --- หน้า Public ที่ไม่ต้อง Login --- */}
       <Route
@@ -135,6 +140,14 @@ function App() {
                   }
                 />
                 <Route
+                  path="/master/nacl-master" // เพิ่ม Route block นี้
+                  element={
+                    <ProtectedRoute>
+                      <NaClMaster />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/master/user-master"
                   element={
                     <>
@@ -194,6 +207,7 @@ function App() {
         }
       />
     </Routes>
+    </>
   );
 }
 

@@ -3,8 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import Breadcrumb from '../../../Breadcrumbs/Breadcrumb';
 import EditUserModal from './EditUserModal';
+import axios from 'axios';
+import { fireToast } from '../../../../hooks/fireToast';
 
-// 1. อัปเดต Type ให้มี Gen_Manu_mem_No
+
 interface AgtMember {
   agt_member_id: string;
   agt_member_nameEN: string;
@@ -12,7 +14,7 @@ interface AgtMember {
   name_fullsection: string;
   agt_member_shift: string;
   agt_status_job: string;
-  Gen_Manu_mem_No: string | null; // Field ใหม่จากตาราง Gen_Manu_Member
+  Gen_Manu_mem_No: string | null;
 }
 
 const UserMaster: React.FC = () => {
@@ -21,14 +23,23 @@ const UserMaster: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<AgtMember | null>(null);
 
+  // --- 1. เพิ่ม State สำหรับการค้นหา (Search Term) ---
+  const [searchTerm, setSearchTerm] = useState('');
+
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:4000/api/users');
-      const data = await response.json();
-      setUsers(data);
+      // 1. ใช้ axios.get และ URL ที่สั้นลง
+      const response = await axios.get('/api/users');
+
+      // 2. ข้อมูล users จะอยู่ใน response.data โดยตรง
+      setUsers(response.data);
+
     } catch (error) {
+      // 3. catch จะทำงานทันทีถ้า API มีปัญหา
       console.error("Failed to fetch users", error);
+      fireToast('error', 'Failed to load user data.'); // แจ้งเตือนผู้ใช้
+      setUsers([]); // กำหนดค่าว่างให้ State เพื่อป้องกัน Error
     } finally {
       setIsLoading(false);
     }
@@ -50,34 +61,58 @@ const UserMaster: React.FC = () => {
 
   const handleSaveUser = async (userId: string, newEmployeeNo: string) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/users/${userId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ Gen_Manu_mem_No: newEmployeeNo }),
+      // 1. ใช้ axios.put และส่งข้อมูล (body) เป็น object ที่สอง
+      await axios.put(`/api/users/${userId}`, {
+        Gen_Manu_mem_No: newEmployeeNo
       });
+      // 2. ถ้าสำเร็จ ให้แจ้งเตือนสวยๆ
+      fireToast('success', 'Employee number updated successfully!');
 
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.message || 'Failed to update employee number.');
-      }
-      
-      alert('Employee number updated successfully!');
       handleCloseModal();
-      fetchUsers(); // โหลดข้อมูลใหม่เพื่อรีเฟรชตาราง
+      fetchUsers(); // รีเฟรชข้อมูลในตาราง
 
     } catch (error: any) {
+      // 3. catch จะทำงานทันทีถ้า API ตอบกลับมาเป็น Error
       console.error("Error saving user:", error);
-      alert(`Error: ${error.message}`);
+
+      // ดึงข้อความ error จากที่ backend ส่งมา (ถ้ามี)
+      const errorMessage = error.response?.data?.message || 'Failed to update employee number.';
+
+      fireToast('error', errorMessage);
     }
   };
 
+  // --- 2. สร้าง Array ใหม่สำหรับเก็บผลลัพธ์ที่ฟิลเตอร์แล้ว ---
+  const filteredUsers = users.filter(user => {
+    const term = searchTerm.toLowerCase();
+    return (
+      user.agt_member_id.toLowerCase().includes(term) ||
+      user.agt_member_nameEN.toLowerCase().includes(term) ||
+      (user.Gen_Manu_mem_No && user.Gen_Manu_mem_No.toLowerCase().includes(term)) ||
+      user.agt_position_name.toLowerCase().includes(term)
+    );
+  });
+
   return (
     <>
-      <Breadcrumb pageName="User Employee No. Master" />
+      <Breadcrumb pageName="User Master" />
       <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
-        <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
-          Manage Employee Number for Production
-        </h4>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
+            All Members from AGT System
+          </h4>
+          {/* --- 3. เพิ่มช่อง Input สำหรับค้นหาใน JSX --- */}
+          <div className="mb-6 sm:mb-0">
+            <input
+              type="text"
+              placeholder="Filter by ID, Name, No., Position..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-2 px-4 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary sm:w-64"
+            />
+          </div>
+        </div>
+
         <div className="max-w-full overflow-x-auto">
           <table className="w-full table-auto">
             <thead>
@@ -94,7 +129,8 @@ const UserMaster: React.FC = () => {
               {isLoading ? (
                 <tr><td colSpan={6} className="text-center p-10">Loading users...</td></tr>
               ) : (
-                users.map((user) => (
+                // --- 4. อัปเดตตารางให้แสดงผลจากข้อมูลที่ฟิลเตอร์แล้ว ---
+                filteredUsers.map((user) => (
                   <tr key={user.agt_member_id}>
                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                       <p className="text-black dark:text-white">{user.agt_member_id}</p>
@@ -126,7 +162,7 @@ const UserMaster: React.FC = () => {
         </div>
       </div>
 
-      <EditUserModal 
+      <EditUserModal
         isOpen={isModalOpen}
         user={editingUser}
         onClose={handleCloseModal}

@@ -5,6 +5,8 @@ import Breadcrumb from '../../../Breadcrumbs/Breadcrumb';
 import { IMasterFormItem } from '../BZ_Form/types';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import EditItemModal from './EditItemModal';
+import axios from 'axios';
+import { fireToast } from '../../../../hooks/fireToast';
 
 interface TemplateInfo {
   template_id: number;
@@ -32,11 +34,14 @@ const FormMasterEditor: React.FC = () => {
     const fetchTemplates = async () => {
       setIsLoadingTemplates(true);
       try {
-        const response = await fetch('http://localhost:4000/api/master/templates');
-        const data: GroupedTemplates = await response.json();
-        setGroupedTemplates(data);
+        // 1. ใช้ axios.get และ URL ที่สั้นลง
+        const response = await axios.get('/api/master/templates');
+        // 2. ข้อมูล templates จะอยู่ใน response.data โดยตรง
+        setGroupedTemplates(response.data);
       } catch (error) {
+        // 3. catch จะทำงานทันทีถ้า API มีปัญหา
         console.error("Failed to fetch templates", error);
+        setGroupedTemplates({}); // กำหนดค่าว่างให้ State เพื่อป้องกัน Error
       } finally {
         setIsLoadingTemplates(false);
       }
@@ -61,14 +66,21 @@ const FormMasterEditor: React.FC = () => {
       setInitialItemsOrder([]);
       return;
     }
+
     setIsItemsLoading(true);
     try {
-      const response = await fetch(`http://localhost:4000/api/master/template/${templateName}/latest`);
-      const data = await response.json();
-      setTemplateItems(data.items);
-      // ใช้ JSON.parse(JSON.stringify(...)) เพื่อสร้าง deep copy ที่สมบูรณ์
-      setInitialItemsOrder(JSON.parse(JSON.stringify(data.items))); 
+      // 1. ใช้ axios.get และ URL ที่สั้นลง
+      const response = await axios.get(`/api/master/template/${templateName}/latest`);
+
+      // 2. ข้อมูล items จะอยู่ใน response.data.items โดยตรง
+      const items = response.data?.items || [];
+
+      setTemplateItems(items);
+      // 3. ทำ Deep copy จากข้อมูลที่ได้มาใหม่ เพื่อเก็บไว้เปรียบเทียบ
+      setInitialItemsOrder(JSON.parse(JSON.stringify(items)));
+
     } catch (error) {
+      // 4. catch จะทำงานทันทีถ้า API มีปัญหา
       console.error(`Failed to fetch items for template ${templateName}`, error);
       setTemplateItems([]);
       setInitialItemsOrder([]);
@@ -91,8 +103,8 @@ const FormMasterEditor: React.FC = () => {
   // === 1. แก้ไขฟังก์ชันนี้ให้ทำการอัปเดต State จริงๆ ===
   // ======================================================
   const handleUpdateItem = (updatedItem: IMasterFormItem) => {
-    setTemplateItems(prevItems => 
-      prevItems.map(item => 
+    setTemplateItems(prevItems =>
+      prevItems.map(item =>
         // ถ้า item_id ตรงกัน ให้แทนที่ด้วยข้อมูลใหม่, 아니면 item เดิม
         item.item_id === updatedItem.item_id ? updatedItem : item
       )
@@ -102,28 +114,30 @@ const FormMasterEditor: React.FC = () => {
 
   const handleSaveChanges = async () => {
     if (!selectedTemplate || templateItems.length === 0) {
-      alert("No template selected or no items to save.");
+      // ใช้ fireToast แทน alert
+      fireToast('warning', 'No template selected or no items to save.');
       return;
     }
+
     setIsSaving(true);
     try {
-      const response = await fetch('http://localhost:4000/api/master/template/update', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          templateName: selectedTemplate,
-          items: templateItems,
-        }),
-      });
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.message || 'Failed to save changes.');
-      }
-      alert('Successfully saved! A new version of the template has been created.');
+      // 1. ใช้ axios.post และส่งข้อมูลเข้าไปได้เลย
+      await axios.post('/api/master/template/update', {
+        templateName: selectedTemplate,
+        items: templateItems,
+      });handleSaveChanges
+
+      // 2. ถ้าสำเร็จ ให้แจ้งเตือนสวยๆ
+      fireToast('success', 'A new version of the template has been created.');
+
+      // 3. โหลดข้อมูล template เดิมซ้ำเพื่อรีเฟรชหน้า
       handleTemplateChange({ target: { value: selectedTemplate } } as any);
+
     } catch (error: any) {
+      // 4. catch จะทำงานทันทีถ้า API ตอบกลับมาเป็น Error
       console.error("Error saving template:", error);
-      alert(`Error: ${error.message}`);
+      const errorMessage = error.response?.data?.message || 'Failed to save changes.';
+      fireToast('error', errorMessage);
     } finally {
       setIsSaving(false);
     }
@@ -165,7 +179,7 @@ const FormMasterEditor: React.FC = () => {
     // เปรียบเทียบข้อมูลทั้งหมดโดยแปลงเป็น String
     const currentItemsString = JSON.stringify(templateItems);
     const initialItemsString = JSON.stringify(initialItemsOrder);
-    
+
     return currentItemsString !== initialItemsString;
   };
 
@@ -284,7 +298,7 @@ const FormMasterEditor: React.FC = () => {
           </div>
         </div>
       </div>
-      <EditItemModal 
+      <EditItemModal
         isOpen={isModalOpen}
         item={editingItem}
         onClose={handleCloseModal}

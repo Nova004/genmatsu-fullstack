@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import ClickOutside from '../ClickOutside';
 import UserOne from '../../images/user/user-01.png';
 import { useAuth } from '../../context/AuthContext';
+import axios from 'axios';
 
 
 const DropdownUser = () => {
@@ -14,30 +15,31 @@ const DropdownUser = () => {
   const [userImage, setUserImage] = useState(UserOne); // สถานะสำหรับเก็บ URL ของรูปภาพผู้ใช้
 
   useEffect(() => {
-    // ถ้ามี user และมี id
     if (user && user.id) {
       const fetchUserPhoto = async () => {
         try {
-          const response = await fetch(`http://localhost:4000/api/user/${user.id}/photo`);
-          if (response.ok) {
-            const data = await response.json();
+          // 1. ใช้ axios.get และ URL ที่สั้นลง
+          const response = await axios.get(`/api/auth/user/${user.id}/photo`);
 
-            console.log("Base64 data received by Frontend:", data.imageData);
-
-            setUserImage(data.imageData); // นำ Base64 มาใส่ใน State
+          // 2. ตรวจสอบว่ามีข้อมูลภาพ (imageData) ส่งกลับมาหรือไม่
+          if (response.data && response.data.imageData) {
+            console.log("Base64 data received by Frontend:", response.data.imageData);
+            setUserImage(response.data.imageData);
           } else {
-            // ถ้าหาไม่เจอ ก็ใช้รูปภาพเริ่มต้น
+            // กรณี API ตอบกลับมาแต่ไม่มี imageData (อาจไม่เกิดขึ้น แต่ใส่ไว้เพื่อความปลอดภัย)
             setUserImage(UserOne);
           }
+
         } catch (error) {
+          // 3. catch ของ axios จะทำงานทันทีถ้า Server ตอบ Error (เช่น 404 Not Found)
           console.error('Failed to fetch user photo:', error);
-          setUserImage(UserOne); // ถ้า error ก็ใช้รูปเริ่มต้น
+          setUserImage(UserOne); // ถ้าเกิด error (เช่น ไม่มีรูป) ให้ใช้รูปเริ่มต้น
         }
       };
 
       fetchUserPhoto();
     }
-  }, [user]); // useEffect นี้จะทำงานใหม่ทุกครั้งที่ข้อมูล user เปลี่ยนไป
+  }, [user]);
 
   const handleLogout = () => { // 3. ฟังก์ชันจัดการการ logout
     logout();

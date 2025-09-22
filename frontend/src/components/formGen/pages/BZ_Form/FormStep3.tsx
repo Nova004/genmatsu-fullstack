@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { FieldErrors } from 'react-hook-form'; // 1. Import FieldErrors
 import { FormStepProps, IMasterFormItem, IConfigJson } from './types';
+import axios from 'axios';
 
 // 2. อัปเดต Props ให้รับ 'errors' เข้ามา
 interface FormStep3Props extends FormStepProps {
@@ -14,21 +15,27 @@ const FormStep3: React.FC<FormStep3Props> = ({ register, errors }) => { // <-- �
   const [operationStepsConfig, setOperationStepsConfig] = useState<IMasterFormItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchMasterData = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch('http://localhost:4000/api/master/template/BZ_Step3_Operations/latest');
-        const data = await response.json();
-        setOperationStepsConfig(data.items);
-      } catch (error) {
-        console.error("Failed to fetch master data for Step 3", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchMasterData();
-  }, []);
+ useEffect(() => {
+  const fetchMasterData = async () => {
+    setIsLoading(true);
+    try {
+      // 1. ใช้ axios.get และ URL ที่สั้นลง
+      const response = await axios.get('/api/master/template/BZ_Step3_Operations/latest');
+      
+      // 2. ข้อมูล items จะอยู่ใน response.data.items โดยตรง
+      setOperationStepsConfig(response.data?.items || []);
+
+    } catch (error) {
+      console.error("Failed to fetch master data for Step 3", error);
+      
+      setOperationStepsConfig([]); // กำหนดค่าว่างให้ State เพื่อป้องกัน Error
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  fetchMasterData();
+}, []);
 
   const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-3 py-2 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
   const disabledInputClass = `${inputClass} bg-gray-2 dark:bg-meta-4 cursor-default`;
