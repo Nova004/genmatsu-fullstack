@@ -16,8 +16,8 @@ interface FormStep1Props extends FormStepProps {
 // === 1. แก้ไขตรงนี้: ให้รับ Props ตาม Interface ตัวใหม่ (FormStep1Props) ===
 // ======================================================
 const FormStep1: React.FC<FormStep1Props> = ({ register, watch, setValue }) => {
-  const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
-  
+ const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
+
   return (
     <div>
       <div className="border-b-2 border-stroke py-2 text-center dark:border-strokedark">

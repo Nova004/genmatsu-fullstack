@@ -15,7 +15,7 @@ interface PackingResultTableProps {
 const PackingResultTable: React.FC<PackingResultTableProps> = ({ register, watch, setValue, cansMultiplier }) => {
   // --- ส่วนจัดการ Class ของ UI (เหมือนเดิม) ---
   const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-3 py-2 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
-  const disabledInputClass = `${inputClass} bg-gray-2 dark:bg-meta-4 cursor-default`;
+  const disabledInputClass = "w-full cursor-default rounded-lg border-[1.5px] border-stroke bg-slate-100 px-3 py-2 text-slate-500 outline-none dark:border-form-strokedark dark:bg-slate-800 dark:text-slate-400";
   const tdClass = "border-b border-stroke px-4 py-3 text-black dark:border-strokedark dark:text-white";
   const tdCenterClass = `${tdClass} text-center align-middle`;
   const tdLeftClass = `${tdClass} align-middle`;
@@ -64,7 +64,7 @@ const PackingResultTable: React.FC<PackingResultTableProps> = ({ register, watch
           </tr>
           <tr>
             <td className={tdLeftClass} colSpan={2}>Remain</td>
-            <td className={tdCenterClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('packingResults.remain')} /></td>
+            <td className={tdCenterClass}><input type="number" className={inputClass} {...register('packingResults.remain')} /></td>
             <td className={tdCenterClass}>KG</td>
             <td className={tdCenterClass}></td>
             <td className={tdCenterClass}></td>
