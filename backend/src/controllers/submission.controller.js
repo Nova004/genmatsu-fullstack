@@ -102,3 +102,125 @@ exports.createSubmission = async (req, res) => {
     res.status(500).send({ message: "Failed to submit form.", error: err.message });
   }
 };
+
+
+
+
+// 🎯 ฟังก์ชันใหม่ 1: สำหรับดึงรายการ Submission ทั้งหมด 🎯
+exports.getAllSubmissions = async (req, res) => {
+    try {
+        const pool = await sql.connect(dbConfig);
+        const result = await pool.request().query(`
+            SELECT 
+                fs.submission_id,
+                fs.form_type,
+                fs.lot_no,
+                fs.submitted_by,
+                fs.submitted_at,
+                fs.status
+            FROM 
+                Form_Submissions fs
+            ORDER BY 
+                fs.submitted_at DESC
+        `);
+
+        res.status(200).send(result.recordset);
+    } catch (err) {
+        res.status(500).send({ message: "Failed to retrieve submissions.", error: err.message });
+    }
+};
+
+// 🎯 ฟังก์ชันใหม่ 2: สำหรับดึงข้อมูล Submission เดียวแบบละเอียด 🎯
+exports.getSubmissionById = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const pool = await sql.connect(dbConfig);
+        const request = new sql.Request(pool);
+
+        // 1. ดึงข้อมูลหลักจาก Submissions และ Submission_Data
+        const submissionResult = await request
+            .input('submissionId', sql.Int, id)
+            .query(`
+                SELECT 
+                    fs.submission_id,
+                    fs.version_set_id,
+                    fs.form_type,
+                    fs.lot_no,
+                    fs.submitted_by,
+                    fs.submitted_at,
+                    fsd.form_data_json
+                FROM 
+                    Form_Submissions fs
+                JOIN 
+                    Form_Submission_Data fsd ON fs.submission_id = fsd.submission_id
+                WHERE 
+                    fs.submission_id = @submissionId
+            `);
+
+        if (submissionResult.recordset.length === 0) {
+            return res.status(404).send({ message: "Submission not found." });
+        }
+
+        const submissionData = submissionResult.recordset[0];
+        const versionSetId = submissionData.version_set_id;
+
+        // 2. ใช้ version_set_id เพื่อย้อนไปหา "พิมพ์เขียว" ที่ถูกต้อง
+        const blueprintResult = await request
+            .input('versionSetId', sql.Int, versionSetId)
+            .query(`
+                SELECT 
+                    fmt.template_id,
+                    fmt.template_name,
+                    fmt.template_category,
+                    fmt.version,
+                    fmi.item_id,
+                    fmi.display_order,
+                    fmi.config_json
+                FROM 
+                    Form_Version_Set_Items fvsi
+                JOIN 
+                    Form_Master_Templates fmt ON fvsi.template_id = fmt.template_id
+                JOIN 
+                    Form_Master_Items fmi ON fvsi.template_id = fmi.template_id
+                WHERE 
+                    fvsi.version_set_id = @versionSetId
+                ORDER BY
+                    fmt.template_name, fmi.display_order
+            `);
+        
+        // 3. จัดระเบียบข้อมูลพิมพ์เขียวให้ Frontend ใช้งานง่าย
+        const blueprints = {};
+        blueprintResult.recordset.forEach(item => {
+            const templateName = item.template_name;
+            if (!blueprints[templateName]) {
+                blueprints[templateName] = {
+                    template: {
+                        template_id: item.template_id,
+                        template_name: item.template_name,
+                        template_category: item.template_category,
+                        version: item.version,
+                    },
+                    items: []
+                };
+            }
+            blueprints[templateName].items.push({
+                item_id: item.item_id,
+                display_order: item.display_order,
+                config_json: JSON.parse(item.config_json)
+            });
+        });
+
+        // 4. ส่งข้อมูลทั้งหมดกลับไป
+        res.status(200).send({
+            submission: {
+                ...submissionData,
+                form_data_json: JSON.parse(submissionData.form_data_json)
+            },
+            blueprints: blueprints
+        });
+
+    } catch (err) {
+        res.status(500).send({ message: "Failed to retrieve submission details.", error: err.message });
+    }
+};

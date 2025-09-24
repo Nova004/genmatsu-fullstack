@@ -14,3 +14,14 @@ export const submitProductionForm = async (submissionData: any) => {
     throw error;
   }
 };
+
+
+export const getAllSubmissions = async () => {
+  try {
+    const response = await apiClient.get('/api/submissions');
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all submissions:", error);
+    throw error;
+  }
+};
