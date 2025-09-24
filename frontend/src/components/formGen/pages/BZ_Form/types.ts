@@ -34,6 +34,7 @@ export interface IManufacturingReportForm {
     finalTotalWeight: number | null;
   };
   qouRemark: string;
+  valued: number | null;
 
   // Step 3
   operationResults: {

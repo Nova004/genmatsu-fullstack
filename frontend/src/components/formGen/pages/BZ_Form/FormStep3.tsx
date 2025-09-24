@@ -1,41 +1,46 @@
 // src/pages/BZ_Form/FormStep3.tsx
 
 import React, { useState, useEffect } from 'react';
-import { FieldErrors } from 'react-hook-form'; // 1. Import FieldErrors
-import { FormStepProps, IMasterFormItem, IConfigJson } from './types';
-import axios from 'axios';
+import { UseFormRegister, FieldErrors } from 'react-hook-form';
+import { getLatestTemplateByName } from '../../../../services/formService';
+import { IManufacturingReportForm, IConfigJson } from './types';
+
 
 // 2. อัปเดต Props ให้รับ 'errors' เข้ามา
-interface FormStep3Props extends FormStepProps {
-  errors: FieldErrors<any>;
+interface FormStep3Props {
+  register: UseFormRegister<IManufacturingReportForm>;
+  errors: FieldErrors<IManufacturingReportForm>;
+  onTemplateLoaded: (templateInfo: any) => void;
 }
 
-const FormStep3: React.FC<FormStep3Props> = ({ register, errors }) => { // <-- รับ errors มาใช้
+const FormStep3: React.FC<FormStep3Props> = ({ register, errors, onTemplateLoaded }) => {
 
-  const [operationStepsConfig, setOperationStepsConfig] = useState<IMasterFormItem[]>([]);
+  const [fields, setFields] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
- useEffect(() => {
-  const fetchMasterData = async () => {
-    setIsLoading(true);
-    try {
-      // 1. ใช้ axios.get และ URL ที่สั้นลง
-      const response = await axios.get('/api/master/template/BZ_Step3_Operations/latest');
-      
-      // 2. ข้อมูล items จะอยู่ใน response.data.items โดยตรง
-      setOperationStepsConfig(response.data?.items || []);
 
-    } catch (error) {
-      console.error("Failed to fetch master data for Step 3", error);
-      
-      setOperationStepsConfig([]); // กำหนดค่าว่างให้ State เพื่อป้องกัน Error
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  fetchMasterData();
-}, []);
+  useEffect(() => {
+    const fetchFormStructure = async () => {
+      try {
+        const data = await getLatestTemplateByName('BZ_Step3_Operations');
+        if (data && data.items) {
+          // 2. แก้ไข State: อัปเดต State ที่ถูกต้อง
+          setFields(data.items);
+          if (onTemplateLoaded) {
+            onTemplateLoaded(data.template);
+          }
+        } else {
+          setError('ข้อมูล Master ที่ได้รับไม่ถูกต้อง');
+        }
+      } catch (err) {
+        setError('ไม่สามารถโหลดข้อมูล Master สำหรับ Step 3 ได้');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchFormStructure();
+  }, [onTemplateLoaded]); // Dependency array ถูกต้องแล้ว
 
   const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-3 py-2 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
   const disabledInputClass = "w-full cursor-default rounded-lg border-[1.5px] border-stroke bg-slate-100 px-3 py-2 text-slate-500 outline-none dark:border-form-strokedark dark:bg-slate-800 dark:text-slate-400";
@@ -65,11 +70,11 @@ const FormStep3: React.FC<FormStep3Props> = ({ register, errors }) => { // <-- �
                 <tr><td colSpan={5} className="text-center p-4">Loading Master Form...</td></tr>
               )}
 
-              {!isLoading && operationStepsConfig.map((item, index) => {
-                const config = item.config_json as IConfigJson; // Type Assertion เพื่อความชัดเจน
+              {fields.map((item, index) => {
+                const config = item.config_json as IConfigJson;
 
                 if (!config || typeof config !== 'object' || !('columns' in config)) {
-                  return null;
+                  return <tr key={item.item_id}><td colSpan={5}>Invalid configuration for item</td></tr>;
                 }
 
                 const isStartTimeDisabled = !config.inputs.startTime?.enabled;
@@ -155,7 +160,7 @@ const FormStep3: React.FC<FormStep3Props> = ({ register, errors }) => { // <-- �
                                         <input
                                           type={inputItem.type || 'text'}
                                           className={inputClass}
-                                          style={{   minWidth: '60px', maxWidth: '80px'  }} // กำหนดความกว้างขั้นต่ำ
+                                          style={{ minWidth: '60px', maxWidth: '80px' }} // กำหนดความกว้างขั้นต่ำ
                                           {...register(multiFieldName as any, {
                                             valueAsNumber: inputItem.type === 'number',
                                             validate: (value) => {

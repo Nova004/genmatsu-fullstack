@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { UseFormWatch, UseFormSetValue, FieldErrors } from 'react-hook-form';
-import { FormStepProps, IManufacturingReportForm, IMasterFormItem, IStep2ConfigJson } from './types';
-import axios from 'axios';
+import { getLatestTemplateByName } from '../../../../services/formService';
+import { IManufacturingReportForm, IStep2ConfigJson } from './types';
+import apiClient from '../../../../services/apiService';
+
 
 // =================================================================
 // ╔═══════════════════════════════════════════════════════════════╗
@@ -50,7 +52,8 @@ const useNaclBrewingLookup = (
 
     const fetchBrewingValue = async () => {
       try {
-        const response = await axios.get(`/api/nacl/lookup/${cg1cWaterContent}`);
+        // ใช้ apiClient ที่วิ่งผ่าน Proxy
+        const response = await apiClient.get(`/api/nacl/lookup/${cg1cWaterContent}`);
         const naclValue = response.data?.NaCl_NaCl_Water;
         setValue('calculations.naclBrewingTable', naclValue !== undefined ? naclValue : null);
       } catch (error) {
@@ -63,6 +66,7 @@ const useNaclBrewingLookup = (
     return () => clearTimeout(delayDebounceFn);
   }, [cg1cWaterContent, setValue]);
 };
+
 
 /**
  * 🚀 HOOK 3: จัดการการคำนวณตามสูตร Excel ที่มีความต่อเนื่องกันทั้งหมด
@@ -151,33 +155,39 @@ export const useExcelFormulaCalculations = (
 // ║                     MAIN COMPONENT (ส่วนแสดงผล)                
 // ╚═══════════════════════════════════════════════════════════════╝
 // =================================================================
-interface FormStep2Props extends FormStepProps {
+interface FormStep2Props {
+  register: any;
   watch: UseFormWatch<IManufacturingReportForm>;
   setValue: UseFormSetValue<IManufacturingReportForm>;
   errors: FieldErrors<IManufacturingReportForm>;
+  onTemplateLoaded: (templateInfo: any) => void;
 }
 
-const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue, errors }) => {
 
-  const [rawMaterialConfig, setRawMaterialConfig] = useState<IMasterFormItem[]>([]);
+const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue, errors, onTemplateLoaded }) => {
+  const [fields, setFields] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // --- Logic 1: ดึงข้อมูล Master Form จาก API ---
   useEffect(() => {
-    const fetchMasterData = async () => {
-      setIsLoading(true);
+    const fetchFormStructure = async () => {
       try {
-        const response = await axios.get('/api/master/template/BZ_Step2_RawMaterials/latest');
-        setRawMaterialConfig(response.data?.items || []);
-      } catch (error) {
-        console.error("Failed to fetch master data for Step 2", error);
-        setRawMaterialConfig([]);
+        // 👈 เรียกใช้ service แทน axios
+        const data = await getLatestTemplateByName('BZ_Step2_RawMaterials');
+        if (data && data.items) {
+          setFields(data.items);
+          if (onTemplateLoaded) {
+            onTemplateLoaded(data.template);
+          }
+        }
+      } catch (err) {
+        setError('ไม่สามารถโหลดข้อมูล Master ได้');
       } finally {
         setIsLoading(false);
       }
     };
-    fetchMasterData();
-  }, []);
+    fetchFormStructure();
+  }, [onTemplateLoaded]);
 
 
 
@@ -211,7 +221,7 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue, errors
           disabled={inputConfig.is_disabled}
           {...register(fieldName as any, {
             valueAsNumber: inputConfig.type === 'number',
-            validate: (value) => {
+            validate: (value: any) => {
               if (!validationRules || value === null || value === '' || value === undefined) return true;
               switch (validationRules.type) {
                 case 'RANGE_TOLERANCE':
@@ -255,7 +265,7 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue, errors
             <tbody>
               {isLoading && (<tr><td colSpan={5} className="text-center p-4">Loading Master Form...</td></tr>)}
 
-              {!isLoading && rawMaterialConfig.map(field => {
+              {!isLoading && fields.map(field => {
                 const config = field.config_json as IStep2ConfigJson;
 
                 switch (config.row_type) {
@@ -271,7 +281,7 @@ const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue, errors
                               <input type="number" className={disabledInputClass} readOnly disabled
                                 {...register('rawMaterials.diaEarth', {
                                   valueAsNumber: true,
-                                  validate: (value) => {
+                                  validate: (value: any) => {
                                     const rules = config.validation;
                                     if (!rules || value === null || value === undefined) return true;
                                     if (rules.min !== undefined && rules.max !== undefined) {
