@@ -25,3 +25,14 @@ export const getAllSubmissions = async () => {
     throw error;
   }
 };
+
+
+export const getSubmissionById = async (id: string) => {
+  try {
+    const response = await apiClient.get(`/api/submissions/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching submission with id ${id}:`, error);
+    throw error;
+  }
+};

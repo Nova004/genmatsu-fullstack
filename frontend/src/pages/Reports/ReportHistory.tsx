@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getAllSubmissions } from '../services/submissionService';
-import Breadcrumb from '../components/Breadcrumbs/Breadcrumb';
-import DefaultLayout from '../layout/DefaultLayout';
+import { getAllSubmissions } from '../../services/submissionService';
+import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 
 const ReportHistory: React.FC = () => {
   const [submissions, setSubmissions] = useState<any[]>([]);
@@ -27,6 +26,31 @@ const ReportHistory: React.FC = () => {
   return (
     <>
       <Breadcrumb pageName="ประวัติการบันทึก (Report History)" />
+      {/* --- 👇👇👇 2. เพิ่มปุ่ม "สร้างรายงานใหม่" ตรงนี้ 👇👇👇 --- */}
+      <Link
+        to="/forms/form-elements" // 👈 ระบุ Path ไปยังหน้า BZ_Form
+        className="mb-4 sm:mb-0 inline-flex items-center justify-center gap-2.5 rounded-md bg-primary py-3 px-6 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-10"
+      >
+        <span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </span>
+        สร้างรายงานใหม่
+      </Link>
+      {/* --- 👆👆👆 --- */}
+
 
       <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
         <div className="max-w-full overflow-x-auto">

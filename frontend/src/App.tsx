@@ -22,8 +22,8 @@ import ProtectedRoute from './routes/ProtectedRoute';
 import UserMaster from './components/formGen/pages/Master/UserMaster';
 import NaClMaster from './components/formGen/pages/Master/NaClMaster';
 import { Toaster } from 'react-hot-toast';
-import ReportHistory from './pages/ReportHistory';
-
+import ReportHistory from './pages/Reports/ReportHistory';
+import ReportDetailDispatcher from './pages/Reports/ReportDetailDispatcher';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -167,6 +167,10 @@ function App() {
                         </>
                       </ProtectedRoute>
                     }
+                  />
+                  <Route
+                    path="/reports/view/:id"
+                    element={<ReportDetailDispatcher />}
                   />
                   <Route
                     path="tables"

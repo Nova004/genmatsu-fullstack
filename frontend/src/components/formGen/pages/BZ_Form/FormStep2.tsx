@@ -19,6 +19,7 @@ import apiClient from '../../../../services/apiService';
 const useCg1cWeightingCalculation = (
   watch: UseFormWatch<IManufacturingReportForm>,
   setValue: UseFormSetValue<IManufacturingReportForm>
+
 ) => {
   const cg1cRow1 = watch('cg1cWeighting.row1.cg1c');
   const cg1cRow2 = watch('cg1cWeighting.row2.cg1c');
@@ -161,33 +162,57 @@ interface FormStep2Props {
   setValue: UseFormSetValue<IManufacturingReportForm>;
   errors: FieldErrors<IManufacturingReportForm>;
   onTemplateLoaded: (templateInfo: any) => void;
+  staticBlueprint?: any; // Prop สำหรับรับพิมพ์เขียวเวอร์ชันเก่าโดยตรง
 }
 
 
-const FormStep2: React.FC<FormStep2Props> = ({ register, watch, setValue, errors, onTemplateLoaded }) => {
+const FormStep2: React.FC<FormStep2Props> = ({ 
+  register, 
+  watch, 
+  setValue, 
+  errors, 
+  onTemplateLoaded,  
+  staticBlueprint 
+}) => {
+  
   const [fields, setFields] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchFormStructure = async () => {
-      try {
-        // 👈 เรียกใช้ service แทน axios
-        const data = await getLatestTemplateByName('BZ_Step2_RawMaterials');
-        if (data && data.items) {
-          setFields(data.items);
-          if (onTemplateLoaded) {
-            onTemplateLoaded(data.template);
-          }
+    // ฟังก์ชันสำหรับประมวลผลข้อมูลพิมพ์เขียว (ใช้ร่วมกัน)
+    const processBlueprint = (data: any) => {
+      if (data && data.items) {
+        setFields(data.items);
+        if (onTemplateLoaded) {
+          onTemplateLoaded(data.template);
         }
+      } else {
+        setError('โครงสร้าง Master ของ Step 2 ไม่ถูกต้อง');
+      }
+      setIsLoading(false);
+    };
+
+    // ฟังก์ชันสำหรับดึงข้อมูลพิมพ์เขียวล่าสุด (สำหรับโหมดปกติ)
+    const fetchLatestBlueprint = async () => {
+      try {
+        const data = await getLatestTemplateByName('BZ_Step2_RawMaterials');
+        processBlueprint(data);
       } catch (err) {
-        setError('ไม่สามารถโหลดข้อมูล Master ได้');
-      } finally {
+        setError('ไม่สามารถโหลดข้อมูล Master ของ Step 2 ได้');
         setIsLoading(false);
       }
     };
-    fetchFormStructure();
-  }, [onTemplateLoaded]);
+
+    // --- Logic การตัดสินใจ ---
+    if (staticBlueprint) {
+      // โหมดแสดงผล (Static Mode): ถ้าได้รับ staticBlueprint มา ให้ใช้ข้อมูลนั้นทันที
+      processBlueprint(staticBlueprint);
+    } else {
+      // โหมดปกติ (Live Mode): ถ้าไม่ได้รับ ให้ fetch ข้อมูลล่าสุดเอง
+      fetchLatestBlueprint();
+    }
+  }, [onTemplateLoaded, staticBlueprint]); // ใส่ staticBlueprint ใน dependency array
 
 
 

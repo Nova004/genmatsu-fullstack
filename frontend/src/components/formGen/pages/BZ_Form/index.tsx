@@ -1,3 +1,5 @@
+// frontend/src/components/formGen/pages/BZ_Form/index.tsx
+
 import React, { useState, useCallback } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { IManufacturingReportForm } from './types';
