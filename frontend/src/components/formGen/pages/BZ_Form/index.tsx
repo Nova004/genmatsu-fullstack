@@ -73,10 +73,13 @@ function BZ_Form() {
             lotNo: data.basicData.lotNo,
             templateIds: templateIds,
             formData: {
-                ...data, // เอกสารทั้งหมดที่ผู้ใช้กรอก
-                netWeightOfYieldSTD: 800 // กำหนดค่า netWeightOfYieldSTD เป็น 800 กรัม ตามที่ระบุ
+                ...data, // 1. นำข้อมูลเดิมทั้งหมดมา
+                rawMaterials: { // 2. กางข้อมูล rawMaterials เดิมออกมา
+                    ...data.rawMaterials,
+                    netWeightOfYieldSTD: 800 // 3. เพิ่ม field ใหม่เข้าไปใน object นี้
+                }
             },
-            submittedBy: 'current_user_placeholder', // TODO: ในอนาคตต้องเปลี่ยนเป็นข้อมูล user ที่ login อยู่จริง
+            submittedBy: 'current_user_placeholder',
         };
 
         try {
