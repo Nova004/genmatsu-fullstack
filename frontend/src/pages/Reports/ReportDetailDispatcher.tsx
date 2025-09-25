@@ -4,23 +4,15 @@ import { getSubmissionById } from '../../services/submissionService';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 
 // -- Import Component แบบปกติ --
-import ReportDetailBZ from './BZ/ReportDetailBZ';
+import ReportDetailBZ from './BZ/ReportDetailBZ'; 
 
 const ReportDetailDispatcher: React.FC = () => {
-  // --- จุดเช็คพอยท์ที่ 1 ---
-  console.log('[Dispatcher] Component is rendering...');
-
   const { id } = useParams<{ id: string }>();
-  // --- จุดเช็คพอยท์ที่ 2 ---
-  console.log('[Dispatcher] ID from URL:', id);
-
-  const [submissionData, setSubmissionData] = useState<any>(null);
+  const [submissionData, setSubmissionData] = useState<any>(null); 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // --- จุดเช็คพอยท์ที่ 3 ---
-    console.log('[Dispatcher] useEffect is running...');
+  useEffect(() => { 
 
     if (!id) {
       console.error('[Dispatcher] Error: No ID found in URL.');
@@ -28,17 +20,12 @@ const ReportDetailDispatcher: React.FC = () => {
       setIsLoading(false);
       return;
     }
-
     const fetchDetails = async () => {
       console.log(`[Dispatcher] Attempting to fetch data for ID: ${id}`);
       try {
-        const data = await getSubmissionById(id);
-        // --- จุดเช็คพอยท์ที่ 4 (ถ้าสำเร็จ) ---
-        console.log('[Dispatcher] API call successful. Data received:', data);
-        setSubmissionData(data);
+        const data = await getSubmissionById(id); // คืองการดึงข้อมูล submission
+        setSubmissionData(data); // data ควรมีโครงสร้าง { submission: {...}, blueprints: [...] }
       } catch (err) {
-        // --- จุดเช็คพอยท์ที่ 5 (ถ้าล้มเหลว) ---
-        console.error('[Dispatcher] API call failed.', err);
         setError(`ไม่สามารถดึงข้อมูลสำหรับ ID: ${id} ได้`);
       } finally {
         setIsLoading(false);
@@ -48,13 +35,12 @@ const ReportDetailDispatcher: React.FC = () => {
     fetchDetails();
   }, [id]);
 
-  const renderFormDetail = () => {
-    if (!submissionData) return <div>No submission data to render.</div>;
-    
-    const { submission, blueprints } = submissionData;
-    // --- จุดเช็คพอยท์ที่ 6 ---
-    console.log('[Dispatcher] Rendering form detail for type:', submission.form_type);
-    
+  const renderFormDetail = () => { // ฟังก์ชันนี้จะเลือก Component ที่จะเรนเดอร์ตาม form_type 
+
+    if (!submissionData) return <div>No submission data to render.</div>; 
+
+    const { submission, blueprints } = submissionData; 
+
     switch (submission.form_type) {
       case 'BZ':
         return <ReportDetailBZ submission={submission} blueprints={blueprints} />;
@@ -63,8 +49,6 @@ const ReportDetailDispatcher: React.FC = () => {
     }
   };
 
-  // --- จุดเช็คพอยท์ที่ 7 ---
-  console.log(`[Dispatcher] Current state: isLoading=${isLoading}, error=${error}`);
 
   if (isLoading) {
     return <><div className="text-center p-4">กำลังโหลดรายละเอียด...</div></>;

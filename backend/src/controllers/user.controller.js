@@ -32,6 +32,7 @@ exports.getAllUsers = async (req, res) => {
         dbo.Gen_Manu_Member AS gm ON m.agt_member_id = gm.Gen_Manu_mem_Memid COLLATE DATABASE_DEFAULT
       WHERE
          m.agt_status_job = 'Working'
+         AND m.agt_member_section = 'S010'
         AND m.agt_member_position IN ('P012', 'P013', 'P015')
       ORDER BY 
         m.agt_member_id;
