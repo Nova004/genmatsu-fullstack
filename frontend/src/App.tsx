@@ -8,6 +8,7 @@ import SignUp from './pages/Authentication/SignUp';
 import Calendar from './pages/Calendar';
 import Chart from './pages/Chart';
 import ECommerce from './pages/Dashboard/ECommerce';
+import FormElements from './pages/Form/FormElements';
 import FormMasterEditor from './components/formGen/pages/Master/FormMasterEditor';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
@@ -100,6 +101,15 @@ function App() {
                     }
                   />
                   <Route
+                    path="forms/form-elements"
+                    element={
+                      <>
+                        <PageTitle title="Form Elements" />
+                        <FormElements />
+                      </>
+                    }
+                  />
+                  <Route
                     path="/master/form-editor"
                     element={
                       <>
@@ -125,6 +135,7 @@ function App() {
                       </>
                     }
                   />
+
                   <Route
                     path="/reports/history"
                     element={

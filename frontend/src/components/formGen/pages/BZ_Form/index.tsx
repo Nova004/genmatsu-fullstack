@@ -7,6 +7,7 @@ import FormStep1 from './FormStep1';
 import FormStep2 from './FormStep2';
 import FormStep3 from './FormStep3';
 import FormStep4 from './FormStep4';
+import { useAuth } from '../../../../context/AuthContext';
 
 // --- 1. Import เครื่องมือที่จำเป็น ---
 import { submitProductionForm } from '../../../../services/submissionService';
@@ -22,7 +23,8 @@ const ProgressBar = ({ currentStep, totalSteps }: { currentStep: number, totalSt
 function BZ_Form() {
     const [step, setStep] = useState(1);
     const totalSteps = 4;
-
+    const { user } = useAuth(); // ดึงข้อมูลผู้ใช้จาก Context
+    
     // --- 2. เพิ่ม State สำหรับจัดการการบันทึก ---
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loadedTemplates, setLoadedTemplates] = useState<any[]>([]);
@@ -81,7 +83,7 @@ function BZ_Form() {
                     netWeightOfYieldSTD: 800 // 3. เพิ่ม field ใหม่เข้าไปใน object นี้
                 }
             },
-            submittedBy: 'current_user_placeholder',
+            submittedBy: user?.username || 'unknown_user',
         };
 
         try {

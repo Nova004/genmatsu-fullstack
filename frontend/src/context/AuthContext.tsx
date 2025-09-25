@@ -1,39 +1,57 @@
-// src/context/AuthContext.tsx
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-// สร้าง interface สำหรับข้อมูล user ที่เราจะเก็บ
+// 1. สร้าง Type สำหรับ User และ Context เพื่อความปลอดภัยของโค้ด
 interface User {
-  id: number; // หรือ number ถ้า ID เป็นตัวเลข
-  name: string;
-  email: string;
+  username: string;
+  // เพิ่ม field อื่นๆ ที่ได้จาก API login ของคุณที่นี่
+  // เช่น token: string;
 }
 
-
-// สร้าง interface สำหรับ Context
 interface AuthContextType {
   user: User | null;
   login: (userData: User) => void;
   logout: () => void;
 }
 
-// สร้าง Context พร้อมค่าเริ่มต้นเป็น null
-const AuthContext = createContext<AuthContextType | null>(null); //ข้อมมูล User ที่ login แล้ว
+// 2. สร้าง Context ขึ้นมา
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// สร้าง Provider component
+// 3. สร้าง Provider Component (หัวใจของการทำงาน)
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  
+  // --- 👇👇👇 จุดแก้ไขสำคัญที่ 1: ตรวจสอบ localStorage ตอนเริ่มต้น ---
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const storedUser = localStorage.getItem('user');
+      // ถ้ามีข้อมูลใน localStorage ให้แปลงกลับจาก JSON string แล้ว return เป็นค่าเริ่มต้น
+      return storedUser ? JSON.parse(storedUser) : null;
+    } catch (error) {
+      console.error("Failed to parse user from localStorage", error);
+      return null;
+    }
+  });
+  // --- 👆👆👆 ---
 
-  // ฟังก์ชันสำหรับ Login
+
+  // --- 👇👇👇 จุดแก้ไขสำคัญที่ 2: อัปเกรดฟังก์ชัน login ---
   const login = (userData: User) => {
+    // 1. เก็บข้อมูล user ไว้ใน State (เหมือนเดิม)
     setUser(userData);
-    // ในสถานการณ์จริง เราอาจจะเก็บ token ไว้ใน localStorage ด้วย
+    // 2. คัดลอกข้อมูลไปเก็บใน localStorage (แปลงเป็น JSON string ก่อน)
+    localStorage.setItem('user', JSON.stringify(userData));
   };
+  // --- 👆👆👆 ---
 
-  // ฟังก์ชันสำหรับ Logout
+
+  // --- 👇👇👇 จุดแก้ไขสำคัญที่ 3: อัปเกรดฟังก์ชัน logout ---
   const logout = () => {
+    // 1. ลบข้อมูลออกจาก State
     setUser(null);
-    // และลบ token ออกจาก localStorage
+    // 2. ลบข้อมูลออกจาก localStorage
+    localStorage.removeItem('user');
   };
+  // --- 👆👆👆 ---
+
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>
@@ -42,10 +60,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// สร้าง Custom Hook เพื่อให้เรียกใช้ง่ายๆ
+// 4. สร้าง Custom Hook เพื่อให้เรียกใช้งานง่าย
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
