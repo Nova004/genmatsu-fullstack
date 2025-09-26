@@ -1,3 +1,5 @@
+// controllers/submission.controller.js
+
 const sql = require('mssql');
 const dbConfig = require('../config/db.config');
 
@@ -102,9 +104,6 @@ exports.createSubmission = async (req, res) => {
     res.status(500).send({ message: "Failed to submit form.", error: err.message });
   }
 };
-
-
-
 
 // 🎯 ฟังก์ชันใหม่ 1: สำหรับดึงรายการ Submission ทั้งหมด 🎯
 exports.getAllSubmissions = async (req, res) => {
@@ -223,4 +222,51 @@ exports.getSubmissionById = async (req, res) => {
     } catch (err) {
         res.status(500).send({ message: "Failed to retrieve submission details.", error: err.message });
     }
+};
+
+exports.deleteSubmission = async (req, res) => {
+  // ดึง 'id' ที่ต้องการลบจาก URL parameter
+  const { id } = req.params;
+
+  // สร้าง connection pool ใหม่ ตามสไตล์ของไฟล์นี้
+  const pool = await sql.connect(dbConfig);
+  // เริ่ม transaction จาก pool ที่เพิ่งสร้าง
+  const transaction = new sql.Transaction(pool);
+
+  try {
+    // เริ่มต้น transaction
+    await transaction.begin();
+
+    // สร้าง request ที่จะทำงานภายใต้ transaction นี้
+    const request = new sql.Request(transaction);
+
+    // ผูกตัวแปร id เข้ากับ SQL query อย่างปลอดภัย
+    request.input('submissionId', sql.Int, id);
+
+    // คำสั่งที่ 1: ลบข้อมูลจากตารางลูก (Form_Submission_Data) ก่อนเสมอ
+    await request.query('DELETE FROM Form_Submission_Data WHERE submission_id = @submissionId');
+    
+    // คำสั่งที่ 2: ลบข้อมูลจากตารางแม่ (Form_Submissions)
+    const result = await request.query('DELETE FROM Form_Submissions WHERE submission_id = @submissionId');
+
+    // ตรวจสอบว่ามีข้อมูลถูกลบจริงหรือไม่
+    if (result.rowsAffected[0] === 0) {
+      // ถ้าไม่มีแถวไหนถูกลบ แสดงว่า ID นั้นไม่มีอยู่
+      // เรายังคง commit transaction เพราะไม่มีอะไรผิดพลาด แค่ไม่มีข้อมูลให้ลบ
+      await transaction.commit();
+      return res.status(404).send({ message: `Submission with ID ${id} not found.` });
+    }
+
+    // ถ้าทุกอย่างสำเร็จ ให้ commit transaction (ยืนยันการลบ)
+    await transaction.commit();
+
+    // ส่งข้อความกลับไปบอก Frontend ว่าลบสำเร็จแล้ว (ใช้ .send ตามสไตล์ของคุณ)
+    res.status(200).send({ message: `Submission ID ${id} has been deleted successfully.` });
+
+  } catch (err) {
+    // หากเกิดข้อผิดพลาด ให้ยกเลิกการเปลี่ยนแปลงทั้งหมด
+    await transaction.rollback();
+    // และส่ง Error กลับไป
+    res.status(500).send({ message: "Failed to delete submission.", error: err.message });
+  }
 };

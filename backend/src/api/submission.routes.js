@@ -10,4 +10,7 @@ router.get('/', submissionController.getAllSubmissions);
 // 🎯 Route ใหม่: สำหรับ "ดึงรายการเดียว" 🎯
 router.get('/:id', submissionController.getSubmissionById);
 
+// 🎯 Route ใหม่: สำหรับ "การลบ" 🎯
+router.delete('/:id', submissionController.deleteSubmission);
+
 module.exports = router;
