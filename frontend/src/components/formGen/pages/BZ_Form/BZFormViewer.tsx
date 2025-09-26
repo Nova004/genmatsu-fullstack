@@ -15,7 +15,7 @@ const ProgressBar = ({ currentStep, totalSteps }: { currentStep: number, totalSt
     return (<div className="my-6 flex justify-center"> <div className="inline-flex rounded-md shadow-sm"> {[...Array(totalSteps)].map((_, index) => { const stepNumber = index + 1; return (<div key={stepNumber} className={`px-4 py-2 text-sm font-medium ${stepNumber === currentStep ? activeClass : inactiveClass} ${stepNumber === 1 ? 'rounded-l-lg' : ''} ${stepNumber === totalSteps ? 'rounded-r-lg' : ''} border border-gray-200 dark:border-strokedark`}> Step {stepNumber} </div>); })} </div> </div>);
 };
 
-// --- 👇👇👇 จุดที่แก้ไข: เพิ่ม blueprints และ isReadOnly เข้าไปใน Props ---
+
 interface BZFormViewerProps {
   formData: IManufacturingReportForm;
   blueprints: any; 
@@ -32,9 +32,9 @@ const BZFormViewer: React.FC<BZFormViewerProps> = ({ formData, blueprints, isRea
 
   useEffect(() => {
     if (formData) {
-      methods.reset(formData);
+      methods.reset(formData);  
     }
-  }, [formData, methods]);
+  }, [formData, methods]); 
 
   const formStepProps = {
     ...methods,

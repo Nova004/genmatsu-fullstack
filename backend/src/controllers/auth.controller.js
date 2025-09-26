@@ -1,9 +1,9 @@
 const { sql, pool, poolConnect } = require("../db");
 // const bcrypt = require('bcryptjs'); // ไม่ได้ใช้ bcrypt แล้ว สามารถลบออกได้
 const jwt = require("jsonwebtoken");
-const fs = require('fs');
-const path = require('path');
-require('dotenv').config();
+const fs = require("fs");
+const path = require("path");
+require("dotenv").config();
 const login = async (req, res) => {
   try {
     const { userId, password } = req.body;
@@ -15,29 +15,36 @@ const login = async (req, res) => {
     const result = await pool
       .request()
       .input("agt_member_id", sql.NVarChar, userId)
-      .query("SELECT * FROM agt_member WHERE agt_member_id = @agt_member_id");
+      .query("SELECT agt_member_id, agt_member_password, agt_member_nameTH, agt_member_nameEN, agt_member_email, agt_member_position, agt_member_section, agt_member_shift, agt_status_job FROM agt_member WHERE agt_member_id = @agt_member_id");
 
     if (result.recordset.length === 0) {
-      return res.status(401).json({ message: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
+      return res
+        .status(401)
+        .json({ message: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
     }
     const user = result.recordset[0];
 
     // 4. เปรียบเทียบรหัสผ่าน
     if (password !== user.agt_member_password) {
-      return res.status(401).json({ message: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
+      return res
+        .status(401)
+        .json({ message: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
     }
 
     // 5. สร้าง JWT Token
     const payload = {
       user: {
         id: user.agt_member_id,
-        name: user.agt_member_nameTH,
+        username: user.agt_member_nameTH, 
+        email: user.agt_member_email,
+        nameTH: user.agt_member_nameTH,
+        nameEN: user.agt_member_nameEN,
       },
     };
 
     const token = jwt.sign(
       payload,
-      process.env.JWT_SECRET || 'default_secret', // ควรมี JWT_SECRET ในไฟล์ .env
+      process.env.JWT_SECRET || "default_secret", // ควรมี JWT_SECRET ในไฟล์ .env
       { expiresIn: "1h" }
     );
 
@@ -46,7 +53,6 @@ const login = async (req, res) => {
       token: token,
       user: payload.user,
     });
-
   } catch (error) {
     console.error("!!! SERVER ERROR DURING LOGIN !!!");
     console.error("Error Details:", error);
@@ -59,7 +65,11 @@ const getUserPhoto = async (req, res) => {
     // ... (โค้ดส่วนนี้เหมือนเดิม แต่เพิ่ม await poolConnect เข้าไปด้วยจะปลอดภัยที่สุด)
     await poolConnect;
     const userId = req.params.id;
-    const photoPath = path.join("\\\\192.168.1.68", "PhotoHRC", `${userId}.jpg`);
+    const photoPath = path.join(
+      "\\\\192.168.1.68",
+      "PhotoHRC",
+      `${userId}.jpg`
+    );
 
     if (fs.existsSync(photoPath)) {
       const imageFile = fs.readFileSync(photoPath);
@@ -80,4 +90,3 @@ module.exports = {
   login,
   getUserPhoto,
 };
-

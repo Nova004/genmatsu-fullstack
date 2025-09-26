@@ -3,8 +3,8 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 // 1. สร้าง Type สำหรับ User และ Context เพื่อความปลอดภัยของโค้ด
 interface User {
   username: string;
-  // เพิ่ม field อื่นๆ ที่ได้จาก API login ของคุณที่นี่
-  // เช่น token: string;
+  nameEN: string;
+  id: string;
 }
 
 interface AuthContextType {
