@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { getAllSubmissions, deleteSubmission } from '../../services/submissionService';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import { fireToast } from '../../hooks/fireToast'; // Import fireToast เข้ามา
-
+import Swal from 'sweetalert2';
+import 'sweetalert2/src/sweetalert2.scss';
 
 const ReportHistory: React.FC = () => {
   const [submissions, setSubmissions] = useState<any[]>([]);
@@ -31,31 +32,38 @@ const ReportHistory: React.FC = () => {
     return timestamp.replace('T', ' ').substring(0, 19);
   };
 
-  const handleDelete = async (id: number, lotNo: string) => {
-    // 1. ใช้ window.confirm เพื่อแสดงกล่องข้อความของเบราว์เซอร์
-    const isConfirmed = window.confirm(
-      `คุณต้องการลบรายงาน Lot No: "${lotNo}" ใช่หรือไม่?`
-    );
+  // frontend/src/pages/Reports/ReportHistory.tsx
 
-    // 2. ตรวจสอบว่าผู้ใช้กด "OK" (ยืนยัน) หรือไม่
-    if (isConfirmed) {
-      try {
-        // 3. ถ้าผู้ใช้ยืนยัน, ให้เรียก API เพื่อลบข้อมูล
-        await deleteSubmission(id);
+  const handleDelete = (id: number, lotNo: string) => {
+    Swal.fire({
+      title: 'คุณแน่ใจหรือไม่?',
+      text: `คุณต้องการลบรายงาน Lot No: "${lotNo}" ใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้!`,
+      icon: 'warning',
+      showCancelButton: true,
 
-        // 4. อัปเดตหน้าจอโดยลบรายการนั้นออกจาก State
-        setSubmissions(prev => prev.filter(s => s.submission_id !== id));
+      confirmButtonText: 'delete',
+      cancelButtonText: 'Cancel',
 
-        // 5. ใช้ fireToast ที่เรามีอยู่แล้ว เพื่อแจ้งว่าลบสำเร็จ
-        fireToast('success', `รายงาน Lot No: "${lotNo}" ถูกลบแล้ว`);
+      customClass: {
+        popup: 'dark:bg-boxdark dark:text-white',
+        confirmButton: 'inline-flex items-center justify-center rounded-md bg-danger py-2 px-5 text-center font-medium text-white hover:bg-opacity-90 lg:px-6',
+        // --- 👇 เพิ่ม 'ml-3' เข้าไปที่ปุ่ม Cancel ---
+        cancelButton: 'ml-3 inline-flex items-center justify-center rounded-md bg-primary py-2 px-5 text-center font-medium text-white hover:bg-opacity-90 lg:px-6'
+      },
+      buttonsStyling: false,
 
-      } catch (error) {
-        // 6. หากเกิดข้อผิดพลาด, แสดง Toast แจ้งเตือน
-        console.error("Failed to delete submission:", error);
-        fireToast('error', 'ไม่สามารถลบรายงานได้');
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await deleteSubmission(id);
+          setSubmissions(prev => prev.filter(s => s.submission_id !== id));
+          fireToast('success', `รายงาน Lot No: "${lotNo}" ถูกลบแล้ว`);
+        } catch (error) {
+          console.error("Failed to delete submission:", error);
+          fireToast('error', 'ไม่สามารถลบรายงานได้');
+        }
       }
-    }
-    // ถ้าผู้ใช้กด "Cancel", ก็จะไม่มีอะไรเกิดขึ้น
+    });
   };
 
   return (
@@ -91,10 +99,16 @@ const ReportHistory: React.FC = () => {
             <thead>
               <tr className="bg-gray-2 text-left dark:bg-meta-4">
                 <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
+                  ID
+                </th>
+                <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
                   Lot No.
                 </th>
                 <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
                   วันที่บันทึก
+                </th>
+                <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
+                  Gen Type
                 </th>
                 <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white">
                   ผู้บันทึก
@@ -124,13 +138,18 @@ const ReportHistory: React.FC = () => {
                 submissions.map((submission) => (
                   <tr key={submission.submission_id}>
                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                      <p className="text-black dark:text-white">{submission.submission_id}</p>
+                    </td>
+                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                       <p className="text-black dark:text-white">{submission.lot_no}</p>
                     </td>
                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                       <p className="text-black dark:text-white">
-                        {/* --- 👇👇👇 แก้ไขตรงนี้: เรียกใช้ฟังก์ชัน formatDbTimestamp --- */}
                         {formatDbTimestamp(submission.submitted_at)}
                       </p>
+                    </td>
+                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                      <p className="text-black dark:text-white">{submission.form_type}</p>
                     </td>
                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                       <p className="text-black dark:text-white">{submission.submitted_by}</p>
