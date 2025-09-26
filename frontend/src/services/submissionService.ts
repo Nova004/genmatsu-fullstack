@@ -36,3 +36,18 @@ export const getSubmissionById = async (id: string) => {
     throw error;
   }
 };
+
+
+// ฟังก์ชันสำหรับลบ Submission ด้วย ID
+export const deleteSubmission = async (id: number): Promise<{ message: string }> => {
+  try {
+    // เรียกใช้ apiClient.delete ไปยัง Endpoint ที่ถูกต้อง
+    const response = await apiClient.delete<{ message: string }>(`/api/submissions/${id}`);
+    // ส่งข้อมูลที่ได้กลับไป
+    return response.data;
+  } catch (error) {
+    // หากเกิด Error, โยน Error ออกไปเพื่อให้ Component ที่เรียกใช้จัดการต่อ
+    console.error(`Error deleting submission with id ${id}:`, error);
+    throw error;
+  }
+};

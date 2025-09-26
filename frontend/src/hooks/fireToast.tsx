@@ -1,3 +1,4 @@
+// hooks/fireToast.tsx
 import toast from 'react-hot-toast';
 import dataJSON from '../data.json';
 

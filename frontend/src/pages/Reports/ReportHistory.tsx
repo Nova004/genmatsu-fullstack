@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getAllSubmissions } from '../../services/submissionService';
+import { getAllSubmissions, deleteSubmission } from '../../services/submissionService';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
+import { fireToast } from '../../hooks/fireToast'; // Import fireToast เข้ามา
+
 
 const ReportHistory: React.FC = () => {
   const [submissions, setSubmissions] = useState<any[]>([]);
@@ -29,13 +31,36 @@ const ReportHistory: React.FC = () => {
     return timestamp.replace('T', ' ').substring(0, 19);
   };
 
+  const handleDelete = async (id: number, lotNo: string) => {
+    // 1. ใช้ window.confirm เพื่อแสดงกล่องข้อความของเบราว์เซอร์
+    const isConfirmed = window.confirm(
+      `คุณต้องการลบรายงาน Lot No: "${lotNo}" ใช่หรือไม่?`
+    );
+
+    // 2. ตรวจสอบว่าผู้ใช้กด "OK" (ยืนยัน) หรือไม่
+    if (isConfirmed) {
+      try {
+        // 3. ถ้าผู้ใช้ยืนยัน, ให้เรียก API เพื่อลบข้อมูล
+        await deleteSubmission(id);
+
+        // 4. อัปเดตหน้าจอโดยลบรายการนั้นออกจาก State
+        setSubmissions(prev => prev.filter(s => s.submission_id !== id));
+
+        // 5. ใช้ fireToast ที่เรามีอยู่แล้ว เพื่อแจ้งว่าลบสำเร็จ
+        fireToast('success', `รายงาน Lot No: "${lotNo}" ถูกลบแล้ว`);
+
+      } catch (error) {
+        // 6. หากเกิดข้อผิดพลาด, แสดง Toast แจ้งเตือน
+        console.error("Failed to delete submission:", error);
+        fireToast('error', 'ไม่สามารถลบรายงานได้');
+      }
+    }
+    // ถ้าผู้ใช้กด "Cancel", ก็จะไม่มีอะไรเกิดขึ้น
+  };
+
   return (
     <>
       <Breadcrumb pageName="ประวัติการบันทึก (Report History)" />
-      {/* --- 👇👇👇 2. เพิ่มปุ่ม "สร้างรายงานใหม่" ตรงนี้ 👇👇👇 --- */}
-
-
-
       <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
         <div className="flex justify-end mb-4">
           <Link
@@ -140,6 +165,14 @@ const ReportHistory: React.FC = () => {
                             />
                           </svg>
                         </Link>
+
+                        <button
+                          onClick={() => handleDelete(submission.submission_id, submission.lot_no)}
+                          className="hover:text-danger"
+                        >
+                          {/* ไอคอนถังขยะ */}
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        </button>
                       </div>
                     </td>
                   </tr>
