@@ -1,3 +1,5 @@
+// location: frontend/src/pages/Reports/ReportHistory_GenB.tsx
+
 // =============================================================================
 // --- 1. IMPORT STATEMENTS ---
 // นำเข้าไลบรารีและคอมโพเนนต์ที่จำเป็นทั้งหมด
@@ -37,7 +39,7 @@ type Submission = {
 // --- 3. COMPONENT DEFINITION ---
 // ReportHistory Component: หน้าสำหรับแสดงประวัติการบันทึกทั้งหมดในรูปแบบตาราง
 // =============================================================================
-const ReportHistory_BZ: React.FC = () => {
+const ReportHistory_GenB: React.FC = () => {
 
   // --- 3.1. STATE MANAGEMENT ---
   // ประกาศ State ต่างๆ เพื่อใช้จัดการข้อมูลภายในคอมโพเนนต์
@@ -295,4 +297,4 @@ const ReportHistory_BZ: React.FC = () => {
   );
 };
 
-export default ReportHistory_BZ;
+export default ReportHistory_GenB;

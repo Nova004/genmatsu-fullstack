@@ -20,7 +20,7 @@ import ProtectedRoute from './routes/ProtectedRoute';
 import UserMaster from './components/formGen/pages/Master/UserMaster';
 import NaClMaster from './components/formGen/pages/Master/NaClMaster';
 import { Toaster } from 'react-hot-toast';
-import ReportHistory_BZ from './pages/Reports/ReportHistory_BZ';
+import ReportHistory_GenB from './pages/Reports/ReportHistory_GEN_B';
 import ReportDetailDispatcher from './pages/Reports/ReportDetailDispatcher';
 
 function App() {
@@ -142,7 +142,7 @@ function App() {
                       <ProtectedRoute>
                         <>
                           <PageTitle title="Report History | Genmatsu" />
-                          <ReportHistory_BZ />
+                          <ReportHistory_GenB />
                         </>
                       </ProtectedRoute>
                     }
