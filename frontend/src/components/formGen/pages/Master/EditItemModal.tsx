@@ -12,88 +12,110 @@ interface Props {
 
 // --- Component ย่อยสำหรับ Input Field ---
 const FormInput = ({ label, value, onChange, type = 'text' }: { label: string, value: any, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, type?: string }) => (
-    <div className="mb-4">
-        <label className="mb-2 block text-sm font-medium text-black dark:text-white">{label}</label>
-        <input
-            type={type}
-            value={value || ''}
-            onChange={onChange}
-            className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-2 px-4 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-        />
-    </div>
+  <div className="mb-4">
+    <label className="mb-2 block text-sm font-medium text-black dark:text-white">{label}</label>
+    <input
+      type={type}
+      value={value || ''}
+      onChange={onChange}
+      className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-2 px-4 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+    />
+  </div>
 );
 
 // --- Component ย่อยสำหรับ Toggle Switch ---
 const FormToggle = ({ label, enabled, onChange }: { label: string, enabled: boolean, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }) => (
-    <div className="flex items-center gap-4">
-        <label className="text-sm font-medium text-black dark:text-white">{label}</label>
-        <input 
-            type="checkbox" 
-            checked={enabled} 
-            onChange={onChange}
-            className="relative h-5 w-10 cursor-pointer appearance-none rounded-full bg-gray-300 transition-colors checked:bg-primary focus:outline-none dark:bg-gray-600"
-        />
-    </div>
+  <div className="flex items-center gap-4">
+    <label className="text-sm font-medium text-black dark:text-white">{label}</label>
+    <input
+      type="checkbox"
+      checked={enabled}
+      onChange={onChange}
+      className="relative h-5 w-10 cursor-pointer appearance-none rounded-full bg-gray-300 transition-colors checked:bg-primary focus:outline-none dark:bg-gray-600"
+    />
+  </div>
 );
 
 // --- Component ย่อยสำหรับ Dropdown Select ---
 const FormSelect = ({ label, value, onChange, options }: { label: string, value: any, onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void, options: { value: string, label: string }[] }) => (
-    <div className="mb-4">
-        <label className="mb-2 block text-sm font-medium text-black dark:text-white">{label}</label>
-        <select
-            value={value || ''}
-            onChange={onChange}
-            className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-2 px-4 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-        >
-            {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-        </select>
-    </div>
+  <div className="mb-4">
+    <label className="mb-2 block text-sm font-medium text-black dark:text-white">{label}</label>
+    <select
+      value={value || ''}
+      onChange={onChange}
+      className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-2 px-4 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+    >
+      {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+    </select>
+  </div>
 );
 
 // --- Component ย่อยสำหรับส่วน Validation (เวอร์ชันเรียบง่าย) ---
 const ValidationFields = ({ validation, path, onConfigChange }: { validation: any, path: string, onConfigChange: (path: string, value: any) => void }) => {
-    if (!validation) return null; // ถ้าไม่มี validation ก็ไม่ต้องแสดงผล
+  if (!validation) return null; // ถ้าไม่มี validation ก็ไม่ต้องแสดงผล
 
-    const validationTypes = [
-        { value: 'RANGE_DIRECT', label: 'Direct Range (min-max)' },
-        { value: 'RANGE_TOLERANCE', label: 'Tolerance Range (min-max)' },
-        { value: 'MAX_VALUE', label: 'Maximum Value' },
-    ];
+  const validationTypes = [
+    { value: '', label: 'No Validation' }, // เพิ่มตัวเลือกสำหรับไม่มี Validation
+    { value: 'RANGE_DIRECT', label: 'Direct Range (min-max)' },
+    { value: 'RANGE_TOLERANCE', label: 'Tolerance Range (min-max)' },
+    { value: 'MAX_VALUE', label: 'Maximum Value' },
+  ];
 
-    return (
-        <div className="mt-4 rounded-md border border-stroke p-4 dark:border-strokedark">
-            <h5 className="font-semibold text-black dark:text-white">Validation Rules</h5>
-            <FormSelect
-                label="Validation Type"
-                value={validation.type}
-                onChange={e => onConfigChange(`${path}.type`, e.target.value)}
-                options={validationTypes}
-            />
-            <FormInput 
-                label="Error Message" 
-                value={validation.errorMessage} 
-                onChange={e => onConfigChange(`${path}.errorMessage`, e.target.value)} 
-            />
-            <div className="grid grid-cols-2 gap-4">
-                {(validation.type === 'RANGE_DIRECT' || validation.type === 'RANGE_TOLERANCE') && (
-                    <FormInput 
-                        label="Min Value" 
-                        type="number" 
-                        value={validation.min} 
-                        onChange={e => onConfigChange(`${path}.min`, parseFloat(e.target.value) || null)} 
-                    />
-                )}
-                {(validation.type === 'RANGE_DIRECT' || validation.type === 'RANGE_TOLERANCE' || validation.type === 'MAX_VALUE') && (
-                    <FormInput 
-                        label="Max Value" 
-                        type="number" 
-                        value={validation.max} 
-                        onChange={e => onConfigChange(`${path}.max`, parseFloat(e.target.value) || null)} 
-                    />
-                )}
-            </div>
-        </div>
-    );
+  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newType = e.target.value;
+
+    // 1. อัปเดต "type" ของ validation ก่อนเสมอ
+    onConfigChange(`${path}.type`, newType);
+
+    // 2. **หัวใจของการแก้ไข:** ถ้าประเภทใหม่คือ 'MAX_VALUE'
+    //    ให้สั่งล้างค่า 'min' ให้เป็น null ทันที
+    if (newType === 'MAX_VALUE') {
+      onConfigChange(`${path}.min`, null);
+    }
+  };
+
+  return (
+    <div className="mt-4 rounded-md border border-stroke p-4 dark:border-strokedark">
+      <h5 className="font-semibold text-black dark:text-white">Validation Rules</h5>
+      <FormSelect
+        label="Validation Type"
+        value={validation.type}
+        // --- 👇 เรียกใช้ฟังก์ชัน Handler ใหม่ ---
+        onChange={handleTypeChange}
+        options={validationTypes}
+      />
+
+      {/* --- 👇 เพิ่มเงื่อนไข: จะแสดงช่องกรอกก็ต่อเมื่อมีการเลือก Type แล้ว --- */}
+      {validation.type && (
+        <>
+          <FormInput
+            label="Error Message"
+            value={validation.errorMessage}
+            onChange={e => onConfigChange(`${path}.errorMessage`, e.target.value)}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            {/* ส่วนนี้เหมือนเดิม */}
+            {(validation.type === 'RANGE_DIRECT' || validation.type === 'RANGE_TOLERANCE') && (
+              <FormInput
+                label="Min Value"
+                type="number"
+                value={validation.min}
+                onChange={e => onConfigChange(`${path}.min`, parseFloat(e.target.value) || null)}
+              />
+            )}
+            {(validation.type === 'RANGE_DIRECT' || validation.type === 'RANGE_TOLERANCE' || validation.type === 'MAX_VALUE') && (
+              <FormInput
+                label="Max Value"
+                type="number"
+                value={validation.max}
+                onChange={e => onConfigChange(`${path}.max`, parseFloat(e.target.value) || null)}
+              />
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
 };
 
 const EditItemModal: React.FC<Props> = ({ isOpen, item, onClose, onSave }) => {
@@ -111,13 +133,13 @@ const EditItemModal: React.FC<Props> = ({ isOpen, item, onClose, onSave }) => {
   if (!isOpen || !editedItem || !config) {
     return null;
   }
-  
+
   const handleConfigChange = (path: string, value: any) => {
     setConfig((prevConfig: any) => {
       const newConfig = JSON.parse(JSON.stringify(prevConfig));
       let current = newConfig;
       const keys = path.split('.');
-      
+
       for (let i = 0; i < keys.length - 1; i++) {
         current = current[keys[i]];
       }
@@ -148,8 +170,8 @@ const EditItemModal: React.FC<Props> = ({ isOpen, item, onClose, onSave }) => {
 
           {step2Config.inputs?.map((input, index) => (
             <div key={index} className="rounded-md border border-stroke p-4 dark:border-strokedark">
-                <p className="font-medium">Input #{index + 1}: ({input.field_name})</p>
-                <ValidationFields validation={input.validation} path={`inputs.${index}.validation`} onConfigChange={handleConfigChange} />
+              <p className="font-medium">Input #{index + 1}: ({input.field_name})</p>
+              <ValidationFields validation={input.validation} path={`inputs.${index}.validation`} onConfigChange={handleConfigChange} />
             </div>
           ))}
         </div>
@@ -164,12 +186,12 @@ const EditItemModal: React.FC<Props> = ({ isOpen, item, onClose, onSave }) => {
           <div className="rounded-md border border-stroke p-4 dark:border-strokedark">
             <h4 className="mb-4 font-semibold">Row Time Settings</h4>
             <div className="flex gap-8">
-              <FormToggle 
+              <FormToggle
                 label="Enable Start Time"
                 enabled={step3Config.inputs?.startTime?.enabled ?? false}
                 onChange={e => handleConfigChange('inputs.startTime.enabled', e.target.checked)}
               />
-              <FormToggle 
+              <FormToggle
                 label="Enable Finish Time"
                 enabled={step3Config.inputs?.finishTime?.enabled ?? false}
                 onChange={e => handleConfigChange('inputs.finishTime.enabled', e.target.checked)}

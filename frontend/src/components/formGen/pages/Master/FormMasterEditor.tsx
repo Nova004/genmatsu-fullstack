@@ -105,7 +105,7 @@ const FormMasterEditor: React.FC = () => {
   const handleUpdateItem = (updatedItem: IMasterFormItem) => {
     setTemplateItems(prevItems =>
       prevItems.map(item =>
-        // ถ้า item_id ตรงกัน ให้แทนที่ด้วยข้อมูลใหม่, 아니면 item เดิม
+        // ถ้า item_id ตรงกัน ให้แทนที่ด้วยข้อมูลใหม่,  item เดิม
         item.item_id === updatedItem.item_id ? updatedItem : item
       )
     );
@@ -268,7 +268,7 @@ const FormMasterEditor: React.FC = () => {
                                 {...provided.dragHandleProps}
                                 className={`flex items-center gap-4 rounded-md p-3 transition-colors ${snapshot.isDragging ? 'bg-blue-100 dark:bg-blue-900' : 'bg-gray-100 dark:bg-meta-4'}`}
                               >
-                                <div className="font-bold text-gray-500 dark:text-gray-400">#{index + 1}</div>
+                                <div className="font-bold text-gray-500 dark:text-gray-400">{index + 1}.</div>
                                 <div className="flex-1 text-black dark:text-white">
                                   {getDisplayValue(item)}
                                 </div>

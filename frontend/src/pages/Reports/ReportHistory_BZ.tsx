@@ -37,7 +37,7 @@ type Submission = {
 // --- 3. COMPONENT DEFINITION ---
 // ReportHistory Component: หน้าสำหรับแสดงประวัติการบันทึกทั้งหมดในรูปแบบตาราง
 // =============================================================================
-const ReportHistory: React.FC = () => {
+const ReportHistory_BZ: React.FC = () => {
 
   // --- 3.1. STATE MANAGEMENT ---
   // ประกาศ State ต่างๆ เพื่อใช้จัดการข้อมูลภายในคอมโพเนนต์
@@ -295,4 +295,4 @@ const ReportHistory: React.FC = () => {
   );
 };
 
-export default ReportHistory;
+export default ReportHistory_BZ;
