@@ -10,7 +10,7 @@ const ECommerce: React.FC = () => {
         <MenuCard 
           title="ใบเมนู GEN-A" 
           description="เข้าสู่หน้าบันทึกฟอร์ม GEN-A" 
-          linkTo="/reports/history" 
+          linkTo="/reports/history/gen-a" 
         >
           <FaFileAlt size={22} className="text-primary" />
         </MenuCard>
@@ -18,7 +18,7 @@ const ECommerce: React.FC = () => {
         <MenuCard 
           title="ใบเมนู GEN-B" 
           description="เข้าสู่หน้าบันทึกฟอร์ม GEN-B" 
-          linkTo="/forms/production-bz" // <-- **แก้ URL ปลายทางได้ตามต้องการ**
+          linkTo="/reports/history/gen-b" // <-- **แก้ URL ปลายทางได้ตามต้องการ**
         >
           <FaFileAlt size={22} className="text-success" />
         </MenuCard>

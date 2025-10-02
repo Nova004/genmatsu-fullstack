@@ -1,4 +1,4 @@
-// location: frontend/src/pages/Reports/ReportHistory_GenB.tsx
+// location: frontend/src/pages/Reports/ReportHistory_Gen๘B.tsx
 
 // =============================================================================
 // --- 1. IMPORT STATEMENTS ---
@@ -25,25 +25,26 @@ import Datepicker, { DateValueType } from "react-tailwindcss-datepicker";
 // --- 2. TYPE DEFINITION ---
 // กำหนดโครงสร้างข้อมูล (Type) สำหรับแต่ละ submission
 // =============================================================================
-type Submission = {
+interface SubmissionData {
   submission_id: number;
   lot_no: string;
   submitted_at: string;
-  submitted_by: string;
   status: string;
   form_type: string;
-};
+  submitted_by_name: string; // 👈 เพิ่มชื่อเต็ม
+  category: string;          // 👈 เพิ่ม category
+}
 
 
 // =============================================================================
 // --- 3. COMPONENT DEFINITION ---
 // ReportHistory Component: หน้าสำหรับแสดงประวัติการบันทึกทั้งหมดในรูปแบบตาราง
 // =============================================================================
-const ReportHistory_GenB: React.FC = () => {
+const ReportHistory_GEN_B: React.FC = () => {
 
   // --- 3.1. STATE MANAGEMENT ---
   // ประกาศ State ต่างๆ เพื่อใช้จัดการข้อมูลภายในคอมโพเนนต์
-  const [submissions, setSubmissions] = useState<Submission[]>([]); // เก็บข้อมูลรายงานทั้งหมด
+  const [submissions, setSubmissions] = useState<SubmissionData[]>([]); // เก็บข้อมูลรายงานทั้งหมด
   const [isLoading, setIsLoading] = useState(true);                   // สถานะการโหลดข้อมูล
   const [error, setError] = useState<string | null>(null);             // เก็บข้อความ error หากดึงข้อมูลไม่สำเร็จ
   const [globalFilter, setGlobalFilter] = useState('');                // State สำหรับการค้นหาแบบ Global (ทุกคอลัมน์)
@@ -59,17 +60,18 @@ const ReportHistory_GenB: React.FC = () => {
   useEffect(() => {
     const fetchSubmissions = async () => {
       try {
-        const data = await getAllSubmissions();
+        // --- 👇 ส่งคำสั่ง 'GEN_B' ไปให้ Backend เลย! 👇 ---
+        const data: SubmissionData[] = await getAllSubmissions('GEN_B');
+
         setSubmissions(data);
       } catch (err) {
-        setError('ไม่สามารถดึงข้อมูลประวัติการบันทึกได้');
+        setError('ไม่สามารถดึงข้อมูลประวัติการบันทึก (GEN_B) ได้');
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchSubmissions();
-  }, []); // Dependencies array เป็นค่าว่าง [] หมายถึงให้ทำงานแค่ครั้งเดียว
+  }, []);
 
 
   // --- 3.3. DATE FILTERING EFFECT ---
@@ -101,7 +103,7 @@ const ReportHistory_GenB: React.FC = () => {
   // --- 3.5. TABLE COLUMN DEFINITIONS ---
   // `useMemo` ถูกใช้เพื่อป้องกันการ re-render ที่ไม่จำเป็นของ object `columns`
   // เป็นส่วนสำคัญในการกำหนดโครงสร้างและการแสดงผลของแต่ละคอลัมน์ในตาราง
-  const columns = useMemo<ColumnDef<Submission>[]>(
+  const columns = useMemo<ColumnDef<SubmissionData>[]>(
     () => [
       {
         accessorKey: 'submission_id',
@@ -116,7 +118,7 @@ const ReportHistory_GenB: React.FC = () => {
         header: 'ประเภทฟอร์ม',
       },
       {
-        accessorKey: 'submitted_by',
+        accessorKey: 'submitted_by', // 👈 เปลี่ยนเป็นชื่อเต็ม
         header: 'ผู้บันทึก',
       },
       {
@@ -297,4 +299,4 @@ const ReportHistory_GenB: React.FC = () => {
   );
 };
 
-export default ReportHistory_GenB;
+export default ReportHistory_GEN_B;

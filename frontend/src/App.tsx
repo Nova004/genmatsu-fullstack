@@ -20,7 +20,8 @@ import ProtectedRoute from './routes/ProtectedRoute';
 import UserMaster from './components/formGen/pages/Master/UserMaster';
 import NaClMaster from './components/formGen/pages/Master/NaClMaster';
 import { Toaster } from 'react-hot-toast';
-import ReportHistory_GenB from './pages/Reports/ReportHistory_GEN_B';
+import ReportHistory_GEN_B from './pages/Reports/ReportHistory_GEN_B';
+import ReportHistory_GEN_A from './pages/Reports/ReportHistory_GEN_A';
 import ReportDetailDispatcher from './pages/Reports/ReportDetailDispatcher';
 
 function App() {
@@ -137,12 +138,24 @@ function App() {
                   />
 
                   <Route
-                    path="/reports/history"
+                    path="/reports/history/gen-b"
                     element={
                       <ProtectedRoute>
                         <>
                           <PageTitle title="Report History | Genmatsu" />
-                          <ReportHistory_GenB />
+                          <ReportHistory_GEN_B />
+                        </>
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  <Route
+                    path="/reports/history/gen-a"
+                    element={
+                      <ProtectedRoute>
+                        <>
+                          <PageTitle title="Report History (Genmatsu A) | Genmatsu" />
+                          <ReportHistory_GEN_A />
                         </>
                       </ProtectedRoute>
                     }

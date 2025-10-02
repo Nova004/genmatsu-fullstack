@@ -1,3 +1,4 @@
+// lo
 import apiClient from './apiService';
 
 /**
@@ -16,9 +17,14 @@ export const submitProductionForm = async (submissionData: any) => {
 };
 
 
-export const getAllSubmissions = async () => {
+export const getAllSubmissions = async (category?: string) => { // 👈 รับคำสั่ง category ได้
   try {
-    const response = await apiClient.get('/api/submissions');
+    // --- 👇 สร้าง URL พร้อมคำสั่งพิเศษ (ถ้ามี) 👇 ---
+    const url = category ? `/api/submissions?category=${category}` : '/api/submissions';
+
+    console.log(`Fetching submissions from: ${url}`); // เพิ่ม log เพื่อให้เห็นว่าเรากำลังเรียก URL ไหน
+
+    const response = await apiClient.get(url);
     return response.data;
   } catch (error) {
     console.error("Error fetching all submissions:", error);

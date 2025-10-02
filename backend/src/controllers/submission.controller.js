@@ -1,13 +1,13 @@
 // controllers/submission.controller.js
 
-const sql = require('mssql');
-const dbConfig = require('../config/db.config');
+const sql = require("mssql");
+const dbConfig = require("../config/db.config");
 
 exports.createSubmission = async (req, res) => {
   const { formType, lotNo, templateIds, formData, submittedBy } = req.body;
 
   // ตรวจสอบข้อมูลเบื้องต้น
-  if (!formType || !templateIds || !formData) {
+  if (!formType || !templateIds || templateIds.length === 0 || !formData) {
     return res.status(400).send({ message: "Missing required fields." });
   }
 
@@ -17,130 +17,174 @@ exports.createSubmission = async (req, res) => {
   try {
     await transaction.begin();
 
-    // -- Logic การหาหรือสร้าง Version Set --
+    // --- 👇 ขั้นตอนที่ 1: "สืบค้นหา" Category ที่แท้จริงก่อน! 👇 ---
+    const categoryRequest = new sql.Request(transaction);
+    const categoryResult = await categoryRequest
+      .input("firstTemplateId", sql.Int, templateIds[0]) // ใช้ templateId ตัวแรกเป็นตัวแทนในการค้นหา
+      .query(
+        "SELECT template_category FROM Form_Master_Templates WHERE template_id = @firstTemplateId"
+      );
+
+    if (categoryResult.recordset.length === 0) {
+      throw new Error(
+        `Cannot find category for template ID: ${templateIds[0]}`
+      );
+    }
+    const correctCategory = categoryResult.recordset[0].template_category; // 👈 นี่คือ Category ที่ถูกต้อง ('GEN_A' หรือ 'GEN_B')
+
+    // --- ขั้นตอนที่ 2: ตรวจสอบการเปลี่ยนเเปลงของ เพื่อบันทึก form vs ล่าสุด" ---
     let versionSetId;
 
-    // สร้าง Query สำหรับค้นหา version set ที่มี template id ตรงกันทั้งหมด
+    // Query เดิมทั้งหมด แต่จะเปลี่ยนตัวแปรที่ใช้เปรียบเทียบ
     const findSetQuery = `
       SELECT vs.version_set_id
       FROM Form_Version_Sets vs
-      WHERE vs.category = @formType AND vs.is_latest = 1
+      WHERE vs.category = @categoryToUse AND vs.is_latest = 1
         AND (SELECT COUNT(DISTINCT vsi.template_id) FROM Form_Version_Set_Items vsi WHERE vsi.version_set_id = vs.version_set_id) = @templateCount
         AND NOT EXISTS (
           SELECT 1
-          FROM (VALUES ${templateIds.map(id => `(${id})`).join(',')}) AS t(id)
+          FROM (VALUES ${templateIds.map((id) => `(${id})`).join(",")}) AS t(id)
           WHERE t.id NOT IN (SELECT vsi.template_id FROM Form_Version_Set_Items vsi WHERE vsi.version_set_id = vs.version_set_id)
         )
     `;
-    
+
     const findSetRequest = new sql.Request(transaction);
     const existingSet = await findSetRequest
-      .input('formType', sql.NVarChar, formType)
-      .input('templateCount', sql.Int, templateIds.length)
+      .input("categoryToUse", sql.NVarChar, correctCategory) // 👈 ใช้ตัวแปรใหม่ที่ถูกต้อง
+      .input("templateCount", sql.Int, templateIds.length)
       .query(findSetQuery);
 
     if (existingSet.recordset.length > 0) {
+      // *เงือนไข ไม่มีการเปลี่ยนเเปลง
       versionSetId = existingSet.recordset[0].version_set_id;
     } else {
-      // ถ้าไม่เจอ ให้ปิด is_latest ของเวอร์ชันเก่า (ถ้ามี)
+      // *เงือนไข แสดงว่ามีการเปลี่ยนแปลงโครงสร้างฟอร์ม
+      // ปิด is_latest ของเวอร์ชันเก่า เพื่อบอกว่ามันไม่ใช่เวอร์ชันล่าสุดแล้ว
       const updateOldSetRequest = new sql.Request(transaction);
       await updateOldSetRequest
-        .input('formType', sql.NVarChar, formType)
-        .query('UPDATE Form_Version_Sets SET is_latest = 0 WHERE category = @formType AND is_latest = 1');
-      
+        .input("categoryToUse", sql.NVarChar, correctCategory) 
+        .query(
+          "UPDATE Form_Version_Sets SET is_latest = 0 WHERE category = @categoryToUse AND is_latest = 1"
+        );
+
       // สร้าง version set ใหม่
       const getNewVersionRequest = new sql.Request(transaction);
       const lastVersionResult = await getNewVersionRequest
-          .input('formType', sql.NVarChar, formType)
-          .query('SELECT ISNULL(MAX(version), 0) as lastVersion FROM Form_Version_Sets WHERE category = @formType');
+        .input("categoryToUse", sql.NVarChar, correctCategory) 
+        .query(
+          "SELECT ISNULL(MAX(version), 0) as lastVersion FROM Form_Version_Sets WHERE category = @categoryToUse"
+        );
       const newVersion = lastVersionResult.recordset[0].lastVersion + 1;
 
+      //บันทึกลงในตาราง Form_Version_Set_Items เพื่อผูกไว้กับ "สารบัญ" ใหม่ที่เราเพิ่งสร้าง
       const createSetRequest = new sql.Request(transaction);
       const newSetResult = await createSetRequest
-          .input('formType', sql.NVarChar, formType)
-          .input('newVersion', sql.Int, newVersion)
-          .query('INSERT INTO Form_Version_Sets (category, version, is_latest) OUTPUT INSERTED.version_set_id VALUES (@formType, @newVersion, 1)');
+        .input("categoryToUse", sql.NVarChar, correctCategory) 
+        .input("newVersion", sql.Int, newVersion)
+        .query(
+          "INSERT INTO Form_Version_Sets (category, version, is_latest) OUTPUT INSERTED.version_set_id VALUES (@categoryToUse, @newVersion, 1)"
+        );
       versionSetId = newSetResult.recordset[0].version_set_id;
 
-      // เพิ่ม items เข้าไปใน version set ใหม่
+      // เพิ่ม items เข้าไป
       for (const templateId of templateIds) {
-          const createSetItemRequest = new sql.Request(transaction);
-          await createSetItemRequest
-              .input('versionSetId', sql.Int, versionSetId)
-              .input('templateId', sql.Int, templateId)
-              .query('INSERT INTO Form_Version_Set_Items (version_set_id, template_id) VALUES (@versionSetId, @templateId)');
+        const createSetItemRequest = new sql.Request(transaction);
+        await createSetItemRequest
+          .input("versionSetId", sql.Int, versionSetId)
+          .input("templateId", sql.Int, templateId)
+          .query(
+            "INSERT INTO Form_Version_Set_Items (version_set_id, template_id) VALUES (@versionSetId, @templateId)"
+          );
       }
     }
-    
-    // -- บันทึกข้อมูล Submission --
+
+    // --- ขั้นตอนที่ 3: บันทึก Submission 
     const submissionRequest = new sql.Request(transaction);
     const submissionResult = await submissionRequest
-      .input('versionSetId', sql.Int, versionSetId)
-      .input('formType', sql.NVarChar, formType)
-      .input('lotNo', sql.NVarChar, lotNo)
-      .input('submittedBy', sql.NVarChar, submittedBy)
-      .query(`
+      .input("versionSetId", sql.Int, versionSetId)
+      .input("formType", sql.NVarChar, formType) 
+      .input("lotNo", sql.NVarChar, lotNo)
+      .input("submittedBy", sql.NVarChar, submittedBy).query(`
         INSERT INTO Form_Submissions (version_set_id, form_type, lot_no, submitted_by) 
         OUTPUT INSERTED.submission_id 
         VALUES (@versionSetId, @formType, @lotNo, @submittedBy)
       `);
     const submissionId = submissionResult.recordset[0].submission_id;
 
-    // -- บันทึกข้อมูล Form Data (JSON) --
+    // --- ขั้นตอนที่ 4: บันทึก Form Data (JSON) ---
     const dataRequest = new sql.Request(transaction);
     await dataRequest
-      .input('submissionId', sql.Int, submissionId)
-      .input('formDataJson', sql.NVarChar(sql.MAX), JSON.stringify(formData))
+      .input("submissionId", sql.Int, submissionId)
+      .input("formDataJson", sql.NVarChar(sql.MAX), JSON.stringify(formData))
       .query(`
         INSERT INTO Form_Submission_Data (submission_id, form_data_json) 
         VALUES (@submissionId, @formDataJson)
       `);
-      
-    await transaction.commit();
-    res.status(201).send({ message: 'Form submitted successfully!', submissionId: submissionId });
 
+    await transaction.commit();
+    res.status(201).send({
+      message: "Form submitted successfully!",
+      submissionId: submissionId,
+    });
   } catch (err) {
     await transaction.rollback();
-    res.status(500).send({ message: "Failed to submit form.", error: err.message });
+    console.error("!!! ERROR in createSubmission:", err); // 👈 มีตัวช่วย Debug แล้ว
+    res
+      .status(500)
+      .send({ message: "Failed to submit form.", error: err.message });
   }
 };
 
 // 🎯 ฟังก์ชันใหม่ 1: สำหรับดึงรายการ Submission ทั้งหมด 🎯
 exports.getAllSubmissions = async (req, res) => {
-    try {
-        const pool = await sql.connect(dbConfig);
-        const result = await pool.request().query(`
-            SELECT 
-                fs.submission_id,
-                fs.form_type,
-                fs.lot_no,
-                fs.submitted_by,
-                fs.submitted_at,
-                fs.status
-            FROM 
-                Form_Submissions fs
-            ORDER BY 
-                fs.submitted_at DESC
-        `);
+  try {
+    const pool = await sql.connect(dbConfig);
+    const { category } = req.query; // 👈 ดึง "คำสั่ง" category มาจาก URL
 
-        res.status(200).send(result.recordset);
-    } catch (err) {
-        res.status(500).send({ message: "Failed to retrieve submissions.", error: err.message });
+    // --- 👇 สร้าง Query เริ่มต้น 👇 ---
+    let baseQuery = `
+            SELECT 
+                fs.submission_id, fs.form_type, fs.lot_no, fs.submitted_at, fs.status,
+                fs.submitted_by,
+                fvs.category
+            FROM 
+                Form_Submissions AS fs
+            LEFT JOIN 
+                Form_Version_Sets AS fvs ON fs.version_set_id = fvs.version_set_id
+        `;
+
+    const request = pool.request();
+
+    // --- 👇 ตรวจสอบว่ามี "คำสั่ง" ให้กรอง category หรือไม่ 👇 ---
+    if (category) {
+      baseQuery += ` WHERE fvs.category = @category`; // เพิ่มเงื่อนไข WHERE
+      request.input("category", sql.NVarChar, category); // ส่งค่า category เข้าไปใน Query อย่างปลอดภัย
     }
+
+    baseQuery += ` ORDER BY fs.submitted_at DESC`; // เพิ่มการเรียงลำดับในตอนท้าย
+
+    const result = await request.query(baseQuery);
+
+    res.status(200).send(result.recordset);
+  } catch (err) {
+    console.error("!!! ERROR in getAllSubmissions:", err);
+    res
+      .status(500)
+      .send({ message: "Failed to retrieve submissions.", error: err.message });
+  }
 };
 
 // 🎯 ฟังก์ชันใหม่ 2: สำหรับดึงข้อมูล Submission เดียวแบบละเอียด 🎯
 exports.getSubmissionById = async (req, res) => {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    try {
-        const pool = await sql.connect(dbConfig);
-        const request = new sql.Request(pool);
+  try {
+    const pool = await sql.connect(dbConfig);
+    const request = new sql.Request(pool);
 
-        // 1. ดึงข้อมูลหลักจาก Submissions และ Submission_Data
-        const submissionResult = await request
-            .input('submissionId', sql.Int, id)
-            .query(`
+    // 1. ดึงข้อมูลหลักจาก Submissions และ Submission_Data
+    const submissionResult = await request.input("submissionId", sql.Int, id)
+      .query(`
                 SELECT 
                     fs.submission_id,
                     fs.version_set_id,
@@ -157,17 +201,19 @@ exports.getSubmissionById = async (req, res) => {
                     fs.submission_id = @submissionId
             `);
 
-        if (submissionResult.recordset.length === 0) {
-            return res.status(404).send({ message: "Submission not found." });
-        }
+    if (submissionResult.recordset.length === 0) {
+      return res.status(404).send({ message: "Submission not found." });
+    }
 
-        const submissionData = submissionResult.recordset[0];
-        const versionSetId = submissionData.version_set_id;
+    const submissionData = submissionResult.recordset[0];
+    const versionSetId = submissionData.version_set_id;
 
-        // 2. ใช้ version_set_id เพื่อย้อนไปหา "พิมพ์เขียว" ที่ถูกต้อง
-        const blueprintResult = await request
-            .input('versionSetId', sql.Int, versionSetId)
-            .query(`
+    // 2. ใช้ version_set_id เพื่อย้อนไปหา "พิมพ์เขียว" ที่ถูกต้อง
+    const blueprintResult = await request.input(
+      "versionSetId",
+      sql.Int,
+      versionSetId
+    ).query(`
                 SELECT 
                     fmt.template_id,
                     fmt.template_name,
@@ -187,41 +233,43 @@ exports.getSubmissionById = async (req, res) => {
                 ORDER BY
                     fmt.template_name, fmi.display_order
             `);
-        
-        // 3. จัดระเบียบข้อมูลพิมพ์เขียวให้ Frontend ใช้งานง่าย
-        const blueprints = {};
-        blueprintResult.recordset.forEach(item => {
-            const templateName = item.template_name;
-            if (!blueprints[templateName]) {
-                blueprints[templateName] = {
-                    template: {
-                        template_id: item.template_id,
-                        template_name: item.template_name,
-                        template_category: item.template_category,
-                        version: item.version,
-                    },
-                    items: []
-                };
-            }
-            blueprints[templateName].items.push({
-                item_id: item.item_id,
-                display_order: item.display_order,
-                config_json: JSON.parse(item.config_json)
-            });
-        });
 
-        // 4. ส่งข้อมูลทั้งหมดกลับไป
-        res.status(200).send({
-            submission: {
-                ...submissionData,
-                form_data_json: JSON.parse(submissionData.form_data_json)
-            },
-            blueprints: blueprints
-        });
+    // 3. จัดระเบียบข้อมูลพิมพ์เขียวให้ Frontend ใช้งานง่าย
+    const blueprints = {};
+    blueprintResult.recordset.forEach((item) => {
+      const templateName = item.template_name;
+      if (!blueprints[templateName]) {
+        blueprints[templateName] = {
+          template: {
+            template_id: item.template_id,
+            template_name: item.template_name,
+            template_category: item.template_category,
+            version: item.version,
+          },
+          items: [],
+        };
+      }
+      blueprints[templateName].items.push({
+        item_id: item.item_id,
+        display_order: item.display_order,
+        config_json: JSON.parse(item.config_json),
+      });
+    });
 
-    } catch (err) {
-        res.status(500).send({ message: "Failed to retrieve submission details.", error: err.message });
-    }
+    // 4. ส่งข้อมูลทั้งหมดกลับไป
+    res.status(200).send({
+      submission: {
+        ...submissionData,
+        form_data_json: JSON.parse(submissionData.form_data_json),
+      },
+      blueprints: blueprints,
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: "Failed to retrieve submission details.",
+      error: err.message,
+    });
+  }
 };
 
 exports.deleteSubmission = async (req, res) => {
@@ -241,32 +289,41 @@ exports.deleteSubmission = async (req, res) => {
     const request = new sql.Request(transaction);
 
     // ผูกตัวแปร id เข้ากับ SQL query อย่างปลอดภัย
-    request.input('submissionId', sql.Int, id);
+    request.input("submissionId", sql.Int, id);
 
     // คำสั่งที่ 1: ลบข้อมูลจากตารางลูก (Form_Submission_Data) ก่อนเสมอ
-    await request.query('DELETE FROM Form_Submission_Data WHERE submission_id = @submissionId');
-    
+    await request.query(
+      "DELETE FROM Form_Submission_Data WHERE submission_id = @submissionId"
+    );
+
     // คำสั่งที่ 2: ลบข้อมูลจากตารางแม่ (Form_Submissions)
-    const result = await request.query('DELETE FROM Form_Submissions WHERE submission_id = @submissionId');
+    const result = await request.query(
+      "DELETE FROM Form_Submissions WHERE submission_id = @submissionId"
+    );
 
     // ตรวจสอบว่ามีข้อมูลถูกลบจริงหรือไม่
     if (result.rowsAffected[0] === 0) {
       // ถ้าไม่มีแถวไหนถูกลบ แสดงว่า ID นั้นไม่มีอยู่
       // เรายังคง commit transaction เพราะไม่มีอะไรผิดพลาด แค่ไม่มีข้อมูลให้ลบ
       await transaction.commit();
-      return res.status(404).send({ message: `Submission with ID ${id} not found.` });
+      return res
+        .status(404)
+        .send({ message: `Submission with ID ${id} not found.` });
     }
 
     // ถ้าทุกอย่างสำเร็จ ให้ commit transaction (ยืนยันการลบ)
     await transaction.commit();
 
     // ส่งข้อความกลับไปบอก Frontend ว่าลบสำเร็จแล้ว (ใช้ .send ตามสไตล์ของคุณ)
-    res.status(200).send({ message: `Submission ID ${id} has been deleted successfully.` });
-
+    res
+      .status(200)
+      .send({ message: `Submission ID ${id} has been deleted successfully.` });
   } catch (err) {
     // หากเกิดข้อผิดพลาด ให้ยกเลิกการเปลี่ยนแปลงทั้งหมด
     await transaction.rollback();
     // และส่ง Error กลับไป
-    res.status(500).send({ message: "Failed to delete submission.", error: err.message });
+    res
+      .status(500)
+      .send({ message: "Failed to delete submission.", error: err.message });
   }
 };

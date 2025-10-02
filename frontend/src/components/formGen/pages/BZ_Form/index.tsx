@@ -62,7 +62,7 @@ function BZ_Form() {
     const onSubmit: SubmitHandler<IManufacturingReportForm> = async (data) => {
         setIsSubmitting(true); // เริ่มกระบวนการบันทึก (ปุ่มจะขึ้นว่า "กำลังบันทึก...")
 
-        const templateIds = loadedTemplates.map(t => t.template_id);
+        const templateIds = loadedTemplates.map(t => t.template_id); 
 
         // ตรวจสอบข้อมูลเบื้องต้นก่อนส่ง
         if (templateIds.length < 2) {

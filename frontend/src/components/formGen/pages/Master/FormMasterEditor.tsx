@@ -15,13 +15,16 @@ interface TemplateInfo {
 }
 
 type GroupedTemplates = {
-  [category: string]: TemplateInfo[];
+  [category: string]: {
+    [formType: string]: TemplateInfo[];
+  };
 };
 
 const FormMasterEditor: React.FC = () => {
   const [groupedTemplates, setGroupedTemplates] = useState<GroupedTemplates>({});
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedFormType, setSelectedFormType] = useState<string>(''); // 👈 เพิ่ม State ใหม่
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [templateItems, setTemplateItems] = useState<IMasterFormItem[]>([]);
   const [isItemsLoading, setIsItemsLoading] = useState<boolean>(false);
@@ -52,6 +55,15 @@ const FormMasterEditor: React.FC = () => {
   const handleCategoryChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const category = event.target.value;
     setSelectedCategory(category);
+    setSelectedFormType(''); // 👈 รีเซ็ต Form Type
+    setSelectedTemplate('');
+    setTemplateItems([]);
+    setInitialItemsOrder([]);
+  };
+
+  const handleFormTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const formType = event.target.value;
+    setSelectedFormType(formType);
     setSelectedTemplate('');
     setTemplateItems([]);
     setInitialItemsOrder([]);
@@ -125,7 +137,7 @@ const FormMasterEditor: React.FC = () => {
       await axios.post('/api/master/template/update', {
         templateName: selectedTemplate,
         items: templateItems,
-      });handleSaveChanges
+      }); handleSaveChanges
 
       // 2. ถ้าสำเร็จ ให้แจ้งเตือนสวยๆ
       fireToast('success', 'A new version of the template has been created.');
@@ -192,11 +204,16 @@ const FormMasterEditor: React.FC = () => {
             Master Template Editor
           </h3>
         </div>
+        {/* ในไฟล์ FormMasterEditor.tsx */}
+
         <div className="p-6.5">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {/* --- 👇 1. แก้ไข Layout เป็น 3 คอลัมน์ 👇 --- */}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+
+            {/* --- Dropdown 1: Category (โค้ดเดิมของคุณ ถูกต้องแล้ว) --- */}
             <div className="mb-4.5">
               <label className="mb-2.5 block text-black dark:text-white">1. Select Category</label>
-              <div className="relative z-20 bg-transparent dark:bg-form-input">
+              <div className="relative z-30 bg-transparent dark:bg-form-input">
                 <select
                   value={selectedCategory}
                   onChange={handleCategoryChange}
@@ -211,17 +228,38 @@ const FormMasterEditor: React.FC = () => {
                 <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">{/* SVG Icon */}</span>
               </div>
             </div>
+
+            {/* --- Dropdown 2: Form Type (โค้ดที่คุณเพิ่มมา ถูกต้องแล้ว) --- */}
             <div className="mb-4.5">
-              <label className="mb-2.5 block text-black dark:text-white">2. Select Template to Edit</label>
+              <label className="mb-2.5 block text-black dark:text-white">2. Select Form Type</label>
               <div className="relative z-20 bg-transparent dark:bg-form-input">
                 <select
-                  value={selectedTemplate}
-                  onChange={handleTemplateChange}
+                  value={selectedFormType}
+                  onChange={handleFormTypeChange}
                   disabled={!selectedCategory}
                   className="relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-5 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                 >
+                  <option value="">-- Select a Form Type --</option>
+                  {selectedCategory && groupedTemplates[selectedCategory] && Object.keys(groupedTemplates[selectedCategory]).map(formType => (
+                    <option key={formType} value={formType}>{formType}</option>
+                  ))}
+                </select>
+                <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">{/* SVG Icon */}</span>
+              </div>
+            </div>
+
+            {/* --- 👇 2. เพิ่ม Dropdown 3: Template ที่หายไป กลับเข้ามา 👇 --- */}
+            <div className="mb-4.5">
+              <label className="mb-2.5 block text-black dark:text-white">3. Select Template to Edit</label>
+              <div className="relative z-10 bg-transparent dark:bg-form-input">
+                <select
+                  value={selectedTemplate}
+                  onChange={handleTemplateChange}
+                  disabled={!selectedFormType}
+                  className="relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-5 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+                >
                   <option value="">-- Select a Template --</option>
-                  {selectedCategory && groupedTemplates[selectedCategory]?.map(template => (
+                  {selectedCategory && selectedFormType && groupedTemplates[selectedCategory]?.[selectedFormType]?.map(template => (
                     <option key={template.template_id} value={template.template_name}>
                       {template.description}
                     </option>
@@ -297,7 +335,7 @@ const FormMasterEditor: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div >
       <EditItemModal
         isOpen={isModalOpen}
         item={editingItem}

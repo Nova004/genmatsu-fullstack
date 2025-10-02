@@ -59,27 +59,42 @@ exports.getLatestTemplateByName = async (req, res) => {
 exports.getAllLatestTemplates = async (req, res) => {
   try {
     await poolConnect;
+    // --- 👇 1. เพิ่ม form_type เข้ามาใน SELECT 👇 ---
     const result = await pool.request().query(`
       SELECT 
         template_id, 
         template_name, 
         description,
-        template_category -- ดึงคอลัมน์ใหม่มาด้วย
+        template_category,
+        form_type 
       FROM 
         Form_Master_Templates 
       WHERE 
         is_latest = 1 
       ORDER BY 
-        template_category, template_name;
+        template_category, form_type, template_name;
     `);
 
-    // --- Logic การจัดกลุ่มข้อมูล ---
+    // --- 👇 2. เปลี่ยน Logic การจัดกลุ่มให้เป็น 2 ชั้น 👇 ---
     const groupedTemplates = result.recordset.reduce((acc, template) => {
-      const category = template.template_category || "Uncategorized"; // ถ้าไม่มีหมวดหมู่ ให้ใช้ชื่อนี้
-      if (!acc[category]) {
-        acc[category] = [];
+      const { template_category, form_type } = template;
+
+      if (!template_category || !form_type) {
+        return acc; // ข้ามรายการที่ข้อมูลไม่สมบูรณ์
       }
-      acc[category].push(template);
+
+      // สร้าง category key ถ้ายังไม่มี (เช่น acc['GEN_B'] = {})
+      if (!acc[template_category]) {
+        acc[template_category] = {};
+      }
+      // สร้าง form_type key ภายใต้ category นั้นๆ ถ้ายังไม่มี (เช่น acc['GEN_B']['BZ'] = [])
+      if (!acc[template_category][form_type]) {
+        acc[template_category][form_type] = [];
+      }
+
+      // เพิ่ม template เข้าไปในกลุ่มที่ถูกต้อง
+      acc[template_category][form_type].push(template);
+
       return acc;
     }, {});
 
@@ -162,12 +177,10 @@ exports.updateTemplateAsNewVersion = async (req, res) => {
     }
 
     await transaction.commit();
-    res
-      .status(201)
-      .json({
-        message: "Template updated successfully as new version.",
-        newTemplateId: newTemplateId,
-      });
+    res.status(201).json({
+      message: "Template updated successfully as new version.",
+      newTemplateId: newTemplateId,
+    });
   } catch (error) {
     await transaction.rollback();
     console.error("Error updating template:", error);
