@@ -7,6 +7,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautif
 import EditItemModal from './EditItemModal';
 import axios from 'axios';
 import { fireToast } from '../../../../hooks/fireToast';
+import { useAuth } from '../../../../context/AuthContext';
 
 interface TemplateInfo {
   template_id: number;
@@ -32,6 +33,12 @@ const FormMasterEditor: React.FC = () => {
   const [initialItemsOrder, setInitialItemsOrder] = useState<IMasterFormItem[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [editingItem, setEditingItem] = useState<IMasterFormItem | null>(null);
+  const { user } = useAuth();
+
+  if (!user || !user.id) {
+    fireToast('error', 'Authentication error. Cannot find user ID.');
+    return;
+  }
 
   useEffect(() => {
     const fetchTemplates = async () => {
@@ -124,6 +131,8 @@ const FormMasterEditor: React.FC = () => {
     handleCloseModal();
   };
 
+
+
   const handleSaveChanges = async () => {
     if (!selectedTemplate || templateItems.length === 0) {
       // ใช้ fireToast แทน alert
@@ -137,6 +146,7 @@ const FormMasterEditor: React.FC = () => {
       await axios.post('/api/master/template/update', {
         templateName: selectedTemplate,
         items: templateItems,
+        userId: user.id
       }); handleSaveChanges
 
       // 2. ถ้าสำเร็จ ให้แจ้งเตือนสวยๆ

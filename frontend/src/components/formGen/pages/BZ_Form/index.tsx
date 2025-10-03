@@ -83,7 +83,7 @@ function BZ_Form() {
                     netWeightOfYieldSTD: 800 // 3. เพิ่ม field ใหม่เข้าไปใน object นี้
                 }
             },
-            submittedBy: user?.username || 'unknown_user',
+            submittedBy: user?.id || 'unknown_user',
         };
 
         try {

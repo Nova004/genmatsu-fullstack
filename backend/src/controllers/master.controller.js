@@ -111,10 +111,14 @@ exports.getAllLatestTemplates = async (req, res) => {
 // === ฟังก์ชันใหม่สำหรับบันทึก Template เป็นเวอร์ชันใหม่ ===
 // =============================================================
 exports.updateTemplateAsNewVersion = async (req, res) => {
-  const { templateName, items } = req.body;
+  // --- 1. รับ userId เพิ่มเข้ามา ---
+  const { templateName, items, userId } = req.body;
 
-  if (!templateName || !items || !Array.isArray(items)) {
-    return res.status(400).json({ message: "Invalid data provided." });
+  // --- 2. เพิ่มการตรวจสอบ userId ---
+  if (!templateName || !items || !Array.isArray(items) || !userId) {
+    return res
+      .status(400)
+      .json({ message: "Invalid data provided. Missing userId." });
   }
 
   const transaction = new sql.Transaction(pool);
@@ -140,9 +144,12 @@ exports.updateTemplateAsNewVersion = async (req, res) => {
       );
 
     const newVersion = currentTemplate.version + 1;
+
+    // --- 3. แก้ไขส่วน INSERT ทั้งหมด ---
     const newTemplateResult = await new sql.Request(transaction)
       .input("template_name", sql.NVarChar, currentTemplate.template_name)
-      .input("template_type", sql.NVarChar, currentTemplate.template_type)
+      .input("template_type", sql.NVarChar, currentTemplate.template_type) // (โค้ดเดิมของคุณมีส่วนนี้อยู่แล้ว ถูกต้องครับ)
+      .input("form_type", sql.NVarChar, currentTemplate.form_type) // เพิ่ม form_type เข้ามาด้วย
       .input(
         "description",
         sql.NVarChar,
@@ -154,18 +161,26 @@ exports.updateTemplateAsNewVersion = async (req, res) => {
         "template_category",
         sql.NVarChar,
         currentTemplate.template_category
-      ).query(`
-        INSERT INTO Form_Master_Templates (template_name, template_type, description, version, is_latest, template_category, created_at)
+      )
+      .input("createdBy", sql.NVarChar, userId) // เพิ่ม input สำหรับ createdBy
+      .query(`
+        INSERT INTO Form_Master_Templates (
+          template_name, template_type, form_type, description, version, 
+          is_latest, template_category, created_at, created_by
+        )
         OUTPUT inserted.template_id
-        VALUES (@template_name, @template_type, @description, @version, @is_latest, @template_category, GETDATE());
+        VALUES (
+          @template_name, @template_type, @form_type, @description, @version, 
+          @is_latest, @template_category, GETDATE(), @createdBy
+        );
       `);
 
     const newTemplateId = newTemplateResult.recordset[0].template_id;
 
+    // (ส่วน for loop ไม่มีการเปลี่ยนแปลง)
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       const displayOrder = (i + 1) * 10;
-
       await new sql.Request(transaction)
         .input("template_id", sql.Int, newTemplateId)
         .input("display_order", sql.Int, displayOrder)
