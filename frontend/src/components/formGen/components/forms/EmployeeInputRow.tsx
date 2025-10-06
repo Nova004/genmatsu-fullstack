@@ -1,7 +1,7 @@
 // src/components/forms/EmployeeInputRow.tsx
 
 import React, { useEffect, useState } from 'react';
-import { EmployeeInputRowProps } from '../../pages/BZ_Form/types';
+import { EmployeeInputRowProps } from '../../pages/types';
 import axios from 'axios';
 
 

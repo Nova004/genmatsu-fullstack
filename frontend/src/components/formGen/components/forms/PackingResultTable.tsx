@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { UseFormRegister, UseFormWatch, UseFormSetValue } from 'react-hook-form';
-import { IManufacturingReportForm } from '../../pages/BZ_Form/types';
+import { IManufacturingReportForm } from '../../pages/types';
 
 // 1. เพิ่ม cansMultiplier เข้าไปใน Props
 interface PackingResultTableProps {

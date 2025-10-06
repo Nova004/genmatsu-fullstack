@@ -1,7 +1,7 @@
 // src/components/forms/PalletTable.tsx
 
 import React from 'react';
-import { PalletTableProps } from '../../pages/BZ_Form/types';
+import { PalletTableProps } from '../../pages/types';
 
 const PalletTable: React.FC<PalletTableProps> = ({ 
   register, 

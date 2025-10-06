@@ -1,4 +1,4 @@
-// src/pages/BZ_Form/FormStep2.tsx
+// src/pages/BZ3_Form/FormStep2.tsx
 
 import React, { useState, useEffect } from 'react';
 import { UseFormWatch, UseFormSetValue, FieldErrors } from 'react-hook-form';
@@ -196,7 +196,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
     // ฟังก์ชันสำหรับดึงข้อมูลพิมพ์เขียวล่าสุด (สำหรับโหมดปกติ)
     const fetchLatestBlueprint = async () => {
       try {
-        const data = await getLatestTemplateByName('BZ_Step2_RawMaterials');
+        const data = await getLatestTemplateByName('BZ3_Step2_RawMaterials');
         processBlueprint(data);
       } catch (err) {
         setError('ไม่สามารถโหลดข้อมูล Master ของ Step 2 ได้');

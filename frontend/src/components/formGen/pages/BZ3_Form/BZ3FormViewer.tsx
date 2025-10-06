@@ -19,15 +19,15 @@ const ProgressBar = ({ currentStep, totalSteps }: { currentStep: number, totalSt
 };
 
 
-// สร้าง Interface เพื่อกำหนดว่า BZFormViewer ต้องรับข้อมูลอะไรเข้ามาบ้าง
-interface BZFormViewerProps {
+// สร้าง Interface เพื่อกำหนดว่า BZ3FormViewer ต้องรับข้อมูลอะไรเข้ามาบ้าง
+interface BZ3FormViewerProps {
   formData: IManufacturingReportForm; // 1. ข้อมูลที่ถูกบันทึกไว้จากฐานข้อมูล
   blueprints: any;                   // 2. "พิมพ์เขียว" (Master Template) ที่ใช้ตอนบันทึก
   isReadOnly: boolean;               // 3. ตัวแปรสำหรับบอกว่าเป็นโหมด "อ่านอย่างเดียว" หรือไม่
 }
 
 // --- ส่วน Component หลัก ---
-const BZFormViewer: React.FC<BZFormViewerProps> = ({ formData, blueprints, isReadOnly }) => {
+const BZ3FormViewer: React.FC<BZ3FormViewerProps> = ({ formData, blueprints, isReadOnly }) => {
 
   // สร้าง State `step` เพื่อเก็บว่าผู้ใช้กำลังดู Step ไหนอยู่, เริ่มต้นที่ 1
   const [step, setStep] = useState(1);
@@ -93,9 +93,9 @@ const BZFormViewer: React.FC<BZFormViewerProps> = ({ formData, blueprints, isRea
           {/* ใช้ Conditional Rendering: ถ้า `step` เท่ากับ 1 ให้แสดง <FormStep1> */}
           {step === 1 && <FormStep1 {...formStepProps} />}
           {/* ถ้า `step` เท่ากับ 2 ให้แสดง <FormStep2> และส่ง `staticBlueprint` ที่ถูกต้องเข้าไปด้วย */}
-          {step === 2 && <FormStep2 {...formStepProps} staticBlueprint={blueprints['BZ_Step2_RawMaterials']} />}
+          {step === 2 && <FormStep2 {...formStepProps} staticBlueprint={blueprints['BZ3_Step2_RawMaterials']} />}
           {/* ถ้า `step` เท่ากับ 3 ก็ทำเหมือน Step 2 */}
-          {step === 3 && <FormStep3 {...formStepProps} staticBlueprint={blueprints['BZ_Step3_Operations']} />}
+          {step === 3 && <FormStep3 {...formStepProps} staticBlueprint={blueprints['BZ3_Step3_Operations']} />}
           {/* ถ้า `step` เท่ากับ 4 ให้แสดง <FormStep4> */}
           {step === 4 && <FormStep4 {...formStepProps} />}
         </div>
@@ -114,4 +114,4 @@ const BZFormViewer: React.FC<BZFormViewerProps> = ({ formData, blueprints, isRea
 };
 
 // Export Component นี้ออกไปเพื่อให้ไฟล์อื่นสามารถเรียกใช้งานได้
-export default BZFormViewer;
+export default BZ3FormViewer;

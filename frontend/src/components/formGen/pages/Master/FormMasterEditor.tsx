@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Breadcrumb from '../../../Breadcrumbs/Breadcrumb';
-import { IMasterFormItem } from '../BZ_Form/types';
+import { IMasterFormItem } from '../types';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import EditItemModal from './EditItemModal';
 import axios from 'axios';

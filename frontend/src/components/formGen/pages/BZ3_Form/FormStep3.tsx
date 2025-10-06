@@ -33,7 +33,7 @@ const FormStep3: React.FC<FormStep3Props> = ({ register, errors, onTemplateLoade
     };
     const fetchLatestBlueprint = async () => {
       try {
-        const data = await getLatestTemplateByName('BZ_Step3_Operations');
+        const data = await getLatestTemplateByName('BZ3_Step3_Operations');
         processBlueprint(data);
       } catch (err) {
         setError('ไม่สามารถโหลดข้อมูล Master ของ Step 3 ได้');

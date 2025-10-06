@@ -3,7 +3,7 @@ import { UseFormRegister, UseFormWatch, UseFormSetValue } from "react-hook-form"
 // --- Interface สำหรับข้อมูลทั้งหมดในฟอร์ม ---
 export interface IManufacturingReportForm {
   // Step 1
-  reportType: 'AS2' | 'BZ';
+ reportType: 'AS2' | 'BZ' | 'BZ3';
   basicData: { date: string; machineName: string; lotNo: string; };
   mcOperators: { id: string; name: string; number: string }[];
   assistants: { id: string; name: string; number: string }[];

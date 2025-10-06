@@ -1,7 +1,7 @@
 // src/components/formGen/pages/Master/EditItemModal.tsx
 
 import React, { useState, useEffect } from 'react';
-import { IMasterFormItem, IStep2ConfigJson, IConfigJson } from '../BZ_Form/types';
+import { IMasterFormItem, IStep2ConfigJson, IConfigJson } from '../types';
 
 interface Props {
   isOpen: boolean;

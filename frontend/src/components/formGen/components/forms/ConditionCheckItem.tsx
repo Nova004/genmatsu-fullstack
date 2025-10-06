@@ -1,7 +1,7 @@
 // src/components/forms/ConditionCheckItem.tsx
 
 import React from 'react';
-import { ConditionCheckItemProps } from '../../pages/BZ_Form/types';
+import { ConditionCheckItemProps } from '../../pages/types';
 
 const ConditionCheckItem: React.FC<ConditionCheckItemProps> = ({ index, title, description, warning, reference, register }) => {
   const inputGroupClass = "flex w-full";
