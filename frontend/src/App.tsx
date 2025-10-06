@@ -23,6 +23,9 @@ import { Toaster } from 'react-hot-toast';
 import ReportHistory_GEN_B from './pages/Reports/ReportHistory_GEN_B';
 import ReportHistory_GEN_A from './pages/Reports/ReportHistory_GEN_A';
 import ReportDetailDispatcher from './pages/Reports/ReportDetailDispatcher';
+import ProductionForm from './pages/Form/ProductionForm';
+import BZ_Form from './components/formGen/pages/BZ_Form/BZ_index';
+import BZ3_Form from './components/formGen/pages/BZ3_Form/BZ3_index';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -161,8 +164,25 @@ function App() {
                     }
                   />
                   <Route
+                    path="/forms/production-form" // หรือ URL ที่คุณต้องการ
+                    element={
+                      <>
+                        {/* PageTitle จะถูกจัดการใน ProductionForm แล้ว */}
+                        <ProductionForm />
+                      </>
+                    }
+                  />
+                  <Route
                     path="/reports/view/:id"
                     element={<ReportDetailDispatcher />}
+                  />
+                  <Route
+                    path="/forms/bz-form"
+                    element={<><PageTitle title="BZ Form" /><BZ_Form /></>}
+                  />
+                  <Route
+                    path="/forms/bz3-form"
+                    element={<><PageTitle title="BZ3 Form" /><BZ3_Form /></>}
                   />
                   <Route
                     path="tables"

@@ -8,6 +8,7 @@ import FormStep2 from './FormStep2';
 import FormStep3 from './FormStep3';
 import FormStep4 from './FormStep4';
 import { useAuth } from '../../../../context/AuthContext';
+import FormHeader from '../../components/FormHeader';
 
 // --- 1. Import เครื่องมือที่จำเป็น ---
 import { submitProductionForm } from '../../../../services/submissionService';
@@ -23,11 +24,13 @@ const ProgressBar = ({ currentStep, totalSteps }: { currentStep: number, totalSt
 function BZ_Form() {
     const [step, setStep] = useState(1);
     const totalSteps = 4;
-    const { user } = useAuth(); // ดึงข้อมูลผู้ใช้จาก Context
-    
-    // --- 2. เพิ่ม State สำหรับจัดการการบันทึก ---
+    const { user } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loadedTemplates, setLoadedTemplates] = useState<any[]>([]);
+    const availableForms = [
+        { value: 'BZ', label: 'BZ', path: '/forms/bz-form' },
+        { value: 'BZ3', label: 'BZ3', path: '/forms/bz3-form' },
+    ];
 
     // useForm hook ของคุณ (เหมือนเดิม)
     const { register, handleSubmit, trigger, watch, setValue, formState: { errors } } = useForm<IManufacturingReportForm>({
@@ -62,7 +65,7 @@ function BZ_Form() {
     const onSubmit: SubmitHandler<IManufacturingReportForm> = async (data) => {
         setIsSubmitting(true); // เริ่มกระบวนการบันทึก (ปุ่มจะขึ้นว่า "กำลังบันทึก...")
 
-        const templateIds = loadedTemplates.map(t => t.template_id); 
+        const templateIds = loadedTemplates.map(t => t.template_id);
 
         // ตรวจสอบข้อมูลเบื้องต้นก่อนส่ง
         if (templateIds.length < 2) {
@@ -119,15 +122,13 @@ function BZ_Form() {
         <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
             <form onSubmit={handleSubmit(onSubmit)}>
                 {/* === Header และ ProgressBar (เหมือนเดิม) === */}
-                <div className="flex flex-col items-center justify-between gap-4 rounded-sm border border-stroke p-4 dark:border-strokedark md:flex-row">
-                    <h4 className="text-lg font-semibold text-black dark:text-white">
-                        ใบรายงานการผลิต Manufacturing
-                    </h4>
-                    <select className={`${inputClass} max-w-xs`} {...register('reportType')}>
-                        <option value="BZ3">BZ3</option>
-                        <option value="BZ">BZ</option>
-                    </select>
-                </div>
+                <FormHeader
+                    title="ใบรายงานการผลิต (BZ)"
+                    formTypes={availableForms}
+                    currentValue="BZ" // 👈 2. บอก Header ว่าหน้านี้คือฟอร์ม 'BZ'
+                    inputClass={inputClass}
+                />
+                
                 <ProgressBar currentStep={step} totalSteps={totalSteps} />
 
                 {/* === 5. เนื้อหาฟอร์ม (แก้ไขการส่ง Props) === */}
