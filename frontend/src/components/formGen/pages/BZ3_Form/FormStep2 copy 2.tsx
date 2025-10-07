@@ -73,7 +73,8 @@ const useBZ3Calculations = (
     setValue('bz3Calculations.totalWeightOfMaterials', calculatedTotalMaterials > 0 ? calculatedTotalMaterials.toFixed(2) : null);
 
     // ----- ขั้นตอน B: คำนวณ "15% NaCl Water" (ค่าเริ่มต้น) -----
-    let rawInitialNaclWater15: number | null = null;
+    // =IF(Q21="","",((AD21*Q22-Q20*Q21)/(1-O23-Q22))*O23)
+    let initialNaclWater15Result: number | null = null;
     if (rc417WaterContent) {
       const Q21_decimal = (Number(rc417WaterContent) / 100) || 0;
       const Q20 = numRc417Total;
@@ -84,61 +85,75 @@ const useBZ3Calculations = (
       const denominator = 1 - O23_decimal - Q22_decimal;
       if (denominator !== 0) {
         const numerator = (AD21 * Q22_decimal - Q20 * Q21_decimal);
-        rawInitialNaclWater15 = (numerator / denominator) * O23_decimal;
-
+        const rawResult = (numerator / denominator) * O23_decimal;
+        initialNaclWater15Result = Number(rawResult.toFixed(2));
       }
     }
-
-
 
     // ----- ขั้นตอน C: คำนวณค่ากลาง (Intermediate Value) -----
-    let rawIntermediateWater: number | null = null;
-    if (rawInitialNaclWater15 !== null) {
-      const T24_raw = rawInitialNaclWater15;
-      const O23_decimal_for_intermediate = (Number(naclWater) / 100) || 0;
+    // =IF(T24="","",(T24/O23*(1-O23)))
+    let intermediateWaterCalcResult: number | null = null;
+    if (initialNaclWater15Result !== null) {
+      const T24 = initialNaclWater15Result;
+      const O23_decimal_for_intermediate = (Number(naclWater) / 100) || 0; // O23 คือ % NaCl water
 
       if (O23_decimal_for_intermediate !== 0) {
-        rawIntermediateWater = (T24_raw / O23_decimal_for_intermediate) * (1 - O23_decimal_for_intermediate);
+        const rawResult = (T24 / O23_decimal_for_intermediate) * (1 - O23_decimal_for_intermediate);
+        intermediateWaterCalcResult = Number(rawResult.toFixed(2));
       }
     }
+    // หมายเหตุ: ค่านี้ถูกเก็บไว้ใน state แต่ไม่ได้แสดงผลโดยตรง รอใช้คำนวณขั้นต่อไป
+    // setValue('bz3Calculations.intermediateWaterCalc', intermediateWaterCalcResult);
 
-    // ----- ขั้นตอน D: คำนวณ "Total NaCl water" -----
-    let totalNaclWaterResult: number | null = null;
-    if (rc417WaterContent) {
-      const T24_raw_final = rawInitialNaclWater15 || 0;
-      const AD24_raw_final = rawIntermediateWater || 0;
-      const rawResult = T24_raw_final + AD24_raw_final;
-      totalNaclWaterResult = Number(rawResult.toFixed(2)); // ปัดเศษครั้งสุดท้ายที่นี่
-    }
-    setValue('bz3Calculations.totalNaclWater', totalNaclWaterResult);
-
-
-    // ----- ขั้นตอน E: คำนวณค่าสุดท้ายของ "15% NaCl Water" และค่าที่เหลือ -----
-    let finalNaclWater15Result: number | null = null;
+    // ----- ขั้นตอน D: คำนวณ "15% NaCl Water" (ค่าสุดท้าย) และ "Total NaCl water" -----
+    // =IF(W23="","",(T24+AD24)/W23)
+    let finalNaclWater15Result: number | null = initialNaclWater15Result; // ใช้ค่าเริ่มต้นไว้ก่อน
     const W23 = Number(naclWaterSpecGrav) || 0;
     if (naclWaterSpecGrav && W23 !== 0) {
-      const totalNaclForFinal = totalNaclWaterResult || 0; // ใช้ค่าที่เพิ่งคำนวณเสร็จ
-      const rawResult = totalNaclForFinal / W23;
-      finalNaclWater15Result = Number(rawResult.toFixed(1));
+      const T24 = initialNaclWater15Result || 0;
+      const AD24 = intermediateWaterCalcResult || 0;
+      const rawResult = (T24 + AD24) / W23;
+      finalNaclWater15Result = Number(rawResult.toFixed(0));
     }
+    // อัปเดตค่าสุดท้ายลงในช่อง 15% NaCl Water และ Total NaCl water
     setValue('bz3Calculations.naclWater15', finalNaclWater15Result);
-    setValue('rawMaterials.sodiumChloride', finalNaclWater15Result, { shouldValidate: true });
+
+
+    // ----- ขั้นตอน E: คำนวณค่าที่เหลือ -----
+
+    let totalNaclWaterResult: number | null = null;
+
+    // จำลองเงื่อนไข IF(Q21="","",...) โดยใช้ rc417WaterContent เป็นตัวเช็ค
+    if (rc417WaterContent) {
+      const T24_final = Number(initialNaclWater15Result) || 0;
+      const AD24_final = Number(intermediateWaterCalcResult) || 0;
+      const rawResult = T24_final + AD24_final;
+      totalNaclWaterResult = Number(rawResult.toFixed(2));
+    }
+    // อัปเดตค่าลงใน State ของฟอร์ม
+    setValue('bz3Calculations.totalNaclWater', totalNaclWaterResult);
+    // --- 🔼 สิ้นสุดส่วนที่แก้ไข ---
+
     // คำนวณ "(L/B)/20 min."
     const lminRate = (Number(finalNaclWater15Result) || 0) / 20;
     setValue('bz3Calculations.lminRate', lminRate > 0 ? lminRate.toFixed(0) : null);
 
-    // คำนวณ "Total weight = NCR Genmatsu"
     let totalWeightWithNcrResult: number | null = null;
+
+    // จำลองเงื่อนไข IF(AD25="","",...) โดยใช้ totalNaclWaterResult เป็นตัวเช็ค
     if (totalNaclWaterResult !== null) {
       const AD21_final = calculatedTotalMaterials;
       const AD25_final = totalNaclWaterResult;
       const U14_final = numNcrGenmatsu;
+
       const rawResult = AD21_final + AD25_final + U14_final;
       totalWeightWithNcrResult = Number(rawResult.toFixed(2));
     }
+    // อัปเดตค่าลงใน State ของฟอร์ม
     setValue('bz3Calculations.totalWeightWithNcr', totalWeightWithNcrResult);
 
   }, [
+    // --- 4. ระบุค่า Input ทั้งหมดที่จะทำให้เกิดการคำนวณใหม่ ---
     rc417Total,
     magnesiumHydroxide,
     activatedCarbon,
@@ -151,7 +166,6 @@ const useBZ3Calculations = (
     setValue
   ]);
 };
-
 
 
 // =================================================================

@@ -23,7 +23,6 @@ import { Toaster } from 'react-hot-toast';
 import ReportHistory_GEN_B from './pages/Reports/ReportHistory_GEN_B';
 import ReportHistory_GEN_A from './pages/Reports/ReportHistory_GEN_A';
 import ReportDetailDispatcher from './pages/Reports/ReportDetailDispatcher';
-import ProductionForm from './pages/Form/ProductionForm';
 import BZ_Form from './components/formGen/pages/BZ_Form/BZ_index';
 import BZ3_Form from './components/formGen/pages/BZ3_Form/BZ3_index';
 
@@ -161,15 +160,6 @@ function App() {
                           <ReportHistory_GEN_A />
                         </>
                       </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/forms/production-form" // หรือ URL ที่คุณต้องการ
-                    element={
-                      <>
-                        {/* PageTitle จะถูกจัดการใน ProductionForm แล้ว */}
-                        <ProductionForm />
-                      </>
                     }
                   />
                   <Route

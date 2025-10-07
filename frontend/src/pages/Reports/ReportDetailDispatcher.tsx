@@ -5,15 +5,16 @@ import { getSubmissionById } from '../../services/submissionService';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 
 // -- Import Component แบบปกติ --
-import ReportDetailBZ from './BZ/ReportDetailBZ'; 
+import ReportDetailBZ from './BZ/ReportDetailBZ';
+import ReportDetailBZ3 from './BZ3/ReportDetailBZ3';
 
 const ReportDetailDispatcher: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [submissionData, setSubmissionData] = useState<any>(null); 
+  const [submissionData, setSubmissionData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { 
+  useEffect(() => {
 
     if (!id) {
       console.error('[Dispatcher] Error: No ID found in URL.');
@@ -38,15 +39,18 @@ const ReportDetailDispatcher: React.FC = () => {
 
   const renderFormDetail = () => { // ฟังก์ชันนี้จะเลือก Component ที่จะเรนเดอร์ตาม form_type 
 
-    if (!submissionData) return <div>No submission data to render.</div>; 
+    if (!submissionData) return <div>No submission data to render.</div>;
 
-    const { submission, blueprints } = submissionData; 
+    const { submission, blueprints } = submissionData;
 
     switch (submission.form_type) {
       case 'BZ':
         return <ReportDetailBZ submission={submission} blueprints={blueprints} />;
+      case 'BZ3':
+        return <ReportDetailBZ3 submission={submission} blueprints={blueprints} />;
       default:
         return <div>ไม่พบ Component สำหรับ Form Type: {submission.form_type}</div>;
+
     }
   };
 
@@ -60,7 +64,7 @@ const ReportDetailDispatcher: React.FC = () => {
 
   return (
     <>
-      <Breadcrumb pageName={`รายละเอียดรายงาน Lot No: ${submissionData?.submission?.lot_no || ''}`} />
+      <Breadcrumb pageName={`ใบรายงานการผลิต: ${submissionData?.submission?.form_type || ''}`} />
       <div>
         {renderFormDetail()}
       </div>
