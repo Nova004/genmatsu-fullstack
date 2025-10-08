@@ -57,3 +57,22 @@ export const deleteSubmission = async (id: number): Promise<{ message: string }>
     throw error;
   }
 };
+
+
+
+// ✨ เพิ่มฟังก์ชันนี้เข้าไปในไฟล์ ✨
+/**
+ * อัปเดตข้อมูล Submission ที่มีอยู่
+ * @param id ID ของ submission ที่จะอัปเดต
+ * @param data ข้อมูลที่ต้องการอัปเดต
+ * @returns Promise<any>
+ */
+export const updateSubmission = async (id: string, data: any): Promise<any> => {
+  try {
+    const response = await apiClient.put(`/api/submissions/${id}`, data);
+    return response.data;
+  } catch (error) {
+    console.error(`Error updating submission with id ${id}:`, error);
+    throw error;
+  }
+};

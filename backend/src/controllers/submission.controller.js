@@ -327,3 +327,54 @@ exports.deleteSubmission = async (req, res) => {
       .send({ message: "Failed to delete submission.", error: err.message });
   }
 };
+
+
+exports.updateSubmission = async (req, res) => {
+  const { id } = req.params;
+  const { lot_no, form_data } = req.body; // รับข้อมูลใหม่จาก Frontend
+
+  if (!lot_no || !form_data) {
+    return res.status(400).send({ message: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
+  }
+
+  try {
+    const pool = await sql.connect(dbConfig);
+    const transaction = new sql.Transaction(pool);
+
+    await transaction.begin();
+
+    try {
+      // 1. อัปเดตตารางหลัก (Form_Submissions)
+      await transaction.request()
+        .input('submission_id', sql.Int, id)
+        .input('lot_no', sql.NVarChar, lot_no)
+        .query(`
+          UPDATE Form_Submissions
+          SET lot_no = @lot_no,
+              submitted_at = GETDATE()
+          WHERE submission_id = @submission_id;
+        `);
+
+      // 2. อัปเดตตารางข้อมูล JSON (Form_Submission_Data)
+      await transaction.request()
+        .input('submission_id', sql.Int, id)
+        .input('form_data_json', sql.NVarChar, JSON.stringify(form_data))
+        .query(`
+          UPDATE Form_Submission_Data
+          SET form_data_json = @form_data_json
+          WHERE submission_id = @submission_id;
+        `);
+
+      await transaction.commit();
+      res.status(200).send({ message: 'อัปเดตข้อมูลสำเร็จ' });
+
+    } catch (err) {
+      await transaction.rollback();
+      throw err; // ส่ง error ไปให้ catch ด้านนอกจัดการ
+    }
+
+  } catch (error) {
+    console.error('SQL error', error);
+    res.status(500).send({ message: 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล', error });
+  }
+};

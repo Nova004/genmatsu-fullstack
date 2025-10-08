@@ -13,4 +13,7 @@ router.get('/:id', submissionController.getSubmissionById);
 // 🎯 Route ใหม่: สำหรับ "การลบ" 🎯
 router.delete('/:id', submissionController.deleteSubmission);
 
+// PUT /api/submissions/:id - สำหรับอัปเดตข้อมูล submission
+router.put('/:id', submissionController.updateSubmission);
+
 module.exports = router;

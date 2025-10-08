@@ -27,6 +27,8 @@ import BZ_Form from './components/formGen/pages/BZ_Form/BZ_index';
 import BZ3_Form from './components/formGen/pages/BZ3_Form/BZ3_index';
 import BS3_Form from './components/formGen/pages/BS3_Form/BS3_index';
 
+import ReportEditDispatcher from './pages/Reports/ReportEditDispatcher';
+
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const { pathname } = useLocation();
@@ -164,6 +166,14 @@ function App() {
                     }
                   />
                   <Route
+                    path="/reports/edit/:id"
+                    element={
+                      <ProtectedRoute>
+                        <ReportEditDispatcher />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
                     path="/reports/view/:id"
                     element={<ReportDetailDispatcher />}
                   />
@@ -176,7 +186,7 @@ function App() {
                     element={<><PageTitle title="BZ3 Form" /><BZ3_Form /></>}
                   />
                   <Route
-                    path="/forms/bs3-form" 
+                    path="/forms/bs3-form"
                     element={<><PageTitle title="BS3 Form" /><BS3_Form /></>}
                   />
                   <Route
