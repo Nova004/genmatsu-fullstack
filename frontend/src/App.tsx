@@ -25,6 +25,7 @@ import ReportHistory_GEN_A from './pages/Reports/ReportHistory_GEN_A';
 import ReportDetailDispatcher from './pages/Reports/ReportDetailDispatcher';
 import BZ_Form from './components/formGen/pages/BZ_Form/BZ_index';
 import BZ3_Form from './components/formGen/pages/BZ3_Form/BZ3_index';
+import BS3_Form from './components/formGen/pages/BS3_Form/BS3_index';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -173,6 +174,10 @@ function App() {
                   <Route
                     path="/forms/bz3-form"
                     element={<><PageTitle title="BZ3 Form" /><BZ3_Form /></>}
+                  />
+                  <Route
+                    path="/forms/bs3-form" 
+                    element={<><PageTitle title="BS3 Form" /><BS3_Form /></>}
                   />
                   <Route
                     path="tables"

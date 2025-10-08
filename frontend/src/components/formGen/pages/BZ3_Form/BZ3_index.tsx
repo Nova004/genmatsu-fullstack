@@ -30,6 +30,7 @@ function BZ3_Form() {
     const availableForms = [
         { value: 'BZ', label: 'BZ', path: '/forms/bz-form' },
         { value: 'BZ3', label: 'BZ3', path: '/forms/bz3-form' },
+        { value: 'BS3', label: 'BS3', path: '/forms/bs3-form' },
     ];
 
     // useForm hook ของคุณ (เหมือนเดิม)

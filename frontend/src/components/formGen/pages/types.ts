@@ -11,6 +11,7 @@ export interface IManufacturingReportForm {
 
   // Step 2
   rawMaterials: {
+    gypsumplaster: number | null;
     activatedcarbon: number | null;
     diaEarth: number | null;
     sodiumChloride: number | null;
@@ -54,6 +55,7 @@ export interface IManufacturingReportForm {
         naclWaterSpecGrav: string | null;
         temperature: number | null;
         naclWater15: number | null;
+        naclWater4: number | null;
         lminRate: string | null;
         totalNaclWater: number | null;
         totalWeightWithNcr: number | null;

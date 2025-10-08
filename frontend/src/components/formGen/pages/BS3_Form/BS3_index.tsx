@@ -1,4 +1,4 @@
-// frontend/src/components/formGen/pages/BZ_Form/BZ_index.tsx
+// frontend/src/components/formGen/pages/BS3_Form/BS3_index.tsx
 
 import React, { useState, useCallback } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
@@ -21,7 +21,7 @@ const ProgressBar = ({ currentStep, totalSteps }: { currentStep: number, totalSt
     return (<div className="my-6 flex justify-center"> <div className="inline-flex rounded-md shadow-sm"> {[...Array(totalSteps)].map((_, index) => { const stepNumber = index + 1; return (<div key={stepNumber} className={`px-4 py-2 text-sm font-medium ${stepNumber === currentStep ? activeClass : inactiveClass} ${stepNumber === 1 ? 'rounded-l-lg' : ''} ${stepNumber === totalSteps ? 'rounded-r-lg' : ''} border border-gray-200 dark:border-strokedark`}> Step {stepNumber} </div>); })} </div> </div>);
 };
 
-function BZ_Form() {
+function BS3_Form() {
     const [step, setStep] = useState(1);
     const totalSteps = 4;
     const { user } = useAuth();
@@ -77,7 +77,7 @@ function BZ_Form() {
 
         // เตรียมข้อมูลทั้งหมดที่จะส่งไป Backend
         const submissionPayload = {
-            formType: 'BZ',
+            formType: 'BS3',
             lotNo: data.basicData.lotNo,
             templateIds: templateIds,
             formData: {
@@ -124,9 +124,9 @@ function BZ_Form() {
             <form onSubmit={handleSubmit(onSubmit)}>
                 {/* === Header และ ProgressBar (เหมือนเดิม) === */}
                 <FormHeader
-                    title="ใบรายงานการผลิต (BZ)"
+                    title="ใบรายงานการผลิต (BS3)"
                     formTypes={availableForms}
-                    currentValue="BZ" // 👈 2. บอก Header ว่าหน้านี้คือฟอร์ม 'BZ'
+                    currentValue="BS3" // 👈 2. บอก Header ว่าหน้านี้คือฟอร์ม 'BZ'
                     inputClass={inputClass}
                 />
                 
@@ -159,4 +159,4 @@ function BZ_Form() {
     );
 }
 
-export default BZ_Form;
+export default BS3_Form;
