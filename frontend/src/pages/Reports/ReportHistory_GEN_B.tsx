@@ -5,7 +5,7 @@
 // นำเข้าไลบรารีและคอมโพเนนต์ที่จำเป็นทั้งหมด
 // =============================================================================
 import React, { useEffect, useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { getAllSubmissions, deleteSubmission } from '../../services/submissionService';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import { fireToast } from '../../hooks/fireToast';
@@ -20,6 +20,7 @@ import {
   ColumnFiltersState,
 } from '@tanstack/react-table';
 import Datepicker, { DateValueType } from "react-tailwindcss-datepicker";
+
 
 // =============================================================================
 // --- 2. TYPE DEFINITION ---
@@ -49,6 +50,9 @@ const ReportHistory_GEN_B: React.FC = () => {
   const [error, setError] = useState<string | null>(null);             // เก็บข้อความ error หากดึงข้อมูลไม่สำเร็จ
   const [globalFilter, setGlobalFilter] = useState('');                // State สำหรับการค้นหาแบบ Global (ทุกคอลัมน์)
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]); // State สำหรับการกรองข้อมูลแบบเจาะจงคอลัมน์ (เช่น วันที่)
+  const [deletingRowId, setDeletingRowId] = useState<number | null>(null);
+  const location = useLocation();
+  const highlightedId = location.state?.highlightedId;
   const [dateRange, setDateRange] = useState<DateValueType>({        // State สำหรับเก็บช่วงวันที่ที่ผู้ใช้เลือก
     startDate: null,
     endDate: null
@@ -181,6 +185,7 @@ const ReportHistory_GEN_B: React.FC = () => {
     []
   );
 
+
   // --- 3.6. DELETE HANDLER ---
   // ฟังก์ชันสำหรับจัดการการลบข้อมูล ใช้ Swal.fire เพื่อแสดง dialog ยืนยันก่อนลบ
   const handleDelete = (id: number, lotNo: string) => {
@@ -191,22 +196,32 @@ const ReportHistory_GEN_B: React.FC = () => {
       showCancelButton: true,
       confirmButtonText: 'delete',
       cancelButtonText: 'Cancel',
-      customClass: { // ปรับแต่งสไตล์ของ SweetAlert2 ให้เข้ากับ Theme
+      customClass: {
         popup: 'dark:bg-boxdark dark:text-white',
         confirmButton: 'inline-flex items-center justify-center rounded-md bg-danger py-2 px-5 text-center font-medium text-white hover:bg-opacity-90 lg:px-6',
         cancelButton: 'ml-3 inline-flex items-center justify-center rounded-md bg-primary py-2 px-5 text-center font-medium text-white hover:bg-opacity-90 lg:px-6'
       },
       buttonsStyling: false,
     }).then(async (result) => {
-      // หากผู้ใช้กดยืนยันการลบ
       if (result.isConfirmed) {
         try {
-          await deleteSubmission(id); // เรียก service เพื่อลบข้อมูล
-          setSubmissions(prev => prev.filter(s => s.submission_id !== id)); // อัปเดต state โดยการกรองข้อมูลที่ถูกลบออกไป
-          fireToast('success', `รายงาน Lot No: "${lotNo}" ถูกลบแล้ว`); // แสดง Toast แจ้งเตือนสำเร็จ
+          // 1. ยิง API ก่อน
+          await deleteSubmission(id);
+
+          // 2. เริ่ม Animation โดยการ set ID
+          setDeletingRowId(id);
+          fireToast('success', `รายงาน Lot No: "${lotNo}" ถูกลบแล้ว`);
+
+          // 3. ตั้งเวลา 500ms (0.5 วินาที) ให้เท่ากับความยาว animation
+          setTimeout(() => {
+            // 4. เมื่อครบเวลา ค่อยลบออกจาก State จริงๆ
+            setSubmissions(prev => prev.filter(s => s.submission_id !== id));
+            setDeletingRowId(null); // เคลียร์ค่า state
+          }, 500);
+
         } catch (error) {
           console.error("Failed to delete submission:", error);
-          fireToast('error', 'ไม่สามารถลบรายงานได้'); // แสดง Toast แจ้งเตือนข้อผิดพลาด
+          fireToast('error', 'ไม่สามารถลบรายงานได้');
         }
       }
     });
@@ -290,16 +305,23 @@ const ReportHistory_GEN_B: React.FC = () => {
             </thead>
             {/* --- ส่วนเนื้อหาของตาราง (Body) --- */}
             <tbody>
-              {table.getRowModel().rows.map(row => (
-                <tr key={row.id}>
-                  {row.getVisibleCells().map(cell => (
-                    <td key={cell.id} className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                      {/* `flexRender` จะทำหน้าที่ render cell ตามที่กำหนดใน `columns` */}
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
-                </tr>
-              ))}
+              {table.getRowModel().rows.map(row => {
+                const isHighlighted = row.original.submission_id === highlightedId;
+                const isDeleting = row.original.submission_id === deletingRowId;
+
+                return (
+                  <tr
+                    key={row.id}
+                    className={`${isHighlighted ? 'highlight-row' : ''} ${isDeleting ? 'deleting-row' : ''}`}
+                  >
+                    {row.getVisibleCells().map(cell => (
+                      <td key={cell.id} className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

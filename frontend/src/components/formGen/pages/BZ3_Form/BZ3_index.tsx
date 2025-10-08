@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 import { IManufacturingReportForm } from '../types';
 import FormStep1 from './FormStep1';
 import FormStep2 from './FormStep2';
@@ -27,6 +28,7 @@ function BZ3_Form() {
     const { user } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loadedTemplates, setLoadedTemplates] = useState<any[]>([]);
+    const navigate = useNavigate();
     const availableForms = [
         { value: 'BZ', label: 'BZ', path: '/forms/bz-form' },
         { value: 'BZ3', label: 'BZ3', path: '/forms/bz3-form' },
@@ -93,8 +95,9 @@ function BZ3_Form() {
         try {
             const result = await submitProductionForm(submissionPayload);
             fireToast('success', `บันทึกข้อมูลสำเร็จ! (ID: ${result.submissionId})`);
-            // สามารถเพิ่มคำสั่งล้างฟอร์มได้ถ้าต้องการ: reset();
-            setStep(1); // กลับไปที่หน้าแรก
+            navigate('/reports/history/gen-b', {
+                state: { highlightedId: result.submissionId }
+            });
         } catch (error: any) {
             const errorMessage = error.response?.data?.message || error.message || "เกิดข้อผิดพลาดในการเชื่อมต่อ";
             fireToast('error', `บันทึกข้อมูลไม่สำเร็จ: ${errorMessage}`);
@@ -129,7 +132,7 @@ function BZ3_Form() {
                     currentValue="BZ3" // 👈 2. บอก Header ว่าหน้านี้คือฟอร์ม 'BZ'
                     inputClass={inputClass}
                 />
-                
+
                 <ProgressBar currentStep={step} totalSteps={totalSteps} />
 
                 {/* === 5. เนื้อหาฟอร์ม (แก้ไขการส่ง Props) === */}
@@ -142,7 +145,9 @@ function BZ3_Form() {
 
                 {/* === ปุ่ม Navigation (เพิ่มสถานะ isSubmitting ที่ปุ่ม Submit) === */}
                 <div className="flex justify-center gap-4 rounded-sm border border-stroke p-4 dark:border-strokedark">
+
                     {step > 1 && (<button type="button" onClick={handleBack} className="rounded-md bg-warning px-10 py-2 font-medium text-white hover:bg-opacity-90">Back</button>)}
+                    {step === 1 && (<button type="button" onClick={() => navigate('/reports/history/gen-b')} className="rounded-md bg-secondary px-10 py-2 font-medium text-white hover:bg-opacity-90" >Back</button>)}
                     {step < totalSteps && (<button type="button" onClick={handleNext} className="rounded-md bg-success px-10 py-2 font-medium text-white hover:bg-opacity-90">Next</button>)}
                     {step === totalSteps && (
                         <button

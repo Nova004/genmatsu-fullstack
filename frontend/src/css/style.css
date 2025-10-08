@@ -213,3 +213,67 @@ span.flatpickr-weekday,
 [x-cloak] {
   display: none !important;
 }
+
+
+/* ===== Highlight Row Animation ===== */
+@keyframes highlight-fade {
+  from {
+    background-color: #e0f7fa; /* สีฟ้าอ่อน Cyan-50 */
+  }
+  to {
+    background-color: transparent; /* กลับเป็นสีปกติ */
+  }
+}
+
+.highlight-row {
+  animation: highlight-fade 10s ease-out 1.0s forwards;
+}
+
+/* --- สำหรับ Dark Mode --- */
+@keyframes highlight-fade-dark {
+  from {
+    background-color: #0c4a6e; /* สีฟ้าเข้ม Cyan-800 */
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+.dark .highlight-row {
+  animation-name: highlight-fade-dark;
+}
+
+
+/* ===== Delete Row Animation ===== */
+@keyframes delete-fade-out {
+  from {
+    background-color: #fecaca; /* สีแดงอ่อน */
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    background-color: #fecaca;
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+.deleting-row {
+  animation: delete-fade-out 0.5s ease-out forwards;
+}
+
+/* --- สำหรับ Dark Mode --- */
+@keyframes delete-fade-out-dark {
+  from {
+    background-color: #7f1d1d; /* สีแดงเข้ม */
+    opacity: 1;
+  }
+  to {
+    background-color: #7f1d1d;
+    opacity: 0;
+  }
+}
+
+.dark .deleting-row {
+  animation-name: delete-fade-out-dark;
+}

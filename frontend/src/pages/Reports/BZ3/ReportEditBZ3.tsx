@@ -46,7 +46,9 @@ const ReportEditBZ3: React.FC<ReportEditBZ3Props> = ({ submission, templates }) 
                     form_data: formData, // ส่งข้อมูลที่แก้ไขแล้วทั้งหมดไป
                 });
                 fireToast('success', 'บันทึกการเปลี่ยนแปลงสำเร็จ');
-                navigate('/reports/history/gen-b');
+                navigate('/reports/history/gen-b', {
+                    state: { highlightedId: submission.submission_id }
+                });
             } catch (error) {
                 console.error("Failed to update submission:", error);
                 fireToast('error', 'ไม่สามารถบันทึกการเปลี่ยนแปลงได้');

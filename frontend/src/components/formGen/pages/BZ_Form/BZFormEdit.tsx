@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { IManufacturingReportForm } from '../types';
+import { useNavigate } from 'react-router-dom';
 import FormStep1 from './FormStep1';
 import FormStep2 from './FormStep2';
 import FormStep3 from './FormStep3';
@@ -12,8 +13,8 @@ import { fireToast } from '../../../../hooks/fireToast';
 
 // Props ที่ Component นี้จะรับเข้ามา
 interface BZFormEditProps {
-  initialData: Partial<IManufacturingReportForm>; // ข้อมูลเดิมสำหรับเติมฟอร์ม
-  onSubmit: SubmitHandler<IManufacturingReportForm>; // ฟังก์ชันที่จะทำงานเมื่อกดบันทึก
+    initialData: Partial<IManufacturingReportForm>; // ข้อมูลเดิมสำหรับเติมฟอร์ม
+    onSubmit: SubmitHandler<IManufacturingReportForm>; // ฟังก์ชันที่จะทำงานเมื่อกดบันทึก
 }
 
 // Component ProgressBar (สามารถย้ายไปเป็น Component กลางได้ในอนาคต)
@@ -28,11 +29,9 @@ const ProgressBar = ({ currentStep, totalSteps }: { currentStep: number, totalSt
                     return (
                         <div
                             key={stepNumber}
-                            className={`px-4 py-2 text-sm font-medium ${
-                                stepNumber === currentStep ? activeClass : inactiveClass
-                            } ${stepNumber === 1 ? 'rounded-l-lg' : ''} ${
-                                stepNumber === totalSteps ? 'rounded-r-lg' : ''
-                            } border border-gray-200 dark:border-strokedark`}
+                            className={`px-4 py-2 text-sm font-medium ${stepNumber === currentStep ? activeClass : inactiveClass
+                                } ${stepNumber === 1 ? 'rounded-l-lg' : ''} ${stepNumber === totalSteps ? 'rounded-r-lg' : ''
+                                } border border-gray-200 dark:border-strokedark`}
                         >
                             Step {stepNumber}
                         </div>
@@ -48,6 +47,7 @@ const BZFormEdit: React.FC<BZFormEditProps> = ({ initialData, onSubmit }) => {
     const [step, setStep] = useState(1);
     const totalSteps = 4;
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const navigate = useNavigate();
 
     const {
         register,
@@ -111,7 +111,7 @@ const BZFormEdit: React.FC<BZFormEditProps> = ({ initialData, onSubmit }) => {
                     currentValue="BZ"
                     inputClass={inputClass}
                 />
-                
+
                 <ProgressBar currentStep={step} totalSteps={totalSteps} />
 
                 <div className="my-6">
@@ -120,8 +120,8 @@ const BZFormEdit: React.FC<BZFormEditProps> = ({ initialData, onSubmit }) => {
                       แต่ยังคงส่ง props ที่จำเป็นอื่นๆ ให้กับ Step Components
                     */}
                     {step === 1 && <FormStep1 register={register} watch={watch} setValue={setValue} />}
-                    {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={() => {}} />}
-                    {step === 3 && <FormStep3 register={register} errors={errors} onTemplateLoaded={() => {}} />}
+                    {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={() => { }} />}
+                    {step === 3 && <FormStep3 register={register} errors={errors} onTemplateLoaded={() => { }} />}
                     {step === 4 && <FormStep4 register={register} watch={watch} setValue={setValue} />}
                 </div>
 
@@ -131,6 +131,7 @@ const BZFormEdit: React.FC<BZFormEditProps> = ({ initialData, onSubmit }) => {
                             Back
                         </button>
                     )}
+                    {step === 1 && (<button type="button" onClick={() => navigate('/reports/history/gen-b')} className="rounded-md bg-secondary px-10 py-2 font-medium text-white hover:bg-opacity-90" >Back</button>)}
                     {step < totalSteps && (
                         <button type="button" onClick={handleNext} className="rounded-md bg-success px-10 py-2 font-medium text-white hover:bg-opacity-90">
                             Next
