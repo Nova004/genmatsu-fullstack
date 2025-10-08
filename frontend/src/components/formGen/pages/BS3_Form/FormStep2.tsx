@@ -52,13 +52,13 @@ const useBS3Calculations = (
   const GypsumPlaster = watch('rawMaterials.gypsumplaster');
 
   const ncrGenmatsu = watch('rawMaterials.ncrGenmatsu.actual');
-  const rc417WaterContent = watch('bz3Calculations.rc417WaterContent');
-  const stdMeanMoisture = watch('bz3Calculations.stdMeanMoisture');
-  const naclWater = watch('bz3Calculations.naclWater');
-  const naclWaterSpecGrav = watch('bz3Calculations.naclWaterSpecGrav');
+  const rc417WaterContent = watch('bs3Calculations.rc417WaterContent');
+  const stdMeanMoisture = watch('bs3Calculations.stdMeanMoisture');
+  const naclWater = watch('bs3Calculations.naclWater');
+  const naclWaterSpecGrav = watch('bs3Calculations.naclWaterSpecGrav');
 
   // --- "ดักฟัง" ค่าที่ถูกคำนวณจากขั้นตอนก่อนหน้า ---
-  const totalWeightOfMaterials = watch('bz3Calculations.totalWeightOfMaterials');
+  const totalWeightOfMaterials = watch('bs3Calculations.totalWeightOfMaterials');
 
 
   useEffect(() => {
@@ -74,7 +74,7 @@ const useBS3Calculations = (
 
     // ----- ขั้นตอน A: คำนวณ "Weight of RC-417 + Mg(OH)2 + Activated Carbon P-200U" -----
     const calculatedTotalMaterials = numRc417Total + numMagnesiumHydroxide + numActivatedCarbon + numGypsumPlaster;
-    setValue('bz3Calculations.totalWeightOfMaterials', calculatedTotalMaterials > 0 ? calculatedTotalMaterials.toFixed(2) : null);
+    setValue('bs3Calculations.totalWeightOfMaterials', calculatedTotalMaterials > 0 ? calculatedTotalMaterials.toFixed(2) : null);
 
     // ----- ขั้นตอน B: คำนวณ "4% NaCl Water" (ค่าเริ่มต้น) -----
     let rawInitialNaclWater15: number | null = null;
@@ -114,7 +114,7 @@ const useBS3Calculations = (
       const rawResult = T24_raw_final + AD24_raw_final;
       totalNaclWaterResult = Number(rawResult.toFixed(2)); // ปัดเศษครั้งสุดท้ายที่นี่
     }
-    setValue('bz3Calculations.totalNaclWater', totalNaclWaterResult);
+    setValue('bs3Calculations.totalNaclWater', totalNaclWaterResult);
 
 
     // ----- ขั้นตอน E: คำนวณค่าสุดท้ายของ "4% NaCl Water" และค่าที่เหลือ -----
@@ -125,11 +125,11 @@ const useBS3Calculations = (
       const rawResult = totalNaclForFinal / W23;
       finalNaclWater4Result = Number(rawResult.toFixed(0));
     }
-    setValue('bz3Calculations.naclWater4', finalNaclWater4Result);
+    setValue('bs3Calculations.naclWater4', finalNaclWater4Result);
     setValue('rawMaterials.sodiumChloride', finalNaclWater4Result, { shouldValidate: true });
     // คำนวณ "(L/B)/20 min."
     const lminRate = (Number(finalNaclWater4Result) || 0) / 20;
-    setValue('bz3Calculations.lminRate', lminRate > 0 ? lminRate.toFixed(0) : null);
+    setValue('bs3Calculations.lminRate', lminRate > 0 ? lminRate.toFixed(0) : null);
 
     // คำนวณ "Total weight = NCR Genmatsu"
     let totalWeightWithNcrResult: number | null = null;
@@ -140,7 +140,7 @@ const useBS3Calculations = (
       const rawResult = AD21_final + AD25_final + U14_final;
       totalWeightWithNcrResult = Number(rawResult.toFixed(2));
     }
-    setValue('bz3Calculations.totalWeightWithNcr', totalWeightWithNcrResult);
+    setValue('bs3Calculations.totalWeightWithNcr', totalWeightWithNcrResult);
 
   }, [
     rc417Total,
@@ -407,41 +407,41 @@ const FormStep2: React.FC<FormStep2Props> = ({
               {/* --- ส่วนที่ 2: การคำนวณสำหรับ BS3 --- */}
               <tr>
                 <td className={tdLeftClass}>RC-417: Water Content</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bz3Calculations.rc417WaterContent', { valueAsNumber: true })} value="2" readOnly disabled /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bs3Calculations.rc417WaterContent', { valueAsNumber: true })} value="2" readOnly disabled /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass}> <span className="text-xs"> Weight of RC-417 + Mg(OH)<sub>2</sub> <br /> + Activated Carbon P-200U </span> </td>
-                <td className={tdLeftClass}><input type="text" className={disabledInputClass} readOnly {...register('bz3Calculations.totalWeightOfMaterials')} /></td>
+                <td className={tdLeftClass}><input type="text" className={disabledInputClass} readOnly {...register('bs3Calculations.totalWeightOfMaterials')} /></td>
                 <td className={tdLeftClass}>KG</td>
                 <td className={tdLeftClass}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Moisture Gen BS3 (STD mean.)</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bz3Calculations.stdMeanMoisture', { valueAsNumber: true })} value="45.25" readOnly disabled /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bs3Calculations.stdMeanMoisture', { valueAsNumber: true })} value="45.25" readOnly disabled /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass} colSpan={4}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>NaCl water =</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bz3Calculations.naclWater', { valueAsNumber: true })} value="4" readOnly disabled /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bs3Calculations.naclWater', { valueAsNumber: true })} value="4" readOnly disabled /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass}>NaCl Water Specific gravity</td>
-                <td className={tdLeftClass}><input type="text" className={inputClass} {...register('bz3Calculations.naclWaterSpecGrav')} /></td>
+                <td className={tdLeftClass}><input type="text" className={inputClass} {...register('bs3Calculations.naclWaterSpecGrav')} /></td>
                 <td className={tdLeftClass}>Temperature</td>
-                <td className={tdLeftClass}><input type="number" step="0.1" className={inputClass} {...register('bz3Calculations.temperature', { valueAsNumber: true })} /></td>
+                <td className={tdLeftClass}><input type="number" step="0.1" className={inputClass} {...register('bs3Calculations.temperature', { valueAsNumber: true })} /></td>
                 <td className={tdLeftClass}>C°</td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>4% NaCl Water</td>
-                <td className={tdLeftClass}><input type="number" className={disabledInputClass} {...register('bz3Calculations.naclWater4', { valueAsNumber: true })} readOnly disabled /></td>
+                <td className={tdLeftClass}><input type="number" className={disabledInputClass} {...register('bs3Calculations.naclWater4', { valueAsNumber: true })} readOnly disabled /></td>
                 <td className={tdLeftClass}>(L/B)/20 min. =</td>
-                <td className={tdLeftClass}><input type="text" className={disabledInputClass} readOnly {...register('bz3Calculations.lminRate')} /></td>
+                <td className={tdLeftClass}><input type="text" className={disabledInputClass} readOnly {...register('bs3Calculations.lminRate')} /></td>
                 <td className={tdLeftClass}>'L/min </td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Total NaCl water=</td>
-                <td className={tdLeftClass}><input type="number" step="0.1" className={disabledInputClass} readOnly {...register('bz3Calculations.totalNaclWater', { valueAsNumber: true })} /></td>
+                <td className={tdLeftClass}><input type="number" step="0.1" className={disabledInputClass} readOnly {...register('bs3Calculations.totalNaclWater', { valueAsNumber: true })} /></td>
                 <td className={tdLeftClass}>Kg./B</td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Total weight = NCR Genmatsu =</td>
-                <td className={tdLeftClass}><input type="number" step="0.1" className={disabledInputClass} readOnly {...register('bz3Calculations.totalWeightWithNcr', { valueAsNumber: true })} /></td>
+                <td className={tdLeftClass}><input type="number" step="0.1" className={disabledInputClass} readOnly {...register('bs3Calculations.totalWeightWithNcr', { valueAsNumber: true })} /></td>
                 <td className={tdLeftClass}>Kg. </td>
               </tr>
 

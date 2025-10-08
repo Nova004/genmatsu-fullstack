@@ -3,7 +3,7 @@ import { UseFormRegister, UseFormWatch, UseFormSetValue } from "react-hook-form"
 // --- Interface สำหรับข้อมูลทั้งหมดในฟอร์ม ---
 export interface IManufacturingReportForm {
   // Step 1
- reportType: 'AS2' | 'BZ' | 'BZ3';
+  reportType: 'AS2' | 'BZ' | 'BZ3'| 'BS3';
   basicData: { date: string; machineName: string; lotNo: string; };
   mcOperators: { id: string; name: string; number: string }[];
   assistants: { id: string; name: string; number: string }[];
@@ -21,7 +21,7 @@ export interface IManufacturingReportForm {
     ncrGenmatsu: { lot: string; actual: number | null; };
   };
 
-     // --- เพิ่มโครงสร้างใหม่สำหรับ BZ ---
+  // --- เพิ่มโครงสร้างใหม่สำหรับ BZ ---
   cg1cWeighting: {
     row1: { cg1c: number | null; bagNo: string; bagWeight: string; net: number | null; };
     row2: { cg1c: number | null; bagNo: string; bagWeight: string; net: number | null; };
@@ -40,27 +40,40 @@ export interface IManufacturingReportForm {
   qouRemark: string;
   valued: number | null;
 
-   // ---  เพิ่มโครงสร้างใหม่สำหรับ BZ3 ---
-    rc417Weighting?: { 
-        row1: { weight: number | null; bagNo: string; net: number | null };
-        row2: { weight: number | null; bagNo: string; net: number | null };
-        total: number | null;
-    };
-    bz3Calculations?: { 
-        rc417WaterContent: number | null;
-        intermediateWaterCalc: number | null;
-        totalWeightOfMaterials: string | null; 
-        stdMeanMoisture: number | null;
-        naclWater: number | null;
-        naclWaterSpecGrav: string | null;
-        temperature: number | null;
-        naclWater15: number | null;
-        naclWater4: number | null;
-        lminRate: string | null;
-        totalNaclWater: number | null;
-        totalWeightWithNcr: number | null;
-    };
-    // --- 👆 สิ้นสุดส่วนที่แก้ไข ---
+  // ---  เพิ่มโครงสร้างใหม่สำหรับ BZ3 ---
+  rc417Weighting?: {
+    row1: { weight: number | null; bagNo: string; net: number | null };
+    row2: { weight: number | null; bagNo: string; net: number | null };
+    total: number | null;
+  };
+  bz3Calculations?: {
+    rc417WaterContent: number | null;
+    intermediateWaterCalc: number | null;
+    totalWeightOfMaterials: string | null;
+    stdMeanMoisture: number | null;
+    naclWater: number | null;
+    naclWaterSpecGrav: string | null;
+    temperature: number | null;
+    naclWater15: number | null;
+    lminRate: string | null;
+    totalNaclWater: number | null;
+    totalWeightWithNcr: number | null;
+  };
+
+  bs3Calculations?: {
+    rc417WaterContent: number | null;
+    intermediateWaterCalc: number | null;
+    totalWeightOfMaterials: string | null;
+    stdMeanMoisture: number | null;
+    naclWater: number | null;
+    naclWaterSpecGrav: string | null;
+    temperature: number | null;
+    naclWater4: number | null;
+    lminRate: string | null;
+    totalNaclWater: number | null;
+    totalWeightWithNcr: number | null;
+  };
+  // --- 👆 สิ้นสุดส่วนที่แก้ไข ---
 
   // Step 3
   operationResults: {
@@ -102,7 +115,7 @@ export interface IColumnInputConfig {
 }
 
 export interface IColumnConfig {
- type: 'DESCRIPTION' | 'SINGLE_INPUT_GROUP' | 'MULTI_INPUT_GROUP'; 
+  type: 'DESCRIPTION' | 'SINGLE_INPUT_GROUP' | 'MULTI_INPUT_GROUP';
   span?: number;
   value?: string;
   description?: string; // <-- เพิ่ม property นี้

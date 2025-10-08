@@ -1,4 +1,4 @@
-// location: frontend/src/pages/Reports/ReportHistory_Gen๘B.tsx
+// location: frontend/src/pages/Reports/ReportHistory_Gen_B.tsx
 
 // =============================================================================
 // --- 1. IMPORT STATEMENTS ---
@@ -160,6 +160,12 @@ const ReportHistory_GEN_B: React.FC = () => {
             {/* ปุ่ม View: ลิงก์ไปยังหน้ารายละเอียดของรายงาน */}
             <Link to={`/reports/view/${row.original.submission_id}`} className="hover:text-primary">
               <svg className="fill-current" width="18" height="18" viewBox="0 0 18 18"><path d="M8.99981 14.8219C3.43106 14.8219 0.674805 9.50624 0.562305 9.28124C0.47793 9.11249 0.47793 8.88749 0.562305 8.71874C0.674805 8.49374 3.43106 3.17812 8.99981 3.17812C14.5686 3.17812 17.3248 8.49374 17.4373 8.71874C17.5217 8.88749 17.5217 9.11249 17.4373 9.28124C17.3248 9.50624 14.5686 14.8219 8.99981 14.8219ZM1.85606 8.99999C2.4748 10.0406 4.89356 13.5 8.99981 13.5C13.1061 13.5 15.5248 10.0406 16.1436 8.99999C15.5248 7.95937 13.1061 4.5 8.99981 4.5C4.89356 4.5 2.4748 7.95937 1.85606 8.99999Z" /><path d="M9 11.25C7.75734 11.25 6.75 10.2427 6.75 9C6.75 7.75734 7.75734 6.75 9 6.75C10.2427 6.75 11.25 7.75734 11.25 9C11.25 10.2427 10.2427 11.25 9 11.25ZM9 8.25C8.58579 8.25 8.25 8.58579 8.25 9C8.25 9.41421 8.58579 9.75 9 9.75C9.41421 9.75 9.75 9.41421 9.75 9C9.75 8.58579 9.41421 8.25 9 8.25Z" /></svg>
+            </Link>
+            <Link
+              to={`/reports/edit/${row.original.submission_id}`}
+              className="text-yellow-500 hover:text-yellow-700"
+            >
+              Edit
             </Link>
             {/* ปุ่ม Delete: เรียกใช้ฟังก์ชัน handleDelete */}
             <button onClick={() => handleDelete(row.original.submission_id, row.original.lot_no)} className="hover:text-danger">

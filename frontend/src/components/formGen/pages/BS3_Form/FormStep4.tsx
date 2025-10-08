@@ -15,7 +15,7 @@ const useStep4Calculations = (
 ) => {
   // --- "ดักฟัง" ค่าที่ต้องใช้ ---
   const quantityOfProductCans = watch('packingResults.quantityOfProduct.cans');
-  const finalTotalWeight = watch('bz3Calculations.totalWeightWithNcr'); // (9) จาก Step 2
+  const finalTotalWeight = watch('bs3Calculations.totalWeightWithNcr'); // (9) จาก Step 2
   const calculatedProduct = watch('packingResults.quantityOfProduct.calculated');
 
   // --- คำนวณ Quantity of Product (10) ---
@@ -53,7 +53,7 @@ const FormStep4: React.FC<FormStep4Props> = ({ register, watch, setValue }) => {
   useStep4Calculations(watch, setValue);
 
   const calculatedProductForDisplay = watch('packingResults.quantityOfProduct.calculated'); // (10)
-  const finalTotalWeightForDisplay = watch('bz3Calculations.totalWeightWithNcr');      // (9)
+  const finalTotalWeightForDisplay = watch('bs3Calculations.totalWeightWithNcr');      // (9)
 
 
   const tdClass = "border-b border-stroke px-4 py-3 text-black dark:border-strokedark dark:text-white";
