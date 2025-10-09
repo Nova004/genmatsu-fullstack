@@ -3,7 +3,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import FormStep2 from './FormStep2';
-import FormStep3 from './FormStep3';
+import SharedFormStep3 from '../../components/forms/SharedFormStep3';
 import FormStep4 from './FormStep4';
 import FormHeader from '../../components/FormHeader';
 import { useMultiStepForm } from '../../../../hooks/useMultiStepForm';
@@ -73,7 +73,7 @@ function BS3_Form() {
                 <div className="my-6">
                     {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="RC-417" />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={handleTemplateLoaded} />}
-                    {step === 3 && <FormStep3 register={register} errors={errors} onTemplateLoaded={handleTemplateLoaded} />}
+                    {step === 3 && <SharedFormStep3 register={register} errors={errors} onTemplateLoaded={handleTemplateLoaded} templateName="BS3_Step3_Operations" />}
                     {step === 4 && <FormStep4 register={register} watch={watch} setValue={setValue} />}
                 </div>
 

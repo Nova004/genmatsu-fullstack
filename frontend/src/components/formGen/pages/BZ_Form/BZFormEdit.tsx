@@ -6,7 +6,7 @@ import { IManufacturingReportForm } from '../types';
 import { useNavigate } from 'react-router-dom';
 import SharedFormStep1 from '../../components/forms/SharedFormStep1'; 
 import FormStep2 from './FormStep2';
-import FormStep3 from './FormStep3';
+import SharedFormStep3 from '../../components/forms/SharedFormStep3'; 
 import FormStep4 from './FormStep4';
 import FormHeader from '../../components/FormHeader';
 import { fireToast } from '../../../../hooks/fireToast';
@@ -96,9 +96,9 @@ const BZFormEdit: React.FC<BZFormEditProps> = ({ initialData, onSubmit }) => {
                       เพราะเราจะแสดงผลข้อมูลตามที่ได้รับมาผ่าน initialData
                       แต่ยังคงส่ง props ที่จำเป็นอื่นๆ ให้กับ Step Components
                     */}
-                     {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="CG-1C" />}
+                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="CG-1C" />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={() => { }} />}
-                    {step === 3 && <FormStep3 register={register} errors={errors} onTemplateLoaded={() => { }} />}
+                    {step === 3 && <SharedFormStep3 register={register} errors={errors} onTemplateLoaded={() => { }} templateName="BZ_Step3_Operations" />}
                     {step === 4 && <FormStep4 register={register} watch={watch} setValue={setValue} />}
                 </div>
 

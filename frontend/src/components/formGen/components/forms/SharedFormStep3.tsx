@@ -1,24 +1,34 @@
+// frontend/src/components/formGen/components/forms/SharedFormStep3.tsx
+
 import React, { useState, useEffect } from 'react';
 import { UseFormRegister, FieldErrors } from 'react-hook-form';
 import { getLatestTemplateByName } from '../../../../services/formService';
-import { IManufacturingReportForm, IConfigJson } from '../types';
+import { IManufacturingReportForm, IConfigJson } from '../../pages/types';
 
-// Props (ถูกต้องอยู่แล้ว)
-interface FormStep3Props {
+// 1. แก้ไข Interface ให้รับ prop `templateName` เพิ่มเข้ามา
+interface SharedFormStep3Props {
   register: UseFormRegister<IManufacturingReportForm>;
   errors: FieldErrors<IManufacturingReportForm>;
   onTemplateLoaded: (templateInfo: any) => void;
   isReadOnly?: boolean;
   staticBlueprint?: any;
+  templateName: 'BS3_Step3_Operations' | 'BZ3_Step3_Operations' | 'BZ_Step3_Operations' | string; // ทำให้ยืดหยุ่นสำหรับฟอร์มในอนาคต
 }
 
-const FormStep3: React.FC<FormStep3Props> = ({ register, errors, onTemplateLoaded, isReadOnly = false, staticBlueprint }) => {
+// 2. เปลี่ยนชื่อ Component และ props
+const SharedFormStep3: React.FC<SharedFormStep3Props> = ({ 
+  register, 
+  errors, 
+  onTemplateLoaded, 
+  isReadOnly = false, 
+  staticBlueprint, 
+  templateName // รับ prop ใหม่เข้ามา
+}) => {
 
   const [fields, setFields] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // useEffect (ถูกต้องสมบูรณ์แล้ว)
   useEffect(() => {
     const processBlueprint = (data: any) => {
       if (data && data.items) {
@@ -31,21 +41,27 @@ const FormStep3: React.FC<FormStep3Props> = ({ register, errors, onTemplateLoade
       }
       setIsLoading(false);
     };
+
     const fetchLatestBlueprint = async () => {
       try {
-        const data = await getLatestTemplateByName('BS3_Step3_Operations');
+        // 3. ใช้ `templateName` ที่รับมาจาก prop ในการ fetch ข้อมูล
+        const data = await getLatestTemplateByName(templateName); 
         processBlueprint(data);
       } catch (err) {
-        setError('ไม่สามารถโหลดข้อมูล Master ของ Step 3 ได้');
+        setError(`ไม่สามารถโหลดข้อมูล Master (${templateName}) ของ Step 3 ได้`);
         setIsLoading(false);
       }
     };
+
     if (staticBlueprint) {
       processBlueprint(staticBlueprint);
     } else {
       fetchLatestBlueprint();
     }
-  }, [onTemplateLoaded, staticBlueprint]);
+  }, [onTemplateLoaded, staticBlueprint, templateName]); // 4. เพิ่ม templateName ใน dependency array
+
+  // ... ส่วน JSX ที่เหลือทั้งหมดเหมือนเดิม ไม่ต้องแก้ไข ...
+  // (ตั้งแต่ `if (isLoading)` ลงไปจนจบไฟล์)
 
   if (isLoading) return <div className="p-4">Loading Form Step 3...</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
@@ -101,14 +117,11 @@ const FormStep3: React.FC<FormStep3Props> = ({ register, errors, onTemplateLoade
                           if (!col.input) {
                             return <td key={colIndex}>Config Error: Input is missing.</td>;
                           }
-
-                          // 3. เตรียมตัวแปรสำหรับหา error ของ field นี้
                           const fieldName = col.input.field_name.replace('{index}', String(index));
                           const fieldError = fieldName.split('.').reduce((obj: any, key) => obj && obj[key], errors);
 
                           return (
                             <td key={colIndex} className={tdLeftClass} colSpan={col.span || 1}>
-                              {/* 5. เพิ่ม Wrapper สำหรับจัดตำแหน่ง Error Message */}
                               <div className="relative pt-2 pb-6">
                                 <div className="flex w-full">
                                   <span className="inline-flex items-center whitespace-nowrap rounded-l-md border border-r-0 border-stroke bg-gray-2 px-3 text-sm text-black dark:border-strokedark dark:bg-meta-4 dark:text-white">{col.input.label}</span>
@@ -116,22 +129,17 @@ const FormStep3: React.FC<FormStep3Props> = ({ register, errors, onTemplateLoade
                                     type={col.input.type || 'text'}
                                     step={col.input.step || 'any'}
                                     className={`${inputClass} rounded-l-none rounded-r-none`}
-                                    // 4. เพิ่ม Logic การ Validate เข้าไปใน register
                                     {...register(fieldName as any, {
                                       valueAsNumber: col.input.type === 'number',
                                       validate: (value) => {
                                         const rules = col.input?.validation;
-                                        // ถ้าไม่มีกฎ หรือยังไม่ได้กรอกค่า ให้ผ่าน
                                         if (!rules || value === null || value === '' || value === undefined) return true;
-
-                                        // ตรวจสอบกฎตามประเภท
                                         switch (rules.type) {
                                           case 'RANGE_DIRECT':
-                                            // เพิ่มการตรวจสอบว่า min และ max ไม่ใช่ undefined ก่อนใช้งาน
                                             if (rules.min !== undefined && rules.max !== undefined) {
                                               return (value >= rules.min && value <= rules.max) || rules.errorMessage;
                                             }
-                                            return true; // ถ้า min หรือ max ไม่มีค่า ก็ให้ผ่านไปก่อน (หรือจะ return error message ก็ได้)
+                                            return true; 
                                           default:
                                             return true;
                                         }
@@ -140,7 +148,6 @@ const FormStep3: React.FC<FormStep3Props> = ({ register, errors, onTemplateLoade
                                   />
                                   <span className="inline-flex items-center whitespace-nowrap rounded-r-md border border-l-0 border-stroke bg-gray-2 px-3 text-sm text-black dark:border-strokedark dark:bg-meta-4 dark:text-white">{col.input.unit}</span>
                                 </div>
-                                {/* 6. แสดง Error Message ถ้ามี */}
                                 {fieldError && <span className="absolute left-0 -bottom-1 text-sm text-meta-1">{fieldError.message as string}</span>}
                               </div>
                             </td>
@@ -152,9 +159,8 @@ const FormStep3: React.FC<FormStep3Props> = ({ register, errors, onTemplateLoade
                           }
                           return (
                             <td key={colIndex} className={tdLeftClass} colSpan={col.span || 1}>
-                              <div className="flex flex-wrap items-center gap-x-4 gap-y-2"> {/* ปรับ gap เล็กน้อย */}
+                              <div className="flex flex-wrap items-center gap-x-4 gap-y-2"> 
 
-                                {/* เพิ่มส่วนนี้เพื่อแสดง description */}
                                 {col.description && <span className="font-medium mr-2">{col.description}</span>}
 
                                 {col.inputs.map((inputItem, inputIdx) => {
@@ -168,7 +174,7 @@ const FormStep3: React.FC<FormStep3Props> = ({ register, errors, onTemplateLoade
                                         <input
                                           type={inputItem.type || 'text'}
                                           className={inputClass}
-                                          style={{ minWidth: '60px', maxWidth: '80px' }} // กำหนดความกว้างขั้นต่ำ
+                                          style={{ minWidth: '60px', maxWidth: '80px' }} 
                                           {...register(multiFieldName as any, {
                                             valueAsNumber: inputItem.type === 'number',
                                             validate: (value) => {
@@ -205,7 +211,7 @@ const FormStep3: React.FC<FormStep3Props> = ({ register, errors, onTemplateLoade
                       <input
                         type="time"
                         className={(isStartTimeDisabled || isReadOnly) ? disabledInputClass : inputClass}
-                        disabled={isStartTimeDisabled || isReadOnly} // 👈 เพิ่ม isReadOnly
+                        disabled={isStartTimeDisabled || isReadOnly}
                         {...register(`operationResults.${index}.startTime`)}
                       />
                     </td>
@@ -213,14 +219,13 @@ const FormStep3: React.FC<FormStep3Props> = ({ register, errors, onTemplateLoade
                       <input
                         type="time"
                         className={(isFinishTimeDisabled || isReadOnly) ? disabledInputClass : inputClass}
-                        disabled={isFinishTimeDisabled || isReadOnly} // 👈 เพิ่ม isReadOnly
+                        disabled={isFinishTimeDisabled || isReadOnly}
                         {...register(`operationResults.${index}.finishTime`)}
                       />
                     </td>
                   </tr>
                 );
               })}
-              {/* แถวสำหรับ Remark */}
               <tr>
                 <td className={tdLeftClass} colSpan={5}>
                   <div className="flex w-full">
@@ -228,7 +233,7 @@ const FormStep3: React.FC<FormStep3Props> = ({ register, errors, onTemplateLoade
                     <textarea
                       className={`${isReadOnly ? disabledInputClass : inputClass} h-25 rounded-l-none`}
                       {...register('operationRemark')}
-                      disabled={isReadOnly} // 👈 เพิ่ม isReadOnly
+                      disabled={isReadOnly}
                     ></textarea>
                   </div>
                 </td>
@@ -241,4 +246,4 @@ const FormStep3: React.FC<FormStep3Props> = ({ register, errors, onTemplateLoade
   );
 };
 
-export default FormStep3;
+export default SharedFormStep3;

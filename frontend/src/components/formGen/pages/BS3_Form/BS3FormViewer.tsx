@@ -8,7 +8,7 @@ import { IManufacturingReportForm } from '../types';
 // Import Component ของแต่ละ Step ที่จะนำมาใช้ซ้ำในการแสดงผล
 import SharedFormStep1 from '../../components/forms/SharedFormStep1';
 import FormStep2 from './FormStep2';
-import FormStep3 from './FormStep3';
+import SharedFormStep3 from '../../components/forms/SharedFormStep3';
 import FormStep4 from './FormStep4';
 import { useNavigate } from 'react-router-dom';
 import ProgressBar from '../../components/ProgressBar';
@@ -91,7 +91,7 @@ const BS3FormViewer: React.FC<BS3FormViewerProps> = ({ formData, blueprints, isR
           {/* ถ้า `step` เท่ากับ 2 ให้แสดง <FormStep2> และส่ง `staticBlueprint` ที่ถูกต้องเข้าไปด้วย */}
           {step === 2 && <FormStep2 {...formStepProps} staticBlueprint={blueprints['BS3_Step2_RawMaterials']} />}
           {/* ถ้า `step` เท่ากับ 3 ก็ทำเหมือน Step 2 */}
-          {step === 3 && <FormStep3 {...formStepProps} staticBlueprint={blueprints['BS3_Step3_Operations']} />}
+          {step === 3 && <SharedFormStep3 {...formStepProps} staticBlueprint={blueprints['BS3_Step3_Operations']} templateName="BS3_Step3_Operations" />}
           {/* ถ้า `step` เท่ากับ 4 ให้แสดง <FormStep4> */}
           {step === 4 && <FormStep4 {...formStepProps} />}
         </div>
