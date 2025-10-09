@@ -6,6 +6,7 @@ import { getLatestTemplateByName } from '../../../../services/formService';
 import { IManufacturingReportForm, IStep2ConfigJson } from '../types';
 import { useWeightingCalculation, WeightingCalculationConfig } from '../../../../hooks/useWeightCalculations';
 import { useTemplateLoader } from '../../../../hooks/useTemplateLoader';
+import ValidatedInput from '../../components/forms/ValidatedInput';
 
 // =================================================================
 // ╔═══════════════════════════════════════════════════════════════╗
@@ -14,16 +15,6 @@ import { useTemplateLoader } from '../../../../hooks/useTemplateLoader';
 // =================================================================
 
 
-/**
- * 🚀 HOOK 1: จัดการการคำนวณน้ำหนัก RC-417 (Net & Total)
- */
-
-
-
-
-/**
- * 🚀 HOOK 2: [ใหม่] จัดการการคำนวณสำหรับฟอร์ม BS3 โดยเฉพาะ
- */
 const useBS3Calculations = (
   watch: UseFormWatch<IManufacturingReportForm>,
   setValue: UseFormSetValue<IManufacturingReportForm>
@@ -140,7 +131,6 @@ const useBS3Calculations = (
 };
 
 
-
 // =================================================================
 // ╔═══════════════════════════════════════════════════════════════╗
 // ║                     MAIN COMPONENT (ส่วนแสดงผล)                
@@ -189,47 +179,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
   const tdCenterClass = `${tdClass} text-center align-middle`;
   const tdLeftClass = `${tdClass} align-middle`;
 
-  const renderValidatedInput = (config: IStep2ConfigJson, inputIndex: number = 0) => {
-    const inputConfig = config.inputs[inputIndex];
-    if (!inputConfig) return null;
-
-    const fieldName = inputConfig.field_name;
-    const validationRules = inputConfig.validation || config.validation;
-    const fieldError = fieldName.split('.').reduce((obj: any, key: string) => obj && obj[key], errors);
-
-    return (
-      <div className='relative pt-2 pb-6'>
-        <input
-          type={inputConfig.type || 'text'}
-          className={inputConfig.is_disabled ? disabledInputClass : inputClass}
-          disabled={inputConfig.is_disabled}
-          {...register(fieldName as any, {
-            valueAsNumber: inputConfig.type === 'number',
-            validate: (value: any) => {
-              if (!validationRules || value === null || value === '' || value === undefined) return true;
-              switch (validationRules.type) {
-                case 'RANGE_TOLERANCE':
-                case 'RANGE_DIRECT':
-                  if (validationRules.min !== undefined && validationRules.max !== undefined) {
-                    return (value >= validationRules.min && value <= validationRules.max) || validationRules.errorMessage;
-                  }
-                  return true;
-                case 'MAX_VALUE':
-                  if (validationRules.max !== undefined) {
-                    return (value <= validationRules.max) || validationRules.errorMessage;
-                  }
-                  return true;
-                default:
-                  return true;
-              }
-            }
-          })}
-        />
-        {fieldError && <span className="absolute left-0 -bottom-1 text-sm text-meta-1">{fieldError.message as string}</span>}
-      </div>
-    );
-  };
-
+  
 
   return (
     <div>
@@ -288,7 +238,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
                         <td className={tdLeftClass} colSpan={2}>{config.label}</td>
                         <td className={tdCenterClass}>{config.std_value}</td>
                         <td className={tdCenterClass}>
-                          {renderValidatedInput(config)}
+                          <ValidatedInput config={config} register={register} errors={errors} />
                         </td>
                         <td className={tdCenterClass}>{config.unit}</td>
                       </tr>
@@ -300,7 +250,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
                         <td className={tdLeftClass} colSpan={2}>{config.label}</td>
                         <td className={tdCenterClass}>{config.std_value}</td>
                         <td className={tdCenterClass} rowSpan={2}>
-                          {renderValidatedInput(config)}
+                         <ValidatedInput config={config} register={register} errors={errors} />
                         </td>
                         <td className={tdCenterClass}>{config.unit}</td>
                       </tr>
@@ -320,11 +270,11 @@ const FormStep2: React.FC<FormStep2Props> = ({
                       <tr key={field.item_id}>
                         <td className={tdLeftClass}>{config.label}</td>
                         <td className={tdCenterClass}>
-                          {renderValidatedInput(config, 0)}
+                         <ValidatedInput config={config} register={register} errors={errors} />
                         </td>
                         <td className={tdCenterClass}>{config.std_value}</td>
                         <td className={tdCenterClass}>
-                          {renderValidatedInput(config, 1)}
+                        <ValidatedInput config={config} register={register} errors={errors} />
                         </td>
                         <td className={tdCenterClass}>{config.unit}</td>
                       </tr>
