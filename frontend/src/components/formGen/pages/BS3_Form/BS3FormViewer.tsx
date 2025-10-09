@@ -6,12 +6,12 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { IManufacturingReportForm } from '../types';
 
 // Import Component ของแต่ละ Step ที่จะนำมาใช้ซ้ำในการแสดงผล
-import FormStep1 from './FormStep1';
+import SharedFormStep1 from '../../components/forms/SharedFormStep1';
 import FormStep2 from './FormStep2';
 import FormStep3 from './FormStep3';
 import FormStep4 from './FormStep4';
 import { useNavigate } from 'react-router-dom';
-import ProgressBar from '../../components/ProgressBar'; 
+import ProgressBar from '../../components/ProgressBar';
 
 
 
@@ -87,7 +87,7 @@ const BS3FormViewer: React.FC<BS3FormViewerProps> = ({ formData, blueprints, isR
         {/* ส่วนที่แสดงเนื้อหาของแต่ละ Step */}
         <div className="my-6">
           {/* ใช้ Conditional Rendering: ถ้า `step` เท่ากับ 1 ให้แสดง <FormStep1> */}
-          {step === 1 && <FormStep1 {...formStepProps} />}
+          {step === 1 && <SharedFormStep1 {...formStepProps} packagingWarningItemName="RC-417" />}
           {/* ถ้า `step` เท่ากับ 2 ให้แสดง <FormStep2> และส่ง `staticBlueprint` ที่ถูกต้องเข้าไปด้วย */}
           {step === 2 && <FormStep2 {...formStepProps} staticBlueprint={blueprints['BS3_Step2_RawMaterials']} />}
           {/* ถ้า `step` เท่ากับ 3 ก็ทำเหมือน Step 2 */}

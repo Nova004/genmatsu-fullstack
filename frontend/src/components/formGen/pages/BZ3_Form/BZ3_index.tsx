@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom'; 
-import FormStep1 from './FormStep1';
+import SharedFormStep1 from '../../components/forms/SharedFormStep1';
 import FormStep2 from './FormStep2';
 import FormStep3 from './FormStep3';
 import FormStep4 from './FormStep4';
@@ -72,7 +72,7 @@ function BZ3_Form() {
                 <ProgressBar currentStep={step} totalSteps={4} />
 
                 <div className="my-6">
-                    {step === 1 && <FormStep1 register={register} watch={watch} setValue={setValue} />}
+                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="RC-417" />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={handleTemplateLoaded} />}
                     {step === 3 && <FormStep3 register={register} errors={errors} onTemplateLoaded={handleTemplateLoaded} />}
                     {step === 4 && <FormStep4 register={register} watch={watch} setValue={setValue} />}

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { IManufacturingReportForm } from '../types';
-import FormStep1 from './FormStep1';
+import SharedFormStep1 from '../../components/forms/SharedFormStep1';
 import FormStep2 from './FormStep2';
 import FormStep3 from './FormStep3';
 import FormStep4 from './FormStep4';
@@ -95,7 +95,7 @@ const BS3FormEdit: React.FC<BS3FormEditProps> = ({ initialData, onSubmit }) => {
                       เพราะเราจะแสดงผลข้อมูลตามที่ได้รับมาผ่าน initialData
                       แต่ยังคงส่ง props ที่จำเป็นอื่นๆ ให้กับ Step Components
                     */}
-                    {step === 1 && <FormStep1 register={register} watch={watch} setValue={setValue} />}
+                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="RC-417" />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={() => { }} />}
                     {step === 3 && <FormStep3 register={register} errors={errors} onTemplateLoaded={() => { }} />}
                     {step === 4 && <FormStep4 register={register} watch={watch} setValue={setValue} />}

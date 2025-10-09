@@ -1,25 +1,26 @@
-// src/pages/BZ3_Form/FormStep1.tsx
+// frontend/src/components/formGen/components/forms/SharedFormStep1.tsx
 
 import React from 'react';
-import { FormStepProps, IManufacturingReportForm } from '../types';
-import { UseFormWatch, UseFormSetValue } from 'react-hook-form';
-import EmployeeInputRow from '../../components/forms/EmployeeInputRow';
-import ConditionCheckItem from '../../components/forms/ConditionCheckItem';
+import { UseFormRegister, UseFormWatch, UseFormSetValue } from 'react-hook-form';
+import { IManufacturingReportForm } from '../../pages/types';
+import EmployeeInputRow from './EmployeeInputRow';
+import ConditionCheckItem from './ConditionCheckItem';
 
-// สร้าง Interface สำหรับ Props ของหน้านี้โดยเฉพาะ
-interface FormStep1Props extends FormStepProps {
+// 1. สร้าง Interface สำหรับ Props ที่ Component นี้ต้องการ
+interface SharedFormStep1Props {
+  register: UseFormRegister<IManufacturingReportForm>;
   watch: UseFormWatch<IManufacturingReportForm>;
   setValue: UseFormSetValue<IManufacturingReportForm>;
+  // 2. เพิ่ม Prop นี้เพื่อรับชื่อวัตถุดิบสำหรับคำเตือน
+  packagingWarningItemName: string; 
 }
 
-// ======================================================
-// === 1. แก้ไขตรงนี้: ให้รับ Props ตาม Interface ตัวใหม่ (FormStep1Props) ===
-// ======================================================
-const FormStep1: React.FC<FormStep1Props> = ({ register, watch, setValue }) => {
- const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
+const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setValue, packagingWarningItemName }) => {
+  const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
 
   return (
     <div>
+      {/* ส่วน Basic Data (เหมือนเดิมทุกประการ) */}
       <div className="border-b-2 border-stroke py-2 text-center dark:border-strokedark">
         <h5 className="font-medium text-black dark:text-white">Basic Data (ข้อมูลทั่วไป)</h5>
       </div>
@@ -41,18 +42,8 @@ const FormStep1: React.FC<FormStep1Props> = ({ register, watch, setValue }) => {
         <div className="mb-6 grid grid-cols-1 gap-6 border-b border-stroke pb-6 dark:border-strokedark lg:grid-cols-6">
           <div className="flex items-center justify-center text-center font-medium text-black dark:text-white lg:col-span-1">M/C operator</div>
           <div className="flex flex-col gap-5 lg:col-span-5">
-            {/* ====================================================== */}
-            {/* === 2. แก้ไขตรงนี้: ส่ง watch และ setValue เข้าไปด้วย === */}
-            {/* ====================================================== */}
             {[...Array(3)].map((_, index) => (
-              <EmployeeInputRow 
-                key={`mc-${index}`} 
-                groupName="mcOperators" 
-                index={index} 
-                register={register} 
-                watch={watch} 
-                setValue={setValue} 
-              />
+              <EmployeeInputRow key={`mc-${index}`} groupName="mcOperators" index={index} register={register} watch={watch} setValue={setValue} />
             ))}
           </div>
         </div>
@@ -60,18 +51,13 @@ const FormStep1: React.FC<FormStep1Props> = ({ register, watch, setValue }) => {
           <div className="flex items-center justify-center text-center font-medium text-black dark:text-white lg:col-span-1">Assistant M/C</div>
           <div className="flex flex-col gap-5 lg:col-span-5">
             {[...Array(5)].map((_, index) => (
-              <EmployeeInputRow 
-                key={`asst-${index}`} 
-                groupName="assistants" 
-                index={index} 
-                register={register} 
-                watch={watch} 
-                setValue={setValue} 
-              />
+              <EmployeeInputRow key={`asst-${index}`} groupName="assistants" index={index} register={register} watch={watch} setValue={setValue} />
             ))}
           </div>
         </div>
       </div>
+
+      {/* ส่วน Check the condition (แก้ไขเล็กน้อย) */}
       <div className="mt-6 border-b-2 border-stroke py-2 text-center dark:border-strokedark">
         <h5 className="font-medium text-black dark:text-white">Check the condition (ตรวจสอบสภาพบรรจุภัณฑ์)</h5>
       </div>
@@ -79,7 +65,8 @@ const FormStep1: React.FC<FormStep1Props> = ({ register, watch, setValue }) => {
         <ConditionCheckItem
           index={0} title="ถุง (ภายนอก)"
           description="เช็คสภาพถุงภายนอกและหูยกถุงบรรจุจะต้องไม่ชำรุด และไม่มีรอยขาดของถุง"
-          warning="หากพบความผิดปกติถุง (RC-417) ให้ทำการแจ้งหัวหน้างานรับทราบทันที ห้ามใช้โดยเด็ดขาดก่อนได้รับอนุญาตจากหัวหน้างาน"
+          // 3. ใช้ค่าจาก Prop มาแสดงในคำเตือน
+          warning={`หากพบความผิดปกติถุง (${packagingWarningItemName}) ให้ทำการแจ้งหัวหน้างานรับทราบทันที ห้ามใช้โดยเด็ดขาดก่อนได้รับอนุญาตจากหัวหน้างาน`}
           register={register}
         />
         <ConditionCheckItem
@@ -98,4 +85,4 @@ const FormStep1: React.FC<FormStep1Props> = ({ register, watch, setValue }) => {
   );
 };
 
-export default FormStep1;
+export default SharedFormStep1;
