@@ -10,11 +10,29 @@ import FormStep3 from './FormStep3';
 import FormStep4 from './FormStep4';
 import { useAuth } from '../../../../context/AuthContext';
 import FormHeader from '../../components/FormHeader';
+import { useMultiStepForm } from '../../../../hooks/useMultiStepForm';
 
 // --- 1. Import เครื่องมือที่จำเป็น ---
 import { submitProductionForm } from '../../../../services/submissionService';
 import { fireToast } from '../../../../hooks/fireToast';
 
+const BS3_VALIDATION_SCHEMA = {
+    1: {
+        fields: ['basicData.date', 'basicData.machineName', 'basicData.lotNo'],
+        scope: 'basicData',
+        message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, และ Lot No. ให้ครบถ้วน',
+    },
+    2: {
+        fields: 'rawMaterials',
+        scope: 'rawMaterials',
+        message: 'กรุณาตรวจสอบข้อมูลวัตถุดิบให้ถูกต้อง',
+    },
+    3: {
+        fields: ['conditions', 'operationResults', 'operationRemark'],
+        // scope ไม่ได้กำหนด เพราะเราจะค้นหาจาก error object ทั้งหมด
+        message: 'กรุณาตรวจสอบข้อมูลเงื่อนไขและผลการปฏิบัติงานให้ถูกต้อง',
+    },
+};
 // (Component ProgressBar ของคุณเหมือนเดิม)
 const ProgressBar = ({ currentStep, totalSteps }: { currentStep: number, totalSteps: number }) => {
     const activeClass = 'bg-primary text-white';
@@ -23,7 +41,6 @@ const ProgressBar = ({ currentStep, totalSteps }: { currentStep: number, totalSt
 };
 
 function BS3_Form() {
-    const [step, setStep] = useState(1);
     const totalSteps = 4;
     const { user } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,6 +51,7 @@ function BS3_Form() {
         { value: 'BZ3', label: 'BZ3', path: '/forms/bz3-form' },
         { value: 'BS3', label: 'BS3', path: '/forms/bs3-form' },
     ];
+
 
     // useForm hook ของคุณ (เหมือนเดิม)
     const { register, handleSubmit, trigger, watch, setValue, formState: { errors } } = useForm<IManufacturingReportForm>({
@@ -53,6 +71,13 @@ function BS3_Form() {
         }
     });
 
+    const { step, setStep, handleNext, handleBack } = useMultiStepForm({
+        totalSteps: 4,
+        trigger,
+        errors,
+        validationSchema: BS3_VALIDATION_SCHEMA,
+    });
+    
     // --- 3. สร้างฟังก์ชันสำหรับรับข้อมูล Template จากลูก (ป้องกัน Loop ด้วย useCallback) ---
     const handleTemplateLoaded = useCallback((templateInfo: any) => {
         // เพิ่มข้อมูล template ที่ได้รับมาเข้า State โดยป้องกันการเพิ่มซ้ำ
@@ -104,20 +129,6 @@ function BS3_Form() {
         } finally {
             setIsSubmitting(false); // สิ้นสุดกระบวนการบันทึก (ปุ่มกลับมาเป็นปกติ)
         }
-    };
-
-    // --- ฟังก์ชัน handleNext และ handleBack ของคุณ (เหมือนเดิม) ---
-    const handleNext = async () => {
-        const isValid = await trigger(['basicData.date', 'basicData.machineName', 'basicData.lotNo']);
-        if (isValid && step < totalSteps) {
-            setStep(prev => prev + 1);
-        } else if (!isValid) {
-            fireToast('warning', 'กรุณากรอกข้อมูลวันที่, เครื่อง, และ Lot No. ให้ครบถ้วน');
-        }
-    };
-
-    const handleBack = () => {
-        if (step > 1) setStep(prev => prev - 1);
     };
 
     const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";

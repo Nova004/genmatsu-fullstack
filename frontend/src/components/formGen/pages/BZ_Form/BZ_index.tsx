@@ -10,6 +10,7 @@ import FormStep4 from './FormStep4';
 import { useAuth } from '../../../../context/AuthContext';
 import FormHeader from '../../components/FormHeader';
 import { useNavigate } from 'react-router-dom';
+import { useMultiStepForm } from '../../../../hooks/useMultiStepForm';
 
 // --- 1. Import เครื่องมือที่จำเป็น ---
 import { submitProductionForm } from '../../../../services/submissionService';
@@ -22,8 +23,25 @@ const ProgressBar = ({ currentStep, totalSteps }: { currentStep: number, totalSt
     return (<div className="my-6 flex justify-center"> <div className="inline-flex rounded-md shadow-sm"> {[...Array(totalSteps)].map((_, index) => { const stepNumber = index + 1; return (<div key={stepNumber} className={`px-4 py-2 text-sm font-medium ${stepNumber === currentStep ? activeClass : inactiveClass} ${stepNumber === 1 ? 'rounded-l-lg' : ''} ${stepNumber === totalSteps ? 'rounded-r-lg' : ''} border border-gray-200 dark:border-strokedark`}> Step {stepNumber} </div>); })} </div> </div>);
 };
 
+const BZ_VALIDATION_SCHEMA = {
+    1: {
+        fields: ['basicData.date', 'basicData.machineName', 'basicData.lotNo'],
+        scope: 'basicData',
+        message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, และ Lot No. ให้ครบถ้วน',
+    },
+    2: {
+        fields: 'rawMaterials',
+        scope: 'rawMaterials',
+        message: 'กรุณาตรวจสอบข้อมูลวัตถุดิบให้ถูกต้อง',
+    },
+    3: {
+        fields: ['conditions', 'operationResults', 'operationRemark'],
+        // scope ไม่ได้กำหนด เพราะเราจะค้นหาจาก error object ทั้งหมด
+        message: 'กรุณาตรวจสอบข้อมูลเงื่อนไขและผลการปฏิบัติงานให้ถูกต้อง',
+    },
+};
+
 function BZ_Form() {
-    const [step, setStep] = useState(1);
     const totalSteps = 4;
     const { user } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,6 +69,13 @@ function BZ_Form() {
             packingResults: { diameter: null, quantityOfProduct: { cans: null, calculated: null }, meshPass40: null, remain: null, yieldPercent: null, },
             palletInfo: Array(6).fill({ no: '', qty: null, canNo: '' }),
         }
+    });
+
+    const { step, setStep, handleNext, handleBack } = useMultiStepForm({
+        totalSteps: 4,
+        trigger,
+        errors,
+        validationSchema: BZ_VALIDATION_SCHEMA,
     });
 
     // --- 3. สร้างฟังก์ชันสำหรับรับข้อมูล Template จากลูก (ป้องกัน Loop ด้วย useCallback) ---
@@ -106,19 +131,8 @@ function BZ_Form() {
         }
     };
 
-    // --- ฟังก์ชัน handleNext และ handleBack ของคุณ (เหมือนเดิม) ---
-    const handleNext = async () => {
-        const isValid = await trigger(['basicData.date', 'basicData.machineName', 'basicData.lotNo']);
-        if (isValid && step < totalSteps) {
-            setStep(prev => prev + 1);
-        } else if (!isValid) {
-            fireToast('warning', 'กรุณากรอกข้อมูลวันที่, เครื่อง, และ Lot No. ให้ครบถ้วน');
-        }
-    };
 
-    const handleBack = () => {
-        if (step > 1) setStep(prev => prev - 1);
-    };
+
 
     const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
 
