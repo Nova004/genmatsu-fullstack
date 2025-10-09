@@ -10,8 +10,8 @@ import { useNavigate } from 'react-router-dom';
 // Import Component ของแต่ละ Step ที่จะนำมาใช้ซ้ำในการแสดงผล
 import SharedFormStep1 from '../../components/forms/SharedFormStep1';
 import FormStep2 from './FormStep2';
-import SharedFormStep3 from '../../components/forms/SharedFormStep3'; 
-import FormStep4 from './FormStep4';
+import SharedFormStep3 from '../../components/forms/SharedFormStep3';
+import SharedFormStep4 from '../../components/forms/SharedFormStep4';
 import ProgressBar from '../../components/ProgressBar';
 
 
@@ -94,7 +94,7 @@ const BZFormViewer: React.FC<BZFormViewerProps> = ({ formData, blueprints, isRea
           {/* ถ้า `step` เท่ากับ 3 ก็ทำเหมือน Step 2 */}
           {step === 3 && <SharedFormStep3 {...formStepProps} staticBlueprint={blueprints['BS3_Step3_Operations']} templateName="BZ_Step3_Operations" />}
           {/* ถ้า `step` เท่ากับ 4 ให้แสดง <FormStep4> */}
-          {step === 4 && <FormStep4 {...formStepProps} />}
+          {step === 4 && <SharedFormStep4 {...formStepProps} totalWeightFieldName="calculations.finalTotalWeight" />}
         </div>
 
         {/* ส่วนของปุ่ม Navigation ด้านล่าง */}

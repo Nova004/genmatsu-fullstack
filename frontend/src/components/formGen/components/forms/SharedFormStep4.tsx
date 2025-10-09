@@ -1,31 +1,44 @@
-// src/pages/BS3_Form/FormStep4.tsx
+// frontend/src/components/formGen/components/forms/SharedFormStep4.tsx
 
 import React, { useEffect } from 'react';
-import { FormStepProps, IManufacturingReportForm } from '../types';
-import { UseFormWatch, UseFormSetValue } from 'react-hook-form';
-import PalletTable from '../../components/forms/PalletTable';
-import PackingResultTable from '../../components/forms/PackingResultTable';
+import { UseFormRegister, UseFormWatch, UseFormSetValue } from 'react-hook-form';
+import { IManufacturingReportForm } from '../../pages/types';
+import PalletTable from './PalletTable';
+import PackingResultTable from './PackingResultTable';
 
-// =================================================================
-// 🚀 CUSTOM HOOK: สำหรับจัดการการคำนวณใน Step 4
-// =================================================================
+// 1. สร้าง Type สำหรับชื่อฟิลด์ที่เราจะรับเข้ามา
+type TotalWeightFieldName =
+  | 'calculations.finalTotalWeight'
+  | 'bz3Calculations.totalWeightWithNcr'
+  | 'bs3Calculations.totalWeightWithNcr';
+
+// 2. แก้ไข Interface ให้รับ prop ใหม่
+interface SharedFormStep4Props {
+  register: UseFormRegister<IManufacturingReportForm>;
+  watch: UseFormWatch<IManufacturingReportForm>;
+  setValue: UseFormSetValue<IManufacturingReportForm>;
+  totalWeightFieldName: TotalWeightFieldName; // Prop สำหรับรับชื่อฟิลด์
+}
+
+// Custom Hook สำหรับคำนวณ (ปรับให้รับชื่อฟิลด์เข้ามา)
 const useStep4Calculations = (
   watch: UseFormWatch<IManufacturingReportForm>,
-  setValue: UseFormSetValue<IManufacturingReportForm>
+  setValue: UseFormSetValue<IManufacturingReportForm>,
+  totalWeightFieldName: TotalWeightFieldName // รับชื่อฟิลด์
 ) => {
-  // --- "ดักฟัง" ค่าที่ต้องใช้ ---
   const quantityOfProductCans = watch('packingResults.quantityOfProduct.cans');
-  const finalTotalWeight = watch('bs3Calculations.totalWeightWithNcr'); // (9) จาก Step 2
+  // 3. ใช้ชื่อฟิลด์ที่รับมาจาก prop ในการ watch ค่า
+  const finalTotalWeight = watch(totalWeightFieldName);
   const calculatedProduct = watch('packingResults.quantityOfProduct.calculated');
 
-  // --- คำนวณ Quantity of Product (10) ---
+  // คำนวณ Quantity of Product (เหมือนเดิม)
   useEffect(() => {
     const cans = Number(quantityOfProductCans) || 0;
     const calculated = cans * 12;
     setValue('packingResults.quantityOfProduct.calculated', calculated > 0 ? calculated : null);
   }, [quantityOfProductCans, setValue]);
 
-  // --- คำนวณ Remain และ Yield % ---
+  // คำนวณ Yield % (เหมือนเดิม)
   useEffect(() => {
     const numFinalWeight = Number(finalTotalWeight) || 0;
     const numProduct = Number(calculatedProduct) || 0;
@@ -36,25 +49,18 @@ const useStep4Calculations = (
       const yieldPercent = (numProduct / numFinalWeight) * 100;
       setValue('packingResults.yieldPercent', Number(yieldPercent.toFixed(2)));
     }
-  }, [finalTotalWeight, calculatedProduct, watch, setValue]);
+  }, [finalTotalWeight, calculatedProduct, setValue]);
 };
 
+// 4. เปลี่ยนชื่อ Component และ props
+const SharedFormStep4: React.FC<SharedFormStep4Props> = ({ register, watch, setValue, totalWeightFieldName }) => {
 
-// =================================================================
-// ✨ COMPONENT หลัก
-// =================================================================
-interface FormStep4Props extends FormStepProps {
-  watch: UseFormWatch<IManufacturingReportForm>;
-  setValue: UseFormSetValue<IManufacturingReportForm>;
-}
+  // 5. ส่งชื่อฟิลด์เข้าไปใน Hook
+  useStep4Calculations(watch, setValue, totalWeightFieldName);
 
-const FormStep4: React.FC<FormStep4Props> = ({ register, watch, setValue }) => {
-
-  useStep4Calculations(watch, setValue);
-
-  const calculatedProductForDisplay = watch('packingResults.quantityOfProduct.calculated'); // (10)
-  const finalTotalWeightForDisplay = watch('bs3Calculations.totalWeightWithNcr');      // (9)
-
+  // 6. ใช้ชื่อฟิลด์ในการดึงค่ามาแสดงผล
+  const calculatedProductForDisplay = watch('packingResults.quantityOfProduct.calculated');
+  const finalTotalWeightForDisplay = watch(totalWeightFieldName);
 
   const tdClass = "border-b border-stroke px-4 py-3 text-black dark:border-strokedark dark:text-white";
   const tdCenterClass = `${tdClass} text-center align-middle`;
@@ -67,15 +73,12 @@ const FormStep4: React.FC<FormStep4Props> = ({ register, watch, setValue }) => {
         <h4 className="font-bold text-black dark:text-white">Packing Result / กระบวนการบรรจุ Genmatsu</h4>
       </div>
       <div className="rounded-b-sm border border-t-0 border-stroke p-5 dark:border-strokedark">
-
         <PackingResultTable
           register={register}
           watch={watch}
           setValue={setValue}
-          cansMultiplier={12} // ส่งค่าตัวคูณเป็น 12
+          cansMultiplier={12}
         />
-
-        {/* --- ตาราง Yield (ฉบับปรับปรุง) --- */}
         <div className="mb-6 overflow-x-auto">
           <table className="w-full table-auto">
             <tbody>
@@ -91,17 +94,15 @@ const FormStep4: React.FC<FormStep4Props> = ({ register, watch, setValue }) => {
             </tbody>
           </table>
         </div>
-
         <PalletTable
           title="Pallet (พาเลท)"
           numberOfRows={6}
           register={register}
           fieldName="palletInfo"
         />
-
       </div>
     </div>
   );
 };
 
-export default FormStep4;
+export default SharedFormStep4;

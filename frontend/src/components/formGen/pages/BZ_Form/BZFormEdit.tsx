@@ -4,13 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { IManufacturingReportForm } from '../types';
 import { useNavigate } from 'react-router-dom';
-import SharedFormStep1 from '../../components/forms/SharedFormStep1'; 
+import SharedFormStep1 from '../../components/forms/SharedFormStep1';
 import FormStep2 from './FormStep2';
-import SharedFormStep3 from '../../components/forms/SharedFormStep3'; 
-import FormStep4 from './FormStep4';
+import SharedFormStep3 from '../../components/forms/SharedFormStep3';
+import SharedFormStep4 from '../../components/forms/SharedFormStep4';
 import FormHeader from '../../components/FormHeader';
 import { fireToast } from '../../../../hooks/fireToast';
-import ProgressBar from '../../components/ProgressBar'; 
+import ProgressBar from '../../components/ProgressBar';
 
 // Props ที่ Component นี้จะรับเข้ามา
 interface BZFormEditProps {
@@ -99,7 +99,7 @@ const BZFormEdit: React.FC<BZFormEditProps> = ({ initialData, onSubmit }) => {
                     {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="CG-1C" />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={() => { }} />}
                     {step === 3 && <SharedFormStep3 register={register} errors={errors} onTemplateLoaded={() => { }} templateName="BZ_Step3_Operations" />}
-                    {step === 4 && <FormStep4 register={register} watch={watch} setValue={setValue} />}
+                    {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="calculations.finalTotalWeight" />}
                 </div>
 
                 <div className="flex justify-center gap-4 rounded-sm border border-stroke p-4 dark:border-strokedark">

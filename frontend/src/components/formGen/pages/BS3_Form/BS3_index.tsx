@@ -4,7 +4,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import FormStep2 from './FormStep2';
 import SharedFormStep3 from '../../components/forms/SharedFormStep3';
-import FormStep4 from './FormStep4';
+import SharedFormStep4 from '../../components/forms/SharedFormStep4';
 import FormHeader from '../../components/FormHeader';
 import { useMultiStepForm } from '../../../../hooks/useMultiStepForm';
 import { useProductionForm } from '../../../../hooks/useProductionForm';
@@ -74,7 +74,7 @@ function BS3_Form() {
                     {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="RC-417" />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={handleTemplateLoaded} />}
                     {step === 3 && <SharedFormStep3 register={register} errors={errors} onTemplateLoaded={handleTemplateLoaded} templateName="BS3_Step3_Operations" />}
-                    {step === 4 && <FormStep4 register={register} watch={watch} setValue={setValue} />}
+                    {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="bs3Calculations.totalWeightWithNcr" />}
                 </div>
 
                 <div className="flex justify-center gap-4 rounded-sm border border-stroke p-4 dark:border-strokedark">
