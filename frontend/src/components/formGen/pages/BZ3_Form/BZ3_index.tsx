@@ -54,8 +54,9 @@ function BZ3_Form() {
     // ค่าคงที่สำหรับ UI
     const availableForms = [
         { value: 'BZ', label: 'BZ', path: '/forms/bz-form' },
-        { value: 'BS3', label: 'BS3', path: '/forms/bz3-form' },
-        { value: 'BZ3', label: 'BZ3', path: '/forms/bZ3-form' },
+        { value: 'BZ3', label: 'BZ3', path: '/forms/bz3-form' },
+        { value: 'BS3', label: 'BS3', path: '/forms/bs3-form' },
+
     ];
     const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
 

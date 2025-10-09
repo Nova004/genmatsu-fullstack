@@ -5,6 +5,8 @@ import { UseFormWatch, UseFormSetValue, FieldErrors } from 'react-hook-form';
 import { getLatestTemplateByName } from '../../../../services/formService';
 import { IManufacturingReportForm, IStep2ConfigJson } from '../types';
 import apiClient from '../../../../services/apiService';
+import { useTemplateLoader } from '../../../../hooks/useTemplateLoader';
+import { useWeightingCalculation, WeightingCalculationConfig } from '../../../../hooks/useWeightCalculations';
 
 
 // =================================================================
@@ -13,28 +15,8 @@ import apiClient from '../../../../services/apiService';
 // ╚═══════════════════════════════════════════════════════════════╝
 // =================================================================
 
-/**
- * 🚀 HOOK 1: จัดการการคำนวณน้ำหนัก CG-1C (Net & Total) และอัปเดตค่า Diatomaceous Earth
- */
-const useCg1cWeightingCalculation = (
-  watch: UseFormWatch<IManufacturingReportForm>,
-  setValue: UseFormSetValue<IManufacturingReportForm>
 
-) => {
-  const cg1cRow1 = watch('cg1cWeighting.row1.cg1c');
-  const cg1cRow2 = watch('cg1cWeighting.row2.cg1c');
 
-  useEffect(() => {
-    const net1 = Number(cg1cRow1) - 2 || 0;
-    const net2 = Number(cg1cRow2) - 2 || 0;
-    const total = net1 + net2;
-
-    setValue('cg1cWeighting.row1.net', net1 > 0 ? net1 : null);
-    setValue('cg1cWeighting.row2.net', net2 > 0 ? net2 : null);
-    setValue('cg1cWeighting.total', total > 0 ? total : null);
-    setValue('rawMaterials.diaEarth', total > 0 ? total : null, { shouldValidate: true });
-  }, [cg1cRow1, cg1cRow2, setValue]);
-};
 
 /**
  * 🚀 HOOK 2: จัดการการค้นหาค่าจากตาราง NaCl Brewing แบบ Debounce
@@ -165,59 +147,35 @@ interface FormStep2Props {
   staticBlueprint?: any; // Prop สำหรับรับพิมพ์เขียวเวอร์ชันเก่าโดยตรง
 }
 
+const bzWeightingConfig: WeightingCalculationConfig = {
+  rows: [
+    { grossWeightPath: 'cg1cWeighting.row1.cg1c', netWeightPath: 'cg1cWeighting.row1.net', tare: 2 },
+    { grossWeightPath: 'cg1cWeighting.row2.cg1c', netWeightPath: 'cg1cWeighting.row2.net', tare: 2 },
+  ],
+  totalPath: 'cg1cWeighting.total',
+  destinationPath: 'rawMaterials.diaEarth',
+};
 
-const FormStep2: React.FC<FormStep2Props> = ({ 
-  register, 
-  watch, 
-  setValue, 
-  errors, 
-  onTemplateLoaded,  
-  staticBlueprint 
+const FormStep2: React.FC<FormStep2Props> = ({
+  register,
+  watch,
+  setValue,
+  errors,
+  onTemplateLoaded,
+  staticBlueprint
 }) => {
-  
-  const [fields, setFields] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // ฟังก์ชันสำหรับประมวลผลข้อมูลพิมพ์เขียว (ใช้ร่วมกัน)
-    const processBlueprint = (data: any) => {
-      if (data && data.items) {
-        setFields(data.items);
-        if (onTemplateLoaded) {
-          onTemplateLoaded(data.template);
-        }
-      } else {
-        setError('โครงสร้าง Master ของ Step 2 ไม่ถูกต้อง');
-      }
-      setIsLoading(false);
-    };
+  const { fields, isLoading, error } = useTemplateLoader({
+    templateName: 'BZ_Step2_RawMaterials', // 👈 แค่ระบุชื่อ Template ที่ถูกต้อง
+    onTemplateLoaded,
+    staticBlueprint,
+  });
 
-    // ฟังก์ชันสำหรับดึงข้อมูลพิมพ์เขียวล่าสุด (สำหรับโหมดปกติ)
-    const fetchLatestBlueprint = async () => {
-      try {
-        const data = await getLatestTemplateByName('BZ_Step2_RawMaterials');
-        processBlueprint(data);
-      } catch (err) {
-        setError('ไม่สามารถโหลดข้อมูล Master ของ Step 2 ได้');
-        setIsLoading(false);
-      }
-    };
-
-    // --- Logic การตัดสินใจ ---
-    if (staticBlueprint) {
-      // โหมดแสดงผล (Static Mode): ถ้าได้รับ staticBlueprint มา ให้ใช้ข้อมูลนั้นทันที
-      processBlueprint(staticBlueprint);
-    } else {
-      // โหมดปกติ (Live Mode): ถ้าไม่ได้รับ ให้ fetch ข้อมูลล่าสุดเอง
-      fetchLatestBlueprint();
-    }
-  }, [onTemplateLoaded, staticBlueprint]); // ใส่ staticBlueprint ใน dependency array
 
 
 
   // --- Logic 2: เรียกใช้ Custom Hooks ที่เราสร้างไว้ ---
-  useCg1cWeightingCalculation(watch, setValue);
+  useWeightingCalculation(watch, setValue, bzWeightingConfig);
   useNaclBrewingLookup(watch, setValue);
   useExcelFormulaCalculations(watch, setValue);
 

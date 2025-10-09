@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { UseFormWatch, UseFormSetValue, FieldErrors } from 'react-hook-form';
 import { getLatestTemplateByName } from '../../../../services/formService';
 import { IManufacturingReportForm, IStep2ConfigJson } from '../types';
-import apiClient from '../../../../services/apiService';
-
+import { useWeightingCalculation, WeightingCalculationConfig } from '../../../../hooks/useWeightCalculations';
+import { useTemplateLoader } from '../../../../hooks/useTemplateLoader';
 
 // =================================================================
 // ╔═══════════════════════════════════════════════════════════════╗
@@ -13,28 +13,11 @@ import apiClient from '../../../../services/apiService';
 // ╚═══════════════════════════════════════════════════════════════╝
 // =================================================================
 
+
 /**
  * 🚀 HOOK 1: จัดการการคำนวณน้ำหนัก RC-417 (Net & Total)
  */
-const useRc417WeightingCalculation = (
-  watch: UseFormWatch<IManufacturingReportForm>,
-  setValue: UseFormSetValue<IManufacturingReportForm>
 
-) => {
-  const rc417Row1 = watch('rc417Weighting.row1.weight');
-  const rc417Row2 = watch('rc417Weighting.row2.weight');
-
-  useEffect(() => {
-    const net1 = Number(rc417Row1) - 2 || 0;
-    const net2 = Number(rc417Row2) - 2 || 0;
-    const total = net1 + net2;
-
-    setValue('rc417Weighting.row1.net', net1 > 0 ? net1 : null);
-    setValue('rc417Weighting.row2.net', net2 > 0 ? net2 : null);
-    setValue('rc417Weighting.total', total > 0 ? total : null);
-    setValue('rawMaterials.diaEarth', total > 0 ? total : null, { shouldValidate: true });
-  }, [rc417Row1, rc417Row2, setValue]);
-};
 
 
 
@@ -172,6 +155,15 @@ interface FormStep2Props {
   staticBlueprint?: any;
 }
 
+const bs3WeightingConfig: WeightingCalculationConfig = {
+  rows: [
+    { grossWeightPath: 'rc417Weighting.row1.weight', netWeightPath: 'rc417Weighting.row1.net', tare: 2 },
+    { grossWeightPath: 'rc417Weighting.row2.weight', netWeightPath: 'rc417Weighting.row2.net', tare: 2 },
+  ],
+  totalPath: 'rc417Weighting.total',
+  destinationPath: 'rawMaterials.diaEarth',
+};
+
 const FormStep2: React.FC<FormStep2Props> = ({
   register,
   watch,
@@ -181,41 +173,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
   staticBlueprint
 }) => {
 
-  const [fields, setFields] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { fields, isLoading, error } = useTemplateLoader({
+    templateName: 'BS3_Step2_RawMaterials', // 👈 แค่ระบุชื่อ Template ที่ถูกต้อง
+    onTemplateLoaded,
+    staticBlueprint,
+  });
 
-  useEffect(() => {
-    const processBlueprint = (data: any) => {
-      if (data && data.items) {
-        setFields(data.items);
-        if (onTemplateLoaded) {
-          onTemplateLoaded(data.template);
-        }
-      } else {
-        setError('โครงสร้าง Master ของ Step 2 ไม่ถูกต้อง');
-      }
-      setIsLoading(false);
-    };
-
-    const fetchLatestBlueprint = async () => {
-      try {
-        const data = await getLatestTemplateByName('BS3_Step2_RawMaterials');
-        processBlueprint(data);
-      } catch (err) {
-        setError('ไม่สามารถโหลดข้อมูล Master ของ Step 2 ได้');
-        setIsLoading(false);
-      }
-    };
-
-    if (staticBlueprint) {
-      processBlueprint(staticBlueprint);
-    } else {
-      fetchLatestBlueprint();
-    }
-  }, [onTemplateLoaded, staticBlueprint]);
-
-  useRc417WeightingCalculation(watch, setValue);
+  useWeightingCalculation(watch, setValue, bs3WeightingConfig);
   useBS3Calculations(watch, setValue);
 
   const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-3 py-2 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
