@@ -2,11 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { UseFormWatch, UseFormSetValue, FieldErrors } from 'react-hook-form';
-import { getLatestTemplateByName } from '../../../../services/formService';
 import { IManufacturingReportForm, IStep2ConfigJson } from '../types';
 import { useWeightingCalculation, WeightingCalculationConfig } from '../../../../hooks/useWeightCalculations';
 import { useTemplateLoader } from '../../../../hooks/useTemplateLoader';
-import ValidatedInput from '../../components/forms/ValidatedInput';
+import RawMaterialTableRows from '../../components/forms/RawMaterialTableRows';
 
 // =================================================================
 // ╔═══════════════════════════════════════════════════════════════╗
@@ -179,7 +178,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
   const tdCenterClass = `${tdClass} text-center align-middle`;
   const tdLeftClass = `${tdClass} align-middle`;
 
-  
+
 
   return (
     <div>
@@ -199,91 +198,11 @@ const FormStep2: React.FC<FormStep2Props> = ({
             </thead>
             <tbody>
               {isLoading && (<tr><td colSpan={5} className="text-center p-4">Loading Master Form...</td></tr>)}
+              {error && (<tr><td colSpan={5} className="text-center p-4 text-red-500">{error}</td></tr>)}
 
-              {!isLoading && fields.map(field => {
-                const config = field.config_json as IStep2ConfigJson;
-
-                switch (config.row_type) {
-                  case 'SINGLE_INPUT':
-                    if (config.inputs[0]?.field_name === 'rawMaterials.diaEarth') {
-                      const fieldError = errors.rawMaterials?.diaEarth;
-                      return (
-                        <tr key={field.item_id}>
-                          <td className={tdLeftClass} colSpan={2}>{config.label}</td>
-                          <td className={tdCenterClass}>{config.std_value}</td>
-                          <td className={tdCenterClass}>
-                            <div className='relative pt-2 pb-6'>
-                              <input type="number" className={disabledInputClass} readOnly disabled
-                                {...register('rawMaterials.diaEarth', {
-                                  valueAsNumber: true,
-                                  validate: (value: any) => {
-                                    const rules = config.validation;
-                                    if (!rules || value === null || value === undefined) return true;
-                                    if (rules.min !== undefined && rules.max !== undefined) {
-                                      return (value >= rules.min && value <= rules.max) || rules.errorMessage;
-                                    }
-                                    return true;
-                                  }
-                                })}
-                              />
-                              {fieldError && <span className="absolute left-0 -bottom-1 text-sm text-meta-1">{fieldError.message}</span>}
-                            </div>
-                          </td>
-                          <td className={tdCenterClass}>{config.unit}</td>
-                        </tr>
-                      );
-                    }
-                    return (
-                      <tr key={field.item_id}>
-                        <td className={tdLeftClass} colSpan={2}>{config.label}</td>
-                        <td className={tdCenterClass}>{config.std_value}</td>
-                        <td className={tdCenterClass}>
-                          <ValidatedInput config={config} register={register} errors={errors} />
-                        </td>
-                        <td className={tdCenterClass}>{config.unit}</td>
-                      </tr>
-                    );
-
-                  case 'SINGLE_INPUT_SPAN':
-                    return (
-                      <tr key={field.item_id}>
-                        <td className={tdLeftClass} colSpan={2}>{config.label}</td>
-                        <td className={tdCenterClass}>{config.std_value}</td>
-                        <td className={tdCenterClass} rowSpan={2}>
-                         <ValidatedInput config={config} register={register} errors={errors} />
-                        </td>
-                        <td className={tdCenterClass}>{config.unit}</td>
-                      </tr>
-                    );
-
-                  case 'SUB_ROW':
-                    return (
-                      <tr key={field.item_id}>
-                        <td className={tdLeftClass} colSpan={2}>{config.label}</td>
-                        <td className={tdCenterClass}>{config.std_value}</td>
-                        <td className={tdCenterClass}>{config.unit}</td>
-                      </tr>
-                    );
-
-                  case 'DUAL_INPUT':
-                    return (
-                      <tr key={field.item_id}>
-                        <td className={tdLeftClass}>{config.label}</td>
-                        <td className={tdCenterClass}>
-                         <ValidatedInput config={config} register={register} errors={errors} />
-                        </td>
-                        <td className={tdCenterClass}>{config.std_value}</td>
-                        <td className={tdCenterClass}>
-                        <ValidatedInput config={config} register={register} errors={errors} />
-                        </td>
-                        <td className={tdCenterClass}>{config.unit}</td>
-                      </tr>
-                    );
-
-                  default:
-                    return null;
-                }
-              })}
+              {/* 👇 2. เรียกใช้ Component ใหม่แค่บรรทัดเดียว! */}
+              {!isLoading && !error && <RawMaterialTableRows fields={fields} register={register} errors={errors} />}
+              
             </tbody>
           </table>
         </div>
