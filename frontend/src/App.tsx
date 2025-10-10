@@ -23,9 +23,9 @@ import { Toaster } from 'react-hot-toast';
 import ReportHistory_GEN_B from './pages/Reports/ReportHistory_GEN_B';
 import ReportHistory_GEN_A from './pages/Reports/ReportHistory_GEN_A';
 import ReportDetailDispatcher from './pages/Reports/ReportDetailDispatcher';
-import BZ_Form from './components/formGen/pages/BZ_Form/BZ_index';
-import BZ3_Form from './components/formGen/pages/BZ3_Form/BZ3_index';
-import BS3_Form from './components/formGen/pages/BS3_Form/BS3_index';
+import BZ_Form from './components/formGen/pages/GEN_B/BZ_Form/BZ_index';
+import BZ3_Form from './components/formGen/pages/GEN_B/BZ3_Form/BZ3_index';
+import BS3_Form from './components/formGen/pages/GEN_B/BS3_Form/BS3_index';
 
 import ReportEditDispatcher from './pages/Reports/ReportEditDispatcher';
 

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import BS3FormEdit from '../../../components/formGen/pages/BS3_Form/BS3FormEdit';
+import BS3FormEdit from '../../../components/formGen/pages/GEN_B/BS3_Form/BS3FormEdit';
 import { updateSubmission } from '../../../services/submissionService'; // สร้างฟังก์ชันนี้ในขั้นตอนต่อไป
 import { fireToast } from '../../../hooks/fireToast';
 import Swal from 'sweetalert2';

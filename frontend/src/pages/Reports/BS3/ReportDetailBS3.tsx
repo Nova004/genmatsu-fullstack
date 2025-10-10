@@ -1,7 +1,7 @@
 // frontend/src/pages/Reports/BS3/ReportDetailBS3.tsx
 
 import React from 'react';
-import BS3FormViewer from '../../../components/formGen/pages/BS3_Form/BS3FormViewer';
+import BS3FormViewer from '../../../components/formGen/pages/GEN_B/BS3_Form/BS3FormViewer';
 
 interface ReportDetailBS3Props {
   submission: any;

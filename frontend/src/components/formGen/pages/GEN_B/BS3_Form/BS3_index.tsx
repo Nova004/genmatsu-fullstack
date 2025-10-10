@@ -1,20 +1,19 @@
-// frontend/src/components/formGen/pages/BZ_Form/BZ_index.tsx (โค้ดใหม่)
+// frontend/src/components/formGen/pages/BS3_Form/BS3_index.tsx (โค้ดใหม่)
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import SharedFormStep1 from '../../components/forms/SharedFormStep1';
 import FormStep2 from './FormStep2';
-import SharedFormStep3 from '../../components/forms/SharedFormStep3';
-import SharedFormStep4 from '../../components/forms/SharedFormStep4';
-import FormHeader from '../../components/FormHeader';
-import { useMultiStepForm } from '../../../../hooks/useMultiStepForm';
-import { useProductionForm } from '../../../../hooks/useProductionForm';
-import ProgressBar from '../../components/ProgressBar';
-
+import SharedFormStep3 from '../../../components/forms/SharedFormStep3';
+import SharedFormStep4 from '../../../components/forms/SharedFormStep4';
+import FormHeader from '../../../components/FormHeader';
+import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
+import { useProductionForm } from '../../../../../hooks/useProductionForm';
+import ProgressBar from '../../../components/ProgressBar';
+import SharedFormStep1 from '../../../components/forms/SharedFormStep1';
 
 
 // ย้าย Schema ออกมาไว้นอก Component เพื่อไม่ให้ถูกสร้างใหม่ทุกครั้งที่ re-render
-const BZ_VALIDATION_SCHEMA = {
+const BS3_VALIDATION_SCHEMA = {
     1: {
         fields: ['basicData.date', 'basicData.machineName', 'basicData.lotNo'],
         scope: 'basicData',
@@ -31,12 +30,12 @@ const BZ_VALIDATION_SCHEMA = {
     },
 };
 
-function BZ_Form() {
+function BS3_Form() {
     const navigate = useNavigate(); // ยังคงต้องใช้สำหรับปุ่ม Back to history
     const totalSteps = 4;
     // 🚀 เรียกใช้ Hook เพื่อจัดการ Logic ของฟอร์มทั้งหมด
     const { formMethods, isSubmitting, onSubmit, handleTemplateLoaded } = useProductionForm({
-        formType: 'BZ',
+        formType: 'BS3',
         netWeightOfYieldSTD: 800,
     });
 
@@ -48,7 +47,7 @@ function BZ_Form() {
         totalSteps: 4,
         trigger,
         errors,
-        validationSchema: BZ_VALIDATION_SCHEMA,
+        validationSchema: BS3_VALIDATION_SCHEMA,
     });
 
     // ค่าคงที่สำหรับ UI
@@ -63,19 +62,19 @@ function BZ_Form() {
         <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
             <form onSubmit={onSubmit}>
                 <FormHeader
-                    title="ใบรายงานการผลิต (BZ)"
+                    title="ใบรายงานการผลิต (BS3)"
                     formTypes={availableForms}
-                    currentValue="BZ"
+                    currentValue="BS3"
                     inputClass={inputClass}
                 />
 
                 <ProgressBar currentStep={step} totalSteps={4} />
 
                 <div className="my-6">
-                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="CG-1C" />}
+                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="RC-417" />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={handleTemplateLoaded} />}
-                    {step === 3 && <SharedFormStep3 register={register} errors={errors} onTemplateLoaded={handleTemplateLoaded} templateName="BZ_Step3_Operations" />}
-                    {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="calculations.finalTotalWeight" />}
+                    {step === 3 && <SharedFormStep3 register={register} errors={errors} onTemplateLoaded={handleTemplateLoaded} templateName="BS3_Step3_Operations" />}
+                    {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="bs3Calculations.totalWeightWithNcr" />}
                 </div>
 
                 <div className="flex justify-center gap-4 rounded-sm border border-stroke p-4 dark:border-strokedark">
@@ -97,4 +96,4 @@ function BZ_Form() {
     );
 }
 
-export default BZ_Form;
+export default BS3_Form;

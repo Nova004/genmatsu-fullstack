@@ -1,5 +1,5 @@
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
-import MyFirstForm from '../../components/formGen/pages/BZ_Form/BZ_index';
+import MyFirstForm from '../../components/formGen/pages/GEN_B/BZ_Form/BZ_index';
 
 const FormElements = () => {
   return (

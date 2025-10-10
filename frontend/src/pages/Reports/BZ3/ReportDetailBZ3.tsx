@@ -1,7 +1,7 @@
 // frontend/src/pages/Reports/BZ3/ReportDetailBZ3.tsx
 
 import React from 'react';
-import BZ3FormViewer from '../../../components/formGen/pages/BZ3_Form/BZ3FormViewer';
+import BZ3FormViewer from '../../../components/formGen/pages/GEN_B/BZ3_Form/BZ3FormViewer';
 
 interface ReportDetailBZ3Props {
   submission: any;

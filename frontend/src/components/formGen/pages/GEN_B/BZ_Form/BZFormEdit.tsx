@@ -2,15 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import { IManufacturingReportForm } from '../types';
+import { IManufacturingReportForm } from '../../types';
 import { useNavigate } from 'react-router-dom';
-import SharedFormStep1 from '../../components/forms/SharedFormStep1';
+import SharedFormStep1 from '../../../components/forms/SharedFormStep1';
 import FormStep2 from './FormStep2';
-import SharedFormStep3 from '../../components/forms/SharedFormStep3';
-import SharedFormStep4 from '../../components/forms/SharedFormStep4';
-import FormHeader from '../../components/FormHeader';
-import { fireToast } from '../../../../hooks/fireToast';
-import ProgressBar from '../../components/ProgressBar';
+import SharedFormStep3 from '../../../components/forms/SharedFormStep3';
+import SharedFormStep4 from '../../../components/forms/SharedFormStep4';
+import FormHeader from '../../../components/FormHeader';
+import { fireToast } from '../../../../../hooks/fireToast';
+import ProgressBar from '../../../components/ProgressBar';
+import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
 
 // Props ที่ Component นี้จะรับเข้ามา
 interface BZFormEditProps {
@@ -18,10 +19,25 @@ interface BZFormEditProps {
     onSubmit: SubmitHandler<IManufacturingReportForm>; // ฟังก์ชันที่จะทำงานเมื่อกดบันทึก
 }
 
-
+const BZ_VALIDATION_SCHEMA = {
+    1: {
+        fields: ['basicData.date', 'basicData.machineName', 'basicData.lotNo'],
+        scope: 'basicData',
+        message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, และ Lot No. ให้ครบถ้วน',
+    },
+    2: {
+        fields: 'rawMaterials',
+        scope: 'rawMaterials',
+        message: 'กรุณาตรวจสอบข้อมูลวัตถุดิบให้ถูกต้อง',
+    },
+    3: {
+        fields: ['conditions', 'operationResults', 'operationRemark'],
+        message: 'กรุณาตรวจสอบข้อมูลเงื่อนไขและผลการปฏิบัติงานให้ถูกต้อง',
+    },
+};
 
 const BZFormEdit: React.FC<BZFormEditProps> = ({ initialData, onSubmit }) => {
-    const [step, setStep] = useState(1);
+
     const totalSteps = 4;
     const [isSubmitting, setIsSubmitting] = useState(false);
     const navigate = useNavigate();
@@ -59,21 +75,13 @@ const BZFormEdit: React.FC<BZFormEditProps> = ({ initialData, onSubmit }) => {
     };
 
     // --- ฟังก์ชันสำหรับจัดการปุ่ม Next และ Back ---
-    const handleNext = async () => {
-        // ในโหมดแก้ไข เราจะตรวจสอบแค่ field พื้นฐานบางตัว
-        const isValid = await trigger(['basicData.lotNo', 'basicData.date', 'basicData.machineName']);
-        if (isValid && step < totalSteps) {
-            setStep(prev => prev + 1);
-        } else if (!isValid) {
-            fireToast('warning', 'กรุณากรอกข้อมูลวันที่, เครื่อง, และ Lot No. ให้ครบถ้วน');
-        }
-    };
+    const { step, handleNext, handleBack } = useMultiStepForm({
+        totalSteps: 4,
+        trigger,
+        errors,
+        validationSchema: BZ_VALIDATION_SCHEMA,
+    });
 
-    const handleBack = () => {
-        if (step > 1) {
-            setStep(prev => prev - 1);
-        }
-    };
 
     // --- ค่าคงที่สำหรับ Styling และ Dropdown ---
     const availableForms = [{ value: 'BZ', label: 'BZ', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข

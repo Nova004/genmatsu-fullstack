@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { UseFormWatch, UseFormSetValue, FieldErrors } from 'react-hook-form';
-import { IManufacturingReportForm, IStep2ConfigJson } from '../types';
-import apiClient from '../../../../services/apiService';
-import { useTemplateLoader } from '../../../../hooks/useTemplateLoader';
-import { useWeightingCalculation, WeightingCalculationConfig } from '../../../../hooks/useWeightCalculations';
-import RawMaterialTableRows from '../../components/forms/RawMaterialTableRows';
+import { IManufacturingReportForm, IStep2ConfigJson } from '../../types';
+import apiClient from '../../../../../services/apiService';
+import { useTemplateLoader } from '../../../../../hooks/useTemplateLoader';
+import { useWeightingCalculation, WeightingCalculationConfig } from '../../../../../hooks/useWeightCalculations';
+import RawMaterialTableRows from '../../../components/forms/RawMaterialTableRows';
 
 // =================================================================
 // ╔═══════════════════════════════════════════════════════════════╗

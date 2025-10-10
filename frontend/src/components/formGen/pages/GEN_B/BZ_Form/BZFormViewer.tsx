@@ -4,16 +4,17 @@
 // Import Library ที่จำเป็นจาก React และ React Hook Form
 import React, { useState, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
-import { IManufacturingReportForm } from '../types';
+import { IManufacturingReportForm } from '../../types';
 import { useNavigate } from 'react-router-dom';
 
 // Import Component ของแต่ละ Step ที่จะนำมาใช้ซ้ำในการแสดงผล
-import SharedFormStep1 from '../../components/forms/SharedFormStep1';
+import SharedFormStep1 from '../../../components/forms/SharedFormStep1';
 import FormStep2 from './FormStep2';
-import SharedFormStep3 from '../../components/forms/SharedFormStep3';
-import SharedFormStep4 from '../../components/forms/SharedFormStep4';
-import ProgressBar from '../../components/ProgressBar';
-
+import SharedFormStep3 from '../../../components/forms/SharedFormStep3';
+import SharedFormStep4 from '../../../components/forms/SharedFormStep4';
+import ProgressBar from '../../../components/ProgressBar';
+import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
+import { useProductionForm } from '../../../../../hooks/useProductionForm';
 
 
 // สร้าง Interface เพื่อกำหนดว่า BZFormViewer ต้องรับข้อมูลอะไรเข้ามาบ้าง
@@ -23,14 +24,32 @@ interface BZFormViewerProps {
   isReadOnly: boolean;               // 3. ตัวแปรสำหรับบอกว่าเป็นโหมด "อ่านอย่างเดียว" หรือไม่
 }
 
+const BZ_VALIDATION_SCHEMA = {
+  1: {
+    fields: ['basicData.date', 'basicData.machineName', 'basicData.lotNo'],
+    scope: 'basicData',
+    message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, และ Lot No. ให้ครบถ้วน',
+  },
+  2: {
+    fields: 'rawMaterials',
+    scope: 'rawMaterials',
+    message: 'กรุณาตรวจสอบข้อมูลวัตถุดิบให้ถูกต้อง',
+  },
+  3: {
+    fields: ['conditions', 'operationResults', 'operationRemark'],
+    message: 'กรุณาตรวจสอบข้อมูลเงื่อนไขและผลการปฏิบัติงานให้ถูกต้อง',
+  },
+};
 // --- ส่วน Component หลัก ---
 const BZFormViewer: React.FC<BZFormViewerProps> = ({ formData, blueprints, isReadOnly }) => {
 
   // สร้าง State `step` เพื่อเก็บว่าผู้ใช้กำลังดู Step ไหนอยู่, เริ่มต้นที่ 1
-  const [step, setStep] = useState(1);
   const totalSteps = 4;
   const navigate = useNavigate();
-
+  const { formMethods } = useProductionForm({
+    formType: 'BZ',
+    netWeightOfYieldSTD: 800,
+  });
   const methods = useForm<IManufacturingReportForm>({  // ใช้ useForm เพื่อจัดการฟอร์ม
     defaultValues: formData,
     mode: 'onChange',      // 👈 เพิ่มโหมดการทำงาน
@@ -64,15 +83,14 @@ const BZFormViewer: React.FC<BZFormViewerProps> = ({ formData, blueprints, isRea
     onTemplateLoaded: () => { },       // สร้างฟังก์ชันเปล่าๆ สำหรับ Prop นี้ เพราะในโหมด Viewer เราไม่ต้องการโหลด Template ใหม่
   };
 
-  // ฟังก์ชันสำหรับจัดการการกดปุ่ม "Next"
-  const handleNext = () => {
-    if (step < totalSteps) setStep(prev => prev + 1);
-  };
+  const { trigger, formState: { errors } } = formMethods;
 
-  // ฟังก์ชันสำหรับจัดการการกดปุ่ม "Back"
-  const handleBack = () => {
-    if (step > 1) setStep(prev => prev - 1);
-  };
+  const { step, handleNext, handleBack } = useMultiStepForm({
+    totalSteps: 4,
+    trigger,
+    errors,
+    validationSchema: BZ_VALIDATION_SCHEMA,
+  });
 
 
   // Return โครงสร้างหน้าเว็บที่จะแสดงผล
