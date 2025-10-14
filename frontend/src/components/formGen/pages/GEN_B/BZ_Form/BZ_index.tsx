@@ -1,4 +1,4 @@
-// frontend/src/components/formGen/pages/BZ_Form/BZ_index.tsx 
+// frontend/src/components/formGen/pages/GEN_B/BZ_Form/BZ_index.tsx 
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -21,9 +21,15 @@ const BZ_VALIDATION_SCHEMA = {
         message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, และ Lot No. ให้ครบถ้วน',
     },
     2: {
-        fields: 'rawMaterials',
-        scope: 'rawMaterials',
-        message: 'กรุณาตรวจสอบข้อมูลวัตถุดิบให้ถูกต้อง',
+        fields: [
+            'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
+            'cg1cWeighting.row1.cg1c',
+            // 'cg1cWeighting.row2.cg1c', // หากแถว 2 ไม่บังคับก็ comment ไว้
+            'calculations.nacl15SpecGrav',
+            'calculations.cg1cWaterContent',
+            'calculations.temperature'
+        ],
+        message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
     },
     3: {
         fields: ['conditions', 'operationResults', 'operationRemark'],

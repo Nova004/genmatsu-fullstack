@@ -206,7 +206,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               </tr>
             </thead>
             <tbody>
-               {isLoading && (<tr><td colSpan={5} className="text-center p-4">Loading Master Form...</td></tr>)}
+              {isLoading && (<tr><td colSpan={5} className="text-center p-4">Loading Master Form...</td></tr>)}
               {error && (<tr><td colSpan={5} className="text-center p-4 text-red-500">{error}</td></tr>)}
 
               {/* 👇 2. เรียกใช้ Component ใหม่แค่บรรทัดเดียว! */}
@@ -220,7 +220,12 @@ const FormStep2: React.FC<FormStep2Props> = ({
             <tbody>
               <tr>
                 <td className={tdLeftClass}>CG-1C Weight (KG) :</td>
-                <td className={tdLeftClass}><input type="number" className={inputClass} {...register('cg1cWeighting.row1.cg1c', { valueAsNumber: true })} /></td>
+                <td className={tdLeftClass}>  <input type="number" className={inputClass} {...register('cg1cWeighting.row1.cg1c', { valueAsNumber: true, message: 'กรุณากรอก CG-1C Weight' })} /></td>
+                {errors.cg1cWeighting?.row1?.cg1c &&
+                  <p className="text-sm text-danger mt-1">
+                    {errors.cg1cWeighting.row1.cg1c.message}
+                  </p>
+                }
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('cg1cWeighting.row1.bagNo')} /></td>
                 <td className={tdLeftClass}>Net weight (KG) :</td>
@@ -228,7 +233,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               </tr>
               <tr>
                 <td className={tdLeftClass}>CG-1C Weight (KG) :</td>
-                <td className={tdLeftClass}><input type="number" className={inputClass} {...register('cg1cWeighting.row2.cg1c', { valueAsNumber: true })} /></td>
+                <td className={tdLeftClass}><input type="number" className={inputClass} {...register('cg1cWeighting.row2.cg1c', { valueAsNumber: true, message: 'กรุณากรอก CG-1C Weight' })} /></td>
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('cg1cWeighting.row2.bagNo')} /></td>
                 <td className={tdLeftClass}>Net weight (KG) :</td>
@@ -244,12 +249,22 @@ const FormStep2: React.FC<FormStep2Props> = ({
               </tr>
               <tr>
                 <td className={tdLeftClass}>15% NaCl Water Specific gravity</td>
-                <td className={tdLeftClass}><input type="number" step="0.001" className={inputClass} {...register('calculations.nacl15SpecGrav', { valueAsNumber: true })} /></td>
+                <td className={tdLeftClass}><input type="number" step="0.001" className={inputClass} {...register('calculations.nacl15SpecGrav', { valueAsNumber: true, message: 'กรุณากรอก 15% NaCl Water Specific gravity' })} /></td>
+                {errors.calculations?.nacl15SpecGrav &&
+                  <p className="text-sm text-danger mt-1">
+                    {errors.calculations.nacl15SpecGrav.message}
+                  </p>
+                }
                 <td className={tdLeftClass} colSpan={4}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>CG - 1C Water Content (Moisture)</td>
-                <td className={tdLeftClass}><input type="number" step="0.01" className={inputClass} {...register('calculations.cg1cWaterContent', { valueAsNumber: true })} /></td>
+                <td className={tdLeftClass}><input type="number" step="0.01" className={inputClass} {...register('calculations.cg1cWaterContent', { valueAsNumber: true, message: 'กรุณากรอก 15% CG - 1C Water Content (Moisture)' })} /></td>
+                {errors.calculations?.cg1cWaterContent &&
+                  <p className="text-sm text-danger mt-1">
+                    {errors.calculations.cg1cWaterContent.message}
+                  </p>
+                }
                 <td className={tdLeftClass} colSpan={4}></td>
               </tr>
               <tr>
@@ -291,7 +306,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
           </table>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 
