@@ -186,7 +186,12 @@ const FormStep2: React.FC<FormStep2Props> = ({
             <tbody>
               <tr>
                 <td className={tdLeftClass}>'Iron Powder  HGN 82.29.01 :Weight</td>
-                <td className={tdLeftClass}><input type="number" className={inputClass} {...register('cg1cWeighting.row1.cg1c', { valueAsNumber: true })} /></td>
+                <td className={tdLeftClass}><input type="number" className={inputClass} {...register('cg1cWeighting.row1.cg1c', { valueAsNumber: true, required: 'กรุณากรอก  Iron Powder' })} /></td>
+                {errors.cg1cWeighting?.row1?.cg1c &&
+                  <p className="text-sm text-danger mt-1">
+                    {errors.cg1cWeighting.row1.cg1c.message}
+                  </p>
+                }
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('cg1cWeighting.row1.bagNo')} /></td>
                 <td className={tdLeftClass}>Net weight (KG) :</td>
@@ -194,7 +199,12 @@ const FormStep2: React.FC<FormStep2Props> = ({
               </tr>
               <tr>
                 <td className={tdLeftClass}>'Iron Powder  HGN 82.29.01 :Weight</td>
-                <td className={tdLeftClass}><input type="number" className={inputClass} {...register('cg1cWeighting.row2.cg1c', { valueAsNumber: true })} /></td>
+                <td className={tdLeftClass}><input type="number" className={inputClass} {...register('cg1cWeighting.row2.cg1c', { valueAsNumber: true, required: 'กรุณากรอก  Iron Powder' })} /></td>
+                {errors.cg1cWeighting?.row2?.cg1c &&
+                  <p className="text-sm text-danger mt-1">
+                    {errors.cg1cWeighting.row2.cg1c.message}
+                  </p>
+                }
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('cg1cWeighting.row2.bagNo')} /></td>
                 <td className={tdLeftClass}>Net weight (KG) :</td>

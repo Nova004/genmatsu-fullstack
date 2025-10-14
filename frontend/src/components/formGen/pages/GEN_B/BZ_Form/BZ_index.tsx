@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import SharedFormStep1 from '../../../components/forms/SharedFormStep1_GENB';
 import FormStep2 from './FormStep2';
 import SharedFormStep3 from '../../../components/forms/SharedFormStep3';
 import SharedFormStep4 from '../../../components/forms/SharedFormStep4_GENB';
@@ -10,21 +9,22 @@ import FormHeader from '../../../components/FormHeader';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
 import { useProductionForm } from '../../../../../hooks/useProductionForm';
 import ProgressBar from '../../../components/ProgressBar';
+import SharedFormStep1 from '../../../components/forms/SharedFormStep1_GENB';
+
 
 
 
 // ย้าย Schema ออกมาไว้นอก Component เพื่อไม่ให้ถูกสร้างใหม่ทุกครั้งที่ re-render
 const BZ_VALIDATION_SCHEMA = {
     1: {
-        fields: ['basicData.date', 'basicData.machineName', 'basicData.lotNo'],
+        fields: ['basicData.date', 'basicData.machineName', 'basicData.lotNo', 'conditions'], // 👈 เพิ่ม 'conditions'
         scope: 'basicData',
-        message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, และ Lot No. ให้ครบถ้วน',
+        message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, Lot No. และตรวจสอบสภาพบรรจุภัณฑ์ให้ครบถ้วน',
     },
     2: {
         fields: [
             'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
             'cg1cWeighting.row1.cg1c',
-            // 'cg1cWeighting.row2.cg1c', // หากแถว 2 ไม่บังคับก็ comment ไว้
             'calculations.nacl15SpecGrav',
             'calculations.cg1cWaterContent',
             'calculations.temperature'
@@ -78,7 +78,7 @@ function BZ_Form() {
                 <ProgressBar currentStep={step} totalSteps={4} />
 
                 <div className="my-6">
-                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="CG-1C" />}
+                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="CG-1C"  errors={errors}  />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={handleTemplateLoaded} />}
                     {step === 3 && <SharedFormStep3 register={register} errors={errors} onTemplateLoaded={handleTemplateLoaded} templateName="BZ_Step3_Operations" />}
                     {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="calculations.finalTotalWeight" />}

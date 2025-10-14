@@ -1,21 +1,22 @@
-// frontend/src/components/formGen/components/forms/SharedFormStep1.tsx
+// frontend/src/components/formGen/components/forms/SharedFormStep1_GENB.tsx
 
 import React from 'react';
 import { UseFormRegister, UseFormWatch, UseFormSetValue } from 'react-hook-form';
 import { IManufacturingReportForm } from '../../pages/types';
 import EmployeeInputRow from './EmployeeInputRow';
 import ConditionCheckItem from './ConditionCheckItem';
+import { FieldErrors } from 'react-hook-form';
 
 // 1. สร้าง Interface สำหรับ Props ที่ Component นี้ต้องการ
 interface SharedFormStep1Props {
   register: UseFormRegister<IManufacturingReportForm>;
   watch: UseFormWatch<IManufacturingReportForm>;
   setValue: UseFormSetValue<IManufacturingReportForm>;
-  // 2. เพิ่ม Prop นี้เพื่อรับชื่อวัตถุดิบสำหรับคำเตือน
-  packagingWarningItemName: string; 
+  errors: FieldErrors<IManufacturingReportForm>;
+  packagingWarningItemName: string;
 }
 
-const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setValue, packagingWarningItemName }) => {
+const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setValue, packagingWarningItemName, errors }) => {
   const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
 
   return (
@@ -68,17 +69,23 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
           // 3. ใช้ค่าจาก Prop มาแสดงในคำเตือน
           warning={`หากพบความผิดปกติถุง (${packagingWarningItemName}) ให้ทำการแจ้งหัวหน้างานรับทราบทันที ห้ามใช้โดยเด็ดขาดก่อนได้รับอนุญาตจากหัวหน้างาน`}
           register={register}
+          watch={watch}   // 👈 ส่ง watch ลงไป
+          errors={errors} // 👈 ส่ง errors ลงไป
         />
         <ConditionCheckItem
           index={1} title="ถุงสำหรับใส่กากเก็นและฝุ่น"
           description="การรัดปากถุงสำหรับใส่กากเก็นและฝุ่นมีสภาพที่สมบูรณ์ถูกต้อง"
           register={register}
+          watch={watch}   // 👈 ส่ง watch ลงไป
+          errors={errors} // 👈 ส่ง errors ลงไป
         />
         <ConditionCheckItem
           index={2} title="กระป๋องก่อนใช้งาน"
           description="สภาพสมบูรณ์ ไม่บุบหรือเสียรูป ไม่มีเศษไม้ พลาสติก/หนังยางปนเปื้อน"
           reference="Ref : SD-GN-043 การเตรียมและการสอบคุณภาพภาชนะบรรจุวัตถุดิบ"
           register={register}
+          watch={watch}   // 👈 ส่ง watch ลงไป
+          errors={errors} // 👈 ส่ง errors ลงไป
         />
       </div>
     </div>

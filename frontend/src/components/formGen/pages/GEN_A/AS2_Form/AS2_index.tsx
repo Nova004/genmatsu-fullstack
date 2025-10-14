@@ -16,21 +16,23 @@ import ProgressBar from '../../../components/ProgressBar';
 // ย้าย Schema ออกมาไว้นอก Component เพื่อไม่ให้ถูกสร้างใหม่ทุกครั้งที่ re-render
 const AS2_VALIDATION_SCHEMA = {
     1: {
-        fields: ['basicData.date', 'basicData.machineName', 'basicData.lotNo'],
+        fields: ['basicData.date', 'basicData.machineName', 'basicData.lotNo', 'conditions'], // 👈 เพิ่ม 'conditions'
         scope: 'basicData',
-        message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, และ Lot No. ให้ครบถ้วน',
+        message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, Lot No. และตรวจสอบสภาพบรรจุภัณฑ์ให้ครบถ้วน',
     },
     2: {
-        fields: 'rawMaterials',
-        scope: 'rawMaterials',
-        message: 'กรุณาตรวจสอบข้อมูลวัตถุดิบให้ถูกต้อง',
+         fields: [
+            'rawMaterials', 
+            'cg1cWeighting.row1.cg1c',
+            'cg1cWeighting.row2.cg1c',
+        ],
+        message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
     },
     3: {
         fields: ['conditions', 'operationResults', 'operationRemark'],
         message: 'กรุณาตรวจสอบข้อมูลเงื่อนไขและผลการปฏิบัติงานให้ถูกต้อง',
     },
 };
-
 function AS2_Form() {
     const navigate = useNavigate(); // ยังคงต้องใช้สำหรับปุ่ม Back to history
     const totalSteps = 4;
@@ -48,7 +50,7 @@ function AS2_Form() {
         totalSteps: 4,
         trigger,
         errors,
-        validationSchema: AS2_VALIDATION_SCHEMA,
+        validationSchema: AS2_VALIDATION_SCHEMA, // 👈 ใช้ Schema ใหม่
     });
 
     // ค่าคงที่สำหรับ UI
@@ -72,7 +74,7 @@ function AS2_Form() {
                 <ProgressBar currentStep={step} totalSteps={4} />
 
                 <div className="my-6">
-                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="Iron Powder" />}
+                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} errors={errors} packagingWarningItemName="AS-2"  />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={handleTemplateLoaded} />}
                     {step === 3 && <SharedFormStep3 register={register} errors={errors} onTemplateLoaded={handleTemplateLoaded} templateName="AS2_Step3_Operations" />}
                     {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="calculations.finalTotalWeight" />}
