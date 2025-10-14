@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { UseFormRegister, UseFormWatch, UseFormSetValue } from 'react-hook-form';
 import { IManufacturingReportForm } from '../../pages/types';
 import PalletTable from './PalletTable';
-import PackingResultTable from './PackingResultTable';
+import PackingResultTable from './PackingResultTable_GENA';
 
 // 1. สร้าง Type สำหรับชื่อฟิลด์ที่เราจะรับเข้ามา
 type TotalWeightFieldName =
@@ -30,13 +30,15 @@ const useStep4Calculations = (
   // 3. ใช้ชื่อฟิลด์ที่รับมาจาก prop ในการ watch ค่า
   const finalTotalWeight = watch(totalWeightFieldName);
   const calculatedProduct = watch('packingResults.quantityOfProduct.calculated');
+  const weighttank = watch('packingResults.weighttank.tank');
 
-  // คำนวณ Quantity of Product (เหมือนเดิม)
+  // คำนวณ Quantity of Product (cans * 150) แล้ว + กับ weighttank
   useEffect(() => {
     const cans = Number(quantityOfProductCans) || 0;
-    const calculated = cans * 12;
+    const tank = Number(weighttank) || 0;
+    const calculated = cans * 150 + tank;
     setValue('packingResults.quantityOfProduct.calculated', calculated > 0 ? calculated : null);
-  }, [quantityOfProductCans, setValue]);
+  }, [quantityOfProductCans, weighttank, setValue]);
 
   // คำนวณ Yield % (เหมือนเดิม)
   useEffect(() => {
@@ -77,8 +79,9 @@ const SharedFormStep4: React.FC<SharedFormStep4Props> = ({ register, watch, setV
           register={register}
           watch={watch}
           setValue={setValue}
-          cansMultiplier={12}
+          cansMultiplier={150} // 7. ส่งค่าตัวคูณเป็น 150 แทน 12
         />
+
         <div className="mb-6 overflow-x-auto">
           <table className="w-full table-auto">
             <tbody>

@@ -7,8 +7,10 @@ import SignIn from './pages/Authentication/SignIn';
 import SignUp from './pages/Authentication/SignUp';
 import Calendar from './pages/Calendar';
 import Chart from './pages/Chart';
-import ECommerce from './pages/Dashboard/ECommerce';
-import FormElements from './pages/Form/FormElements';
+import Dashbord_App from './pages/Dashboard/Dashbord_App';
+import Dashbord_Master from './pages/Dashboard/Dashbord_Master';
+import FormElementsB from './pages/Form/FormElements-gen-b';
+import FormElementsA from './pages/Form/FormElements-gen-a';
 import FormMasterEditor from './components/formGen/pages/Master/FormMasterEditor';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
@@ -26,6 +28,7 @@ import ReportDetailDispatcher from './pages/Reports/ReportDetailDispatcher';
 import BZ_Form from './components/formGen/pages/GEN_B/BZ_Form/BZ_index';
 import BZ3_Form from './components/formGen/pages/GEN_B/BZ3_Form/BZ3_index';
 import BS3_Form from './components/formGen/pages/GEN_B/BS3_Form/BS3_index';
+import AS2_Form from './components/formGen/pages/GEN_A/AS2_Form/AS2_index';
 
 import ReportEditDispatcher from './pages/Reports/ReportEditDispatcher';
 
@@ -83,8 +86,18 @@ function App() {
                     index
                     element={
                       <>
-                        <PageTitle title="eCommerce Dashboard" />
-                        <ECommerce />
+                        <PageTitle title="Dashbord_App Dashboard" />
+                        <Dashbord_App />
+                      </>
+                    }
+                  />
+                  <Route
+                    index
+                    path="/master/Dashbord_Master"
+                    element={
+                      <>
+                        <PageTitle title="Dashbord_Master" />
+                        <Dashbord_Master />
                       </>
                     }
                   />
@@ -107,11 +120,20 @@ function App() {
                     }
                   />
                   <Route
-                    path="forms/form-elements"
+                    path="forms/form-elements-gen-b"
                     element={
                       <>
                         <PageTitle title="Form Elements" />
-                        <FormElements />
+                        <FormElementsB />
+                      </>
+                    }
+                  />
+                  <Route
+                    path="forms/form-elements-gen-a"
+                    element={
+                      <>
+                        <PageTitle title="Form Elements" />
+                        <FormElementsA />
                       </>
                     }
                   />
@@ -165,6 +187,11 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
+                  <Route
+                    path="/forms/as2-form"
+                    element={<><PageTitle title="AS2 Form" /><AS2_Form /></>}
+                  />
+
                   <Route
                     path="/reports/edit/:id"
                     element={

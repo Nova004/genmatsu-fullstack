@@ -86,6 +86,10 @@ export interface IManufacturingReportForm {
   // Step 4
   packingResults: {
     diameter: number | null;
+    weighttank: {
+      tank: number | null;
+      others: number | null;
+    };
     quantityOfProduct: {
       cans: number | null;
       calculated: number | null;

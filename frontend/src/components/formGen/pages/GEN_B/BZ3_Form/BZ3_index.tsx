@@ -2,10 +2,10 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import SharedFormStep1 from '../../../components/forms/SharedFormStep1';
+import SharedFormStep1 from '../../../components/forms/SharedFormStep1_GENB';
 import FormStep2 from './FormStep2';
 import SharedFormStep3 from '../../../components/forms/SharedFormStep3';
-import SharedFormStep4 from '../../../components/forms/SharedFormStep4';
+import SharedFormStep4 from '../../../components/forms/SharedFormStep4_GENB';
 import FormHeader from '../../../components/FormHeader';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
 import { useProductionForm } from '../../../../../hooks/useProductionForm';

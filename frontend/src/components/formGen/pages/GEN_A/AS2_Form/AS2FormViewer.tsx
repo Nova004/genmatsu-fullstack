@@ -1,3 +1,4 @@
+// src/components/formGen/pages/AS2_Form/AS2FormViewer.tsx
 
 
 // Import Library ที่จำเป็นจาก React และ React Hook Form
@@ -12,19 +13,18 @@ import FormStep2 from './FormStep2';
 import SharedFormStep3 from '../../../components/forms/SharedFormStep3';
 import SharedFormStep4 from '../../../components/forms/SharedFormStep4_GENB';
 import ProgressBar from '../../../components/ProgressBar';
-
-
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
 import { useProductionForm } from '../../../../../hooks/useProductionForm';
 
-// สร้าง Interface เพื่อกำหนดว่า BZ3FormViewer ต้องรับข้อมูลอะไรเข้ามาบ้าง
-interface BZ3FormViewerProps {
+
+// สร้าง Interface เพื่อกำหนดว่า AS2FormViewer ต้องรับข้อมูลอะไรเข้ามาบ้าง
+interface AS2FormViewerProps {
   formData: IManufacturingReportForm; // 1. ข้อมูลที่ถูกบันทึกไว้จากฐานข้อมูล
   blueprints: any;                   // 2. "พิมพ์เขียว" (Master Template) ที่ใช้ตอนบันทึก
   isReadOnly: boolean;               // 3. ตัวแปรสำหรับบอกว่าเป็นโหมด "อ่านอย่างเดียว" หรือไม่
 }
 
-const BZ3_VALIDATION_SCHEMA = {
+const AS2_VALIDATION_SCHEMA = {
   1: {
     fields: ['basicData.date', 'basicData.machineName', 'basicData.lotNo'],
     scope: 'basicData',
@@ -41,17 +41,15 @@ const BZ3_VALIDATION_SCHEMA = {
   },
 };
 // --- ส่วน Component หลัก ---
-const BZ3FormViewer: React.FC<BZ3FormViewerProps> = ({ formData, blueprints, isReadOnly }) => {
+const AS2FormViewer: React.FC<AS2FormViewerProps> = ({ formData, blueprints, isReadOnly }) => {
 
   // สร้าง State `step` เพื่อเก็บว่าผู้ใช้กำลังดู Step ไหนอยู่, เริ่มต้นที่ 1
-
   const totalSteps = 4;
   const navigate = useNavigate();
   const { formMethods } = useProductionForm({
-    formType: 'BZ3',
+    formType: 'AS2',
     netWeightOfYieldSTD: 800,
   });
-  
   const methods = useForm<IManufacturingReportForm>({  // ใช้ useForm เพื่อจัดการฟอร์ม
     defaultValues: formData,
     mode: 'onChange',      // 👈 เพิ่มโหมดการทำงาน
@@ -85,15 +83,15 @@ const BZ3FormViewer: React.FC<BZ3FormViewerProps> = ({ formData, blueprints, isR
     onTemplateLoaded: () => { },       // สร้างฟังก์ชันเปล่าๆ สำหรับ Prop นี้ เพราะในโหมด Viewer เราไม่ต้องการโหลด Template ใหม่
   };
 
-
   const { trigger, formState: { errors } } = formMethods;
 
   const { step, handleNext, handleBack } = useMultiStepForm({
     totalSteps: 4,
     trigger,
     errors,
-    validationSchema: BZ3_VALIDATION_SCHEMA,
+    validationSchema: AS2_VALIDATION_SCHEMA,
   });
+
 
   // Return โครงสร้างหน้าเว็บที่จะแสดงผล
   return (
@@ -108,13 +106,13 @@ const BZ3FormViewer: React.FC<BZ3FormViewerProps> = ({ formData, blueprints, isR
         {/* ส่วนที่แสดงเนื้อหาของแต่ละ Step */}
         <div className="my-6">
           {/* ใช้ Conditional Rendering: ถ้า `step` เท่ากับ 1 ให้แสดง <FormStep1> */}
-          {step === 1 && <SharedFormStep1 {...formStepProps} packagingWarningItemName="RC-417" />}
+          {step === 1 && <SharedFormStep1 {...formStepProps} packagingWarningItemName="CG-1C" />}
           {/* ถ้า `step` เท่ากับ 2 ให้แสดง <FormStep2> และส่ง `staticBlueprint` ที่ถูกต้องเข้าไปด้วย */}
-          {step === 2 && <FormStep2 {...formStepProps} staticBlueprint={blueprints['BZ3_Step2_RawMaterials']} />}
+          {step === 2 && <FormStep2 {...formStepProps} staticBlueprint={blueprints['AS2_Step2_RawMaterials']} />}
           {/* ถ้า `step` เท่ากับ 3 ก็ทำเหมือน Step 2 */}
-          {step === 3 && <SharedFormStep3 {...formStepProps} staticBlueprint={blueprints['BZ3_Step3_Operations']} templateName="BS3_Step3_Operations" />}
+          {step === 3 && <SharedFormStep3 {...formStepProps} staticBlueprint={blueprints['BS3_Step3_Operations']} templateName="AS2_Step3_Operations" />}
           {/* ถ้า `step` เท่ากับ 4 ให้แสดง <FormStep4> */}
-          {step === 4 && <SharedFormStep4 {...formStepProps} totalWeightFieldName="bz3Calculations.totalWeightWithNcr" />}
+          {step === 4 && <SharedFormStep4 {...formStepProps} totalWeightFieldName="calculations.finalTotalWeight" />}
         </div>
 
         {/* ส่วนของปุ่ม Navigation ด้านล่าง */}
@@ -132,4 +130,4 @@ const BZ3FormViewer: React.FC<BZ3FormViewerProps> = ({ formData, blueprints, isR
 };
 
 // Export Component นี้ออกไปเพื่อให้ไฟล์อื่นสามารถเรียกใช้งานได้
-export default BZ3FormViewer;
+export default AS2FormViewer;

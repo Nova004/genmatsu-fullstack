@@ -253,7 +253,7 @@ const ReportHistory_GEN_B: React.FC = () => {
         {/* --- ส่วนของปุ่มและ Action ต่างๆ ด้านบนตาราง --- */}
         <div className="flex justify-end mb-4">
           <Link
-            to="/forms/form-elements"
+            to="/forms/form-elements-gen-b"
             className="inline-flex items-center justify-center gap-2.5 rounded-md bg-primary py-3 px-6 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-10"
           >
             <span>

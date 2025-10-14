@@ -8,6 +8,7 @@ import Loader from '../../common/Loader';
 import ReportEditBZ from './BZ/ReportEditBZ';
 import ReportEditBZ3 from './BZ3/ReportEditBZ3';
 import ReportEditBS3 from './BS3/ReportEditBS3';
+import ReportEditAS2 from './AS2/ReportEditAS2';
 
 // Interface สำหรับข้อมูล Submission ที่คาดหวัง
 interface SubmissionPayload {
@@ -58,6 +59,8 @@ const ReportEditDispatcher: React.FC = () => {
                 return <ReportEditBZ3 submission={submission} templates={templates} />;
             case 'BS3':
                 return <ReportEditBS3 submission={submission} templates={templates} />;
+            case 'AS2':
+                return <ReportEditAS2 submission={submission} templates={templates} />;
             default:
                 return <div>ไม่รองรับการแก้ไขฟอร์มประเภท: {formType}</div>;
         }

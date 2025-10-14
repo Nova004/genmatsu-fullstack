@@ -9,6 +9,7 @@ import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import ReportDetailBZ from './BZ/ReportDetailBZ';
 import ReportDetailBZ3 from './BZ3/ReportDetailBZ3';
 import ReportDetailBS3 from './BS3/ReportDetailBS3';
+import ReportDetailAS2 from './AS2/ReportDetailAS2';
 
 const ReportDetailDispatcher: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -52,6 +53,8 @@ const ReportDetailDispatcher: React.FC = () => {
         return <ReportDetailBZ3 submission={submission} blueprints={blueprints} />;
       case 'BS3':
         return <ReportDetailBS3 submission={submission} blueprints={blueprints} />;
+      case 'AS2':
+        return <ReportDetailAS2 submission={submission} blueprints={blueprints} />;
       default:
         return <div>ไม่พบ Component สำหรับ Form Type: {submission.form_type}</div>;
 

@@ -26,7 +26,8 @@ const ECommerce: React.FC = () => {
         <MenuCard 
           title="Master (Admin)" 
           description="จัดการข้อมูลหลังบ้านสำหรับแอดมิน" 
-          linkTo="/master/form-editor" // <-- **แก้ URL ปลายทางได้ตามต้องการ**
+          linkTo="/master/Dashbord_Master"
+         // linkTo="/master/form-editor" // <-- **แก้ URL ปลายทางได้ตามต้องการ**
         >
           <FaCogs size={22} className="text-warning" />
         </MenuCard>

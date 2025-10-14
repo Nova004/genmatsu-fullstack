@@ -1,4 +1,4 @@
-// location: frontend/src/components/formGen/pages/BZ_Form/BZFormEdit.tsx
+// location: frontend/src/components/formGen/pages/AS2_Form/AS2FormEdit.tsx
 
 import React, { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
@@ -14,12 +14,12 @@ import ProgressBar from '../../../components/ProgressBar';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
 
 // Props ที่ Component นี้จะรับเข้ามา
-interface BZFormEditProps {
+interface AS2FormEditProps {
     initialData: Partial<IManufacturingReportForm>; // ข้อมูลเดิมสำหรับเติมฟอร์ม
     onSubmit: SubmitHandler<IManufacturingReportForm>; // ฟังก์ชันที่จะทำงานเมื่อกดบันทึก
 }
 
-const BZ_VALIDATION_SCHEMA = {
+const AS2_VALIDATION_SCHEMA = {
     1: {
         fields: ['basicData.date', 'basicData.machineName', 'basicData.lotNo'],
         scope: 'basicData',
@@ -36,7 +36,7 @@ const BZ_VALIDATION_SCHEMA = {
     },
 };
 
-const BZFormEdit: React.FC<BZFormEditProps> = ({ initialData, onSubmit }) => {
+const AS2FormEdit: React.FC<AS2FormEditProps> = ({ initialData, onSubmit }) => {
 
     const totalSteps = 4;
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -79,21 +79,21 @@ const BZFormEdit: React.FC<BZFormEditProps> = ({ initialData, onSubmit }) => {
         totalSteps: 4,
         trigger,
         errors,
-        validationSchema: BZ_VALIDATION_SCHEMA,
+        validationSchema: AS2_VALIDATION_SCHEMA,
     });
 
 
     // --- ค่าคงที่สำหรับ Styling และ Dropdown ---
-    const availableForms = [{ value: 'BZ', label: 'BZ', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข
+    const availableForms = [{ value: 'AS2', label: 'AS2', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข
     const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
 
     return (
         <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
             <form onSubmit={handleSubmit(handleFormSubmit)}>
                 <FormHeader
-                    title="แก้ไขใบรายงานการผลิต (BZ)" // เปลี่ยน Title สำหรับหน้าแก้ไข
+                    title="แก้ไขใบรายงานการผลิต (AS2)" // เปลี่ยน Title สำหรับหน้าแก้ไข
                     formTypes={availableForms}
-                    currentValue="BZ"
+                    currentValue="AS2"
                     inputClass={inputClass}
                 />
 
@@ -106,7 +106,7 @@ const BZFormEdit: React.FC<BZFormEditProps> = ({ initialData, onSubmit }) => {
                     */}
                     {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="CG-1C" />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={() => { }} />}
-                    {step === 3 && <SharedFormStep3 register={register} errors={errors} onTemplateLoaded={() => { }} templateName="BZ_Step3_Operations" />}
+                    {step === 3 && <SharedFormStep3 register={register} errors={errors} onTemplateLoaded={() => { }} templateName="AS2_Step3_Operations" />}
                     {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="calculations.finalTotalWeight" />}
                 </div>
 
@@ -137,4 +137,4 @@ const BZFormEdit: React.FC<BZFormEditProps> = ({ initialData, onSubmit }) => {
     );
 };
 
-export default BZFormEdit;
+export default AS2FormEdit;

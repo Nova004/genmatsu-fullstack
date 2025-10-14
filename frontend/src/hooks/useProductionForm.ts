@@ -9,7 +9,7 @@ import { submitProductionForm } from '../services/submissionService';
 import { fireToast } from './fireToast';
 
 interface UseProductionFormProps {
-  formType: 'BS3' | 'BZ3' | 'BZ';
+  formType: 'BS3' | 'BZ3' | 'BZ' | 'AS2';
   netWeightOfYieldSTD: number;
 }
 
