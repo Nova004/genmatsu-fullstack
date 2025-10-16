@@ -1,10 +1,7 @@
-// frontend/src/components/formGen/components/forms/ValidatedInput.tsx
-
 import React from 'react';
 import { UseFormRegister, FieldErrors, Path } from 'react-hook-form';
 import { IManufacturingReportForm, IStep2ConfigJson } from '../../pages/types';
 
-// 1. กำหนด Props ที่ Component ต้องการ
 interface ValidatedInputProps {
   config: IStep2ConfigJson;
   inputIndex?: number;
@@ -13,7 +10,6 @@ interface ValidatedInputProps {
 }
 
 const ValidatedInput: React.FC<ValidatedInputProps> = ({ config, inputIndex = 0, register, errors }) => {
-  // 2. ย้าย ClassNames เข้ามาใน Component
   const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-3 py-2 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
   const disabledInputClass = "w-full cursor-default rounded-lg border-[1.5px] border-stroke bg-slate-100 px-3 py-2 text-slate-500 outline-none dark:border-form-strokedark dark:bg-slate-800 dark:text-slate-400";
 
@@ -23,7 +19,6 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({ config, inputIndex = 0,
   const fieldName = inputConfig.field_name as Path<IManufacturingReportForm>;
   const validationRules = inputConfig.validation || config.validation;
 
-  // 3. ปรับปรุงการเข้าถึง Error ให้ปลอดภัยขึ้น
   const getFieldError = (path: string) => {
     const pathArray = path.split('.');
     let current: any = errors;
@@ -47,18 +42,36 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({ config, inputIndex = 0,
         disabled={inputConfig.is_disabled}
         {...register(fieldName, {
           valueAsNumber: inputConfig.type === 'number',
+          
           validate: (value: any) => {
-            if (!validationRules || value === null || value === '' || value === undefined) return true;
+            if (!validationRules) {
+              return true;
+            }
+
+            // ✨ แก้ไขจุดนี้: เพิ่ม `value === 0` (แบบตัวเลข) เข้าไปในเงื่อนไข
+            if (value === 0 || value === '0' || value === '-') {
+              return true;
+            }
+
+            if (value === null || value === '' || value === undefined) {
+              return true;
+            }
+            
+            const numericValue = parseFloat(value);
+            if (isNaN(numericValue)) {
+                return validationRules.errorMessage || 'กรุณากรอกเป็นตัวเลข';
+            }
+
             switch (validationRules.type) {
               case 'RANGE_TOLERANCE':
               case 'RANGE_DIRECT':
                 if (validationRules.min !== undefined && validationRules.max !== undefined) {
-                  return (value >= validationRules.min && value <= validationRules.max) || validationRules.errorMessage;
+                  return (numericValue >= validationRules.min && numericValue <= validationRules.max) || validationRules.errorMessage;
                 }
                 return true;
               case 'MAX_VALUE':
                 if (validationRules.max !== undefined) {
-                  return (value <= validationRules.max) || validationRules.errorMessage;
+                  return (numericValue <= validationRules.max) || validationRules.errorMessage;
                 }
                 return true;
               default:

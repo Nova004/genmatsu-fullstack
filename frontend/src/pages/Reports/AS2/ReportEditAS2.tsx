@@ -46,7 +46,7 @@ const ReportEditAS2: React.FC<ReportEditAS2Props> = ({ submission, templates }) 
                     form_data: formData, // ส่งข้อมูลที่แก้ไขแล้วทั้งหมดไป
                 });
                 fireToast('success', 'บันทึกการเปลี่ยนแปลงสำเร็จ');
-                navigate('/reports/history/gen-b', { 
+                navigate('/reports/history/gen-a', { 
                     state: { highlightedId: submission.submission_id } 
                 });
             } catch (error) {

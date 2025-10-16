@@ -1,4 +1,4 @@
-// src/components/forms/ConditionCheckItem.tsx
+// src/components/formGen/components/forms/ConditionCheckItem.tsx
 
 import React from 'react';
 import { ConditionCheckItemProps } from '../../pages/types';

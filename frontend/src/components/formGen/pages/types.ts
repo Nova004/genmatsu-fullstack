@@ -1,4 +1,4 @@
-import { UseFormRegister, UseFormWatch, UseFormSetValue, FieldErrors  } from "react-hook-form";
+import { UseFormRegister, UseFormWatch, UseFormSetValue, FieldErrors } from "react-hook-form";
 
 // --- Interface สำหรับข้อมูลทั้งหมดในฟอร์ม ---
 export interface IManufacturingReportForm {
@@ -8,6 +8,14 @@ export interface IManufacturingReportForm {
   mcOperators: { id: string; name: string; number: string }[];
   assistants: { id: string; name: string; number: string }[];
   conditions: { status: 'OK' | 'NG' | null; remark: string; }[];
+  values: {
+    value: string;
+    remark: string;
+  }[];
+  checklist: {
+    coolingValve: string;
+    butterflyValve: string;
+  };
 
   // Step 2
   rawMaterials: {
@@ -19,9 +27,12 @@ export interface IManufacturingReportForm {
     remainedGenmatsu: { lot: string; actual: number | null; };
     shelfLife: number | null;
     ncrGenmatsu: { lot: string; actual: number | null; };
+    calciumchloride: number | null;
+    activated: number | null;
   };
 
   // --- เพิ่มโครงสร้างใหม่สำหรับ BZ ---
+
   cg1cWeighting: {
     row1: { cg1c: number | null; bagNo: string; bagWeight: string; net: number | null; };
     row2: { cg1c: number | null; bagNo: string; bagWeight: string; net: number | null; };
@@ -41,6 +52,7 @@ export interface IManufacturingReportForm {
   valued: number | null;
 
   // ---  เพิ่มโครงสร้างใหม่สำหรับ BZ3 ---
+
   rc417Weighting?: {
     row1: { weight: number | null; bagNo: string; net: number | null };
     row2: { weight: number | null; bagNo: string; net: number | null };
@@ -60,6 +72,8 @@ export interface IManufacturingReportForm {
     totalWeightWithNcr: number | null;
   };
 
+  // ---  เพิ่มโครงสร้างใหม่สำหรับ BS3 ---
+
   bs3Calculations?: {
     rc417WaterContent: number | null;
     intermediateWaterCalc: number | null;
@@ -73,7 +87,7 @@ export interface IManufacturingReportForm {
     totalNaclWater: number | null;
     totalWeightWithNcr: number | null;
   };
-  // --- 👆 สิ้นสุดส่วนที่แก้ไข ---
+
 
   // Step 3
   operationResults: {
@@ -202,4 +216,15 @@ export interface PalletTableProps {
   title: string;
   numberOfRows: number;
   fieldName: "palletInfo";
+}
+
+export interface ValueInputItemProps {
+  index: number;
+  title: string;
+  description: string;
+  valueLabel: string;
+  warning?: string;
+  reference?: string;
+  register: UseFormRegister<IManufacturingReportForm>;
+  errors: FieldErrors<IManufacturingReportForm>;
 }

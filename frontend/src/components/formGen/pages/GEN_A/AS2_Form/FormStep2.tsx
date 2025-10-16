@@ -1,7 +1,7 @@
-// src/pages/AS2_Form/FormStep2.tsx
+// path: frontend/src/components/formGen/pages/GEN_A/AS2_Form/FormStep2.tsx
 
 import React, { useState, useEffect } from 'react';
-import { UseFormWatch, UseFormSetValue, FieldErrors } from 'react-hook-form';
+import { UseFormWatch, UseFormSetValue, FieldErrors, set } from 'react-hook-form';
 import { IManufacturingReportForm, IStep2ConfigJson } from '../../types';
 import apiClient from '../../../../../services/apiService';
 import { useTemplateLoader } from '../../../../../hooks/useTemplateLoader';
@@ -24,78 +24,46 @@ export const useExcelFormulaCalculations = (
   watch: UseFormWatch<IManufacturingReportForm>,
   setValue: UseFormSetValue<IManufacturingReportForm>
 ) => {
-  // --- "ดักฟัง" ค่าทั้งหมดที่ต้องใช้ในสูตร ---
-  const naclBrewingTable = watch('calculations.naclBrewingTable');
-  const totalWeight = watch('cg1cWeighting.total');
-  const naclSpecGrav = watch('calculations.nacl15SpecGrav');
-  const magnesiumHydroxide = watch('rawMaterials.magnesiumHydroxide');
-  const ncrGenmatsu = watch('rawMaterials.ncrGenmatsu.actual');
-  const stdYield = 800;
+  // --- 1. "ดักฟัง" ค่าทั้งหมดที่ต้องการนำมาคำนวณ ---
+  // (ใช้ watch แบบ array เพื่อประสิทธิภาพที่ดีกว่า)
+  const [
+    net,
+    calciumchloride,
+    remainedGenmatsu,
+    magnesiumHydroxide,
+    activatedcarbon,
+    ncrGenmatsu,
+  ] = watch([
+    'rawMaterials.diaEarth',
+    'rawMaterials.calciumchloride',
+    'rawMaterials.remainedGenmatsu.actual',
+    'rawMaterials.magnesiumHydroxide',
+    'rawMaterials.activated',
+    'rawMaterials.ncrGenmatsu.actual',
+  ]);
 
   useEffect(() => {
-    // --- แปลงค่าทั้งหมดเป็นตัวเลข ---
-    const numNaclBrewingTable = Number(naclBrewingTable) || 0;
-    const numTotalWeight = Number(totalWeight) || 0;
-    const numNaclSpecGrav = Number(naclSpecGrav) || 0;
-    const numMagnesiumHydroxide = Number(magnesiumHydroxide) || 0;
-    const numNcrGenmatsu = Number(ncrGenmatsu) || 0;
+    // --- 2. แปลงค่าทั้งหมดเป็นตัวเลขและคำนวณผลรวม ---
+    const total =
+      (Number(net) || 0) +
+      (Number(calciumchloride) || 0) +
+      (Number(activatedcarbon) || 0) +
+      (Number(magnesiumHydroxide) || 0) +
+      (Number(remainedGenmatsu) || 0) +
+      (Number(ncrGenmatsu) || 0);
 
-
-    // =================================================================
-    // === 🔽 ส่วนที่แก้ไข: แยกการคำนวณตามที่คุณต้องการ 🔽 ===
-    // =================================================================
-
-    // --- คำนวณสูตรดั้งเดิมสำหรับ Sodium Chloride ---
-    let sodiumChlorideResult: number | null = null;
-    if (numNaclBrewingTable > 0 && stdYield > 0 && numNaclSpecGrav > 0) {
-      // สูตร: (Q18 * Y20) / (Y18 * Q19)
-      const rawResult = (numTotalWeight * numNaclBrewingTable) / (stdYield * numNaclSpecGrav);
-      sodiumChlorideResult = Number(rawResult.toFixed(2));
-    }
-    // นำผลลัพธ์จากสูตรดั้งเดิมไปใส่ในช่อง Sodium Chloride
-    setValue('rawMaterials.sodiumChloride', sodiumChlorideResult, { shouldValidate: true });
-
-
-    // --- คำนวณสูตรที่ 1 & 2 (naclWaterCalc) ---
-    // ส่วนนี้จะคำนวณค่า W23 เหมือนเดิม เพื่อใช้ในขั้นตอนถัดไป
-    let naclWaterCalcResult: number | null = null;
-    if (numNaclBrewingTable > 0 && stdYield > 0) {
-      const rawResult = (numTotalWeight * numNaclBrewingTable) / stdYield;
-      naclWaterCalcResult = Number(rawResult.toFixed(2));
-    }
-    setValue('calculations.naclWaterCalc', naclWaterCalcResult);
-
-    // --- คำนวณสูตรที่ 3 (waterCalc) ---
-    let waterCalcResult: number | null = null;
-    if (naclWaterCalcResult !== null) {
-      const rawResult = naclWaterCalcResult * 0.85;
-      waterCalcResult = Number(rawResult.toFixed(2));
-    }
-    setValue('calculations.waterCalc', waterCalcResult);
-
-    // --- คำนวณสูตรที่ 4 (saltCalc) ---
-    let saltCalcResult: number | null = null;
-    if (naclWaterCalcResult !== null) {
-      const rawResult = naclWaterCalcResult * 0.15;
-      saltCalcResult = Number(rawResult.toFixed(2));
-    }
-    setValue('calculations.saltCalc', saltCalcResult);
-
-    // --- คำนวณสูตรที่ 5 (finalTotalWeight) ---
-    let finalTotalWeight: number | null = null;
-    if (totalWeight !== null && totalWeight !== undefined) {
-      const total = numTotalWeight + (naclWaterCalcResult || 0) + numMagnesiumHydroxide + numNcrGenmatsu;
-      finalTotalWeight = Number(total.toFixed(2));
-    }
-    setValue('calculations.finalTotalWeight', finalTotalWeight);
+    // --- 3. อัปเดตค่าไปยัง finalTotalWeight ---
+    setValue('calculations.finalTotalWeight', Number(total.toFixed(2)));
 
   }, [
-    naclBrewingTable,
-    totalWeight,
-    naclSpecGrav,
+    // --- 4. 🚀 เพิ่ม "สายลับ" ทั้งหมดที่ต้องคอยจับตาดู ---
+    net,
+    calciumchloride,
+    activatedcarbon,
     magnesiumHydroxide,
+    remainedGenmatsu,
     ncrGenmatsu,
-    setValue
+    setValue,
   ]);
 };
 
@@ -172,7 +140,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               </tr>
             </thead>
             <tbody>
-               {isLoading && (<tr><td colSpan={5} className="text-center p-4">Loading Master Form...</td></tr>)}
+              {isLoading && (<tr><td colSpan={5} className="text-center p-4">Loading Master Form...</td></tr>)}
               {error && (<tr><td colSpan={5} className="text-center p-4 text-red-500">{error}</td></tr>)}
 
               {/* 👇 2. เรียกใช้ Component ใหม่แค่บรรทัดเดียว! */}

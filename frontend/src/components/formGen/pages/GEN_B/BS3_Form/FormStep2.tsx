@@ -146,8 +146,8 @@ interface FormStep2Props {
 
 const bs3WeightingConfig: WeightingCalculationConfig = {
   rows: [
-    { grossWeightPath: 'rc417Weighting.row1.weight', netWeightPath: 'rc417Weighting.row1.net', tare: 2 },
-    { grossWeightPath: 'rc417Weighting.row2.weight', netWeightPath: 'rc417Weighting.row2.net', tare: 2 },
+    { grossWeightPath: 'rc417Weighting.row1.weight', netWeightPath: 'rc417Weighting.row1.net', tare: 3 },
+    { grossWeightPath: 'rc417Weighting.row2.weight', netWeightPath: 'rc417Weighting.row2.net', tare: 3 },
   ],
   totalPath: 'rc417Weighting.total',
   destinationPath: 'rawMaterials.diaEarth',
@@ -250,7 +250,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               {/* --- ส่วนที่ 2: การคำนวณสำหรับ BS3 --- */}
               <tr>
                 <td className={tdLeftClass}>RC-417: Water Content</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bs3Calculations.rc417WaterContent', { valueAsNumber: true })} value="2" readOnly disabled /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={inputClass} {...register('bs3Calculations.rc417WaterContent', { valueAsNumber: true })}  /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass}> <span className="text-xs"> Weight of RC-417 + Mg(OH)<sub>2</sub> <br /> + Activated Carbon P-200U </span> </td>
                 <td className={tdLeftClass}><input type="text" className={disabledInputClass} readOnly {...register('bs3Calculations.totalWeightOfMaterials')} /></td>
                 <td className={tdLeftClass}>KG</td>

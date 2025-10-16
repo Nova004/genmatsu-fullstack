@@ -1,4 +1,4 @@
-// src/components/forms/EmployeeInputRow.tsx
+// locaint:frontend/src/components/formGen/components/forms/EmployeeInputRow.tsx
 
 import React, { useEffect, useState } from 'react';
 import { EmployeeInputRowProps } from '../../pages/types';

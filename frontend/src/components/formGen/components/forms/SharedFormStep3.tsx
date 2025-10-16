@@ -1,28 +1,25 @@
-// frontend/src/components/formGen/components/forms/SharedFormStep3.tsx
-
 import React, { useState, useEffect } from 'react';
 import { UseFormRegister, FieldErrors } from 'react-hook-form';
 import { getLatestTemplateByName } from '../../../../services/formService';
 import { IManufacturingReportForm, IConfigJson } from '../../pages/types';
+import ValidatedInput from './ValidatedInput';
 
-// 1. แก้ไข Interface ให้รับ prop `templateName` เพิ่มเข้ามา
 interface SharedFormStep3Props {
   register: UseFormRegister<IManufacturingReportForm>;
   errors: FieldErrors<IManufacturingReportForm>;
   onTemplateLoaded: (templateInfo: any) => void;
   isReadOnly?: boolean;
   staticBlueprint?: any;
-  templateName: 'BS3_Step3_Operations' | 'BZ3_Step3_Operations' | 'BZ_Step3_Operations' | string; // ทำให้ยืดหยุ่นสำหรับฟอร์มในอนาคต
+  templateName: 'BS3_Step3_Operations' | 'BZ3_Step3_Operations' | 'BZ_Step3_Operations' | string;
 }
 
-// 2. เปลี่ยนชื่อ Component และ props
 const SharedFormStep3: React.FC<SharedFormStep3Props> = ({ 
   register, 
   errors, 
   onTemplateLoaded, 
   isReadOnly = false, 
   staticBlueprint, 
-  templateName // รับ prop ใหม่เข้ามา
+  templateName 
 }) => {
 
   const [fields, setFields] = useState<any[]>([]);
@@ -44,7 +41,6 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
 
     const fetchLatestBlueprint = async () => {
       try {
-        // 3. ใช้ `templateName` ที่รับมาจาก prop ในการ fetch ข้อมูล
         const data = await getLatestTemplateByName(templateName); 
         processBlueprint(data);
       } catch (err) {
@@ -58,10 +54,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
     } else {
       fetchLatestBlueprint();
     }
-  }, [onTemplateLoaded, staticBlueprint, templateName]); // 4. เพิ่ม templateName ใน dependency array
-
-  // ... ส่วน JSX ที่เหลือทั้งหมดเหมือนเดิม ไม่ต้องแก้ไข ...
-  // (ตั้งแต่ `if (isLoading)` ลงไปจนจบไฟล์)
+  }, [onTemplateLoaded, staticBlueprint, templateName]);
 
   if (isLoading) return <div className="p-4">Loading Form Step 3...</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
@@ -72,6 +65,37 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
   const tdClass = "border-b border-stroke px-4 py-3 text-black dark:border-strokedark dark:text-white";
   const tdCenterClass = `${tdClass} text-center align-middle`;
   const tdLeftClass = `${tdClass} align-middle`;
+
+  // ✨ 1. สร้างฟังก์ชัน Validate กลางขึ้นมาใช้ซ้ำ
+  const createValidator = (rules: any) => (value: any) => {
+    if (!rules) return true;
+
+    // อนุโลมค่า 0 (ทั้งตัวเลขและตัวอักษร) และ -
+    if (value === 0 || value === '0' || value === '-') return true;
+
+    // ปล่อยผ่านค่าว่าง เพื่อให้กฎ `required` (ถ้ามี) จากที่อื่นเป็นตัวจัดการ
+    if (value === null || value === '' || value === undefined) return true;
+
+    const numericValue = parseFloat(value);
+    if (isNaN(numericValue)) {
+      return rules.errorMessage || 'กรุณากรอกเป็นตัวเลข';
+    }
+
+    switch (rules.type) {
+      case 'RANGE_DIRECT':
+        if (rules.min !== undefined && rules.max !== undefined) {
+          return (numericValue >= rules.min && numericValue <= rules.max) || rules.errorMessage;
+        }
+        return true;
+      case 'MAX_VALUE':
+         if (rules.max !== undefined) {
+            return (numericValue <= rules.max) || rules.errorMessage;
+        }
+        return true;
+      default:
+        return true;
+    }
+  };
 
   return (
     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
@@ -131,19 +155,8 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                                     className={`${inputClass} rounded-l-none rounded-r-none`}
                                     {...register(fieldName as any, {
                                       valueAsNumber: col.input.type === 'number',
-                                      validate: (value) => {
-                                        const rules = col.input?.validation;
-                                        if (!rules || value === null || value === '' || value === undefined) return true;
-                                        switch (rules.type) {
-                                          case 'RANGE_DIRECT':
-                                            if (rules.min !== undefined && rules.max !== undefined) {
-                                              return (value >= rules.min && value <= rules.max) || rules.errorMessage;
-                                            }
-                                            return true; 
-                                          default:
-                                            return true;
-                                        }
-                                      }
+                                      // ✨ 2. เรียกใช้ฟังก์ชัน Validator กลาง
+                                      validate: createValidator(col.input?.validation)
                                     })}
                                   />
                                   <span className="inline-flex items-center whitespace-nowrap rounded-r-md border border-l-0 border-stroke bg-gray-2 px-3 text-sm text-black dark:border-strokedark dark:bg-meta-4 dark:text-white">{col.input.unit}</span>
@@ -160,9 +173,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                           return (
                             <td key={colIndex} className={tdLeftClass} colSpan={col.span || 1}>
                               <div className="flex flex-wrap items-center gap-x-4 gap-y-2"> 
-
                                 {col.description && <span className="font-medium mr-2">{col.description}</span>}
-
                                 {col.inputs.map((inputItem, inputIdx) => {
                                   const multiFieldName = inputItem.field_name.replace('{index}', String(index));
                                   const multiFieldError = multiFieldName.split('.').reduce((obj: any, key) => obj && obj[key], errors);
@@ -177,20 +188,8 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                                           style={{ minWidth: '60px', maxWidth: '80px' }} 
                                           {...register(multiFieldName as any, {
                                             valueAsNumber: inputItem.type === 'number',
-                                            validate: (value) => {
-                                              const rules = col.validation;
-                                              if (!rules || value === null || value === '' || value === undefined) return true;
-                                              switch (rules.type) {
-                                                case 'MAX_VALUE':
-                                                  if (rules.max !== undefined) {
-                                                    return (value <= rules.max) || rules.errorMessage;
-                                                  }
-                                                  return true;
-
-                                                default:
-                                                  return true;
-                                              }
-                                            }
+                                            // ✨ 3. เรียกใช้ฟังก์ชัน Validator กลาง
+                                            validate: createValidator(col.validation)
                                           })}
                                         />
                                         <span className="ml-2">{inputItem.unit}</span>
