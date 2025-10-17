@@ -99,7 +99,7 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
       <div className="rounded-b-sm border border-t-0 border-stroke p-5 dark:border-strokedark">
         <ConditionCheckItem
           index={0} title="ถุง (ภายนอก)"
-          description={`เช็คสภาพถุงภายนอกและหูยกถุงบรรจุจะต้องไม่ชำรุด ${packagingWarningItemName} และไม่มีรอยขาดของถุง`}
+          description={`เช็คสภาพถุงภายนอกและหูยกถุงบรรจุ ${packagingWarningItemName} จะต้องไม่ชำรุดและ ไม่มีรอยขาดของถุง`}
           // 3. ใช้ค่าจาก Prop มาแสดงในคำเตือน
           warning={`หากพบความผิดปกติถุง (${packagingWarningItemName}) ให้ทำการแจ้งหัวหน้างานรับทราบทันที ห้ามใช้โดยเด็ดขาดก่อนได้รับอนุญาตจากหัวหน้างาน`}
           register={register}

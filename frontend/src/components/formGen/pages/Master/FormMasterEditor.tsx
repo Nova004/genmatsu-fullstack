@@ -208,22 +208,6 @@ const FormMasterEditor: React.FC = () => {
     }
   };
 
-  const getDisplayValue = (item: IMasterFormItem): string => {
-    try {
-      const config = item.config_json as any;
-      if (config.columns && config.columns[0]) {
-        const firstColumn = config.columns[0];
-        return firstColumn.description || firstColumn.value || `(Complex Row)`;
-      }
-      if (config.label) {
-        return config.label;
-      }
-      return `Item ID: ${item.item_id}`;
-    } catch {
-      return `Invalid Config for Item ID: ${item.item_id}`;
-    }
-  };
-
   const onDragEnd = (result: DropResult) => {
     const { source, destination } = result;
     if (!destination || (destination.droppableId === source.droppableId && destination.index === source.index)) {
@@ -366,7 +350,7 @@ const FormMasterEditor: React.FC = () => {
                                   {index + 1}.
                                 </div>
 
-                                {/* --- 🚀 แก้ไขตรงนี้: ใช้ getItemPreviewText ที่เดียว และลบ <p> กับ getDisplayValue ออกไป --- */}
+                             
                                 <div className="flex-1 text-black dark:text-white">
                                   {getItemPreviewText(item.config_json)}
                                 </div>

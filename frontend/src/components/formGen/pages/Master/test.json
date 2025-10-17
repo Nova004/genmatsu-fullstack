@@ -1,4 +1,108 @@
-{ "layout_type": "DYNAMIC_ROW", "columns": [ { "type": "DESCRIPTION", "span": 2, "description": { "main": "เปิด Filter Cover ทั้ง 3 ตัว, ติดตั้งท่อน้ำเกลือเสร็จปิด filter และ cover ทุกตัว", "subItems": [ { "id": "1.1", "text": "ใส่เก็น AS2 ที่เหลือจากการผลิตในครั้งก่อน", "inputs": { "startTime": { "enabled": true }, "finishTime": { "enabled": true } } }, { "id": "1.2", "text": "นี่คือข้อย่อยที่สอง (ตัวอย่าง)", "inputs": { "startTime": { "enabled": false }, "finishTime": { "enabled": true } } } ] } } ], "inputs": { "startTime": { "enabled": false }, "finishTime": { "enabled": true } } }
-
-
-
+{
+  "mcOperators": [
+    { "id": "201052\t\t", "name": "Mr. Chatchai Thaijaroen", "number": "2" },
+    { "id": "", "name": "", "number": "" },
+    { "id": "", "name": "", "number": "" }
+  ],
+  "assistants": [
+    { "id": "202061", "name": "Mr. Chitsanupong Dachthuyawat", "number": "12" },
+    { "id": "202095", "name": "Mr. Korawich Jaimon", "number": "14" },
+    { "id": "", "name": "", "number": "" },
+    { "id": "", "name": "", "number": "" },
+    { "id": "", "name": "", "number": "" }
+  ],
+  "conditions": [
+    { "status": "OK", "remark": "" },
+    { "status": "OK", "remark": "" },
+    { "status": null, "remark": "" }
+  ],
+  "basicData": {
+    "date": "2025-10-17",
+    "machineName": "A\t",
+    "lotNo": "5284 A3\t\t"
+  },
+  "checklist": {
+    "butterflyValve": "Mr. Chatchai Thaijaroen (2)",
+    "coolingValve": "Mr. Chatchai Thaijaroen (2)"
+  },
+  "cg1cWeighting": {
+    "row1": { "cg1c": 1005, "bagNo": "", "net": 1003 },
+    "row2": { "cg1c": 1005, "bagNo": "", "net": 1003 },
+    "total": 2006
+  },
+  "calculations": { "finalTotalWeight": 2066 },
+  "qouRemark": "",
+  "rawMaterials": {
+    "diaEarth": 2006,
+    "calciumchloride": 40,
+    "sg": 1.373,
+    "activated": 10,
+    "magnesiumHydroxide": 10,
+    "remainedGenmatsu": { "lot": "", "actual": 0 },
+    "shelfLife": 0,
+    "ncrGenmatsu": { "lot": "", "actual": 0 },
+    "rowater": 40,
+    "netWeightOfYieldSTD": 0
+  },
+  "operationResults": [
+    { "startTime": "22:51", "finishTime": "" },
+    { "startTime": "", "finishTime": "" },
+    {
+      "subItems": [{ "startTime": "", "finishTime": "23:08" }],
+      "startTime": "23:01",
+      "finishTime": "23:04"
+    },
+    {
+      "subItems": [{ "startTime": "23:10", "finishTime": "23:20" }],
+      "startTime": "",
+      "finishTime": ""
+    },
+    {
+      "subItems": [{ "startTime": "23:22", "finishTime": "23:35" }],
+      "startTime": "",
+      "finishTime": ""
+    },
+    {
+      "subItems": [{ "startTime": "23:37", "finishTime": "24:07" }],
+      "startTime": "",
+      "finishTime": ""
+    },
+    {
+      "tempPoint1": 130,
+      "tempPoint2": 131,
+      "tempPoint3": 134,
+      "startTime": "",
+      "finishTime": ""
+    },
+    { "startTime": "", "finishTime": "" },
+    { "startTime": "24:09", "finishTime": "" },
+    { "startTime": "", "finishTime": "24:49" },
+    { "startTime": "01:29", "finishTime": "01:30" },
+    { "startTime": "01:50", "finishTime": "01:51" },
+    { "humidity": 2.64, "startTime": "", "finishTime": "" },
+    {
+      "tempPoint1": 83,
+      "tempPoint2": 88,
+      "tempPoint3": 92,
+      "startTime": "",
+      "finishTime": ""
+    },
+    { "startTime": "01:53", "finishTime": "02:06" }
+  ],
+  "operationRemark": "test",
+  "packingResults": {
+    "yieldPercent": 100.19,
+    "quantityOfProduct": { "cans": 13, "calculated": 2070 },
+    "weighttank": { "tank": 120 },
+    "remain": "30",
+    "meshPass40": 2
+  },
+  "palletInfo": [
+    { "no": "834", "qty": 300, "canNo": "1-2" },
+    { "no": "835\t\t \t\t", "qty": 750, "canNo": "3-7" },
+    { "no": "836", "qty": 750, "canNo": "8-12" },
+    { "no": "837", "qty": 270, "canNo": "13-14\t\t \t\t" },
+    { "no": "", "qty": null, "canNo": "" },
+    { "no": "", "qty": null, "canNo": "" }
+  ]
+}
