@@ -136,14 +136,26 @@ const EditItemModal: React.FC<Props> = ({ isOpen, item, onClose, onSave }) => {
 
   const handleConfigChange = (path: string, value: any) => {
     setConfig((prevConfig: any) => {
-      const newConfig = JSON.parse(JSON.stringify(prevConfig));
-      let current = newConfig;
+      // ใช้ structuredClone เพื่อการ deep copy ที่มีประสิทธิภาพกว่า
+      const newConfig = structuredClone(prevConfig);
       const keys = path.split('.');
+      let current = newConfig;
 
+      // --- 🚀 อัปเกรด Loop ให้ "สร้างบ้าน" ไปตลอดทาง ---
       for (let i = 0; i < keys.length - 1; i++) {
-        current = current[keys[i]];
+        const key = keys[i];
+        // ถ้าไม่มี key นี้อยู่ หรือค่าของมันไม่ใช่ object
+        if (current[key] === undefined || typeof current[key] !== 'object') {
+          // ให้สร้างเป็น object ว่างๆ ขึ้นมาใหม่
+          current[key] = {};
+        }
+        // เดินทางต่อไปยัง object ถัดไป
+        current = current[key];
       }
+
+      // ตั้งค่าสุดท้ายที่ปลายทาง
       current[keys[keys.length - 1]] = value;
+
       return newConfig;
     });
   };
@@ -202,9 +214,98 @@ const EditItemModal: React.FC<Props> = ({ isOpen, item, onClose, onSave }) => {
           {step3Config.columns.map((column, index) => (
             <div key={index} className="rounded-md border border-stroke p-4 dark:border-strokedark">
               <h4 className="mb-2 font-semibold">Column #{index + 1} (Type: {column.type})</h4>
-              {column.type === 'DESCRIPTION' && (
-                <FormInput label="Display Text" value={column.value} onChange={e => handleConfigChange(`columns.${index}.value`, e.target.value)} />
-              )}
+              {column.type === 'DESCRIPTION' && (() => {
+                // --- 🚀 1. โค้ดส่วนนี้ยังคงเดิม แต่เราจะใช้มันอย่างชาญฉลาดขึ้น ---
+                const description = column.description || { main: column.value || '', subItems: [] };
+
+                // --- 🚀 2. อัปเกรดฟังก์ชันทั้งหมดให้ปลอดภัย ---
+                const handleSubItemChange = (subIndex: number, field: 'id' | 'text', value: string) => {
+                  const newSubItems = [...(description.subItems || [])];
+                  newSubItems[subIndex] = { ...newSubItems[subIndex], [field]: value };
+                  // อัปเดต description ทั้ง object
+                  handleConfigChange(`columns.${index}.description`, { ...description, subItems: newSubItems });
+                };
+
+                const addSubItem = () => {
+                  const newSubItems = [...(description.subItems || []), { id: '', text: '' }];
+                  // อัปเดต description ทั้ง object
+                  handleConfigChange(`columns.${index}.description`, { ...description, subItems: newSubItems });
+                };
+
+                const removeSubItem = (subIndex: number) => {
+                  const newSubItems = (description.subItems || []).filter((_, i) => i !== subIndex);
+                  // อัปเดต description ทั้ง object
+                  handleConfigChange(`columns.${index}.description`, { ...description, subItems: newSubItems });
+                };
+
+                return (
+                  <div className="flex flex-col gap-4">
+                    {/* --- 🚀 3. อัปเกรด onChange ของ FormInput หลัก --- */}
+                    <FormInput
+                      label="Main Display Text"
+                      value={description.main}
+                      onChange={e => {
+                        // อัปเดต description ทั้ง object
+                        handleConfigChange(`columns.${index}.description`, { ...description, main: e.target.value });
+                      }}
+                    />
+
+                    {/* --- ส่วนที่เหลือของ UI เหมือนเดิมทุกประการ --- */}
+                    <h5 className="mt-2 font-medium text-black dark:text-white">Sub Items</h5>
+                    {(description.subItems || []).map((subItem: any, subIndex: number) => (
+                      <div key={subIndex} className="relative rounded border border-dashed border-stroke p-4 dark:border-strokedark">
+                        {/* ... โค้ด UI ภายใน .map() เหมือนเดิม ... */}
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
+                          <div className="sm:col-span-1">
+                            <FormInput
+                              label="ID (e.g., 1.1)"
+                              value={subItem.id}
+                              onChange={e => handleSubItemChange(subIndex, 'id', e.target.value)}
+                            />
+                          </div>
+                          <div className="sm:col-span-4">
+                            <FormInput
+                              label="Sub Item Text"
+                              value={subItem.text}
+                              onChange={e => handleSubItemChange(subIndex, 'text', e.target.value)}
+                            />
+                          </div>
+                        </div>
+                        <div className="mt-4 border-t border-stroke pt-4 dark:border-strokedark">
+                          <h6 className="font-medium text-sm text-black dark:text-white">Time Inputs</h6>
+                          <div className="flex items-center gap-8 mt-2">
+                            <FormToggle
+                              label="Enable Start Time"
+                              enabled={subItem.inputs?.startTime?.enabled ?? false}
+                              onChange={e => {
+                                const path = `columns.${index}.description.subItems.${subIndex}.inputs.startTime.enabled`;
+                                handleConfigChange(path, e.target.checked);
+                              }}
+                            />
+                            <FormToggle
+                              label="Enable Finish Time"
+                              enabled={subItem.inputs?.finishTime?.enabled ?? false}
+                              onChange={e => {
+                                const path = `columns.${index}.description.subItems.${subIndex}.inputs.finishTime.enabled`;
+                                handleConfigChange(path, e.target.checked);
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => removeSubItem(subIndex)}
+                          className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-danger text-white text-xs font-bold"
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    ))}
+                    <button onClick={addSubItem} className="mt-2 w-full rounded-md border border-primary py-2 px-4 font-medium text-primary hover:bg-primary hover:text-white">
+                      + Add Sub-Item
+                    </button>
+                  </div>
+                );
+              })()}
               {column.type === 'SINGLE_INPUT_GROUP' && column.input && (
                 <>
                   <FormInput label="Label" value={column.input.label} onChange={e => handleConfigChange(`columns.${index}.input.label`, e.target.value)} />

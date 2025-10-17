@@ -1,3 +1,5 @@
+// path: frontend/src/components/formGen/components/forms/SharedFormStep3.tsx
+
 import React, { useState, useEffect } from 'react';
 import { UseFormRegister, FieldErrors } from 'react-hook-form';
 import { getLatestTemplateByName } from '../../../../services/formService';
@@ -13,13 +15,13 @@ interface SharedFormStep3Props {
   templateName: 'BS3_Step3_Operations' | 'BZ3_Step3_Operations' | 'BZ_Step3_Operations' | string;
 }
 
-const SharedFormStep3: React.FC<SharedFormStep3Props> = ({ 
-  register, 
-  errors, 
-  onTemplateLoaded, 
-  isReadOnly = false, 
-  staticBlueprint, 
-  templateName 
+const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
+  register,
+  errors,
+  onTemplateLoaded,
+  isReadOnly = false,
+  staticBlueprint,
+  templateName
 }) => {
 
   const [fields, setFields] = useState<any[]>([]);
@@ -41,7 +43,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
 
     const fetchLatestBlueprint = async () => {
       try {
-        const data = await getLatestTemplateByName(templateName); 
+        const data = await getLatestTemplateByName(templateName);
         processBlueprint(data);
       } catch (err) {
         setError(`ไม่สามารถโหลดข้อมูล Master (${templateName}) ของ Step 3 ได้`);
@@ -88,8 +90,8 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
         }
         return true;
       case 'MAX_VALUE':
-         if (rules.max !== undefined) {
-            return (numericValue <= rules.max) || rules.errorMessage;
+        if (rules.max !== undefined) {
+          return (numericValue <= rules.max) || rules.errorMessage;
         }
         return true;
       default:
@@ -135,6 +137,61 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                     {config.columns.map((col, colIndex) => {
                       switch (col.type) {
                         case 'DESCRIPTION':
+                          // ตรวจสอบว่ามี key `description` และเป็น object หรือไม่
+                          if (col.description && typeof col.description === 'object') {
+                            return (
+                              <td key={colIndex} className={tdLeftClass} colSpan={col.span || 1}>
+                                {/* แสดงข้อความหลัก */}
+                                {col.description.main && <p className="mb-1">{col.description.main}</p>}
+
+                                {/* ตรวจสอบและแสดงผลข้อย่อย (subItems) */}
+                                {Array.isArray(col.description.subItems) && col.description.subItems.length > 0 && (
+                                  <ul className="flex flex-col gap-4 pl-4">
+                                    {col.description.subItems.map((subItem: any, subIndex: number) => {
+                                      const subItemStartTimeField = `operationResults.${index}.subItems.${subIndex}.startTime`;
+                                      const subItemFinishTimeField = `operationResults.${index}.subItems.${subIndex}.finishTime`;
+
+                                      const isSubStartTimeDisabled = !subItem.inputs?.startTime?.enabled;
+                                      const isSubFinishTimeDisabled = !subItem.inputs?.finishTime?.enabled;
+
+                                      // --- 1. สร้าง Class สำหรับช่องเวลาโดยเฉพาะ ---
+                                      const timeInputClass = "w-32 rounded-lg border-[1.5px] border-stroke bg-transparent px-3 py-1 text-sm text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
+                                      const disabledTimeInputClass = "w-32 cursor-default rounded-lg border-[1.5px] border-stroke bg-gray-2 px-3 py-1 text-sm text-black outline-none dark:border-form-strokedark dark:bg-meta-4 dark:text-white";
+
+                                      return (
+                                        <li key={subIndex} className="flex flex-col gap-2 border-t border-stroke pt-3 dark:border-strokedark">
+                                          {/* ส่วนแสดงข้อความ */}
+                                          <div>
+                                            <span className="font-semibold">{subItem.id}</span>. {subItem.text}
+                                          </div>
+
+                                          {/* --- 2. จัดช่องเวลาชิดซ้าย และใช้ Class ใหม่ --- */}
+                                          <div className="flex items-center justify-start gap-2">
+                                            {/* Start Time */}
+                                            <input
+                                              type="time"
+                                              className={(isSubStartTimeDisabled || isReadOnly) ? disabledTimeInputClass : timeInputClass}
+                                              disabled={isSubStartTimeDisabled || isReadOnly}
+                                              {...register(subItemStartTimeField as any)}
+                                            />
+                                            {/* Finish Time */}
+                                            <input
+                                              type="time"
+                                              className={(isSubFinishTimeDisabled || isReadOnly) ? disabledTimeInputClass : timeInputClass}
+                                              disabled={isSubFinishTimeDisabled || isReadOnly}
+                                              {...register(subItemFinishTimeField as any)}
+                                            />
+                                          </div>
+                                        </li>
+                                      );
+                                    })}
+                                  </ul>
+                                )}
+                              </td>
+                            );
+                          }
+
+                          // โค้ดเดิม (สำหรับข้อมูลเก่าที่ยังใช้ col.value)
                           return <td key={colIndex} className={tdLeftClass} colSpan={col.span || 1}>{col.value}</td>;
 
                         case 'SINGLE_INPUT_GROUP':
@@ -172,8 +229,15 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                           }
                           return (
                             <td key={colIndex} className={tdLeftClass} colSpan={col.span || 1}>
-                              <div className="flex flex-wrap items-center gap-x-4 gap-y-2"> 
-                                {col.description && <span className="font-medium mr-2">{col.description}</span>}
+                              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                                {col.description && (
+                                  <span className="font-medium mr-2">
+                                    {typeof col.description === 'object'
+                                      ? col.description.main
+                                      : col.description
+                                    }
+                                  </span>
+                                )}
                                 {col.inputs.map((inputItem, inputIdx) => {
                                   const multiFieldName = inputItem.field_name.replace('{index}', String(index));
                                   const multiFieldError = multiFieldName.split('.').reduce((obj: any, key) => obj && obj[key], errors);
@@ -185,7 +249,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                                         <input
                                           type={inputItem.type || 'text'}
                                           className={inputClass}
-                                          style={{ minWidth: '60px', maxWidth: '80px' }} 
+                                          style={{ minWidth: '60px', maxWidth: '80px' }}
                                           {...register(multiFieldName as any, {
                                             valueAsNumber: inputItem.type === 'number',
                                             // ✨ 3. เรียกใช้ฟังก์ชัน Validator กลาง
@@ -201,7 +265,6 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                               </div>
                             </td>
                           );
-
                         default:
                           return <td key={colIndex}>Unsupported column type</td>;
                       }

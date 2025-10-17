@@ -40,6 +40,49 @@ const FormMasterEditor: React.FC = () => {
     return;
   }
 
+  // ภายใน FormMasterEditor.tsx (นำไปวางแทนที่ getItemPreviewText เดิม)
+
+  const getItemPreviewText = (configOrString: any): string => {
+    let config = configOrString;
+
+    if (typeof configOrString === 'string') {
+      try {
+        config = JSON.parse(configOrString);
+      } catch (error) {
+        console.error("Failed to parse config_json:", configOrString, error);
+        return 'Invalid Config';
+      }
+    }
+
+    if (!config) return 'Empty Config';
+
+    // --- Logic หลัก (ค้นหาจาก root level ก่อน) ---
+    if (config.label) return config.label;
+    if (config.value) return config.value;
+
+    // --- 🚀 อัปเกรด Logic การค้นหาภายใน columns ---
+    if (Array.isArray(config.columns) && config.columns.length > 0) {
+      const firstCol = config.columns[0];
+
+      if (firstCol.description) {
+        // 1. ตรวจสอบ: ถ้า description เป็น object ให้ดึง .main
+        if (typeof firstCol.description === 'object' && firstCol.description.main) {
+          return firstCol.description.main;
+        }
+        // 2. ตรวจสอบ: ถ้า description เป็น string ให้แสดงผลโดยตรง
+        if (typeof firstCol.description === 'string') {
+          return firstCol.description;
+        }
+      }
+
+      if (firstCol.value) return firstCol.value;
+
+      return '(Complex Step 3 Item)';
+    }
+
+    return 'Untitled Item';
+  };
+
   useEffect(() => {
     const fetchTemplates = async () => {
       setIsLoadingTemplates(true);
@@ -314,12 +357,20 @@ const FormMasterEditor: React.FC = () => {
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
-                                className={`flex items-center gap-4 rounded-md p-3 transition-colors ${snapshot.isDragging ? 'bg-blue-100 dark:bg-blue-900' : 'bg-gray-100 dark:bg-meta-4'}`}
+                                className={`flex items-center gap-4 rounded-md p-3 transition-colors ${snapshot.isDragging
+                                  ? 'bg-blue-100 dark:bg-blue-900'
+                                  : 'bg-gray-100 dark:bg-meta-4'
+                                  }`}
                               >
-                                <div className="font-bold text-gray-500 dark:text-gray-400">{index + 1}.</div>
-                                <div className="flex-1 text-black dark:text-white">
-                                  {getDisplayValue(item)}
+                                <div className="font-bold text-gray-500 dark:text-gray-400">
+                                  {index + 1}.
                                 </div>
+
+                                {/* --- 🚀 แก้ไขตรงนี้: ใช้ getItemPreviewText ที่เดียว และลบ <p> กับ getDisplayValue ออกไป --- */}
+                                <div className="flex-1 text-black dark:text-white">
+                                  {getItemPreviewText(item.config_json)}
+                                </div>
+
                                 <div className="flex gap-2">
                                   <button
                                     onClick={() => handleEditClick(item)}

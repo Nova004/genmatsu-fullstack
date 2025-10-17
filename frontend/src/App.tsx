@@ -93,7 +93,7 @@ function App() {
                   />
                   <Route
                     index
-                    path="/master/Dashbord_Master"
+                    path="/master/Dashbord_Ma ster"
                     element={
                       <>
                         <PageTitle title="Dashbord_Master" />

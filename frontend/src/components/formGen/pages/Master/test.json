@@ -1,0 +1,4 @@
+{ "layout_type": "DYNAMIC_ROW", "columns": [ { "type": "DESCRIPTION", "span": 2, "description": { "main": "เปิด Filter Cover ทั้ง 3 ตัว, ติดตั้งท่อน้ำเกลือเสร็จปิด filter และ cover ทุกตัว", "subItems": [ { "id": "1.1", "text": "ใส่เก็น AS2 ที่เหลือจากการผลิตในครั้งก่อน", "inputs": { "startTime": { "enabled": true }, "finishTime": { "enabled": true } } }, { "id": "1.2", "text": "นี่คือข้อย่อยที่สอง (ตัวอย่าง)", "inputs": { "startTime": { "enabled": false }, "finishTime": { "enabled": true } } } ] } } ], "inputs": { "startTime": { "enabled": false }, "finishTime": { "enabled": true } } }
+
+
+

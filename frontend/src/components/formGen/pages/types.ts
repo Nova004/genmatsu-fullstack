@@ -136,10 +136,21 @@ export interface IColumnConfig {
   type: 'DESCRIPTION' | 'SINGLE_INPUT_GROUP' | 'MULTI_INPUT_GROUP';
   span?: number;
   value?: string;
-  description?: string; // <-- เพิ่ม property นี้
+  description?: {
+    main?: string;
+    subItems?: {
+      id: string;
+      text: string;
+      inputs?: {
+        startTime?: { enabled: boolean };
+        finishTime?: { enabled: boolean };
+      };
+    }[];
+  };
   input?: IColumnInputConfig;
   inputs?: IColumnInputConfig[];
   validation?: IValidationRules;
+
 }
 
 export interface ITimeInputConfig {
