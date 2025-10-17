@@ -1,15 +1,16 @@
 // path: frontend/src/components/formGen/components/forms/SharedFormStep3.tsx
 
 import React, { useState, useEffect } from 'react';
-import { UseFormRegister, FieldErrors, UseFormSetValue, Path } from 'react-hook-form';
+import { UseFormRegister, FieldErrors, Control, Controller } from 'react-hook-form';
 import { getLatestTemplateByName } from '../../../../services/formService';
 import { IManufacturingReportForm, IConfigJson } from '../../pages/types';
-import ValidatedInput from './ValidatedInput';
 import InputMask from 'react-input-mask';
+import ValidatedInput from './ValidatedInput';
 
 interface SharedFormStep3Props {
   register: UseFormRegister<IManufacturingReportForm>;
   errors: FieldErrors<IManufacturingReportForm>;
+  control: Control<IManufacturingReportForm>;
   onTemplateLoaded: (templateInfo: any) => void;
   isReadOnly?: boolean;
   staticBlueprint?: any;
@@ -19,6 +20,7 @@ interface SharedFormStep3Props {
 const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
   register,
   errors,
+  control,
   onTemplateLoaded,
   isReadOnly = false,
   staticBlueprint,
@@ -66,8 +68,8 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
   const disabledInputClass = "w-full cursor-default rounded-lg border-[1.5px] border-stroke bg-gray-2 px-3 py-2 text-black outline-none dark:border-form-strokedark dark:bg-meta-4 dark:text-white";
   const thClass = "border-b border-stroke px-4 py-3 text-center font-medium text-black dark:border-strokedark dark:text-white";
   const tdClass = "border-b border-stroke px-4 py-3 text-black dark:border-strokedark dark:text-white";
-  const tdCenterClass = `${tdClass} text-center align-middle`;
-  const tdLeftClass = `${tdClass} align-middle`;
+  const tdCenterClass = `${tdClass} text-center align-top pt-4`;
+  const tdLeftClass = `${tdClass} align-top pt-4`;
 
   // ✨ 1. สร้างฟังก์ชัน Validate กลางขึ้นมาใช้ซ้ำ
   const createValidator = (rules: any) => (value: any) => {
@@ -173,24 +175,34 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                                               {/* --- 🚀 2. สร้าง Input Group สำหรับ Start Time --- */}
                                               <div className="flex w-40">
                                                 <span className={labelClass}>Start</span>
-                                                <InputMask
-                                                  mask="99:99"
-                                                  alwaysShowMask={false}
-                                                  className={(!isSubStartTimeEnabled || isReadOnly) ? disabledTimeInputClass : timeInputClass}
-                                                  disabled={!isSubStartTimeEnabled || isReadOnly}
-                                                  {...register(subItemStartTimeField as any)}
+                                                <Controller
+                                                  name={subItemStartTimeField as any}
+                                                  control={control}
+                                                  render={({ field }) => (
+                                                    <InputMask
+                                                      {...field}
+                                                      mask="99:99"
+                                                      className={(!isSubStartTimeEnabled || isReadOnly) ? disabledTimeInputClass : timeInputClass}
+                                                      disabled={!isSubStartTimeEnabled || isReadOnly}
+                                                    />
+                                                  )}
                                                 />
                                               </div>
 
                                               {/* --- 🚀 3. สร้าง Input Group สำหรับ Finish Time --- */}
                                               <div className="flex w-40">
                                                 <span className={labelClass}>Finish</span>
-                                                <InputMask
-                                                  mask="99:99"
-                                                  alwaysShowMask={false}
-                                                  className={(!isSubFinishTimeEnabled || isReadOnly) ? disabledTimeInputClass : timeInputClass}
-                                                  disabled={!isSubFinishTimeEnabled || isReadOnly}
-                                                  {...register(subItemFinishTimeField as any)}
+                                                <Controller
+                                                  name={subItemFinishTimeField as any}
+                                                  control={control}
+                                                  render={({ field }) => (
+                                                    <InputMask
+                                                      {...field}
+                                                      mask="99:99"
+                                                      className={(!isSubFinishTimeEnabled || isReadOnly) ? disabledTimeInputClass : timeInputClass}
+                                                      disabled={!isSubFinishTimeEnabled || isReadOnly}
+                                                    />
+                                                  )}
                                                 />
                                               </div>
                                             </div>
@@ -242,39 +254,52 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                           }
                           return (
                             <td key={colIndex} className={tdLeftClass} colSpan={col.span || 1}>
-                              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                              {/* --- 🚀 1. เปลี่ยน Layout หลักเป็น flex-col --- */}
+                              <div className="flex flex-col gap-2">
+                                {/* ส่วนของ Description (เหมือนเดิม) */}
                                 {col.description && (
-                                  <span className="font-medium mr-2">
+                                  <span className="font-medium">
                                     {typeof col.description === 'object'
                                       ? col.description.main
                                       : col.description
                                     }
                                   </span>
                                 )}
-                                {col.inputs.map((inputItem, inputIdx) => {
-                                  const multiFieldName = inputItem.field_name.replace('{index}', String(index));
-                                  const multiFieldError = multiFieldName.split('.').reduce((obj: any, key) => obj && obj[key], errors);
 
-                                  return (
-                                    <div key={inputIdx} className="relative pt-2 pb-6">
-                                      <div className="flex items-center">
-                                        <span className="mr-2 whitespace-nowrap">{inputItem.label}</span>
-                                        <input
-                                          type={inputItem.type || 'text'}
-                                          className={inputClass}
-                                          style={{ minWidth: '60px', maxWidth: '80px' }}
-                                          {...register(multiFieldName as any, {
-                                            valueAsNumber: inputItem.type === 'number',
-                                            // ✨ 3. เรียกใช้ฟังก์ชัน Validator กลาง
-                                            validate: createValidator(col.validation)
-                                          })}
-                                        />
-                                        <span className="ml-2">{inputItem.unit}</span>
+                                {/* --- 🚀 2. ห่อหุ้ม Inputs ด้วย div ใหม่ --- */}
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                                  {col.inputs.map((inputItem, inputIdx) => {
+                                    const multiFieldName = inputItem.field_name.replace('{index}', String(index));
+                                    const multiFieldError = multiFieldName.split('.').reduce((obj: any, key) => obj && obj[key], errors);
+
+                                    return (
+                                      <div key={inputIdx} className="relative pt-2 pb-6">
+                                        <div className="flex items-center">
+                                          <span className="mr-2 whitespace-nowrap">{inputItem.label}</span>
+                                          <Controller
+                                            name={multiFieldName as any}
+                                            control={control}
+                                            render={({ field }) => (
+                                              <input
+                                                {...field}
+                                                type={inputItem.type || 'text'}
+                                                className={inputClass}
+                                                style={{ minWidth: '60px', maxWidth: '80px' }}
+                                                disabled={isReadOnly}
+                                                {...register(multiFieldName as any, {
+                                                  valueAsNumber: inputItem.type === 'number',                            
+                                                  validate: createValidator(col.validation)
+                                                })}
+                                              />
+                                            )}
+                                          />
+                                          <span className="ml-2">{inputItem.unit}</span>
+                                        </div>
+                                        {multiFieldError && <span className="absolute left-0 -bottom-1 text-sm text-meta-1">{multiFieldError.message as string}</span>}
                                       </div>
-                                      {multiFieldError && <span className="absolute left-0 -bottom-1 text-sm text-meta-1">{multiFieldError.message as string}</span>}
-                                    </div>
-                                  );
-                                })}
+                                    );
+                                  })}
+                                </div>
                               </div>
                             </td>
                           );
@@ -284,22 +309,31 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                     })}
                     <td className={tdCenterClass}>
                       {/* --- 🚀 ใช้ InputMask แทน input ธรรมดา --- */}
-                      <InputMask
-                        mask="99:99"
-                        alwaysShowMask={false}
-                        className={(isStartTimeDisabled || isReadOnly) ? disabledInputClass : inputClass}
-                        disabled={isStartTimeDisabled || isReadOnly}
-                        {...register(`operationResults.${index}.startTime`)}
+                      <Controller
+                        name={`operationResults.${index}.startTime`}
+                        control={control}
+                        render={({ field }) => (
+                          <InputMask
+                            {...field}
+                            mask="99:99"
+                            className={(isStartTimeDisabled || isReadOnly) ? disabledInputClass : inputClass}
+                            disabled={isStartTimeDisabled || isReadOnly}
+                          />
+                        )}
                       />
                     </td>
                     <td className={tdCenterClass}>
-                      {/* --- 🚀 ใช้ InputMask แทน input ธรรมดา --- */}
-                      <InputMask
-                        mask="99:99"
-                        alwaysShowMask={false}
-                        className={(isFinishTimeDisabled || isReadOnly) ? disabledInputClass : inputClass}
-                        disabled={isFinishTimeDisabled || isReadOnly}
-                        {...register(`operationResults.${index}.finishTime`)}
+                      <Controller
+                        name={`operationResults.${index}.finishTime`}
+                        control={control}
+                        render={({ field }) => (
+                          <InputMask
+                            {...field}
+                            mask="99:99"
+                            className={(isFinishTimeDisabled || isReadOnly) ? disabledInputClass : inputClass}
+                            disabled={isFinishTimeDisabled || isReadOnly}
+                          />
+                        )}
                       />
                     </td>
                   </tr>

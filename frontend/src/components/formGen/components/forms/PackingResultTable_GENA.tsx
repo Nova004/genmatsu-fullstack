@@ -55,7 +55,7 @@ const PackingResultTable: React.FC<PackingResultTableProps> = ({ register, watch
           </tr>
           <tr>
             <td className={tdLeftClass} colSpan={2}>Scrape on 30 mesh</td>
-            <td className={tdCenterClass}><div className="flex items-center"><input type="number" className={inputClass} {...register('packingResults.meshPass40', { valueAsNumber: true })} /><span className="ml-2">KG</span></div></td>
+            <td className={tdCenterClass}><div className="flex items-center"><input type="number" step="any" className={inputClass} {...register('packingResults.meshPass40', { valueAsNumber: true })} /><span className="ml-2">KG</span></div></td>
             <td className={tdLeftClass} colSpan={3}><span className="text-s"> (เก็นที่จับเป็นก้อนซึ่งเป็นของเสียที่ไม่สามารถส่ง Production ได้)</span></td>
           </tr>
         </tbody>

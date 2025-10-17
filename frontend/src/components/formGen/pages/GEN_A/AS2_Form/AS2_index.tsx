@@ -21,8 +21,8 @@ const AS2_VALIDATION_SCHEMA = {
         message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, Lot No. และตรวจสอบสภาพบรรจุภัณฑ์ให้ครบถ้วน',
     },
     2: {
-         fields: [
-            'rawMaterials', 
+        fields: [
+            'rawMaterials',
             'cg1cWeighting.row1.cg1c',
             'cg1cWeighting.row2.cg1c',
         ],
@@ -43,7 +43,7 @@ function AS2_Form() {
     });
 
     // ดึงสิ่งที่จำเป็นออกมาจาก formMethods
-    const { register, trigger, watch, setValue, formState: { errors } } = formMethods;
+    const { register, trigger, watch, setValue, control, formState: { errors } } = formMethods;
 
     // เรียกใช้ Hook สำหรับจัดการ Step
     const { step, handleNext, handleBack } = useMultiStepForm({
@@ -74,9 +74,9 @@ function AS2_Form() {
                 <ProgressBar currentStep={step} totalSteps={4} />
 
                 <div className="my-6">
-                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} errors={errors} packagingWarningItemName="Iron Powder"  />}
+                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} errors={errors} packagingWarningItemName="Iron Powder" />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={handleTemplateLoaded} />}
-                    {step === 3 && <SharedFormStep3 register={register} errors={errors} onTemplateLoaded={handleTemplateLoaded} templateName="AS2_Step3_Operations" />}
+                    {step === 3 && <SharedFormStep3 register={register} errors={errors} control={control} onTemplateLoaded={handleTemplateLoaded} templateName="AS2_Step3_Operations" />}
                     {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="calculations.finalTotalWeight" />}
                 </div>
 

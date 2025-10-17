@@ -25,6 +25,7 @@ interface UseProductionFormReturn {
 export const useProductionForm = ({ formType, netWeightOfYieldSTD }: UseProductionFormProps): UseProductionFormReturn => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadedTemplates, setLoadedTemplates] = useState<any[]>([]);
 

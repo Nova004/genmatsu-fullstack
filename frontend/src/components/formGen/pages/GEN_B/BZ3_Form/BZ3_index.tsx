@@ -46,7 +46,7 @@ function BZ3_Form() {
     });
 
     // ดึงสิ่งที่จำเป็นออกมาจาก formMethods
-    const { register, trigger, watch, setValue, formState: { errors } } = formMethods;
+    const { register, trigger, watch, setValue, control, formState: { errors } } = formMethods;
 
     // เรียกใช้ Hook สำหรับจัดการ Step
     const { step, handleNext, handleBack } = useMultiStepForm({
@@ -80,7 +80,7 @@ function BZ3_Form() {
                 <div className="my-6">
                     {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="RC-417" errors={errors} />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={handleTemplateLoaded} />}
-                    {step === 3 && <SharedFormStep3 register={register} errors={errors} onTemplateLoaded={handleTemplateLoaded} templateName="BZ3_Step3_Operations" />}
+                    {step === 3 && <SharedFormStep3 register={register} errors={errors} control={control} onTemplateLoaded={handleTemplateLoaded} templateName="BZ3_Step3_Operations" />}
                     {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="bz3Calculations.totalWeightWithNcr" />}
                 </div>
 

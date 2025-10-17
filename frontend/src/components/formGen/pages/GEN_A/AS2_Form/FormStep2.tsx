@@ -151,7 +151,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
           <table className="w-full table-auto">
             <tbody>
               <tr>
-                <td className={tdLeftClass}>'Iron Powder  HGN 82.29.01 :Weight</td>
+                <td className={tdLeftClass}>Iron Powder  HGN 82.29.01 :Weight</td>
                 <td className={tdLeftClass}><input type="number" className={inputClass} {...register('cg1cWeighting.row1.cg1c', { valueAsNumber: true, required: 'กรุณากรอก  Iron Powder' })} /></td>
                 {errors.cg1cWeighting?.row1?.cg1c &&
                   <p className="text-sm text-danger mt-1">
@@ -164,7 +164,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('cg1cWeighting.row1.net')} /></td>
               </tr>
               <tr>
-                <td className={tdLeftClass}>'Iron Powder  HGN 82.29.01 :Weight</td>
+                <td className={tdLeftClass}>Iron Powder  HGN 82.29.01 :Weight</td>
                 <td className={tdLeftClass}><input type="number" className={inputClass} {...register('cg1cWeighting.row2.cg1c', { valueAsNumber: true, required: 'กรุณากรอก  Iron Powder' })} /></td>
                 {errors.cg1cWeighting?.row2?.cg1c &&
                   <p className="text-sm text-danger mt-1">

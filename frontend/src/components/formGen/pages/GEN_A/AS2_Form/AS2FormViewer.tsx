@@ -79,7 +79,7 @@ const AS2FormViewer: React.FC<AS2FormViewerProps> = ({ formData, blueprints, isR
   const formStepProps = {
     ...methods, // ส่งทุกฟังก์ชันจาก `useForm` (register, watch, setValue, etc.)
     errors: methods.formState.errors, // ส่ง state ของ error ไปด้วย
-    isReadOnly: isReadOnly,           // ส่งสถานะ "อ่านอย่างเดียว" ลงไปให้ลูกๆ
+    isReadOnly: false,           // ส่งสถานะ "อ่านอย่างเดียว" ลงไปให้ลูกๆ
     onTemplateLoaded: () => { },       // สร้างฟังก์ชันเปล่าๆ สำหรับ Prop นี้ เพราะในโหมด Viewer เราไม่ต้องการโหลด Template ใหม่
   };
 
@@ -106,7 +106,7 @@ const AS2FormViewer: React.FC<AS2FormViewerProps> = ({ formData, blueprints, isR
         {/* ส่วนที่แสดงเนื้อหาของแต่ละ Step */}
         <div className="my-6">
           {/* ใช้ Conditional Rendering: ถ้า `step` เท่ากับ 1 ให้แสดง <FormStep1> */}
-          {step === 1 && <SharedFormStep1 {...formStepProps} packagingWarningItemName="CG-1C" />}
+          {step === 1 && <SharedFormStep1 {...formStepProps} packagingWarningItemName="Iron Powder" />}
           {/* ถ้า `step` เท่ากับ 2 ให้แสดง <FormStep2> และส่ง `staticBlueprint` ที่ถูกต้องเข้าไปด้วย */}
           {step === 2 && <FormStep2 {...formStepProps} staticBlueprint={blueprints['AS2_Step2_RawMaterials']} />}
           {/* ถ้า `step` เท่ากับ 3 ก็ทำเหมือน Step 2 */}

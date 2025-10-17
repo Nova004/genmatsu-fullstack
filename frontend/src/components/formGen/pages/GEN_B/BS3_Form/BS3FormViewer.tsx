@@ -79,7 +79,7 @@ const BS3FormViewer: React.FC<BS3FormViewerProps> = ({ formData, blueprints, isR
   const formStepProps = {
     ...methods, // ส่งทุกฟังก์ชันจาก `useForm` (register, watch, setValue, etc.)
     errors: methods.formState.errors, // ส่ง state ของ error ไปด้วย
-    isReadOnly: isReadOnly,           // ส่งสถานะ "อ่านอย่างเดียว" ลงไปให้ลูกๆ
+    isReadOnly: false,         // ส่งสถานะ "อ่านอย่างเดียว" ลงไปให้ลูกๆ
     onTemplateLoaded: () => { },       // สร้างฟังก์ชันเปล่าๆ สำหรับ Prop นี้ เพราะในโหมด Viewer เราไม่ต้องการโหลด Template ใหม่
   };
 

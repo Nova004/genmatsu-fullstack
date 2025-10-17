@@ -42,7 +42,7 @@ const PackingResultTable: React.FC<PackingResultTableProps> = ({ register, watch
         <tbody>
           <tr>
             <td className={tdLeftClass} colSpan={2}>Ø 3*5 P on</td>
-            <td className={tdCenterClass}><input type="number" className={inputClass} {...register('packingResults.diameter', { valueAsNumber: true })} /></td>
+            <td className={tdCenterClass}><input type="number" step="any" className={inputClass} {...register('packingResults.diameter', { valueAsNumber: true })} /></td>
             <td className={tdCenterClass}>KG</td>
             <td className={tdCenterClass}></td>
             <td className={tdCenterClass}></td>
@@ -57,14 +57,14 @@ const PackingResultTable: React.FC<PackingResultTableProps> = ({ register, watch
           </tr>
           <tr>
             <td className={tdLeftClass} colSpan={2}>40 mesh Pass</td>
-            <td className={tdCenterClass}><input type="number" className={inputClass} {...register('packingResults.meshPass40', { valueAsNumber: true })} /></td>
+            <td className={tdCenterClass}><input type="number" step="any" className={inputClass} {...register('packingResults.meshPass40', { valueAsNumber: true })} /></td>
             <td className={tdCenterClass}>KG</td>
             <td className={tdCenterClass}></td>
             <td className={tdCenterClass}></td>
           </tr>
           <tr>
             <td className={tdLeftClass} colSpan={2}>Remain</td>
-            <td className={tdCenterClass}><input type="number" className={inputClass} {...register('packingResults.remain')} /></td>
+            <td className={tdCenterClass}><input type="number" step="any" className={inputClass} {...register('packingResults.remain')} /></td>
             <td className={tdCenterClass}>KG</td>
             <td className={tdCenterClass}></td>
             <td className={tdCenterClass}></td>
