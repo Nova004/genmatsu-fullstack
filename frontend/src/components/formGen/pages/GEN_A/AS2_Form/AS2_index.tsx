@@ -43,7 +43,7 @@ function AS2_Form() {
     });
 
     // ดึงสิ่งที่จำเป็นออกมาจาก formMethods
-    const { register, trigger, watch, setValue, control, formState: { errors } } = formMethods;
+    const { register, trigger, watch, getValues, setValue, control, formState: { errors } } = formMethods;
 
     // เรียกใช้ Hook สำหรับจัดการ Step
     const { step, handleNext, handleBack } = useMultiStepForm({
@@ -76,7 +76,7 @@ function AS2_Form() {
                 <div className="my-6">
                     {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} errors={errors} packagingWarningItemName="Iron Powder" />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={handleTemplateLoaded} />}
-                    {step === 3 && <SharedFormStep3 register={register} errors={errors} control={control} onTemplateLoaded={handleTemplateLoaded} templateName="AS2_Step3_Operations" />}
+                    {step === 3 && <SharedFormStep3 register={register} errors={errors} trigger={trigger} control={control} getValues={getValues}  onTemplateLoaded={handleTemplateLoaded} templateName="AS2_Step3_Operations" />}
                     {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="calculations.finalTotalWeight" />}
                 </div>
 

@@ -49,6 +49,7 @@ const BS3FormEdit: React.FC<BS3FormEditProps> = ({ initialData, onSubmit }) => {
         handleSubmit,
         trigger,
         watch,
+        getValues,
         setValue,
         control,
         formState: { errors },
@@ -109,7 +110,7 @@ const BS3FormEdit: React.FC<BS3FormEditProps> = ({ initialData, onSubmit }) => {
                     */}
                     {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="RC-417" errors={errors}  />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={() => { }} />}
-                    {step === 3 && <SharedFormStep3 register={register} errors={errors} control={control} onTemplateLoaded={() => { }} templateName="BS3_Step3_Operations" />}
+                    {step === 3 && <SharedFormStep3 register={register} errors={errors} trigger={trigger}  control={control} getValues={getValues} onTemplateLoaded={() => { }} templateName="BS3_Step3_Operations" />}
                     {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="bs3Calculations.totalWeightWithNcr" />}
                 </div>
 

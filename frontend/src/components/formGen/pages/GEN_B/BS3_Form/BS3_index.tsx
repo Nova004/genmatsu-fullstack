@@ -20,7 +20,7 @@ const BS3_VALIDATION_SCHEMA = {
         message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, Lot No. และตรวจสอบสภาพบรรจุภัณฑ์ให้ครบถ้วน',
     },
     2: {
-         fields: [
+        fields: [
             'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
             'rc417Weighting.row1.weight',
             'rc417Weighting.row2.weight',
@@ -44,7 +44,7 @@ function BS3_Form() {
     });
 
     // ดึงสิ่งที่จำเป็นออกมาจาก formMethods
-    const { register, trigger, watch, setValue, control, formState: { errors } } = formMethods;
+    const { register, trigger, watch, control, setValue, getValues, formState: { errors } } = formMethods;
 
     // เรียกใช้ Hook สำหรับจัดการ Step
     const { step, handleNext, handleBack } = useMultiStepForm({
@@ -77,7 +77,7 @@ function BS3_Form() {
                 <div className="my-6">
                     {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="RC-417" errors={errors} />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={handleTemplateLoaded} />}
-                    {step === 3 && <SharedFormStep3 register={register} errors={errors} control={control} onTemplateLoaded={handleTemplateLoaded} templateName="BS3_Step3_Operations" />}
+                    {step === 3 && <SharedFormStep3 register={register} errors={errors} trigger={trigger} control={control} getValues={getValues} onTemplateLoaded={handleTemplateLoaded} templateName="BS3_Step3_Operations" />}
                     {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="bs3Calculations.totalWeightWithNcr" />}
                 </div>
 
