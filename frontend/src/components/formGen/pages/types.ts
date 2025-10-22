@@ -51,12 +51,14 @@ export interface IManufacturingReportForm {
   qouRemark: string;
   valued: number | null;
 
-  // ---  เพิ่มโครงสร้างใหม่สำหรับ BZ3 ---
+  // ---  เพิ่มโครงสร้างใหม่สำหรับ BZ3  & BS3 & bz5-c  ใช้ตัวเปรเดียวกัน 
 
   rc417Weighting?: {
     row1: { weight: number | null; bagNo: string; net: number | null };
     row2: { weight: number | null; bagNo: string; net: number | null };
     total: number | null;
+    cdz1ofad: number | null;
+
   };
   bz3Calculations?: {
     rc417WaterContent: number | null;
@@ -72,7 +74,6 @@ export interface IManufacturingReportForm {
     totalWeightWithNcr: number | null;
   };
 
-  // ---  เพิ่มโครงสร้างใหม่สำหรับ BS3 ---
 
   bs3Calculations?: {
     rc417WaterContent: number | null;
@@ -87,6 +88,22 @@ export interface IManufacturingReportForm {
     totalNaclWater: number | null;
     totalWeightWithNcr: number | null;
   };
+
+  bz5cCalculations?: {
+    rc417WaterContentMoisture: number | null;
+    rc417WaterContentweight: number | null;
+    intermediateWaterCalc: number | null;
+    totalWeightOfMaterials: string | null;
+    stdMeanMoisture: number | null;
+    naclWater: number | null;
+    naclWaterSpecGrav: string | null;
+    temperature: number | null;
+    naclWater4: number | null;
+    lminRate: string | null;
+    totalNaclWater: number | null;
+    totalWeightWithNcr: number | null;
+  };
+
 
 
   // Step 3

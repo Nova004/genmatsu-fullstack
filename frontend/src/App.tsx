@@ -29,6 +29,8 @@ import BZ_Form from './components/formGen/pages/GEN_B/BZ_Form/BZ_index';
 import BZ3_Form from './components/formGen/pages/GEN_B/BZ3_Form/BZ3_index';
 import BS3_Form from './components/formGen/pages/GEN_B/BS3_Form/BS3_index';
 import AS2_Form from './components/formGen/pages/GEN_A/AS2_Form/AS2_index';
+import BZ5_C_Form from './components/formGen/pages/GEN_B/BZ5-C_Form/BZ5-C_index.tsx';
+import BS5_C_Form from './components/formGen/pages/GEN_B/BS5-C_Form/BS5-C_index.tsx';
 
 import ReportEditDispatcher from './pages/Reports/ReportEditDispatcher';
 
@@ -215,6 +217,14 @@ function App() {
                   <Route
                     path="/forms/bs3-form"
                     element={<><PageTitle title="BS3 Form" /><BS3_Form /></>}
+                  />
+                  <Route
+                    path="/forms/bz5-c-form"
+                    element={<><PageTitle title="BZ5-C Form" /><BZ5_C_Form /></>}
+                  />
+                  <Route
+                    path="/forms/bs5-c-form"
+                    element={<><PageTitle title="BZ5-C Form" /><BS5_C_Form /></>}
                   />
                   <Route
                     path="tables"

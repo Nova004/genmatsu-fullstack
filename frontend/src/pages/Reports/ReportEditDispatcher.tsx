@@ -9,6 +9,8 @@ import ReportEditBZ from './BZ/ReportEditBZ';
 import ReportEditBZ3 from './BZ3/ReportEditBZ3';
 import ReportEditBS3 from './BS3/ReportEditBS3';
 import ReportEditAS2 from './AS2/ReportEditAS2';
+import ReportEditBZ5_C from './BZ5-C/ReportEditBZ5-C';
+import ReportEditBS5_C from './BS5-C/ReportEditBS5-C';
 
 // Interface สำหรับข้อมูล Submission ที่คาดหวัง
 interface SubmissionPayload {
@@ -59,6 +61,12 @@ const ReportEditDispatcher: React.FC = () => {
                 return <ReportEditBZ3 submission={submission} templates={templates} />;
             case 'BS3':
                 return <ReportEditBS3 submission={submission} templates={templates} />;
+            case 'BZ5-C':
+                return <ReportEditBZ5_C submission={submission} templates={templates} />;
+            case 'BZ5-C':
+                return <ReportEditBZ5_C submission={submission} templates={templates} />;
+            case 'BS5-C':
+                return <ReportEditBS5_C submission={submission} templates={templates} />;
             case 'AS2':
                 return <ReportEditAS2 submission={submission} templates={templates} />;
             default:

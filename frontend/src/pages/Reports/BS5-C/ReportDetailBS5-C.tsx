@@ -1,20 +1,20 @@
-// frontend/src/pages/Reports/BZ/ReportDetailBZ.tsx
+// frontend/src/pages/Reports/BS5-C/ReportDetailBS5_C.tsx
 
 import React from 'react';
-import BZFormViewer from '../../../components/formGen/pages/GEN_B/BZ_Form/BZFormViewer';
+import BS5_CFormViewer from '../../../components/formGen/pages/GEN_B/BS5-C_Form/BS5-CFormViewer';
 
-interface ReportDetailBZProps {
+interface ReportDetailBS5_CProps {
   submission: any;
   blueprints: any;
 }
 
-const ReportDetailBZ: React.FC<ReportDetailBZProps> = ({ submission, blueprints }) => {
+const ReportDetailBS5_C: React.FC<ReportDetailBS5_CProps> = ({ submission, blueprints }) => {
   if (!submission || !submission.form_data_json) {
     return <div>ไม่พบข้อมูลฟอร์ม</div>;
   }
 
   return (
-    <BZFormViewer 
+    <BS5_CFormViewer 
       formData={submission.form_data_json}
       blueprints={blueprints} // 👈 ส่งพิมพ์เขียวที่ถูกต้องไปให้ Viewer
       isReadOnly={true}       // 👈 บอก Viewer ให้อยู่ในโหมดอ่านอย่างเดียว
@@ -22,4 +22,4 @@ const ReportDetailBZ: React.FC<ReportDetailBZProps> = ({ submission, blueprints 
   );
 };
 
-export default ReportDetailBZ;
+export default ReportDetailBS5_C;

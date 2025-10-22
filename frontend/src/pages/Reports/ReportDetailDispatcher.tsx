@@ -10,6 +10,8 @@ import ReportDetailBZ from './BZ/ReportDetailBZ';
 import ReportDetailBZ3 from './BZ3/ReportDetailBZ3';
 import ReportDetailBS3 from './BS3/ReportDetailBS3';
 import ReportDetailAS2 from './AS2/ReportDetailAS2';
+import ReportDetailBZ5_C from './BZ5-C/ReportDetailBZ5-C';
+import ReportDetailBS5_C from './BS5-C/ReportDetailBS5-C';
 
 const ReportDetailDispatcher: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -53,6 +55,10 @@ const ReportDetailDispatcher: React.FC = () => {
         return <ReportDetailBZ3 submission={submission} blueprints={blueprints} />;
       case 'BS3':
         return <ReportDetailBS3 submission={submission} blueprints={blueprints} />;
+      case 'BZ5-C':
+        return <ReportDetailBZ5_C submission={submission} blueprints={blueprints} />;
+      case 'BS5-C':
+        return <ReportDetailBS5_C submission={submission} blueprints={blueprints} />;
       case 'AS2':
         return <ReportDetailAS2 submission={submission} blueprints={blueprints} />;
       default:

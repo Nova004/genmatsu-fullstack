@@ -5,7 +5,7 @@ import { UseFormRegister, FieldErrors, Control, Controller, UseFormGetValues, Us
 import { getLatestTemplateByName } from '../../../../services/formService';
 import { IManufacturingReportForm, IConfigJson } from '../../pages/types';
 import InputMask from 'react-input-mask';
-import ValidatedInput from './ValidatedInput';
+
 
 interface SharedFormStep3Props {
   register: UseFormRegister<IManufacturingReportForm>;
@@ -16,7 +16,7 @@ interface SharedFormStep3Props {
   onTemplateLoaded: (templateInfo: any) => void;
   isReadOnly?: boolean;
   staticBlueprint?: any;
-  templateName: 'BS3_Step3_Operations' | 'BZ3_Step3_Operations' | 'BZ_Step3_Operations' | string;
+  templateName: 'BS3_Step3_Operations' | 'BZ3_Step3_Operations' | 'BZ_Step3_Operations' | 'BZ5-C_Step3_Operations' |   string;
 }
 
 const SharedFormStep3: React.FC<SharedFormStep3Props> = ({

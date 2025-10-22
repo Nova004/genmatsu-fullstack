@@ -59,6 +59,8 @@ function BS3_Form() {
         { value: 'BZ', label: 'BZ', path: '/forms/bz-form' },
         { value: 'BZ3', label: 'BZ3', path: '/forms/bz3-form' },
         { value: 'BS3', label: 'BS3', path: '/forms/bs3-form' },
+        { value: 'BZ5-C', label: 'BZ5-C', path: '/forms/bz5-c-form' },
+        { value: 'BS5-C', label: 'BS5-C', path: '/forms/bs5-c-form' },
     ];
     const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
 

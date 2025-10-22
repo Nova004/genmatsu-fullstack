@@ -46,7 +46,7 @@ function BZ3_Form() {
     });
 
     // ดึงสิ่งที่จำเป็นออกมาจาก formMethods
-     const { register, trigger, watch, control, setValue, getValues, formState: { errors } } = formMethods;
+    const { register, trigger, watch, control, setValue, getValues, formState: { errors } } = formMethods;
 
     // เรียกใช้ Hook สำหรับจัดการ Step
     const { step, handleNext, handleBack } = useMultiStepForm({
@@ -61,6 +61,8 @@ function BZ3_Form() {
         { value: 'BZ', label: 'BZ', path: '/forms/bz-form' },
         { value: 'BZ3', label: 'BZ3', path: '/forms/bz3-form' },
         { value: 'BS3', label: 'BS3', path: '/forms/bs3-form' },
+        { value: 'BZ5-C', label: 'BZ5-C', path: '/forms/bz5-c-form' },
+        { value: 'BS5-C', label: 'BS5-C', path: '/forms/bs5-c-form' },
 
     ];
     const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
@@ -80,7 +82,7 @@ function BZ3_Form() {
                 <div className="my-6">
                     {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="RC-417" errors={errors} />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={handleTemplateLoaded} />}
-                    {step === 3 && <SharedFormStep3 register={register} errors={errors} trigger={trigger} control={control} getValues={getValues}  onTemplateLoaded={handleTemplateLoaded} templateName="BZ3_Step3_Operations" />}
+                    {step === 3 && <SharedFormStep3 register={register} errors={errors} trigger={trigger} control={control} getValues={getValues} onTemplateLoaded={handleTemplateLoaded} templateName="BZ3_Step3_Operations" />}
                     {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="bz3Calculations.totalWeightWithNcr" />}
                 </div>
 

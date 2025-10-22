@@ -1,4 +1,4 @@
-// frontend/src/components/formGen/pages/GEN_B/BZ_Form/BZ_index.tsx 
+// frontend/src/components/formGen/pages/BS5-C_Form/BS5-C_index.tsx (โค้ดใหม่)
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -12,10 +12,8 @@ import ProgressBar from '../../../components/ProgressBar';
 import SharedFormStep1 from '../../../components/forms/SharedFormStep1_GENB';
 
 
-
-
 // ย้าย Schema ออกมาไว้นอก Component เพื่อไม่ให้ถูกสร้างใหม่ทุกครั้งที่ re-render
-const BZ_VALIDATION_SCHEMA = {
+const BS5_C_VALIDATION_SCHEMA = {
     1: {
         fields: ['basicData.date', 'basicData.machineName', 'basicData.lotNo', 'conditions'], // 👈 เพิ่ม 'conditions'
         scope: 'basicData',
@@ -24,10 +22,9 @@ const BZ_VALIDATION_SCHEMA = {
     2: {
         fields: [
             'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
-            'cg1cWeighting.row1.cg1c',
-            'calculations.nacl15SpecGrav',
-            'calculations.cg1cWaterContent',
-            'calculations.temperature'
+            'rc417Weighting.row1.weight',
+            'rc417Weighting.row2.weight',
+            'bs3Calculations.naclWaterSpecGrav',
         ],
         message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
     },
@@ -37,12 +34,12 @@ const BZ_VALIDATION_SCHEMA = {
     },
 };
 
-function BZ_Form() {
+function BS5_C_Form() {
     const navigate = useNavigate(); // ยังคงต้องใช้สำหรับปุ่ม Back to history
     const totalSteps = 4;
     // 🚀 เรียกใช้ Hook เพื่อจัดการ Logic ของฟอร์มทั้งหมด
     const { formMethods, isSubmitting, onSubmit, handleTemplateLoaded } = useProductionForm({
-        formType: 'BZ',
+        formType: 'BS5-C',
         netWeightOfYieldSTD: 800,
     });
 
@@ -54,7 +51,7 @@ function BZ_Form() {
         totalSteps: 4,
         trigger,
         errors,
-        validationSchema: BZ_VALIDATION_SCHEMA,
+        validationSchema: BS5_C_VALIDATION_SCHEMA,
     });
 
     // ค่าคงที่สำหรับ UI
@@ -71,19 +68,19 @@ function BZ_Form() {
         <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
             <form onSubmit={onSubmit}>
                 <FormHeader
-                    title="ใบรายงานการผลิต (BZ)"
+                    title="ใบรายงานการผลิต (BS5-C)"
                     formTypes={availableForms}
-                    currentValue="BZ"
+                    currentValue="BS5-C"
                     inputClass={inputClass}
                 />
 
                 <ProgressBar currentStep={step} totalSteps={4} />
 
                 <div className="my-6">
-                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="CG-1C" errors={errors} />}
+                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="CDZ-1" errors={errors} />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={handleTemplateLoaded} />}
-                    {step === 3 && <SharedFormStep3 register={register} errors={errors} trigger={trigger} control={control} getValues={getValues} onTemplateLoaded={handleTemplateLoaded} templateName="BZ_Step3_Operations" />}
-                    {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="calculations.finalTotalWeight" />}
+                    {step === 3 && <SharedFormStep3 register={register} errors={errors} trigger={trigger} control={control} getValues={getValues} onTemplateLoaded={handleTemplateLoaded} templateName="BS5-C_Step3_Operations" />}
+                    {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="bz5cCalculations.totalWeightWithNcr" />}
                 </div>
 
                 <div className="flex justify-center gap-4 rounded-sm border border-stroke p-4 dark:border-strokedark">
@@ -105,4 +102,4 @@ function BZ_Form() {
     );
 }
 
-export default BZ_Form;
+export default BS5_C_Form;
