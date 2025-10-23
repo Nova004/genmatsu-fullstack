@@ -77,10 +77,10 @@ function BS5_C_Form() {
                 <ProgressBar currentStep={step} totalSteps={4} />
 
                 <div className="my-6">
-                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="CDZ-1" errors={errors} />}
+                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="Diatomaceous Earth" errors={errors} />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={handleTemplateLoaded} />}
                     {step === 3 && <SharedFormStep3 register={register} errors={errors} trigger={trigger} control={control} getValues={getValues} onTemplateLoaded={handleTemplateLoaded} templateName="BS5-C_Step3_Operations" />}
-                    {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="bz5cCalculations.totalWeightWithNcr" />}
+                    {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="bs5cCalculations.totalWeightWithNcr" />}
                 </div>
 
                 <div className="flex justify-center gap-4 rounded-sm border border-stroke p-4 dark:border-strokedark">

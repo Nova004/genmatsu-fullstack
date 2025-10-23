@@ -104,6 +104,22 @@ export interface IManufacturingReportForm {
     totalWeightWithNcr: number | null;
   };
 
+   bs5cCalculations?: {
+    rc417WaterContentMoisture: number | null;
+    rc417WaterContentweight: number | null;
+    intermediateWaterCalc: number | null;
+    totalWeightOfMaterials: string | null;
+    stdMeanMoisture: number | null;
+    naclWater: number | null;
+    naclWaterSpecGrav: string | null;
+    temperature: number | null;
+    naclWater4: number | null;
+    lminRate: string | null;
+    totalNaclWater: number | null;
+    totalWeightWithNcr: number | null;
+    Netweightofwaterper: number | null;
+  };
+
 
 
   // Step 3

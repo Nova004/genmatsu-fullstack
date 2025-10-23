@@ -11,7 +11,8 @@ type TotalWeightFieldName =
   | 'calculations.finalTotalWeight'
   | 'bz3Calculations.totalWeightWithNcr'
   | 'bs3Calculations.totalWeightWithNcr'
-  | 'bz5cCalculations.totalWeightWithNcr';
+  | 'bz5cCalculations.totalWeightWithNcr'
+  | 'bs5cCalculations.totalWeightWithNcr';
 
 // 2. แก้ไข Interface ให้รับ prop ใหม่
 interface SharedFormStep4Props {

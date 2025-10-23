@@ -7,6 +7,7 @@ import { useWeightingCalculation, WeightingCalculationConfig } from '../../../..
 import { useTemplateLoader } from '../../../../../hooks/useTemplateLoader';
 import RawMaterialTableRows from '../../../components/forms/RawMaterialTableRows';
 
+
 // =================================================================
 // ╔═══════════════════════════════════════════════════════════════╗
 // ║                     CUSTOM HOOKS (ส่วนจัดการ Logic)            
@@ -364,17 +365,18 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>C°</td>
               </tr>
               <tr>
+                <td className={tdLeftClass}>Total NaCl water=</td>
+                <td className={tdLeftClass}><input type="number" step="0.1" className={disabledInputClass} readOnly {...register('bz5cCalculations.totalNaclWater', { valueAsNumber: true })} /></td>
+                <td className={tdLeftClass}>Kg./B</td>
+              </tr>
+              <tr>
                 <td className={tdLeftClass}>15% NaCl Water</td>
                 <td className={tdLeftClass}><input type="number" className={disabledInputClass} {...register('bz5cCalculations.naclWater4', { valueAsNumber: true })} readOnly disabled /></td>
                 <td className={tdLeftClass}>(L/B)/20 min. =</td>
                 <td className={tdLeftClass}><input type="text" className={disabledInputClass} readOnly {...register('bz5cCalculations.lminRate')} /></td>
                 <td className={tdLeftClass}>'L/min </td>
               </tr>
-              <tr>
-                <td className={tdLeftClass}>Total NaCl water=</td>
-                <td className={tdLeftClass}><input type="number" step="0.1" className={disabledInputClass} readOnly {...register('bz5cCalculations.totalNaclWater', { valueAsNumber: true })} /></td>
-                <td className={tdLeftClass}>Kg./B</td>
-              </tr>
+
               <tr>
                 <td className={tdLeftClass}>Total weight = NCR Genmatsu =</td>
                 <td className={tdLeftClass}><input type="number" step="0.1" className={disabledInputClass} readOnly {...register('bz5cCalculations.totalWeightWithNcr', { valueAsNumber: true })} /></td>

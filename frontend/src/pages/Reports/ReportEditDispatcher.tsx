@@ -63,8 +63,6 @@ const ReportEditDispatcher: React.FC = () => {
                 return <ReportEditBS3 submission={submission} templates={templates} />;
             case 'BZ5-C':
                 return <ReportEditBZ5_C submission={submission} templates={templates} />;
-            case 'BZ5-C':
-                return <ReportEditBZ5_C submission={submission} templates={templates} />;
             case 'BS5-C':
                 return <ReportEditBS5_C submission={submission} templates={templates} />;
             case 'AS2':

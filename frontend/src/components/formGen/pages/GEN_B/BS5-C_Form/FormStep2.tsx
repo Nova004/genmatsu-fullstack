@@ -244,7 +244,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
 }) => {
 
   const { fields, isLoading, error } = useTemplateLoader({
-    templateName: 'BZ5-C_Step2_RawMaterials',
+    templateName: 'BS5-C_Step2_RawMaterials',
     onTemplateLoaded,
     staticBlueprint,
   });
@@ -345,13 +345,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass} colSpan={4}></td>
               </tr>
               <tr>
-                <td className={tdLeftClass}>Moisture Gen BZ5-C (STD mean.)</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bz5cCalculations.stdMeanMoisture', { valueAsNumber: true })} value="33.94" readOnly disabled /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}>% Moisture Gen B (STD mean.)</td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bz5cCalculations.stdMeanMoisture', { valueAsNumber: true })} value="37" readOnly disabled /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass} colSpan={4}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>NaCl water =</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bz5cCalculations.naclWater', { valueAsNumber: true })} value="15" readOnly disabled /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bz5cCalculations.naclWater', { valueAsNumber: true })} value="4" readOnly disabled /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass}>NaCl Water Specific gravity</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('bz5cCalculations.naclWaterSpecGrav', { valueAsNumber: true, required: 'กรุณากรอก  NaCl Water Specific gravity' })} /></td>
                 {errors.bz5cCalculations?.naclWaterSpecGrav &&
@@ -364,16 +364,21 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>C°</td>
               </tr>
               <tr>
-                <td className={tdLeftClass}>15% NaCl Water</td>
-                <td className={tdLeftClass}><input type="number" className={disabledInputClass} {...register('bz5cCalculations.naclWater4', { valueAsNumber: true })} readOnly disabled /></td>
-                <td className={tdLeftClass}>(L/B)/20 min. =</td>
-                <td className={tdLeftClass}><input type="text" className={disabledInputClass} readOnly {...register('bz5cCalculations.lminRate')} /></td>
-                <td className={tdLeftClass}>'L/min </td>
+                <td className={tdLeftClass}>Net weight of water per <br></br>1000 Kg of CDZ-1 =</td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bz5cCalculations.Netweightofwaterper', { valueAsNumber: true })} value="649.8" readOnly disabled /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}> <span className="text-xs">(Calculated by 4% NaCl 654L, Specific gravity = 1.035) </span> </td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Total NaCl water=</td>
                 <td className={tdLeftClass}><input type="number" step="0.1" className={disabledInputClass} readOnly {...register('bz5cCalculations.totalNaclWater', { valueAsNumber: true })} /></td>
                 <td className={tdLeftClass}>Kg./B</td>
+              </tr>
+              <tr>
+                <td className={tdLeftClass}>15% NaCl Water</td>
+                <td className={tdLeftClass}><input type="number" className={disabledInputClass} {...register('bz5cCalculations.naclWater4', { valueAsNumber: true })} readOnly disabled /></td>
+                <td className={tdLeftClass}>(L/B)/20 min. =</td>
+                <td className={tdLeftClass}><input type="text" className={disabledInputClass} readOnly {...register('bz5cCalculations.lminRate')} /></td>
+                <td className={tdLeftClass}>'L/min </td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Total weight = NCR Genmatsu =</td>
