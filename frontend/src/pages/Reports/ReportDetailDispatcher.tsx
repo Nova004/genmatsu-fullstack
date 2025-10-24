@@ -31,7 +31,7 @@ interface SubmissionData {
 const ReportDetailDispatcher: React.FC = () => {
   const { id } = useParams<{ id: string }>(); // ดึง ID จาก URL
   const [submissionData, setSubmissionData] = useState<SubmissionData | null>(null); // State เก็บข้อมูลที่ดึงมา
-  const [isLoading, setIsLoading] = useState<boolean>(true); // State โหลดข้อมูลครั้งแรก
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null); // State เก็บ Error
 
   // ✨ State สำหรับปุ่มดาวน์โหลด PDF ✨
@@ -196,14 +196,16 @@ const ReportDetailDispatcher: React.FC = () => {
   if (error) {
     // แสดง Error ถ้าดึงข้อมูลไม่ได้
     return (
-      <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark">
-        <Breadcrumb pageName="Error" />
-        <p className="text-center text-red-500">{error}</p>
-        <div className="mt-4 flex justify-center">
-          <Link to="/reports/history-gen-b" // 📌 แก้ Path กลับหน้า History
-            className="flex items-center justify-center rounded bg-gray-2 px-6 py-2 font-medium text-black hover:bg-opacity-90 dark:bg-meta-4 dark:text-white">
-            Back to History
-          </Link>
+      <div id="pdf-ready">
+        <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark">
+          <Breadcrumb pageName="Error" />
+          <p className="text-center text-red-500">{error}</p>
+          <div className="mt-4 flex justify-center">
+            <Link to="/reports/history-gen-b" // 📌 แก้ Path กลับหน้า History
+              className="flex items-center justify-center rounded bg-gray-2 px-6 py-2 font-medium text-black hover:bg-opacity-90 dark:bg-meta-4 dark:text-white">
+              Back to History
+            </Link>
+          </div>
         </div>
       </div>
     );

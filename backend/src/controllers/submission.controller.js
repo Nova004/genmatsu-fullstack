@@ -2,7 +2,7 @@
 
 const sql = require("mssql");
 const dbConfig = require("../config/db.config");
-const puppeteer = require('puppeteer');
+const puppeteer = require("puppeteer");
 exports.createSubmission = async (req, res) => {
   const { formType, lotNo, templateIds, formData, submittedBy } = req.body;
 
@@ -62,7 +62,7 @@ exports.createSubmission = async (req, res) => {
       // ปิด is_latest ของเวอร์ชันเก่า เพื่อบอกว่ามันไม่ใช่เวอร์ชันล่าสุดแล้ว
       const updateOldSetRequest = new sql.Request(transaction);
       await updateOldSetRequest
-        .input("categoryToUse", sql.NVarChar, correctCategory) 
+        .input("categoryToUse", sql.NVarChar, correctCategory)
         .query(
           "UPDATE Form_Version_Sets SET is_latest = 0 WHERE category = @categoryToUse AND is_latest = 1"
         );
@@ -70,7 +70,7 @@ exports.createSubmission = async (req, res) => {
       // สร้าง version set ใหม่
       const getNewVersionRequest = new sql.Request(transaction);
       const lastVersionResult = await getNewVersionRequest
-        .input("categoryToUse", sql.NVarChar, correctCategory) 
+        .input("categoryToUse", sql.NVarChar, correctCategory)
         .query(
           "SELECT ISNULL(MAX(version), 0) as lastVersion FROM Form_Version_Sets WHERE category = @categoryToUse"
         );
@@ -79,7 +79,7 @@ exports.createSubmission = async (req, res) => {
       //บันทึกลงในตาราง Form_Version_Set_Items เพื่อผูกไว้กับ "สารบัญ" ใหม่ที่เราเพิ่งสร้าง
       const createSetRequest = new sql.Request(transaction);
       const newSetResult = await createSetRequest
-        .input("categoryToUse", sql.NVarChar, correctCategory) 
+        .input("categoryToUse", sql.NVarChar, correctCategory)
         .input("newVersion", sql.Int, newVersion)
         .query(
           "INSERT INTO Form_Version_Sets (category, version, is_latest) OUTPUT INSERTED.version_set_id VALUES (@categoryToUse, @newVersion, 1)"
@@ -98,11 +98,11 @@ exports.createSubmission = async (req, res) => {
       }
     }
 
-    // --- ขั้นตอนที่ 3: บันทึก Submission 
+    // --- ขั้นตอนที่ 3: บันทึก Submission
     const submissionRequest = new sql.Request(transaction);
     const submissionResult = await submissionRequest
       .input("versionSetId", sql.Int, versionSetId)
-      .input("formType", sql.NVarChar, formType) 
+      .input("formType", sql.NVarChar, formType)
       .input("lotNo", sql.NVarChar, lotNo)
       .input("submittedBy", sql.NVarChar, submittedBy).query(`
         INSERT INTO Form_Submissions (version_set_id, form_type, lot_no, submitted_by) 
@@ -328,13 +328,12 @@ exports.deleteSubmission = async (req, res) => {
   }
 };
 
-
 exports.updateSubmission = async (req, res) => {
   const { id } = req.params;
   const { lot_no, form_data } = req.body; // รับข้อมูลใหม่จาก Frontend
 
   if (!lot_no || !form_data) {
-    return res.status(400).send({ message: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
+    return res.status(400).send({ message: "กรุณากรอกข้อมูลให้ครบถ้วน" });
   }
 
   try {
@@ -345,10 +344,10 @@ exports.updateSubmission = async (req, res) => {
 
     try {
       // 1. อัปเดตตารางหลัก (Form_Submissions)
-      await transaction.request()
-        .input('submission_id', sql.Int, id)
-        .input('lot_no', sql.NVarChar, lot_no)
-        .query(`
+      await transaction
+        .request()
+        .input("submission_id", sql.Int, id)
+        .input("lot_no", sql.NVarChar, lot_no).query(`
           UPDATE Form_Submissions
           SET lot_no = @lot_no,
               submitted_at = GETDATE()
@@ -356,9 +355,10 @@ exports.updateSubmission = async (req, res) => {
         `);
 
       // 2. อัปเดตตารางข้อมูล JSON (Form_Submission_Data)
-      await transaction.request()
-        .input('submission_id', sql.Int, id)
-        .input('form_data_json', sql.NVarChar, JSON.stringify(form_data))
+      await transaction
+        .request()
+        .input("submission_id", sql.Int, id)
+        .input("form_data_json", sql.NVarChar, JSON.stringify(form_data))
         .query(`
           UPDATE Form_Submission_Data
           SET form_data_json = @form_data_json
@@ -366,93 +366,97 @@ exports.updateSubmission = async (req, res) => {
         `);
 
       await transaction.commit();
-      res.status(200).send({ message: 'อัปเดตข้อมูลสำเร็จ' });
-
+      res.status(200).send({ message: "อัปเดตข้อมูลสำเร็จ" });
     } catch (err) {
       await transaction.rollback();
       throw err; // ส่ง error ไปให้ catch ด้านนอกจัดการ
     }
-
   } catch (error) {
-    console.error('SQL error', error);
-    res.status(500).send({ message: 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล', error });
+    console.error("SQL error", error);
+    res.status(500).send({ message: "เกิดข้อผิดพลาดในการอัปเดตข้อมูล", error });
   }
 };
-
 
 // ==========================================================
 // ✨ [เพิ่ม] ฟังก์ชันใหม่สำหรับสร้าง PDF ✨
 // ==========================================================
 exports.generatePdf = async (req, res) => {
   const submissionId = req.params.id;
-  // 📌 [สำคัญ] กำหนด URL ของ Frontend ที่แสดงหน้ารายละเอียด
-  // ควรดึงค่านี้มาจาก Environment Variable (.env) เพื่อความยืดหยุ่น
-  const frontendDetailUrl = `http://localhost:5173/reports/view/${submissionId}?print=true`; // เพิ่ม ?print=true เพื่อบอก Frontend ว่าเป็นโหมด PDF
+  const frontendDetailUrl = `http://localhost:5173/reports/view/${submissionId}?print=true`;
 
-  console.log(`[PDF Generation] Request received for submission ID: ${submissionId}`);
+  console.log(
+    `[PDF Generation] Request received for submission ID: ${submissionId}`
+  );
   console.log(`[PDF Generation] Accessing Frontend URL: ${frontendDetailUrl}`);
 
-  let browser = null; // ประกาศ browser ไว้นอก try เพื่อให้ finally เห็น
+  let browser = null;
 
   try {
     // --- 1. เปิด Browser และ Page ---
-    console.log('[PDF Generation] Launching Puppeteer...');
+    console.log("[PDF Generation] Launching Puppeteer...");
     browser = await puppeteer.launch({
-      headless: true, // รันแบบไม่มี UI
-      args: ['--no-sandbox', '--disable-setuid-sandbox'], // Options สำคัญสำหรับ Linux/Docker
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
     const page = await browser.newPage();
 
     // --- 2. ไปยังหน้า Frontend ---
     console.log(`[PDF Generation] Navigating to page...`);
     await page.goto(frontendDetailUrl, {
-      waitUntil: 'networkidle0', // รอจนกว่า Network จะนิ่ง (โหลดข้อมูลเสร็จ)
-      timeout: 60000 // เพิ่ม Timeout เป็น 60 วินาที (เผื่อหน้าซับซ้อน)
+      waitUntil: "networkidle0", // รอ Network นิ่ง (เหมือนเดิม)
+      timeout: 60000,
     });
     console.log(`[PDF Generation] Page loaded successfully.`);
 
-    // --- (เสริม) รอให้ Element สำคัญแสดงผล (ถ้าจำเป็น) ---
-    // เช่น ถ้าคุณรู้ว่าตารางข้อมูลมี id="report-table"
-    // await page.waitForSelector('#report-table', { visible: true, timeout: 30000 });
-    // console.log('[PDF Generation] Key element #report-table is visible.');
+    // --- ⭐️⭐️ [จุดที่แก้ไข] ⭐️⭐️ ---
+    // รอให้ Element สำคัญ (ที่แปะ id ไว้ใน React) แสดงผลก่อน
+    console.log("[PDF Generation] Waiting for selector #pdf-ready...");
+    await page.waitForSelector("#pdf-ready", {
+      visible: true, // รอจนกว่าจะมองเห็นได้
+      timeout: 30000, // รอสูงสุด 30 วินาที
+    });
+    console.log("[PDF Generation] Selector #pdf-ready is visible.");
+    // --- ⭐️⭐️ [จบจุดที่แก้ไข] ⭐️⭐️ ---
 
     // --- 3. สร้าง PDF ---
-    console.log('[PDF Generation] Generating PDF buffer...');
+    console.log("[PDF Generation] Generating PDF buffer...");
     const pdfBuffer = await page.pdf({
-      format: 'A4',             // ขนาดกระดาษ
-      printBackground: true,   // พิมพ์สีพื้นหลัง/รูปภาพด้วย
-      margin: {                // กำหนดขอบกระดาษ (ถ้าต้องการ)
-        top: '20px',
-        right: '20px',
-        bottom: '20px',
-        left: '20px',
+      format: "A4",
+      printBackground: true,
+      margin: {
+        top: "20px",
+        right: "20px",
+        bottom: "20px",
+        left: "20px",
       },
     });
-    console.log(`[PDF Generation] PDF buffer created (Size: ${pdfBuffer.length} bytes).`);
+    console.log(
+      `[PDF Generation] PDF buffer created (Size: ${pdfBuffer.length} bytes).`
+    );
 
-    // --- 4. ปิด Browser ---
-    // (ย้ายไปทำใน finally)
+    // --- 4. ตั้งค่า Header และส่ง PDF กลับไป ---
+    const fileName = `Report-${submissionId}.pdf`;
 
-    // --- 5. ตั้งค่า Header และส่ง PDF กลับไป ---
-    // (เสริม) ดึง Lot No มาตั้งชื่อไฟล์ (ต้องแก้ getSubmissionById ให้คืน lot_no ด้วย)
-    // const submissionData = await getSubmissionDataById(submissionId); // สมมติว่ามีฟังก์ชันนี้
-    // const fileName = `Report-${submissionData.lot_no || submissionId}.pdf`;
-    const fileName = `Report-${submissionId}.pdf`; // ชื่อไฟล์เบื้องต้น
-
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=${fileName}`); // บอกให้ Browser ดาวน์โหลด
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename=${fileName}`);
     res.send(pdfBuffer);
-    console.log(`[PDF Generation] PDF sent successfully for ID: ${submissionId}`);
-
+    console.log(
+      `[PDF Generation] PDF sent successfully for ID: ${submissionId}`
+    );
   } catch (error) {
-    console.error(`[PDF Generation] Error generating PDF for ID ${submissionId}:`, error);
-    res.status(500).send({ message: 'เกิดข้อผิดพลาดในการสร้าง PDF', error: error.message });
+    console.error(
+      `[PDF Generation] Error generating PDF for ID ${submissionId}:`,
+      error
+    );
+    res
+      .status(500)
+      .send({ message: "เกิดข้อผิดพลาดในการสร้าง PDF", error: error.message });
   } finally {
-    // --- ปิด Browser เสมอ ไม่ว่าจะสำเร็จหรือล้มเหลว ---
+    // --- ปิด Browser เสมอ ---
     if (browser) {
-      console.log('[PDF Generation] Closing browser...');
+      console.log("[PDF Generation] Closing browser...");
       await browser.close();
-      console.log('[PDF Generation] Browser closed.');
+      console.log("[PDF Generation] Browser closed.");
     }
   }
 };
