@@ -224,7 +224,7 @@ function App() {
                   />
                   <Route
                     path="/forms/bs5-c-form"
-                    element={<><PageTitle title="BZ5-C Form" /><BS5_C_Form /></>}
+                    element={<><PageTitle title="BS5-C Form" /><BS5_C_Form /></>}
                   />
                   <Route
                     path="tables"

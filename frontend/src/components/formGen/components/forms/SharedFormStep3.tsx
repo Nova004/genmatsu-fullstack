@@ -375,7 +375,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                                                         }
 
                                                         if (duration === 0) return 'Start < Finish';
-                                                        return duration <= MAX_SHIFT_DURATION_MINUTES || 'ระยะเวลาต้องไม่เกิน 12 ชม.';
+                                                        return duration <= MAX_SHIFT_DURATION_MINUTES || 'Start < Finish';
                                                       },
                                                       // 2. แนวนอน (ย้อนกลับ - ✨ อัปเดตเช็ค Duration)
                                                       afterPreviousTime: (value) => {
@@ -392,7 +392,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                                                           duration = (currentTimeNum + 1440) - prevTimeNum; // Overnight
                                                         }
 
-                                                        return duration <= MAX_SHIFT_DURATION_MINUTES || `ค่าที่กรอกต้องมากกว่า ${prevTimeStr} > เวลา`;
+                                                        return duration <= MAX_SHIFT_DURATION_MINUTES || `ต้องมากกว่า ${prevTimeStr}`;
                                                       },
                                                       // 3. แนวนอน (ไปข้างหน้า - ✨ อัปเดตเช็ค Duration)
                                                       beforeNextTime: (value) => {
@@ -468,7 +468,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                                                         }
 
                                                         if (duration === 0) return 'Finish > Start';
-                                                        return duration <= MAX_SHIFT_DURATION_MINUTES || 'ระยะเวลาต้องไม่เกิน 12 ชม.';
+                                                        return duration <= MAX_SHIFT_DURATION_MINUTES || 'Start < Finish';
                                                       },
                                                       // 2. แนวนอน (ย้อนกลับ - ✨ อัปเดตเช็ค Duration)
                                                       afterPreviousTime: (value) => {
@@ -485,7 +485,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                                                           duration = (currentTimeNum + 1440) - prevTimeNum; // Overnight
                                                         }
 
-                                                        return duration <= MAX_SHIFT_DURATION_MINUTES || `เวลาที่กรอกต้องมากกว่า ${prevTimeStr} > เวลา`;
+                                                        return duration <= MAX_SHIFT_DURATION_MINUTES || `ต้องมากกว่า ${prevTimeStr}`;
                                                       },
                                                       // 3. แนวนอน (ไปข้างหน้า - ✨ อัปเดตเช็ค Duration)
                                                       beforeNextTime: (value) => {
@@ -658,7 +658,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                               }
 
                               if (duration === 0) return 'Start < Finish';
-                              return duration <= MAX_SHIFT_DURATION_MINUTES || 'ระยะเวลาต้องไม่เกิน 12 ชม.';
+                              return duration <= MAX_SHIFT_DURATION_MINUTES || 'Start < Finish';
                             },
                             // 2. แนวนอน (ย้อนกลับ - ✨ อัปเดตเช็ค Duration)
                             afterPreviousTime: (value) => {
@@ -675,7 +675,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                                 duration = (currentTimeNum + 1440) - prevTimeNum; // Overnight
                               }
 
-                              return duration <= MAX_SHIFT_DURATION_MINUTES || `ค่าที่กรอกต้องมากกว่า ${prevTimeStr} > เวลา`;
+                              return duration <= MAX_SHIFT_DURATION_MINUTES || `ต้องมากกว่า${prevTimeStr}`;
                             },
                             // 3. แนวนอน (ไปข้างหน้า - ✨ อัปเดตเช็ค Duration)
                             beforeNextTime: (value) => {
@@ -754,7 +754,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                               }
 
                               if (duration === 0) return 'Finish > Start';
-                              return duration <= MAX_SHIFT_DURATION_MINUTES || 'ระยะเวลาต้องไม่เกิน 12 ชม.';
+                              return duration <= MAX_SHIFT_DURATION_MINUTES || 'Start < Finish';
                             },
                             // 2. แนวนอน (ย้อนกลับ - ✨ อัปเดตเช็ค Duration)
                             afterPreviousTime: (value) => {
@@ -771,7 +771,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                                 duration = (currentTimeNum + 1440) - prevTimeNum; // Overnight
                               }
 
-                              return duration <= MAX_SHIFT_DURATION_MINUTES || `ค่าที่กรอกต้องมากกว่า ${prevTimeStr} > เวลา`;
+                              return duration <= MAX_SHIFT_DURATION_MINUTES || `ต้องมากกว่า ${prevTimeStr}`;
                             },
                             // 3. แนวนอน (ไปข้างหน้า - ✨ อัปเดตเช็ค Duration)
                             beforeNextTime: (value) => {
@@ -819,7 +819,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                               className={(isFinishTimeDisabled || isReadOnly) ? disabledInputClass : inputClass}
                               disabled={isFinishTimeDisabled || isReadOnly}
                             />
-                            {error && <span className="absolute left-1 -bottom-5 text-xs text-meta-1">{error.message}</span>}
+                            {error && <div><span className="absolute left-1 -bottom-5 text-xs text-meta-1">{error.message}</span></div>}
                           </div>
                         )}
                       />

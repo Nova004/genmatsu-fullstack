@@ -82,7 +82,7 @@ function BZ_Form() {
                 <div className="my-6">
                     {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="CG-1C" errors={errors} />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={handleTemplateLoaded} />}
-                    {step === 3 && <SharedFormStep3 register={register} errors={errors} trigger={trigger} control={control} getValues={getValues} onTemplateLoaded={handleTemplateLoaded} templateName="BZ_Step3_Operations" />}
+                    {step === 3 && <SharedFormStep3 register={register} errors={errors}trigger={trigger} control={control} getValues={getValues}  onTemplateLoaded={handleTemplateLoaded} templateName="BZ_Step3_Operations" />}
                     {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="calculations.finalTotalWeight" />}
                 </div>
 

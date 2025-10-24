@@ -112,7 +112,7 @@ const BS5_CFormViewer: React.FC<BS5_CFormViewerProps> = ({ formData, blueprints,
           {/* ถ้า `step` เท่ากับ 3 ก็ทำเหมือน Step 2 */}
           {step === 3 && <SharedFormStep3 {...formStepProps} staticBlueprint={blueprints['BS5-C_Step3_Operations']} templateName="BS5-C_Step3_Operations" />}
           {/* ถ้า `step` เท่ากับ 4 ให้แสดง <FormStep4> */}
-          {step === 4 && <SharedFormStep4 {...formStepProps} totalWeightFieldName="bz5cCalculations.totalWeightWithNcr" />}
+          {step === 4 && <SharedFormStep4 {...formStepProps} totalWeightFieldName="bs5cCalculations.totalWeightWithNcr" />}
         </div>
 
         {/* ส่วนของปุ่ม Navigation ด้านล่าง */}

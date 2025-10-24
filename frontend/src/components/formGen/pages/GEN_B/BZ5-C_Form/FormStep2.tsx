@@ -60,15 +60,17 @@ const useBZ5_CCalculations = (
       const P20 = numRc417Total;
       const P21_decimal = (Number(rc417WaterContent) / 100) || 0;
       const rawResult = P20 * P21_decimal;
-      calculatedWaterContentWeight_RAW = rawResult; // เก็บค่าดิบ
+      const multiplier = Math.pow(10, 6); // 1,000,000
+
+      calculatedWaterContentWeight_RAW = Math.round(rawResult * multiplier) / multiplier;
     }
     // ปัดเศษเฉพาะตอนแสดงผล
     setValue(
       'bz5cCalculations.rc417WaterContentweight',
-      calculatedWaterContentWeight_RAW !== null ? Number(calculatedWaterContentWeight_RAW.toFixed(2)) : null
+      calculatedWaterContentWeight_RAW !== null ? Number(calculatedWaterContentWeight_RAW.toFixed(3)) : null
     );
     // ----------------------------------------------------------
-    console.log(`BZ5-C calc [B]: Using RAW P22_B = ${rc417WaterContent}`); // Log ค่า P22 ดิบ
+   // console.log(`BZ5-C calc [B]: Using RAW P22_B = ${rc417WaterContent}`); // Log ค่า P22 ดิบ
 
     // ----- [A] คำนวณ "Weight of CDZ-1 + Mg(OH)2 + Activated Carbon P-200U" -----
     // (ผลลัพธ์: calculatedTotalMaterials_RAW)
@@ -85,30 +87,59 @@ const useBZ5_CCalculations = (
     // ----- [B] คำนวณ Salt =(P20-P22)*(AV27/AV23)*(N24/(1-N24)) -----
     // (ผลลัพธ์: rawInitialNaclWater15_RAW)
     // ----------------------------------------------------------
+    // ----- [B] คำนวณ Salt =(P20-P22)*(AV27/AV23)*(N24/(1-N24)) -----
+    // (ผลลัพธ์: rawInitialNaclWater15_RAW)
+    // ----------------------------------------------------------
+    console.log('[BZ5-C DEBUG B] --- Block [B] Start (OLD FORMULA) ---');
     let rawInitialNaclWater15_RAW: number | null = null;
 
     const P20_B = numRc417Total;
     const P22_B = calculatedWaterContentWeight_RAW; // ใช้ค่า P22 ดิบจาก [NEW ✨]
 
-    console.log(`BZ5-C calc [B]: Using RAW P22_B = ${P22_B}`); // Log ค่า P22 ดิบ
+    // Log ค่า Input ที่ได้รับมา
+    console.log(`[BZ5-C DEBUG B] Input P20_B (numRc417Total) = ${P20_B}`);
+    console.log(`[BZ5-C DEBUG B] Input P22_B (calculatedWaterContentWeight_RAW) = ${P22_B}`);
+
+    // (Log เดิมของคุณ)
+    // console.log(`BZ5-C calc [B]: Using RAW P22_B = ${P22_B}`); // Log ค่า P22 ดิบ
 
     if (P22_B !== null) {
-      const AV27 = 580.3;
+      console.log('[BZ5-C DEBUG B] Condition met: P22_B is not null. Starting calculation.');
+
+      // 1. ตั้งค่าคงที่
+      const AV27 = 580.25250000;
       const AV23 = 1000;
       const N24_percent = 15;
       const N24_decimal = N24_percent / 100;
+      console.log(`[BZ5-C DEBUG B] Constants: AV27=${AV27}, AV23=${AV23}, N24_decimal=${N24_decimal}`);
 
+      // 2. คำนวณ Part 1
       const part1 = (P20_B - P22_B);
-      const part2 = (AV27 / AV23);
-      const part3 = (N24_decimal / (1 - N24_decimal));
+      console.log(`[BZ5-C DEBUG B] part1 (P20_B - P22_B) = (${P20_B} - ${P22_B}) = ${part1}`);
 
+      // 3. คำนวณ Part 2
+      const part2 = (AV27 / AV23);
+      console.log(`[BZ5-C DEBUG B] part2 (AV27 / AV23) = (${AV27} / ${AV23}) = ${part2}`);
+
+      // 4. คำนวณ Part 3
+      const part3 = (N24_decimal / (1 - N24_decimal));
+      console.log(`[BZ5-C DEBUG B] part3 (N24_decimal / (1 - N24_decimal)) = (${N24_decimal} / (1 - ${N24_decimal})) = ${part3}`);
+
+      // 5. คำนวณผลลัพธ์รวม
       const rawResult_B = part1 * part2 * part3;
+      console.log(`[BZ5-C DEBUG B] rawResult_B (part1 * part2 * part3) = (${part1} * ${part2} * ${part3}) = ${rawResult_B}`);
+
       rawInitialNaclWater15_RAW = rawResult_B; // เก็บค่าดิบ
+
+    } else {
+      console.log('[BZ5-C DEBUG B] Condition skipped: P22_B is null.');
     }
     // (ค่านี้ไม่ได้ถูก setValue จึงส่งต่อค่าดิบไป [C] และ [D])
     // ----------------------------------------------------------
 
+    // (Log เดิมของคุณ)
     console.log('BZ5-C calc [B Result]: rawInitialNaclWater15 (RAW) =', rawInitialNaclWater15_RAW);
+    console.log('[BZ5-C DEBUG B] --- Block [B] End ---');
 
     // ----------------------------------------------------------
 
@@ -127,7 +158,7 @@ const useBZ5_CCalculations = (
     // (ค่านี้ไม่ได้ถูก setValue จึงส่งต่อค่าดิบไป [D])
     // ----------------------------------------------------------
 
-    console.log('BZ5-C calc [C Result]: rawIntermediateWater (RAW) =', rawIntermediateWater_RAW);
+      //console.log('BZ5-C calc [C Result]: rawIntermediateWater (RAW) =', rawIntermediateWater_RAW);
 
     // ----------------------------------------------------------
 

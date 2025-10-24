@@ -1,8 +1,8 @@
-// location: frontend/src/pages/Reports/BZ5-C/ReportEditBZ5-C.tsx
+// location: frontend/src/pages/Reports/BS5-C/ReportEditBS5-C.tsx
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import BS5_CFormEdit from '../../../components/formGen/pages/GEN_B/BZ5-C_Form/BZ5-CFormEdit';
+import BS5_CFormEdit from '../../../components/formGen/pages/GEN_B/BS5-C_Form/BS5-CFormEdit';
 import { updateSubmission } from '../../../services/submissionService'; // สร้างฟังก์ชันนี้ในขั้นตอนต่อไป
 import { fireToast } from '../../../hooks/fireToast';
 import Swal from 'sweetalert2';
@@ -15,7 +15,7 @@ interface ReportEditBS5_CProps {
 const ReportEditBS5_C: React.FC<ReportEditBS5_CProps> = ({ submission, templates }) => {
     const navigate = useNavigate();
 
-    // แปลงข้อมูลที่ดึงมาให้อยู่ในรูปแบบที่ BZ5-C_Form ต้องการ
+    // แปลงข้อมูลที่ดึงมาให้อยู่ในรูปแบบที่ BS5-C_Form ต้องการ
     const initialData = {
         ...submission.form_data_json,
         lot_no: submission.lot_no,
