@@ -76,3 +76,20 @@ export const updateSubmission = async (id: string, data: any): Promise<any> => {
     throw error;
   }
 };
+
+export const getSubmissionPdf = async (id: string): Promise<any> => { // ใช้ any เพราะ Response ไม่ใช่ JSON ปกติ แต่เป็น Blob
+  console.log(`[submissionService] Requesting PDF for submission ID: ${id}`);
+  try {
+    const response = await apiClient.get(`/api/submissions/${id}/pdf`, {
+      // 📌 สำคัญมาก! บอก Axios ว่าเราคาดหวังข้อมูลประเภท 'blob' (ไฟล์ดิบ) ไม่ใช่ JSON
+      responseType: 'blob', 
+    });
+    console.log('[submissionService] PDF Blob received, returning full response.');
+    // คืนค่า response ทั้งก้อน เพื่อให้ Component สามารถเข้าถึง Headers ได้ (สำหรับชื่อไฟล์)
+    return response; 
+  } catch (error) {
+    console.error(`[submissionService] Error fetching PDF for submission ${id}:`, error);
+    // โยน error ต่อไปให้ Component จัดการ
+    throw error; 
+  }
+};

@@ -2,7 +2,7 @@
 
 const sql = require("mssql");
 const dbConfig = require("../config/db.config");
-
+const puppeteer = require('puppeteer');
 exports.createSubmission = async (req, res) => {
   const { formType, lotNo, templateIds, formData, submittedBy } = req.body;
 
@@ -376,5 +376,83 @@ exports.updateSubmission = async (req, res) => {
   } catch (error) {
     console.error('SQL error', error);
     res.status(500).send({ message: 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล', error });
+  }
+};
+
+
+// ==========================================================
+// ✨ [เพิ่ม] ฟังก์ชันใหม่สำหรับสร้าง PDF ✨
+// ==========================================================
+exports.generatePdf = async (req, res) => {
+  const submissionId = req.params.id;
+  // 📌 [สำคัญ] กำหนด URL ของ Frontend ที่แสดงหน้ารายละเอียด
+  // ควรดึงค่านี้มาจาก Environment Variable (.env) เพื่อความยืดหยุ่น
+  const frontendDetailUrl = `http://localhost:5173/reports/view/${submissionId}?print=true`; // เพิ่ม ?print=true เพื่อบอก Frontend ว่าเป็นโหมด PDF
+
+  console.log(`[PDF Generation] Request received for submission ID: ${submissionId}`);
+  console.log(`[PDF Generation] Accessing Frontend URL: ${frontendDetailUrl}`);
+
+  let browser = null; // ประกาศ browser ไว้นอก try เพื่อให้ finally เห็น
+
+  try {
+    // --- 1. เปิด Browser และ Page ---
+    console.log('[PDF Generation] Launching Puppeteer...');
+    browser = await puppeteer.launch({
+      headless: true, // รันแบบไม่มี UI
+      args: ['--no-sandbox', '--disable-setuid-sandbox'], // Options สำคัญสำหรับ Linux/Docker
+    });
+    const page = await browser.newPage();
+
+    // --- 2. ไปยังหน้า Frontend ---
+    console.log(`[PDF Generation] Navigating to page...`);
+    await page.goto(frontendDetailUrl, {
+      waitUntil: 'networkidle0', // รอจนกว่า Network จะนิ่ง (โหลดข้อมูลเสร็จ)
+      timeout: 60000 // เพิ่ม Timeout เป็น 60 วินาที (เผื่อหน้าซับซ้อน)
+    });
+    console.log(`[PDF Generation] Page loaded successfully.`);
+
+    // --- (เสริม) รอให้ Element สำคัญแสดงผล (ถ้าจำเป็น) ---
+    // เช่น ถ้าคุณรู้ว่าตารางข้อมูลมี id="report-table"
+    // await page.waitForSelector('#report-table', { visible: true, timeout: 30000 });
+    // console.log('[PDF Generation] Key element #report-table is visible.');
+
+    // --- 3. สร้าง PDF ---
+    console.log('[PDF Generation] Generating PDF buffer...');
+    const pdfBuffer = await page.pdf({
+      format: 'A4',             // ขนาดกระดาษ
+      printBackground: true,   // พิมพ์สีพื้นหลัง/รูปภาพด้วย
+      margin: {                // กำหนดขอบกระดาษ (ถ้าต้องการ)
+        top: '20px',
+        right: '20px',
+        bottom: '20px',
+        left: '20px',
+      },
+    });
+    console.log(`[PDF Generation] PDF buffer created (Size: ${pdfBuffer.length} bytes).`);
+
+    // --- 4. ปิด Browser ---
+    // (ย้ายไปทำใน finally)
+
+    // --- 5. ตั้งค่า Header และส่ง PDF กลับไป ---
+    // (เสริม) ดึง Lot No มาตั้งชื่อไฟล์ (ต้องแก้ getSubmissionById ให้คืน lot_no ด้วย)
+    // const submissionData = await getSubmissionDataById(submissionId); // สมมติว่ามีฟังก์ชันนี้
+    // const fileName = `Report-${submissionData.lot_no || submissionId}.pdf`;
+    const fileName = `Report-${submissionId}.pdf`; // ชื่อไฟล์เบื้องต้น
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=${fileName}`); // บอกให้ Browser ดาวน์โหลด
+    res.send(pdfBuffer);
+    console.log(`[PDF Generation] PDF sent successfully for ID: ${submissionId}`);
+
+  } catch (error) {
+    console.error(`[PDF Generation] Error generating PDF for ID ${submissionId}:`, error);
+    res.status(500).send({ message: 'เกิดข้อผิดพลาดในการสร้าง PDF', error: error.message });
+  } finally {
+    // --- ปิด Browser เสมอ ไม่ว่าจะสำเร็จหรือล้มเหลว ---
+    if (browser) {
+      console.log('[PDF Generation] Closing browser...');
+      await browser.close();
+      console.log('[PDF Generation] Browser closed.');
+    }
   }
 };

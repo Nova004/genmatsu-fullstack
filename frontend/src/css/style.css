@@ -277,3 +277,66 @@ span.flatpickr-weekday,
 .dark .deleting-row {
   animation-name: delete-fade-out-dark;
 }
+
+
+
+/* ✨ =========================== ✨ */
+/* ✨      CSS สำหรับ Print       ✨ */
+/* ✨ =========================== ✨ */
+@media print {
+  /* ซ่อน Scrollbar (ถ้ามี) */
+  body {
+    overflow: visible !important;
+  }
+
+  /* ซ่อน Element ที่ไม่ต้องการ (เผื่อมีส่วนอื่นที่ยังไม่ได้ซ่อนด้วย Logic) */
+  /* คุณอาจจะต้องสร้าง Class .hide-on-print แล้วไปใส่ให้ Element ที่ต้องการซ่อน */
+  .hide-on-print {
+    display: none !important;
+  }
+
+  /* --- การจัดการ Page Break --- */
+  /* พยายามไม่ให้ตัดกลางตาราง หรือกลางรูปภาพ */
+  table, img, svg {
+    page-break-inside: avoid !important;
+  }
+  /* พยายามไม่ให้หัวข้อตาราง (thead) หรือท้ายตาราง (tfoot) ถูกแยกหน้า */
+  thead, tfoot {
+     display: table-row-group !important; /* ช่วยให้ติดกับเนื้อหา */
+     page-break-inside: avoid !important;
+  }
+  /* พยายามไม่ให้แถวตาราง (tr) ถูกตัดกลาง */
+  tr {
+     page-break-inside: avoid !important;
+     page-break-after: auto !important; /* Default คือ auto */
+  }
+
+  /* --- บังคับตัดหน้า --- */
+  /* ตัวอย่าง: ถ้า Component แต่ละ Step (เช่น BZFormViewer) มี div ครอบที่มี class="form-step-wrapper" */
+  .form-step-wrapper {
+     page-break-before: always; /* เริ่ม Step ใหม่ ขึ้นหน้าใหม่เสมอ */
+  }
+  /* ถ้า Step แรกไม่ต้องการให้ขึ้นหน้าใหม่ */
+  .form-step-wrapper:first-child {
+     page-break-before: avoid; 
+  }
+
+  /* --- ปรับ Layout/ขนาด --- */
+  /* อาจจะต้องลดขนาดตัวอักษร หรือปรับ Margin/Padding ให้พอดี A4 */
+  body {
+     font-size: 10pt; /* ลองปรับค่านี้ดู */
+     background-color: white !important; /* บังคับพื้นหลังขาว */
+     color: black !important; /* บังคับตัวหนังสือดำ */
+     -webkit-print-color-adjust: exact !important; /* พยายามให้สีตรงกับหน้าจอ (สำหรับ Chrome/Safari) */
+     color-adjust: exact !important; /* มาตรฐาน */
+  }
+  /* อาจจะต้องลบเงา (shadow) หรือเส้นขอบที่ไม่จำเป็น */
+  .shadow-default {
+     box-shadow: none !important;
+  }
+  .border {
+     border: none !important; 
+  }
+  /* ... ปรับ CSS อื่นๆ ตามที่คุณเห็นสมควรเมื่อลอง Print Preview ... */
+
+} /* สิ้นสุด @media print */
