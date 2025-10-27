@@ -16,4 +16,6 @@ router.delete('/:id', submissionController.deleteSubmission);
 // PUT /api/submissions/:id - สำหรับอัปเดตข้อมูล submission
 router.put('/:id', submissionController.updateSubmission);
 
+router.get('/pdf/:id', submissionController.generatePdf);
+
 module.exports = router;

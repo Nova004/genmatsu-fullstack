@@ -76,3 +76,21 @@ export const updateSubmission = async (id: string, data: any): Promise<any> => {
     throw error;
   }
 };
+
+
+// --- 👇 เพิ่มฟังก์ชันนี้เข้าไป ---
+export const generatePdfById = async (id: string): Promise<Blob> => {
+  try {
+    console.log(`[submissionService] Requesting PDF generation for ID: ${id}`);
+    const response = await apiClient.get(`/api/submissions/pdf/${id}`, {
+      responseType: 'blob', // 👈 สำคัญมาก: บอกให้ axios คาดหวังข้อมูลแบบไฟล์ (Blob)
+    });
+    console.log(`[submissionService] PDF Blob received for ID: ${id}`);
+    return response.data; // คืนค่า Blob ที่ได้กลับไป
+  } catch (error: any) {
+    console.error(`[submissionService] Error generating PDF for ID ${id}:`, error.response?.data || error.message);
+    // โยน error กลับไปให้ Component จัดการ (เช่น แสดง Toast)
+    throw new Error(error.response?.data?.message || `Failed to generate PDF for submission ${id}`);
+  }
+};
+// --- สิ้นสุดฟังก์ชันที่เพิ่ม ---

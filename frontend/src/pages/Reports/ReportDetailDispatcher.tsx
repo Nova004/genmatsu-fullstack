@@ -1,7 +1,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getSubmissionById } from '../../services/submissionService';
+import { getSubmissionById, generatePdfById } from '../../services/submissionService';
+import { fireToast } from '../../hooks/fireToast';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 
 
@@ -18,6 +19,7 @@ const ReportDetailDispatcher: React.FC = () => {
   const [submissionData, setSubmissionData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   useEffect(() => {
 
@@ -41,6 +43,44 @@ const ReportDetailDispatcher: React.FC = () => {
 
     fetchDetails();
   }, [id]);
+
+  // --- 👇 3. (เพิ่ม Function) สำหรับจัดการการกดปุ่ม Print PDF ---
+  const handlePrintPdf = async () => {
+    if (!id || isGeneratingPdf) return; // ป้องกันการกดซ้ำ
+
+    setIsGeneratingPdf(true);
+    console.log(`[Dispatcher] Initiating PDF generation for ID: ${id}`);
+    try {
+      const pdfBlob = await generatePdfById(id);
+
+      // สร้าง URL ชั่วคราวจาก Blob
+      const url = window.URL.createObjectURL(new Blob([pdfBlob], { type: 'application/pdf' }));
+
+      // เปิด PDF ในแท็บใหม่
+      const link = document.createElement('a');
+      link.href = url;
+      // link.setAttribute('download', `report_${id}.pdf`); // ใช้บรรทัดนี้ถ้าต้องการให้ดาวน์โหลดเลย
+      link.setAttribute('target', '_blank'); // เปิดในแท็บใหม่
+      document.body.appendChild(link);
+      link.click();
+
+      console.log(`[Dispatcher] PDF opened in new tab for ID: ${id}`);
+
+      // ลบ Link และ URL ชั่วคราวออกจากหน่วยความจำ (หลังจากเปิดแล้ว)
+      link.parentNode?.removeChild(link);
+      // หน่วงเวลาเล็กน้อยก่อน revoke เพื่อให้แน่ใจว่าแท็บใหม่เปิดทัน
+      setTimeout(() => window.URL.revokeObjectURL(url), 100);
+
+    } catch (err: any) {
+      console.error(`[Dispatcher] Failed to generate PDF for ID ${id}:`, err);
+      fireToast('error', `สร้าง PDF ไม่สำเร็จ: ${err.message}`);
+    } finally {
+      setIsGeneratingPdf(false);
+      console.log(`[Dispatcher] PDF generation process finished for ID: ${id}`);
+    }
+  };
+  // --- สิ้นสุด Function handlePrintPdf ---
+
 
   const renderFormDetail = () => { // ฟังก์ชันนี้จะเลือก Component ที่จะเรนเดอร์ตาม form_type 
 
@@ -78,6 +118,26 @@ const ReportDetailDispatcher: React.FC = () => {
   return (
     <>
       <Breadcrumb pageName={`ใบรายงานการผลิต: ${submissionData?.submission?.form_type || ''}`} />
+      <div className="mb-4 flex justify-end">
+        <button
+          onClick={handlePrintPdf}
+          disabled={isGeneratingPdf} // ปิดปุ่มตอนกำลังโหลด PDF
+          className={`flex items-center justify-center rounded bg-primary py-2 px-4 font-medium text-white hover:bg-opacity-90 disabled:cursor-not-allowed disabled:bg-opacity-50`}
+        >
+          {isGeneratingPdf ? (
+            <>
+              {/* ไอคอน Loading หมุนๆ */}
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              กำลังสร้าง PDF...
+            </>
+          ) : (
+            '📄 พิมพ์ PDF' // ข้อความปกติ
+          )}
+        </button>
+      </div>
       <div>
         {renderFormDetail()}
       </div>

@@ -2,6 +2,7 @@
 
 const sql = require("mssql");
 const dbConfig = require("../config/db.config");
+const puppeteer = require("puppeteer");
 
 exports.createSubmission = async (req, res) => {
   const { formType, lotNo, templateIds, formData, submittedBy } = req.body;
@@ -389,11 +390,7 @@ exports.generatePdf = async (req, res) => {
 
   try {
     console.log(`[PDF Gen] Launching browser for ID: ${id}`);
-    // ใช้ chrome.executablePath ถ้ามีการตั้งค่าไว้ (สำหรับ Production)
-    // หรือใช้ 'chrome' โดยตรงถ้าไม่ (สำหรับ Development)
-    const executablePath = process.env.CHROME_EXECUTABLE_PATH || undefined; // ใช้ undefined ถ้าไม่มีค่า
-
-    // --- (ตรวจสอบ Log) เช็ค Path ของ Chrome ---
+    const executablePath = process.env.CHROME_EXECUTABLE_PATH || undefined;
     console.log(
       `[PDF Gen] Using executablePath: ${
         executablePath || "Default Chrome/Chromium"
@@ -401,45 +398,43 @@ exports.generatePdf = async (req, res) => {
     );
 
     browser = await puppeteer.launch({
-      headless: true, // รันแบบไม่มีหน้าจอ UI
-      executablePath: executablePath, // ใช้ path ที่กำหนด หรือให้ puppeteer หาเอง
+      headless: true,
+      executablePath: executablePath,
       args: [
-        "--no-sandbox", // จำเป็นสำหรับบางสภาพแวดล้อม (เช่น Docker)
+        "--no-sandbox",
         "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage", // Recommended for Docker/CI environments
+        "--disable-dev-shm-usage",
         "--disable-accelerated-2d-canvas",
         "--no-first-run",
         "--no-zygote",
-        "--single-process", // อาจจะช่วยลดการใช้ memory
-        "--disable-gpu", // Recommended for headless
+        "--single-process", // ลองเพิ่ม '--single-process' หรือ '--disable-gpu' ถ้ายังมีปัญหา
+        "--disable-gpu",
       ],
     });
 
     const page = await browser.newPage();
 
-    // --- ⬇️ 1. (แก้ไข) เปลี่ยน URL เป้าหมาย ⬇️ ---
-    const targetUrl = `${frontendUrl}/reports/print/${id}`; // 👈 ไปที่หน้า print โดยตรง
+    // --- ใช้ URL ของหน้า Print โดยตรง ---
+    const targetUrl = `${frontendUrl}/reports/print/${id}`;
     console.log(`[PDF Gen] Navigating to: ${targetUrl}`);
-    // --- ⬆️ สิ้นสุดการแก้ไข URL ⬆️ ---
 
-    // --- ⬇️ 2. (แก้ไข) ลบการรอที่ไม่จำเป็น ⬇️ ---
-    // เราจะ goto และรอให้ network idle ก็พอ (เผื่อมีรูปภาพหรือ font)
+    // --- ⭐️⭐️⭐️ [จุดแก้ไข] ⭐️⭐️⭐️ ---
+    // ต้องมี waitUntil: 'networkidle0' เสมอ
+    // เพื่อรอให้หน้า React โหลดข้อมูล (เช่น getSubmissionById) ให้เสร็จก่อน
     await page.goto(targetUrl, {
-      waitUntil: "networkidle0", // รอจน network ว่าง (โหลด resource ครบ)
-      timeout: 60000, // เพิ่ม timeout เป็น 60 วินาที เผื่อ network ช้า
+      waitUntil: "networkidle0", // 👈‼️ ตรวจสอบให้แน่ใจว่ามีบรรทัดนี้!
+      timeout: 60000, // เพิ่ม timeout เป็น 60 วินาที
     });
+    console.log(`[PDF Gen] Page loaded and network is idle.`);
+    // --- ⭐️⭐️⭐️ [สิ้นสุดจุดแก้ไข] ⭐️⭐️⭐️ ---
 
-    // (ลบ) ไม่ต้องรอ #pdf-ready อีกต่อไป
-    // await page.waitForSelector('#pdf-ready', { timeout: 30000 });
-    // console.log('[PDF Gen] #pdf-ready element found.');
-    // --- ⬆️ สิ้นสุดการลบการรอ ⬆️ ---
+    // (ลบ waitForSelector ออกไปได้ เพราะ networkidle0 เพียงพอแล้วสำหรับหน้า Print)
 
     console.log("[PDF Gen] Generating PDF...");
     const pdfBuffer = await page.pdf({
       format: "A4",
-      printBackground: true, // พิมพ์สีพื้นหลังด้วย
+      printBackground: true,
       margin: {
-        // กำหนดขอบกระดาษ (ถ้าต้องการ)
         top: "20px",
         right: "20px",
         bottom: "20px",
@@ -448,22 +443,33 @@ exports.generatePdf = async (req, res) => {
     });
     console.log("[PDF Gen] PDF generated successfully.");
 
+    // --- ย้าย browser.close() มาไว้ก่อนส่ง response ---
+    // (เป็น best practice ที่ควรปิด browser ให้เร็วที่สุด)
     await browser.close();
     console.log("[PDF Gen] Browser closed.");
+    browser = null; // เคลียร์ค่า browser หลังจากปิดแล้ว
 
-    // ส่งไฟล์ PDF กลับไป
+    // --- ส่ง PDF กลับไป ---
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `inline; filename=report_${id}.pdf`); // แสดงใน browser
-    // หรือใช้ 'attachment' ถ้าต้องการให้ดาวน์โหลดเลย:
-    // res.setHeader('Content-Disposition', `attachment; filename=report_${id}.pdf`);
+    // ใช้ 'inline' ถ้าอยากให้ browser พยายามเปิด PDF ให้ดูเลย (ถ้าทำได้)
+    // ใช้ 'attachment' ถ้าอยากให้ browser ดาวน์โหลดไฟล์อย่างเดียว
+    res.setHeader("Content-Disposition", `inline; filename=report_${id}.pdf`);
     res.send(pdfBuffer);
+    console.log(`[PDF Gen] PDF sent successfully for ID: ${id}`);
   } catch (error) {
     console.error(`[PDF Gen] Error generating PDF for ID ${id}:`, error);
+    // --- ปิด Browser ใน catch ด้วย (ถ้ามันยังเปิดอยู่) ---
     if (browser) {
-      await browser.close(); // Ensure browser is closed on error
-      console.log("[PDF Gen] Browser closed due to error.");
+      try {
+        await browser.close();
+        console.log("[PDF Gen] Browser closed due to error.");
+      } catch (closeError) {
+        console.error(
+          "[PDF Gen] Error closing browser after error:",
+          closeError
+        );
+      }
     }
-    // เพิ่ม Log บอก Client ด้วย
     res
       .status(500)
       .send({ message: `เกิดข้อผิดพลาดในการสร้าง PDF: ${error.message}` });
