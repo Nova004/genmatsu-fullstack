@@ -274,6 +274,79 @@ span.flatpickr-weekday,
   }
 }
 
-.dark .deleting-row {
-  animation-name: delete-fade-out-dark;
+
+/* 1. ทำให้ Input (text, number, date, select) และ Textarea เตี้ยลง */
+.a4-page-container .form-section input[type="text"],
+.a4-page-container .form-section input[type="number"],
+.a4-page-container .form-section input[type="date"],
+.a4-page-container .form-section select,
+.a4-page-container .form-section textarea {
+    /* ลด Padding บน-ล่าง (ค่าตัวอย่าง, เดิมอาจจะเป็น py-2 หรือ py-3) */
+    padding-top: 0.00rem !important;    /* ใช้ !important ถ้าจำเป็น */
+    padding-bottom: 0.00rem !important; /* ใช้ !important ถ้าจำเป็น */
+    /* ลดขนาด Font (ถ้าต้องการ) */
+    font-size: 0.8rem !important;
+    /* ลดความสูงขั้นต่ำ (ถ้ามีการกำหนดไว้) */
+    min-height: auto !important;
 }
+
+/* 2. ลดช่องว่าง "ใต้" Label (ถ้ามี Label อยู่เหนือ Input) */
+.a4-page-container .form-section label {
+    margin-bottom: 0.1rem !important; /* ลดช่องว่างใต้ Label (ค่าตัวอย่าง) */
+    /* ลดขนาด Font (ถ้าต้องการ) */
+    font-size: 0.8rem !important;
+}
+
+/* 3. ลดช่องว่าง "บน" Input (ถ้า Input อยู่ใต้ Label หรือ Element อื่น) */
+/* (Selector นี้อาจจะต้องปรับตามโครงสร้าง HTML ของคุณ) */
+.a4-page-container .form-section div > input,
+.a4-page-container .form-section div > select,
+.a4-page-container .form-section div > textarea {
+     margin-top: 0.0rem !important; /* ลดช่องว่างเหนือ Input (ค่าตัวอย่าง) */
+}
+
+/* 4. ลดช่องว่าง "ล่าง" ของ Div ที่หุ้ม Input (ถ้ามี) */
+/* (Selector นี้อาจจะต้องปรับตามโครงสร้าง HTML ของคุณ, เช่น ถ้าใช้ grid หรือ flex) */
+.a4-page-container .form-section .input-container-class { /* <--- เปลี่ยน .input-container-class เป็น class จริง */
+     margin-bottom: 0.0rem !important; /* ลดช่องว่างใต้กลุ่ม Input (ค่าตัวอย่าง) */
+}
+
+
+/* --- สิ้นสุด CSS ที่เพิ่ม --- */
+
+
+/* --- CSS ลดช่องว่างทั่วไป (จากรอบที่แล้ว) ควรอยู่ตรงนี้ --- */
+.a4-page-container .form-section div,
+/* ... (CSS rules อื่นๆ จากรอบที่แล้ว) ... */
+.a4-page-container .form-section td {
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+}
+
+
+@media print {
+  /* ซ่อนทุกอย่างที่ไม่ใช่หน้าพิมพ์ของเรา */
+  body * {
+    visibility: hidden;
+  }
+  
+  /* ยกเว้นหน้าพิมพ์ของเรา ให้แสดงผลมัน */
+  .a4-page-container, .a4-page-container * {
+    visibility: visible;
+  }
+  
+  /* จัดตำแหน่งหน้าพิมพ์ให้อยู่มุมบนซ้าย */
+  .a4-page-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+  }
+}
+
+
+

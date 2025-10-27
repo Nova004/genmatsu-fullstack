@@ -1,4 +1,4 @@
-// src/App.tsx
+// frontend/src/App.tsx (ฉบับแก้ไขสถาปัตยกรรม)
 import { useEffect, useState } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import Loader from './common/Loader';
@@ -34,6 +34,9 @@ import BS5_C_Form from './components/formGen/pages/GEN_B/BS5-C_Form/BS5-C_index.
 
 import ReportEditDispatcher from './pages/Reports/ReportEditDispatcher';
 
+// --- 1. (เพิ่ม Import) Import "Dispatcher" สำหรับพิมพ์ ---
+import ReportPrintDispatcher from './pages/Reports/ReportPrintDispatcher';
+
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const { pathname } = useLocation();
@@ -50,7 +53,7 @@ function App() {
     <Loader />
   ) : (
     <>
-      <Toaster // 👈 2. เพิ่ม Component นี้เข้ามา
+      <Toaster
         position="top-right"
         reverseOrder={false}
         containerClassName="overflow-auto"
@@ -76,203 +79,229 @@ function App() {
           }
         />
 
-        {/* --- Route หลักที่ต้อง Login ถึงจะเข้าได้ --- */}
+        {/* --- 2. (แก้ไข) Route หลักที่ต้อง Login ---
+              เราจะย้าย DefaultLayout เข้าไปข้างใน 
+              เพื่อให้เราสามารถเพิ่ม Route ที่ "ไม่มี" Layout ได้
+        */}
         <Route
           path="/*"
           element={
             <ProtectedRoute>
-              <DefaultLayout>
-                <Routes>
-                  {/* หน้า Dashboard หลัก */}
-                  <Route
-                    index
-                    element={
-                      <>
-                        <PageTitle title="Dashbord_App Dashboard" />
-                        <Dashbord_App />
-                      </>
-                    }
-                  />
-                  <Route
-                    index
-                    path="/master/Dashbord_Master"
-                    element={
-                      <>
-                        <PageTitle title="Dashbord_Master" />
-                        <Dashbord_Master />
-                      </>
-                    }
-                  />
-                  <Route
-                    path="calendar"
-                    element={
-                      <>
-                        <PageTitle title="Calendar" />
-                        <Calendar />
-                      </>
-                    }
-                  />
-                  <Route
-                    path="profile"
-                    element={
-                      <>
-                        <PageTitle title="Profile" />
-                        <Profile />
-                      </>
-                    }
-                  />
-                  <Route
-                    path="forms/form-elements-gen-b"
-                    element={
-                      <>
-                        <PageTitle title="Form Elements" />
-                        <FormElementsB />
-                      </>
-                    }
-                  />
-                  <Route
-                    path="forms/form-elements-gen-a"
-                    element={
-                      <>
-                        <PageTitle title="Form Elements" />
-                        <FormElementsA />
-                      </>
-                    }
-                  />
-                  <Route
-                    path="/master/form-editor"
-                    element={
-                      <>
-                        <PageTitle title="Form Master Editor | Genmatsu" />
-                        <FormMasterEditor />
-                      </>
-                    }
-                  />
-                  <Route
-                    path="/master/nacl-master" // เพิ่ม Route block นี้
-                    element={
-                      <ProtectedRoute>
-                        <NaClMaster />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/master/user-master"
-                    element={
-                      <>
-                        <PageTitle title="User Master | Genmatsu" />
-                        <UserMaster />
-                      </>
-                    }
-                  />
+              {/* - Auth อยู่ตรงนี้
+                - "ตัวสลับ Layout" (Routes) จะอยู่ข้างในนี้
+              */}
+              <Routes>
+                {/* --- 3. (เพิ่ม) นี่คือ Route ใหม่สำหรับพิมพ์ ---
+                  - มันอยู่ "ใน" ProtectedRoute (จึงมี Auth)
+                  - มันอยู่ "นอก" DefaultLayout (จึงไม่มี Sidebar/Header)
+                */}
+                <Route
+                  path="reports/print/:id"
+                  element={<ReportPrintDispatcher />}
+                />
 
-                  <Route
-                    path="/reports/history/gen-b"
-                    element={
-                      <ProtectedRoute>
-                        <>
-                          <PageTitle title="Report History | Genmatsu" />
-                          <ReportHistory_GEN_B />
-                        </>
-                      </ProtectedRoute>
-                    }
-                  />
+                {/* --- 4. (ย้าย) นี่คือ Route เดิมทั้งหมด ---
+                  - เราหุ้มมันด้วย DefaultLayout
+                  - เราใช้ path="*" เพื่อจับคู่ทุกอย่าง "ที่เหลือ"
+                */}
+                <Route
+                  path="*"
+                  element={
+                    <DefaultLayout>
+                      <Routes>
+                        {/* --- 5. (ย้าย) คัดลอก Route เดิมทั้งหมดมาไว้ตรงนี้ --- */}
+                        <Route
+                          index
+                          element={
+                            <>
+                              <PageTitle title="Dashbord_App Dashboard" />
+                              <Dashbord_App />
+                            </>
+                          }
+                        />
+                        <Route
+                          index
+                          path="/master/Dashbord_Master"
+                          element={
+                            <>
+                              <PageTitle title="Dashbord_Master" />
+                              <Dashbord_Master />
+                            </>
+                          }
+                        />
+                        <Route
+                          path="calendar"
+                          element={
+                            <>
+                              <PageTitle title="Calendar" />
+                              <Calendar />
+                            </>
+                          }
+                        />
+                        <Route
+                          path="profile"
+                          element={
+                            <>
+                              <PageTitle title="Profile" />
+                              <Profile />
+                            </>
+                          }
+                        />
+                        <Route
+                          path="forms/form-elements-gen-b"
+                          element={
+                            <>
+                              <PageTitle title="Form Elements" />
+                              <FormElementsB />
+                            </>
+                          }
+                        />
+                        <Route
+                          path="forms/form-elements-gen-a"
+                          element={
+                            <>
+                              <PageTitle title="Form Elements" />
+                              <FormElementsA />
+                            </>
+                          }
+                        />
+                        <Route
+                          path="/master/form-editor"
+                          element={
+                            <>
+                              <PageTitle title="Form Master Editor | Genmatsu" />
+                              <FormMasterEditor />
+                            </>
+                          }
+                        />
+                        <Route
+                          path="/master/nacl-master" 
+                          element={
+                            <ProtectedRoute>
+                              <NaClMaster />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/master/user-master"
+                          element={
+                            <>
+                              <PageTitle title="User Master | Genmatsu" />
+                              <UserMaster />
+                            </>
+                          }
+                        />
 
-                  <Route
-                    path="/reports/history/gen-a"
-                    element={
-                      <ProtectedRoute>
-                        <>
-                          <PageTitle title="Report History (Genmatsu A) | Genmatsu" />
-                          <ReportHistory_GEN_A />
-                        </>
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/forms/as2-form"
-                    element={<><PageTitle title="AS2 Form" /><AS2_Form /></>}
-                  />
+                        <Route
+                          path="/reports/history/gen-b"
+                          element={
+                            <ProtectedRoute>
+                              <>
+                                <PageTitle title="Report History | Genmatsu" />
+                                <ReportHistory_GEN_B />
+                              </>
+                            </ProtectedRoute>
+                          }
+                        />
 
-                  <Route
-                    path="/reports/edit/:id"
-                    element={
-                      <ProtectedRoute>
-                        <ReportEditDispatcher />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/reports/view/:id"
-                    element={<ReportDetailDispatcher />}
-                  />
-                  <Route
-                    path="/forms/bz-form"
-                    element={<><PageTitle title="BZ Form" /><BZ_Form /></>}
-                  />
-                  <Route
-                    path="/forms/bz3-form"
-                    element={<><PageTitle title="BZ3 Form" /><BZ3_Form /></>}
-                  />
-                  <Route
-                    path="/forms/bs3-form"
-                    element={<><PageTitle title="BS3 Form" /><BS3_Form /></>}
-                  />
-                  <Route
-                    path="/forms/bz5-c-form"
-                    element={<><PageTitle title="BZ5-C Form" /><BZ5_C_Form /></>}
-                  />
-                  <Route
-                    path="/forms/bs5-c-form"
-                    element={<><PageTitle title="BS5-C Form" /><BS5_C_Form /></>}
-                  />
-                  <Route
-                    path="tables"
-                    element={
-                      <>
-                        <PageTitle title="Tables" />
-                        <Tables />
-                      </>
-                    }
-                  />
-                  <Route
-                    path="settings"
-                    element={
-                      <>
-                        <PageTitle title="Settings" />
-                        <Settings />
-                      </>
-                    }
-                  />
-                  <Route
-                    path="chart"
-                    element={
-                      <>
-                        <PageTitle title="Chart" />
-                        <Chart />
-                      </>
-                    }
-                  />
-                  <Route
-                    path="ui/alerts"
-                    element={
-                      <>
-                        <PageTitle title="Alerts" />
-                        <Alerts />
-                      </>
-                    }
-                  />
-                  <Route
-                    path="ui/buttons"
-                    element={
-                      <>
-                        <PageTitle title="Buttons" />
-                        <Buttons />
-                      </>
-                    }
-                  />
-                </Routes>
-              </DefaultLayout>
+                        <Route
+                          path="/reports/history/gen-a"
+                          element={
+                            <ProtectedRoute>
+                              <>
+                                <PageTitle title="Report History (Genmatsu A) | Genmatsu" />
+                                <ReportHistory_GEN_A />
+                              </>
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/forms/as2-form"
+                          element={<><PageTitle title="AS2 Form" /><AS2_Form /></>}
+                        />
+
+                        <Route
+                          path="/reports/edit/:id"
+                          element={
+                            <ProtectedRoute>
+                              <ReportEditDispatcher />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/reports/view/:id"
+                          element={<ReportDetailDispatcher />}
+                        />
+                        <Route
+                          path="/forms/bz-form"
+                          element={<><PageTitle title="BZ Form" /><BZ_Form /></>}
+                        />
+                        <Route
+                          path="/forms/bz3-form"
+                          element={<><PageTitle title="BZ3 Form" /><BZ3_Form /></>}
+                        />
+                        <Route
+                          path="/forms/bs3-form"
+                          element={<><PageTitle title="BS3 Form" /><BS3_Form /></>}
+                        />
+                        <Route
+                          path="/forms/bz5-c-form"
+                          element={<><PageTitle title="BZ5-C Form" /><BZ5_C_Form /></>}
+                        />
+                        <Route
+                          path="/forms/bs5-c-form"
+                          element={<><PageTitle title="BS5-C Form" /><BS5_C_Form /></>}
+                        />
+                        <Route
+                          path="tables"
+                          element={
+                            <>
+                              <PageTitle title="Tables" />
+                              <Tables />
+                            </>
+                          }
+                        />
+                        <Route
+                          path="settings"
+                          element={
+                            <>
+                              <PageTitle title="Settings" />
+                              <Settings />
+                            </>
+                          }
+                        />
+                        <Route
+                          path="chart"
+                          element={
+                            <>
+                              <PageTitle title="Chart" />
+                              <Chart />
+                            </>
+                          }
+                        />
+                        <Route
+                          path="ui/alerts"
+                          element={
+                            <>
+                              <PageTitle title="Alerts" />
+                              <Alerts />
+                            </>
+                          }
+                        />
+                        <Route
+                          path="ui/buttons"
+                          element={
+                            <>
+                              <PageTitle title="Buttons" />
+                              <Buttons />
+                            </>
+                          }
+                        />
+                      </Routes>
+                    </DefaultLayout>
+                  }
+                />
+              </Routes>
             </ProtectedRoute>
           }
         />
@@ -281,5 +310,4 @@ function App() {
   );
 }
 
-// บรรทัดนี้สำคัญที่สุด!
 export default App;

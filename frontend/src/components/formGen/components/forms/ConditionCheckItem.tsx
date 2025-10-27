@@ -7,7 +7,7 @@ import { ConditionCheckItemProps } from '../../pages/types';
 const ConditionCheckItem: React.FC<ConditionCheckItemProps> = ({ index, title, description, warning, reference, register, watch, errors, }) => {
   const inputGroupClass = "flex w-full";
   const spanClass = "inline-flex items-center whitespace-nowrap rounded-l-md border border-r-0 border-stroke bg-gray-2 px-3 text-sm text-black dark:border-strokedark dark:bg-meta-4 dark:text-white";
-  const textareaClass = "w-full h-[100px] rounded-r-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
+  const textareaClass = "w-full h-[50px] rounded-r-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
   const statusValue = watch(`conditions.${index}.status`);
 
   return (

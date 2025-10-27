@@ -831,12 +831,12 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
               <tr>
                 <td className={tdLeftClass} colSpan={5}>
                   <div className="flex w-full">
-                    <span className="inline-flex items-center whitespace-nowrap rounded-l-md border border-r-0 border-stroke bg-gray-2 px-3 text-sm text-black dark:border-strokedark dark:bg-meta-4 dark:text-white">Remark</span>
+                    <span className="inline-flex items-center whitespace-nowrap rounded-l-md border border-r-0 border-stroke bg-gray-2 px-2 py-1 text-xs text-black dark:border-strokedark dark:bg-meta-4 dark:text-white">Remark</span>
                     <textarea
-                      className={`${isReadOnly ? disabledInputClass : inputClass} h-25 rounded-l-none`}
+                      className={`${isReadOnly ? disabledInputClass : inputClass} h-12 rounded-l-none`}
                       {...register('operationRemark')}
                       disabled={isReadOnly}
-                    ></textarea>
+                    />
                   </div>
                 </td>
               </tr>
