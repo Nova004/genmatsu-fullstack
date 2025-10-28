@@ -4,6 +4,83 @@ const sql = require("mssql");
 const dbConfig = require("../config/db.config");
 const puppeteer = require("puppeteer");
 
+async function getSubmissionDataForPdf(submissionId) {
+  // สร้าง pool ใหม่เพื่อความปลอดภัย
+  const pool = await sql.connect(dbConfig);
+  const request = new sql.Request(pool);
+
+  console.log(`[PDF-Helper] Fetching submission data for ID: ${submissionId}`);
+  // 1. ดึงข้อมูลหลัก
+  const submissionResult = await request.input(
+    "submissionId",
+    sql.Int,
+    submissionId
+  ).query(`
+      SELECT 
+          fs.submission_id, fs.version_set_id, fs.form_type, fs.lot_no,
+          fs.submitted_by, fs.submitted_at, fsd.form_data_json
+      FROM Form_Submissions fs
+      JOIN Form_Submission_Data fsd ON fs.submission_id = fsd.submission_id
+      WHERE fs.submission_id = @submissionId
+    `);
+
+  if (submissionResult.recordset.length === 0) {
+    console.error(`[PDF-Helper] Submission not found: ${submissionId}`);
+    throw new Error("Submission not found.");
+  }
+
+  const submissionData = submissionResult.recordset[0];
+  const versionSetId = submissionData.version_set_id;
+
+  console.log(
+    `[PDF-Helper] Fetching blueprints for VersionSetID: ${versionSetId}`
+  );
+  // 2. ดึงพิมพ์เขียว
+  const blueprintResult = await new sql.Request(pool) // ⭐️ ใช้ pool เดิมได้
+    .input("versionSetId", sql.Int, versionSetId).query(`
+      SELECT 
+          fmt.template_id, fmt.template_name, fmt.template_category, fmt.version,
+          fmi.item_id, fmi.display_order, fmi.config_json
+      FROM Form_Version_Set_Items fvsi
+      JOIN Form_Master_Templates fmt ON fvsi.template_id = fmt.template_id
+      JOIN Form_Master_Items fmi ON fvsi.template_id = fmi.template_id
+      WHERE fvsi.version_set_id = @versionSetId
+      ORDER BY fmt.template_name, fmi.display_order
+    `);
+
+  // 3. จัดระเบียบข้อมูล (เหมือนใน getSubmissionById)
+  const blueprints = {};
+  blueprintResult.recordset.forEach((item) => {
+    const templateName = item.template_name;
+    if (!blueprints[templateName]) {
+      blueprints[templateName] = {
+        template: {
+          template_id: item.template_id,
+          template_name: item.template_name,
+          template_category: item.template_category,
+          version: item.version,
+        },
+        items: [],
+      };
+    }
+    blueprints[templateName].items.push({
+      item_id: item.item_id,
+      display_order: item.display_order,
+      config_json: JSON.parse(item.config_json), // Parse JSON ตรงนี้เลย
+    });
+  });
+
+  console.log(`[PDF-Helper] Data prepared successfully.`);
+  // 4. ส่งข้อมูลทั้งหมดกลับไป
+  return {
+    submission: {
+      ...submissionData,
+      form_data_json: JSON.parse(submissionData.form_data_json), // Parse JSON
+    },
+    blueprints: blueprints,
+  };
+}
+
 exports.createSubmission = async (req, res) => {
   const { formType, lotNo, templateIds, formData, submittedBy } = req.body;
 
@@ -380,98 +457,94 @@ exports.updateSubmission = async (req, res) => {
 
 exports.generatePdf = async (req, res) => {
   const { id } = req.params;
-  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173"; // หรือ URL ของ Frontend จริง
+  const frontendPrintUrl = `http://localhost:5173/reports/print/${id}`;
 
-  if (!id) {
-    return res.status(400).send({ message: "Missing submission ID." });
-  }
-
-  let browser = null; // Declare browser outside try block
-
+  let browser;
   try {
-    console.log(`[PDF Gen] Launching browser for ID: ${id}`);
-    const executablePath = process.env.CHROME_EXECUTABLE_PATH || undefined;
+    // ⭐️ 1. ดึงข้อมูลก่อนเลย! (เพื่อทำลาย Deadlock) ⭐️
     console.log(
-      `[PDF Gen] Using executablePath: ${
-        executablePath || "Default Chrome/Chromium"
-      }`
+      `[PDF Gen] 1. Fetching data for ID: ${id} BEFORE launching browser.`
     );
+    const dataToInject = await getSubmissionDataForPdf(id);
+    console.log(`[PDF Gen] 1. Data fetched successfully.`);
 
+    // 2. เปิดเบราว์เซอร์
+    console.log(`[PDF Gen] 2. Launching browser...`);
     browser = await puppeteer.launch({
       headless: true,
-      executablePath: executablePath,
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-accelerated-2d-canvas",
-        "--no-first-run",
-        "--no-zygote",
-        "--single-process", // ลองเพิ่ม '--single-process' หรือ '--disable-gpu' ถ้ายังมีปัญหา
-        "--disable-gpu",
-      ],
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
 
     const page = await browser.newPage();
 
-    // --- ใช้ URL ของหน้า Print โดยตรง ---
-    const targetUrl = `${frontendUrl}/reports/print/${id}`;
-    console.log(`[PDF Gen] Navigating to: ${targetUrl}`);
+    // ⭐️ 3. ตั้งค่าการ "ดักจับ" Request (สำคัญมาก) ⭐️
+    console.log(`[PDF Gen] 3. Setting up request interception...`);
+    await page.setRequestInterception(true);
 
-    // --- ⭐️⭐️⭐️ [จุดแก้ไข] ⭐️⭐️⭐️ ---
-    // ต้องมี waitUntil: 'networkidle0' เสมอ
-    // เพื่อรอให้หน้า React โหลดข้อมูล (เช่น getSubmissionById) ให้เสร็จก่อน
-    await page.goto(targetUrl, {
-      waitUntil: "networkidle0", // 👈‼️ ตรวจสอบให้แน่ใจว่ามีบรรทัดนี้!
-      timeout: 60000, // เพิ่ม timeout เป็น 60 วินาที
+    // นี่คือ API ที่ Frontend จะยิงมา
+    const expectedApiUrl = `/api/submissions/${id}`;
+
+    page.on("request", (request) => {
+      if (request.url().includes(expectedApiUrl)) {
+        // ถ้ายิง API เส้นนี้...
+        console.log(`[PDF Gen] 3.1. Intercepting API call: ${request.url()}`);
+        // "แกล้ง" ตอบกลับด้วยข้อมูลที่เราดึงมา (ข้อ 1)
+        request.respond({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(dataToInject), // ส่งข้อมูลที่ดึงไว้
+        });
+      } else {
+        // ถ้าเป็น Request อื่น (เช่น โหลด React, CSS) ปล่อยผ่าน
+        request.continue();
+      }
     });
-    console.log(`[PDF Gen] Page loaded and network is idle.`);
-    // --- ⭐️⭐️⭐️ [สิ้นสุดจุดแก้ไข] ⭐️⭐️⭐️ ---
 
-    // (ลบ waitForSelector ออกไปได้ เพราะ networkidle0 เพียงพอแล้วสำหรับหน้า Print)
+    // 4. ไปที่หน้าเว็บ (คราวนี้ไม่ติด Deadlock แล้ว)
+    console.log(`[PDF Gen] 4. Navigating to: ${frontendPrintUrl}`);
+    await page.goto(frontendPrintUrl, {
+      waitUntil: "load", // รอ React โหลด
+      timeout: 60000,
+    });
 
-    console.log("[PDF Gen] Generating PDF...");
+    // 5. ⭐️ รอ "สัญญาณ" ⭐️ (เหมือนเดิม แต่คราวนี้มันจะมาถึง)
+    console.log("[PDF Gen] 5. Waiting for selector (#pdf-content-ready)...");
+    await page.waitForSelector(
+      "#pdf-content-ready, #pdf-status-error, #pdf-status-notfound",
+      { timeout: 30000 } // รอ 30 วิ
+    );
+
+    // 6. พิมพ์ PDF
+    console.log("[PDF Gen] 6. Page is ready. Generating PDF buffer...");
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
-      margin: {
-        top: "20px",
-        right: "20px",
-        bottom: "20px",
-        left: "20px",
-      },
+      margin: { top: "20px", right: "20px", bottom: "20px", left: "20px" },
     });
-    console.log("[PDF Gen] PDF generated successfully.");
 
-    // --- ย้าย browser.close() มาไว้ก่อนส่ง response ---
-    // (เป็น best practice ที่ควรปิด browser ให้เร็วที่สุด)
     await browser.close();
-    console.log("[PDF Gen] Browser closed.");
-    browser = null; // เคลียร์ค่า browser หลังจากปิดแล้ว
+    console.log("[PDF Gen] 7. Browser closed. Sending PDF.");
 
-    // --- ส่ง PDF กลับไป ---
     res.setHeader("Content-Type", "application/pdf");
-    // ใช้ 'inline' ถ้าอยากให้ browser พยายามเปิด PDF ให้ดูเลย (ถ้าทำได้)
-    // ใช้ 'attachment' ถ้าอยากให้ browser ดาวน์โหลดไฟล์อย่างเดียว
-    res.setHeader("Content-Disposition", `inline; filename=report_${id}.pdf`);
+    res.setHeader("Content-Disposition", `inline; filename=report-${id}.pdf`);
     res.send(pdfBuffer);
-    console.log(`[PDF Gen] PDF sent successfully for ID: ${id}`);
   } catch (error) {
     console.error(`[PDF Gen] Error generating PDF for ID ${id}:`, error);
-    // --- ปิด Browser ใน catch ด้วย (ถ้ามันยังเปิดอยู่) ---
     if (browser) {
-      try {
-        await browser.close();
-        console.log("[PDF Gen] Browser closed due to error.");
-      } catch (closeError) {
-        console.error(
-          "[PDF Gen] Error closing browser after error:",
-          closeError
-        );
-      }
+      await browser.close();
     }
+
+    // ⭐️ เพิ่มการดักจับ Error กรณีหาข้อมูลไม่เจอจากข้อ 1 ⭐️
+    if (error.message.includes("Submission not found")) {
+      return res
+        .status(404)
+        .send({
+          message: `Failed to generate PDF: Submission ID ${id} not found.`,
+        });
+    }
+
     res
       .status(500)
-      .send({ message: `เกิดข้อผิดพลาดในการสร้าง PDF: ${error.message}` });
+      .send({ message: "Failed to generate PDF", error: error.message });
   }
 };

@@ -89,24 +89,30 @@ const ReportPrintDispatcher: React.FC = () => {
   // 1. ถ้ากำลังโหลด... แสดงหน้าขาว (Puppeteer จะรอจนผ่านจุดนี้เพราะ networkidle0)
   if (isLoading) {
     console.log(`[PrintDispatcher] ID: ${id} - Currently loading... Returning null.`);
-    return null;
+    return <div id="pdf-status-loading">Loading report data...</div>;
   }
 
   // 2. ถ้าเกิด Error ตอน Fetch... แสดง Error (ลง PDF)
   if (error) {
     console.error(`[PrintDispatcher] ID: ${id} - Fetch error occurred. Rendering error message.`);
-    return <div className="p-4 text-red-600">เกิดข้อผิดพลาดในการโหลดข้อมูลสำหรับพิมพ์: {error}</div>;
+    return <div id="pdf-status-error">เกิดข้อผิดพลาดในการโหลดข้อมูลสำหรับพิมพ์: {error}</div>; // 👈 เพิ่ม ID
   }
 
   // 3. ถ้าไม่ Error แต่หาข้อมูลไม่เจอ... แสดงข้อความ (ลง PDF)
   if (!submissionData) {
     console.warn(`[PrintDispatcher] ID: ${id} - No submission data found after loading. Rendering 'not found' message.`);
-    return <div className="p-4 text-orange-600">ไม่พบข้อมูลรายงาน (ID: {id}) สำหรับการพิมพ์</div>;
+    return <div id="pdf-status-notfound">ไม่พบข้อมูลรายงาน (ID: {id})</div>; // 👈 เพิ่ม ID
   }
 
-  // --- ✅ ถ้าผ่านทุกด่าน: Render Report จริง (ไม่มี Layout หุ้ม) ---
   console.log(`[PrintDispatcher] ID: ${id} - Rendering printable form...`);
-  return <>{renderPrintableForm()}</>;
+  // ‼️ [แก้ไข] ‼️
+  // return <>{renderPrintableForm()}</>; // <--- ลบอันนี้ทิ้ง
+  return (
+    <div id="pdf-content-ready"> 
+      {/* 👈 เพิ่ม ID นี้เพื่อเป็น "สัญญาณ" ว่าพร้อมพิมพ์ */}
+      {renderPrintableForm()}
+    </div>
+  );
 };
 
 export default ReportPrintDispatcher;

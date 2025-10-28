@@ -82,7 +82,7 @@ export const updateSubmission = async (id: string, data: any): Promise<any> => {
 export const generatePdfById = async (id: string): Promise<Blob> => {
   try {
     console.log(`[submissionService] Requesting PDF generation for ID: ${id}`);
-    const response = await apiClient.get(`/api/submissions/pdf/${id}`, {
+    const response = await apiClient.get(`/api/submissions/print/${id}`, {
       responseType: 'blob', // 👈 สำคัญมาก: บอกให้ axios คาดหวังข้อมูลแบบไฟล์ (Blob)
     });
     console.log(`[submissionService] PDF Blob received for ID: ${id}`);
