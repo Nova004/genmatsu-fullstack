@@ -183,8 +183,8 @@ const FormStep2: React.FC<FormStep2Props> = ({
 
   return (
     <div>
-      <div className="border-b-2 border-stroke py-2 text-center dark:border-strokedark">
-        <h5 className="font-medium text-black dark:text-white">Quantity of used raw material</h5>
+      <div className="border-b-2 border-stroke py-2 text-center bg-black dark:border-strokedark">
+        <h5 className="font-medium text-white text-lg">Quantity of used raw material</h5>
       </div>
       <div className="rounded-b-sm border border-t-0 border-stroke p-5 dark:border-strokedark">
         <div className="mb-6 overflow-x-auto">

@@ -58,7 +58,7 @@ const ReportHistory_GEN_B: React.FC = () => {
     endDate: null
   });
 
-  // --- 3.2. DATA FETCHING EFFECT ---
+  // --- 3.2. DATB FETCHING EFFECT ---
   // `useEffect` hook นี้จะทำงานเพียงครั้งเดียวเมื่อคอมโพเนนต์ถูกสร้างขึ้น
   // เพื่อดึงข้อมูลประวัติการบันทึกทั้งหมดจาก API
   useEffect(() => {
@@ -77,7 +77,11 @@ const ReportHistory_GEN_B: React.FC = () => {
     fetchSubmissions();
   }, []);
 
-
+  const handlePrint = (id: number) => {
+    // เราจะยิงไปที่ API ของ Backend โดยตรง
+    // Proxy ใน vite.config.js จะจัดการเปลี่ยนเส้นทางให้เราเอง
+    window.open(`/api/submissions/print/${id}`, '_blank');
+  };
   // --- 3.3. DATE FILTERING EFFECT ---
   // `useEffect` hook นี้จะทำงานทุกครั้งที่ `dateRange` มีการเปลี่ยนแปลง
   // เพื่ออัปเดต state `columnFilters` สำหรับการกรองข้อมูลตามวันที่
@@ -178,6 +182,12 @@ const ReportHistory_GEN_B: React.FC = () => {
             <button onClick={() => handleDelete(row.original.submission_id, row.original.lot_no)} className="hover:text-danger">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
             </button>
+            <button
+              onClick={() => handlePrint(row.original.submission_id)}
+              className="text-blue-500 hover:text-blue-700"
+            >
+              Print
+            </button>
           </div>
         ),
       },
@@ -253,7 +263,7 @@ const ReportHistory_GEN_B: React.FC = () => {
         {/* --- ส่วนของปุ่มและ Action ต่างๆ ด้านบนตาราง --- */}
         <div className="flex justify-end mb-4">
           <Link
-            to="/forms/form-elements-gen-b"
+            to="/forms/form-elements-gen-a"
             className="inline-flex items-center justify-center gap-2.5 rounded-md bg-primary py-3 px-6 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-10"
           >
             <span>

@@ -459,13 +459,19 @@ exports.generatePdf = async (req, res) => {
   const { id } = req.params;
   const frontendPrintUrl = `http://localhost:5173/reports/print/${id}`;
 
+  // ---------------------------------
+  // --- ‼️ [จุดแก้ไข] ‼️ ---
+  // ---------------------------------
   let browser;
+  let page; // 👈 ⭐️ 1. ประกาศ 'page' ไว้ตรงนี้
+  // ---------------------------------
+
   try {
-    // ⭐️ 1. ดึงข้อมูลก่อนเลย! (เพื่อทำลาย Deadlock) ⭐️
+    // 1. ดึงข้อมูลก่อน
     console.log(
       `[PDF Gen] 1. Fetching data for ID: ${id} BEFORE launching browser.`
     );
-    const dataToInject = await getSubmissionDataForPdf(id);
+    const dataToInject = await getSubmissionDataForPdf(id); //
     console.log(`[PDF Gen] 1. Data fetched successfully.`);
 
     // 2. เปิดเบราว์เซอร์
@@ -475,51 +481,85 @@ exports.generatePdf = async (req, res) => {
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
 
-    const page = await browser.newPage();
+    // ⭐️ 2. ลบ 'const' ออก เพราะเราประกาศ 'page' ไว้ข้างบนแล้ว
+    page = await browser.newPage();
 
-    // ⭐️ 3. ตั้งค่าการ "ดักจับ" Request (สำคัญมาก) ⭐️
+    // "หูทิพย์" (เหมือนเดิม)
+    page.on("console", (msg) => {
+      console.log(`[PUPPETEER-CONSOLE] ${msg.type()}: ${msg.text()}`);
+    }); //
+    page.on("pageerror", (err) => {
+      console.error("[PUPPETEER-PAGE-ERROR] React Crash:", err);
+    }); //
+
+    // 3. ตั้งค่าการ "ดักจับ" Request (โค้ดของพี่ถูกต้องแล้ว)
     console.log(`[PDF Gen] 3. Setting up request interception...`);
-    await page.setRequestInterception(true);
+    await page.setRequestInterception(true); //
 
-    // นี่คือ API ที่ Frontend จะยิงมา
     const expectedApiUrl = `/api/submissions/${id}`;
 
     page.on("request", (request) => {
-      if (request.url().includes(expectedApiUrl)) {
-        // ถ้ายิง API เส้นนี้...
-        console.log(`[PDF Gen] 3.1. Intercepting API call: ${request.url()}`);
-        // "แกล้ง" ตอบกลับด้วยข้อมูลที่เราดึงมา (ข้อ 1)
+      // ⭐️ ผมขอเปลี่ยนกลับเป็น .includes() นะครับ มันปลอดภัยกว่า ⭐️
+      const url = request.url();
+      if (!url.startsWith("data:")) {
+        console.log(`[PUPPETEER-REQUEST] Trying to load: ${url}`);
+      }
+
+      if (url.includes(expectedApiUrl)) {
+        // 👈 ⭐️ 3. เปลี่ยนกลับเป็น .includes()
+        console.log(`[PDF Gen] 3.1. Intercepting API call: ${url}`);
         request.respond({
           status: 200,
           contentType: "application/json",
-          body: JSON.stringify(dataToInject), // ส่งข้อมูลที่ดึงไว้
+          body: JSON.stringify(dataToInject),
         });
       } else {
-        // ถ้าเป็น Request อื่น (เช่น โหลด React, CSS) ปล่อยผ่าน
         request.continue();
       }
     });
 
-    // 4. ไปที่หน้าเว็บ (คราวนี้ไม่ติด Deadlock แล้ว)
+    // 4. ไปที่หน้าเว็บ (เหมือนเดิม)
     console.log(`[PDF Gen] 4. Navigating to: ${frontendPrintUrl}`);
     await page.goto(frontendPrintUrl, {
-      waitUntil: "load", // รอ React โหลด
+      waitUntil: "load",
       timeout: 60000,
-    });
+    }); //
 
-    // 5. ⭐️ รอ "สัญญาณ" ⭐️ (เหมือนเดิม แต่คราวนี้มันจะมาถึง)
+    // 5. รอ "สัญญาณ" (เหมือนเดิม)
     console.log("[PDF Gen] 5. Waiting for selector (#pdf-content-ready)...");
     await page.waitForSelector(
       "#pdf-content-ready, #pdf-status-error, #pdf-status-notfound",
-      { timeout: 30000 } // รอ 30 วิ
-    );
+      { timeout: 30000 } // ⭐️ ลดเวลารอเหลือ 30 วิ พอ
+    ); //
 
-    // 6. พิมพ์ PDF
+    // 6. พิมพ์ PDF (เหมือนเดิม)
     console.log("[PDF Gen] 6. Page is ready. Generating PDF buffer...");
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
-      margin: { top: "20px", right: "20px", bottom: "20px", left: "20px" },
+      footerTemplate: `
+        <div style="width: 100%; border-top: 1px solid #ccc; padding: 5px 20px 0;
+                    font-size: 10px; color: #555;
+                    display: flex; justify-content: space-between; align-items: center;">
+          
+          <span style="flex: 1; text-align: left;">
+            FM-AS2-001
+          </span>
+          
+          <span style="flex: 1; text-align: center;">
+            หน้า <span class="pageNumber"></span> / <span class="totalPages"></span>
+          </span>
+
+          <span style="flex: 1; text-align: right;"></span>
+        </div>
+      `,
+      margin: {
+        top: "10px", // 👈 แก้ไข (ตามคำขอ)
+        right: "10px", // (อันนี้คงไว้ หรือแก้เป็น 0px ก็ได้)
+        bottom: "50px",
+        left: "10px", // (อันนี้คงไว้ หรือแก้เป็น 0px ก็ได้)
+      },
+      scale: 0.37, // 👈 เพิ่มเข้ามา (37%)
     });
 
     await browser.close();
@@ -530,17 +570,22 @@ exports.generatePdf = async (req, res) => {
     res.send(pdfBuffer);
   } catch (error) {
     console.error(`[PDF Gen] Error generating PDF for ID ${id}:`, error);
+
+    // ⭐️ [ใหม่] ถ้ามัน Timeout ให้พิมพ์ HTML ออกมาดูเลย ⭐️
+    // (คราวนี้ 'page' จะไม่ Error แล้ว!)
+    if (error.name === "TimeoutError" && page) {
+      const html = await page.content();
+      console.error("[PUPPETEER-TIMEOUT-HTML] Page HTML on timeout:", html);
+    }
+
     if (browser) {
       await browser.close();
     }
 
-    // ⭐️ เพิ่มการดักจับ Error กรณีหาข้อมูลไม่เจอจากข้อ 1 ⭐️
     if (error.message.includes("Submission not found")) {
-      return res
-        .status(404)
-        .send({
-          message: `Failed to generate PDF: Submission ID ${id} not found.`,
-        });
+      return res.status(404).send({
+        message: `Failed to generate PDF: Submission ID ${id} not found.`,
+      });
     }
 
     res

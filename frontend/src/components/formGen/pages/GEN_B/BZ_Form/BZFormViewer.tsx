@@ -110,7 +110,7 @@ const BZFormViewer: React.FC<BZFormViewerProps> = ({ formData, blueprints, isRea
           {/* ถ้า `step` เท่ากับ 2 ให้แสดง <FormStep2> และส่ง `staticBlueprint` ที่ถูกต้องเข้าไปด้วย */}
           {step === 2 && <FormStep2 {...formStepProps} staticBlueprint={blueprints['BZ_Step2_RawMaterials']} />}
           {/* ถ้า `step` เท่ากับ 3 ก็ทำเหมือน Step 2 */}
-          {step === 3 && <SharedFormStep3 {...formStepProps} staticBlueprint={blueprints['BS3_Step3_Operations']} templateName="BZ_Step3_Operations" />}
+          {step === 3 && <SharedFormStep3 {...formStepProps} staticBlueprint={blueprints['BZ_Step3_Operations']} templateName="BZ_Step3_Operations" />}
           {/* ถ้า `step` เท่ากับ 4 ให้แสดง <FormStep4> */}
           {step === 4 && <SharedFormStep4 {...formStepProps} totalWeightFieldName="calculations.finalTotalWeight" />}
         </div>

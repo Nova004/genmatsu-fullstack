@@ -297,8 +297,8 @@ const FormStep2: React.FC<FormStep2Props> = ({
 
   return (
     <div>
-      <div className="border-b-2 border-stroke py-2 text-center dark:border-strokedark">
-        <h5 className="font-medium text-black dark:text-white">Quantity of used raw material</h5>
+      <div className="border-b-2 border-stroke py-2 text-center bg-black dark:border-strokedark">
+        <h5 className="font-medium text-white text-lg">Quantity of used raw material</h5>
       </div>
       <div className="rounded-b-sm border border-t-0 border-stroke p-5 dark:border-strokedark">
         <div className="mb-6 overflow-x-auto">
@@ -374,12 +374,8 @@ const FormStep2: React.FC<FormStep2Props> = ({
               <tr>
                 <td className={tdLeftClass}>CDZ-1:WaterContant(weight)</td>
                 <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} readOnly  {...register('bz5cCalculations.rc417WaterContentweight', { valueAsNumber: true })} /><span className="ml-2">%</span></div> </td>
-                <td className={tdLeftClass} colSpan={4}></td>
-              </tr>
-              <tr>
                 <td className={tdLeftClass}>Moisture Gen BZ5-C (STD mean.)</td>
                 <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bz5cCalculations.stdMeanMoisture', { valueAsNumber: true })} value="33.94" readOnly disabled /><span className="ml-2">%</span></div> </td>
-                <td className={tdLeftClass} colSpan={4}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>NaCl water =</td>

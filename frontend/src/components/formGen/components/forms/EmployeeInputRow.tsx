@@ -58,18 +58,34 @@ const EmployeeInputRow: React.FC<EmployeeInputRowProps> = ({ groupName, index, r
   const disabledInputClass = `${inputClass} dark:!bg-gray-700 !bg-gray-200`;
 
   return (
-    <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-      <div className={inputGroupClass}>
-        <span className={spanClass}>รหัสพนักงาน</span>
-        <input type="text" className={inputClass} {...register(`${groupName}.${index}.id`)} />
+    <div className="grid grid-cols-1 gap-5 md:grid-cols-8">
+      <div className={`md:col-span-2 ${inputGroupClass}`}>
+        <span className={spanClass}>ID</span>
+        <input
+          type="text"
+          className={inputClass}
+          {...register(`${groupName}.${index}.id`)}
+        />
       </div>
-      <div className={inputGroupClass}>
-        <span className={spanClass}>ชื่อ-นามสกุล</span>
-        <input type="text" className={disabledInputClass} readOnly disabled value={isLoading ? "Loading..." : watch(`${groupName}.${index}.name`)} />
+      <div className={`md:col-span-4 ${inputGroupClass}`}>
+        <span className={spanClass}>Name</span>
+        <input
+          type="text"
+          className={disabledInputClass}
+          readOnly
+          disabled
+          value={isLoading ? "Loading..." : watch(`${groupName}.${index}.name`)}
+        />
       </div>
-      <div className={inputGroupClass}>
-        <span className={spanClass}>เลขที่</span>
-        <input type="text" className={disabledInputClass} readOnly disabled {...register(`${groupName}.${index}.number`)} />
+      <div className={`md:col-span-2 ${inputGroupClass}`}>
+        <span className={spanClass}>No.</span>
+        <input
+          type="text"
+          className={disabledInputClass}
+          readOnly
+          disabled
+          {...register(`${groupName}.${index}.number`)}
+        />
       </div>
     </div>
   );

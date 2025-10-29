@@ -1,21 +1,21 @@
-// frontend/src/pages/Reports/AS/PrintableReportAS2.tsx
+// frontend/src/pages/Reports/AS/PrintableReportBZ5-C.tsx
 
 import React from 'react';
-import AS2FormPrint from '../../../components/formGen/pages/GEN_A/AS2_Form/AS2FormPrint';
+import BZ5_CFormPrint from '../../../components/formGen/pages/GEN_B/BZ5-C_Form/BZ5-CFormPrint';
 
-interface ReportDetailAS2Props {
+interface ReportDetailBZ5_CProps {
   submission: any;
   blueprints: any;
 }
 
-const ReportDetailAS2: React.FC<ReportDetailAS2Props> = ({ submission, blueprints }) => {
+const ReportDetailBZ5_C: React.FC<ReportDetailBZ5_CProps> = ({ submission, blueprints }) => {
   if (!submission || !submission.form_data_json) {
     return <div>ไม่พบข้อมูลฟอร์ม</div>;
   }
 
   return (
-    <div style={{ zoom: 1.8 }} className="print-compact">
-      <AS2FormPrint
+    <div style={{ zoom: 1.7 }} className="print-compact">
+      <BZ5_CFormPrint
         formData={submission.form_data_json}
         blueprints={blueprints} // 👈 ส่งพิมพ์เขียวที่ถูกต้องไปให้ Viewer
         isReadOnly={true}       // 👈 บอก Viewer ให้อยู่ในโหมดอ่านอย่างเดียว
@@ -24,4 +24,4 @@ const ReportDetailAS2: React.FC<ReportDetailAS2Props> = ({ submission, blueprint
   );
 };
 
-export default ReportDetailAS2;
+export default ReportDetailBZ5_C;

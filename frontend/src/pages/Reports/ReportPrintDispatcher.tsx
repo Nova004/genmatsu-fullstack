@@ -6,6 +6,7 @@ import { getSubmissionById } from '../../services/submissionService';
 // --- ⬇️ (สำคัญ) Import Component "สำหรับพิมพ์" ทั้งหมดที่คุณมี ⬇️ ---
 // (คุณต้องสร้างไฟล์เหล่านี้ขึ้นมา โดยมี Layout สำหรับ A4)
 import PrintableReportAS2 from './AS2/PrintableReportAS2';
+import PrintableReportBZ5_C from './BZ5-C/PrintableReportBZ5-C';
 
 // --- ⬆️ สิ้นสุดส่วน Import Component ⬆️ ---
 
@@ -30,7 +31,7 @@ const ReportPrintDispatcher: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // --- ดักจับกรณีไม่มี ID ---
+    document.title = `Loading Report ${id}...`; // << เพิ่มบรรทัดนี้
     if (!id) {
       console.error('[PrintDispatcher] Error: No ID found in URL.');
       setError('ไม่พบ ID ใน URL');
@@ -47,9 +48,11 @@ const ReportPrintDispatcher: React.FC = () => {
         const data = await getSubmissionById(id);
         console.log(`[PrintDispatcher] Data fetched successfully for ID: ${id}`, data);
         setSubmissionData(data);
+        document.title = `Report - ${data.submission.form_type} (${data.submission.lot_no})`;
       } catch (err: any) {
         console.error(`[PrintDispatcher] Error fetching submission ${id}:`, err);
         setError(err.message || 'เกิดข้อผิดพลาดในการดึงข้อมูล');
+        document.title = `Error - Fetch Failed ${id}`;
       } finally {
         setIsLoading(false); // สิ้นสุด Loading เสมอ
       }
@@ -63,8 +66,8 @@ const ReportPrintDispatcher: React.FC = () => {
     // ⭐️ [แก้ไข] ย้าย Guard `!submissionData` มาไว้ตรงนี้
     // เพราะเราจะเรียกใช้ฟังก์ชันนี้หลังจากผ่าน Guard หลักแล้ว
     if (!submissionData) {
-        console.error('[PrintDispatcher] renderPrintableForm called but submissionData is null.');
-        return <div>Error: Cannot render report, submission data is missing.</div>;
+      console.error('[PrintDispatcher] renderPrintableForm called but submissionData is null.');
+      return <div>Error: Cannot render report, submission data is missing.</div>;
     }
 
     const { submission, blueprints } = submissionData;
@@ -76,6 +79,8 @@ const ReportPrintDispatcher: React.FC = () => {
       // --- ⬇️ ตรวจสอบ Case และชื่อ Component ให้ตรงกับที่คุณ Import มา ⬇️ ---
       case 'AS2':
         return <PrintableReportAS2 {...props} />;
+      case 'BZ5-C':
+        return <PrintableReportBZ5_C {...props} />;
       // --- ⬆️ เพิ่ม Case อื่นๆ ถ้ามี ⬆️ ---
       default:
         console.error(`[PrintDispatcher] Unknown form_type: ${submission.form_type}`);
@@ -108,7 +113,7 @@ const ReportPrintDispatcher: React.FC = () => {
   // ‼️ [แก้ไข] ‼️
   // return <>{renderPrintableForm()}</>; // <--- ลบอันนี้ทิ้ง
   return (
-    <div id="pdf-content-ready"> 
+    <div id="pdf-content-ready">
       {/* 👈 เพิ่ม ID นี้เพื่อเป็น "สัญญาณ" ว่าพร้อมพิมพ์ */}
       {renderPrintableForm()}
     </div>

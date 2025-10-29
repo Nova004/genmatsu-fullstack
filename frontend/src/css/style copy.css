@@ -505,11 +505,4 @@ span.flatpickr-weekday,
     border: none;
     box-shadow: none;
   }
-
-  #print-page-footer-content {
-    position: running(footer); /* บอก browser ให้ย้าย element นี้ */
-  }
-  
-  
 }
-

@@ -15,10 +15,10 @@ const PalletTable: React.FC<PalletTableProps> = ({
 
   return (
     <div>
-      <div className="border-b-2 border-stroke py-4 text-center dark:border-strokedark">
-        <h4 className="font-bold text-black dark:text-white">{title}</h4>
+      <div className="border-b-2 border-stroke py-2 text-center bg-black dark:border-strokedark">
+        <h4 className="font-medium text-white text-lg">{title}</h4>
       </div>
-      <div className="mx-auto mt-4 max-w-md">
+      <div className="rounded-b-sm border border-t-0 border-stroke p-5 dark:border-strokedark">
         <table className="w-full table-auto">
           <thead>
             <tr className="bg-gray-2 text-left dark:bg-meta-4">

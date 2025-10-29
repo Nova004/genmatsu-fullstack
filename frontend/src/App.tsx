@@ -59,7 +59,10 @@ function App() {
         containerClassName="overflow-auto"
       />
       <Routes>
-        {/* --- หน้า Public ที่ไม่ต้อง Login --- */}
+        <Route
+          path="/reports/print/:id"
+          element={<ReportPrintDispatcher />}
+        />
         <Route
           path="/auth/signin"
           element={
@@ -95,10 +98,7 @@ function App() {
                   - มันอยู่ "ใน" ProtectedRoute (จึงมี Auth)
                   - มันอยู่ "นอก" DefaultLayout (จึงไม่มี Sidebar/Header)
                 */}
-                <Route
-                  path="reports/print/:id"
-                  element={<ReportPrintDispatcher />}
-                />
+
 
                 {/* --- 4. (ย้าย) นี่คือ Route เดิมทั้งหมด ---
                   - เราหุ้มมันด้วย DefaultLayout
@@ -175,7 +175,7 @@ function App() {
                           }
                         />
                         <Route
-                          path="/master/nacl-master" 
+                          path="/master/nacl-master"
                           element={
                             <ProtectedRoute>
                               <NaClMaster />

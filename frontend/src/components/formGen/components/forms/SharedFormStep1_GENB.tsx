@@ -22,8 +22,8 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
   return (
     <div>
       {/* ส่วน Basic Data (เหมือนเดิมทุกประการ) */}
-      <div className="border-b-2 border-stroke py-2 text-center dark:border-strokedark">
-        <h5 className="font-medium text-black dark:text-white">Basic Data (ข้อมูลทั่วไป)</h5>
+      <div className="border-b-2 border-stroke py-2 text-center bg-black dark:border-strokedark">
+        <h5 className="font-medium text-white text-lg">Basic Data (ข้อมูลทั่วไป)</h5>
       </div>
       <div className="rounded-b-sm border border-t-0 border-stroke p-5 dark:border-strokedark">
         <div className="mb-6 grid grid-cols-1 gap-6 border-b border-stroke pb-6 dark:border-strokedark md:grid-cols-2">
@@ -59,8 +59,8 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
       </div>
 
       {/* ส่วน Check the condition (แก้ไขเล็กน้อย) */}
-      <div className="mt-6 border-b-2 border-stroke py-2 text-center dark:border-strokedark">
-        <h5 className="font-medium text-black dark:text-white">Check the condition (ตรวจสอบสภาพบรรจุภัณฑ์)</h5>
+       <div className="border-b-2 border-stroke py-2 text-center bg-black dark:border-strokedark">
+        <h5 className="font-medium text-white text-lg">Check the condition (ตรวจสอบสภาพบรรจุภัณฑ์)</h5>
       </div>
       <div className="rounded-b-sm border border-t-0 border-stroke p-5 dark:border-strokedark">
         <ConditionCheckItem
