@@ -72,7 +72,7 @@ const SharedFormStep4: React.FC<SharedFormStep4Props> = ({ register, watch, setV
   return (
     <div>
       <div className="border-b-2 border-stroke py-2 text-center bg-black dark:border-strokedark" id= "">
-        <h4 className="font-medium text-white text-lg">Packing Result / กระบวนการบรรจุ Genmatsu</h4>
+        <h4 className="font-medium text-white text-lg">Packing Result (กระบวนการบรรจุ Genmatsu)</h4>
       </div>
       <div className="rounded-b-sm border border-t-0 border-stroke p-5 dark:border-strokedark">
         <PackingResultTable

@@ -70,7 +70,7 @@ const useBZ5_CCalculations = (
       calculatedWaterContentWeight_RAW !== null ? Number(calculatedWaterContentWeight_RAW.toFixed(3)) : null
     );
     // ----------------------------------------------------------
-   // console.log(`BZ5-C calc [B]: Using RAW P22_B = ${rc417WaterContent}`); // Log ค่า P22 ดิบ
+    // console.log(`BZ5-C calc [B]: Using RAW P22_B = ${rc417WaterContent}`); // Log ค่า P22 ดิบ
 
     // ----- [A] คำนวณ "Weight of CDZ-1 + Mg(OH)2 + Activated Carbon P-200U" -----
     // (ผลลัพธ์: calculatedTotalMaterials_RAW)
@@ -158,7 +158,7 @@ const useBZ5_CCalculations = (
     // (ค่านี้ไม่ได้ถูก setValue จึงส่งต่อค่าดิบไป [D])
     // ----------------------------------------------------------
 
-      //console.log('BZ5-C calc [C Result]: rawIntermediateWater (RAW) =', rawIntermediateWater_RAW);
+    //console.log('BZ5-C calc [C Result]: rawIntermediateWater (RAW) =', rawIntermediateWater_RAW);
 
     // ----------------------------------------------------------
 
@@ -292,6 +292,8 @@ const FormStep2: React.FC<FormStep2Props> = ({
   const tdClass = "border-b border-stroke px-4 py-3 text-black dark:border-strokedark dark:text-white";
   const tdCenterClass = `${tdClass} text-center align-middle`;
   const tdLeftClass = `${tdClass} align-middle`;
+  const textareaClass = "w-full h-[50px] rounded-r-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
+
   // --- (End CSS Classes) ---
 
 
@@ -413,7 +415,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               {/* --- ส่วนที่ 3: หมายเหตุ --- */}
               <tr>
                 <td className={tdLeftClass}>Remark (หมายเหตุ) :</td>
-                <td className={tdLeftClass} colSpan={5}><textarea className={`${inputClass} h-25`} {...register('qouRemark')} /></td>
+                <td className={tdLeftClass} colSpan={5}><textarea className={`${textareaClass} h-25`} {...register('qouRemark')} /></td>
               </tr>
             </tbody>
           </table>

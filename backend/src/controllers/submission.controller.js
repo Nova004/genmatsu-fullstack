@@ -474,6 +474,17 @@ exports.generatePdf = async (req, res) => {
     const dataToInject = await getSubmissionDataForPdf(id); //
     console.log(`[PDF Gen] 1. Data fetched successfully.`);
 
+    const reportName = dataToInject.submission.form_type || "Production Report"; // (ใส่ || '...' เผื่อไว้)
+    const dynamicHeaderTemplate = `
+      <div style="width: 100%; border-bottom: 1px solid #ccc; padding: 5px 20px;
+                  font-size: 12px; color: #000; font-weight: bold;
+                  display: flex; justify-content: center; align-items: center;">
+        
+        <span>ใบรายงานการผลิต: ${reportName} (Manufacturing ${reportName})</span>
+
+      </div>
+    `;
+    
     // 2. เปิดเบราว์เซอร์
     console.log(`[PDF Gen] 2. Launching browser...`);
     browser = await puppeteer.launch({
@@ -533,10 +544,12 @@ exports.generatePdf = async (req, res) => {
     ); //
 
     // 6. พิมพ์ PDF (เหมือนเดิม)
-    console.log("[PDF Gen] 6. Page is ready. Generating PDF buffer...");
+    console.log('[PDF Gen] 6. Page is ready. Generating PDF buffer...');
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
+      displayHeaderFooter: true,
+      headerTemplate: dynamicHeaderTemplate,
       footerTemplate: `
         <div style="width: 100%; border-top: 1px solid #ccc; padding: 5px 20px 0;
                     font-size: 10px; color: #555;
@@ -554,9 +567,9 @@ exports.generatePdf = async (req, res) => {
         </div>
       `,
       margin: {
-        top: "10px", // 👈 แก้ไข (ตามคำขอ)
+        top: '50px', // 👈 แก้ไข (ตามคำขอ)
         right: "10px", // (อันนี้คงไว้ หรือแก้เป็น 0px ก็ได้)
-        bottom: "50px",
+        bottom: "20px",
         left: "10px", // (อันนี้คงไว้ หรือแก้เป็น 0px ก็ได้)
       },
       scale: 0.37, // 👈 เพิ่มเข้ามา (37%)

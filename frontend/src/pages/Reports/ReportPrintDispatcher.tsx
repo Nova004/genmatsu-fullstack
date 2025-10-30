@@ -32,6 +32,7 @@ const ReportPrintDispatcher: React.FC = () => {
 
   useEffect(() => {
     document.title = `Loading Report ${id}...`; // << เพิ่มบรรทัดนี้
+    
     if (!id) {
       console.error('[PrintDispatcher] Error: No ID found in URL.');
       setError('ไม่พบ ID ใน URL');

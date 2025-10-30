@@ -119,7 +119,7 @@ const AS2FormViewer: React.FC<AS2FormViewerProps> = ({ formData, blueprints, isR
         <div className="flex justify-center gap-4 rounded-sm border border-stroke p-4 dark:border-strokedark">
           {/* แสดงปุ่ม "Back" ก็ต่อเมื่อไม่ได้อยู่ที่ Step แรก */}
           {step > 1 && (<button type="button" onClick={handleBack} className="rounded-md bg-warning px-10 py-2 font-medium text-white hover:bg-opacity-90">Back</button>)}
-          {step === 1 && (<button type="button" onClick={() => navigate('/reports/history/gen-b')} className="rounded-md bg-secondary px-10 py-2 font-medium text-white hover:bg-opacity-90" >Back</button>)}
+          {step === 1 && (<button type="button" onClick={() => navigate('/reports/history/gen-a')} className="rounded-md bg-secondary px-10 py-2 font-medium text-white hover:bg-opacity-90" >Back</button>)}
           {/* แสดงปุ่ม "Next" ก็ต่อเมื่อยังไม่ถึง Step สุดท้าย */}
           {step < totalSteps && (<button type="button" onClick={handleNext} className="rounded-md bg-success px-10 py-2 font-medium text-white hover:bg-opacity-90">Next</button>)}
         </div>

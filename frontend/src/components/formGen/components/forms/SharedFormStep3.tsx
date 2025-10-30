@@ -286,7 +286,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
       {/* ... (โค้ดส่วน Header และ Table Head เหมือนเดิม) ... */}
       <div className="border-b-2 border-stroke py-2 text-center bg-black dark:border-strokedark">
-        <h5 className="font-medium text-white text-lg">Operation result / รายละเอียดผลการผลิต</h5>
+        <h5 className="font-medium text-white text-lg">Operation result (รายละเอียดผลการผลิต)</h5>
       </div>
       <div className="rounded-b-sm border border-t-0 border-stroke p-5 dark:border-strokedark">
         <div className="overflow-x-auto">
@@ -294,7 +294,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
             <thead>
               <tr className="bg-gray-2 text-left dark:bg-meta-4">
                 <th className={thClass}>No.</th>
-                <th className={thClass} colSpan={2}>Operation result / รายละเอียดผลการผลิต</th>
+                <th className={thClass} colSpan={2}>Details</th>
                 <th className={thClass}>Start time</th>
                 <th className={thClass}>Finish time</th>
               </tr>
@@ -579,47 +579,53 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                         // ✅ [FIX MULTI_INPUT_GROUP] แก้ไขบั๊ก Controller ซ้อน register และ validateผิด
                         case 'MULTI_INPUT_GROUP':
                           if (!col.inputs) {
-                          return <td key={colIndex}>Config Error: Inputs array is missing.</td>;
+                            return <td key={colIndex}>Config Error: Inputs array is missing.</td>;
                           }
                           return (
-                          <td key={colIndex} className={tdLeftClass} colSpan={col.span || 1}>
-                            <div className="flex flex-col gap-2">
-                            {col.description && (
-                              <span className="font-medium">
-                              {typeof col.description === 'object' ? col.description.main : col.description}
-                              </span>
-                            )}
-
-                            {/* single row inputs: no wrap, horizontal scroll if overflow */}
-                            <div className="flex items-center gap-4 flex-nowrap overflow-x-auto py-2">
-                              {col.inputs.map((inputItem: any, inputIdx: number) => {
-                              const multiFieldName = inputItem.field_name.replace('{index}', String(index));
-                              const multiFieldError = multiFieldName.split('.').reduce((obj: any, key : any ) => obj && obj[key], errors);
-
-                              return (
-                                <div key={inputIdx} className="relative flex items-center gap-2 whitespace-nowrap">
-                                <span className="mr-1 text-sm">{inputItem.label}</span>
-                                <input
-                                  type={inputItem.type || 'text'}
-                                  className={`${inputClass} w-28`}
-                                  disabled={isReadOnly}
-                                  {...register(multiFieldName as any, {
-                                  valueAsNumber: inputItem.type === 'number',
-                                  validate: createValidator(inputItem.validation)
-                                  })}
-                                />
-                                <span className="ml-1 text-sm">{inputItem.unit}</span>
-                                {multiFieldError && (
-                                  <span className="absolute left-0 top-full text-xs text-meta-1 mt-1">
-                                  {multiFieldError.message as string}
+                            <td key={colIndex} className={tdLeftClass} colSpan={col.span || 1}>
+                              <div className="flex flex-col gap-2">
+                                {col.description && (
+                                  <span className="font-medium">
+                                    {typeof col.description === 'object' ? col.description.main : col.description}
                                   </span>
                                 )}
+
+                                {/* single row inputs: no wrap, horizontal scroll if overflow */}
+                                <div className="flex items-center gap-4 flex-nowrap overflow-x-auto py-2">
+                                  {col.inputs.map((inputItem: any, inputIdx: number) => {
+                                    const multiFieldName = inputItem.field_name.replace('{index}', String(index));
+                                    const multiFieldError = multiFieldName.split('.').reduce((obj: any, key: any) => obj && obj[key], errors);
+
+                                    return (
+                                      <div key={inputIdx} className="relative pt-2 pb-6">
+                                        <div className="flex items-center">
+                                          <span className="mr-2 whitespace-nowrap">{inputItem.label}</span>
+                                          <Controller
+                                            name={multiFieldName as any}
+                                            control={control}
+                                            render={({ field }) => (
+                                              <input
+                                                {...field}
+                                                type={inputItem.type || 'text'}
+                                                className={inputClass}
+                                                style={{ minWidth: '60px', maxWidth: '80px' }}
+                                                disabled={isReadOnly}
+                                                {...register(multiFieldName as any, {
+                                                  valueAsNumber: inputItem.type === 'number',
+                                                  validate: createValidator(col.validation)
+                                                })}
+                                              />
+                                            )}
+                                          />
+                                          <span className="ml-2">{inputItem.unit}</span>
+                                        </div>
+                                        {multiFieldError && <span className="absolute left-0 -bottom-1 text-sm text-meta-1">{multiFieldError.message as string}</span>}
+                                      </div>
+                                    );
+                                  })}
                                 </div>
-                              );
-                              })}
-                            </div>
-                            </div>
-                          </td>
+                              </div>
+                            </td>
                           );
                         default:
                           return <td key={colIndex}>Unsupported column type</td>;
@@ -824,12 +830,12 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
               <tr>
                 <td className={tdLeftClass} colSpan={5}>
                   <div className="flex w-full">
-                  <span className="inline-flex items-center whitespace-nowrap rounded-l-md border border-r-0 border-stroke bg-gray-2 px-3 text-sm text-black dark:border-strokedark dark:bg-meta-4 dark:text-white">Remark</span>
-                  <textarea
-                    className={`${isReadOnly ? disabledInputClass : inputClass} h-[50px] rounded-l-none`} 
-                    {...register('operationRemark')}
-                    disabled={isReadOnly}
-                  ></textarea>
+                    <span className="inline-flex items-center whitespace-nowrap rounded-l-md border border-r-0 border-stroke bg-gray-2 px-3 text-sm text-black dark:border-strokedark dark:bg-meta-4 dark:text-white">Remark</span>
+                    <textarea
+                      className={`${isReadOnly ? disabledInputClass : inputClass} h-[50px] rounded-l-none`}
+                      {...register('operationRemark')}
+                      disabled={isReadOnly}
+                    ></textarea>
                   </div>
                 </td>
               </tr>

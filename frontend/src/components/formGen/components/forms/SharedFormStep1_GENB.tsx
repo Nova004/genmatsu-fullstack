@@ -6,6 +6,7 @@ import { IManufacturingReportForm } from '../../pages/types';
 import EmployeeInputRow from './EmployeeInputRow';
 import ConditionCheckItem from './ConditionCheckItem';
 import { FieldErrors } from 'react-hook-form';
+import ChecklistTable from './ChecklistTable';
 
 // 1. สร้าง Interface สำหรับ Props ที่ Component นี้ต้องการ
 interface SharedFormStep1Props {
@@ -15,6 +16,10 @@ interface SharedFormStep1Props {
   errors: FieldErrors<IManufacturingReportForm>;
   packagingWarningItemName: string;
 }
+const checklistItems = [
+  { id: 'butterflyValve' as const, label: 'Butterfly valve', condition: 'Turn off' },
+  { id: 'coolingValve' as const, label: 'Cooling Valve', condition: 'Turn off' },
+];
 
 const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setValue, packagingWarningItemName, errors }) => {
   const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
@@ -40,7 +45,7 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
             <input type="text" className={inputClass} {...register('basicData.lotNo', { required: true })} />
           </div>
         </div>
-        <div className="mb-6 grid grid-cols-1 gap-6 border-b border-stroke pb-6 dark:border-strokedark lg:grid-cols-6">
+        <div className="mb-6 grid grid-cols-1 gap-6 border-b border-black pb-6 dark:border-strokedark lg:grid-cols-6">
           <div className="flex items-center justify-center text-center font-medium text-black dark:text-white lg:col-span-1">M/C operator</div>
           <div className="flex flex-col gap-5 lg:col-span-5">
             {[...Array(3)].map((_, index) => (
@@ -57,6 +62,19 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
           </div>
         </div>
       </div>
+
+      <div className="border-b-2 border-stroke py-2 text-center bg-black dark:border-strokedark">
+        <h5 className="font-medium text-white text-lg">Check List before turn on</h5>
+      </div>
+      {/* 3. เรียกใช้ Component พร้อมส่ง props ที่จำเป็นไปให้ */}
+      <ChecklistTable
+        items={checklistItems}
+        register={register}
+        errors={errors}
+        watch={watch} // 👈 4. ส่ง watch ลงไปด้วย
+      />
+
+      {/* ส่วน Check the condition (แก้ไขเล็กน้อย) */}
 
       {/* ส่วน Check the condition (แก้ไขเล็กน้อย) */}
        <div className="border-b-2 border-stroke py-2 text-center bg-black dark:border-strokedark">

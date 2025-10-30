@@ -63,7 +63,7 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
             <input type="text" className={inputClass} {...register('basicData.lotNo', { required: true })} />
           </div>
         </div>
-        <div className="mb-6 grid grid-cols-1 gap-6 border-b border-stroke pb-6 dark:border-strokedark lg:grid-cols-6">
+        <div className="mb-6 grid grid-cols-1 gap-6 border-b border-black pb-6 dark:border-strokedark lg:grid-cols-6">
           <div className="flex items-center justify-center text-center font-medium text-black dark:text-white lg:col-span-1">M/C operator</div>
           <div className="flex flex-col gap-5 lg:col-span-5">
             {[...Array(3)].map((_, index) => (

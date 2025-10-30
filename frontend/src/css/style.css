@@ -382,11 +382,11 @@ span.flatpickr-weekday,
 .print-compact h2,
 /* ลดช่องว่างของหัวข้อ Section */
 .print-compact h3 {
-  padding-top: 1px !important;
+  padding-top: 0.5px !important;
   /* ลด padding บน */
-  padding-bottom: 1px !important;
+  padding-bottom: 0.5px !important;
   /* ลด padding ล่าง */
-  margin-bottom: 1px !important;
+  margin-bottom: 0.5px !important;
   /* ลด margin ล่าง */
 }
 

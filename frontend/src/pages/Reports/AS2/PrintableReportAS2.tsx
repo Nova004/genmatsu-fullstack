@@ -14,7 +14,7 @@ const ReportDetailAS2: React.FC<ReportDetailAS2Props> = ({ submission, blueprint
   }
 
   return (
-    <div style={{ zoom: 1.8 }} className="print-compact">
+    <div style={{ zoom: 1.7 }} className="print-compact">
       <AS2FormPrint
         formData={submission.form_data_json}
         blueprints={blueprints} // 👈 ส่งพิมพ์เขียวที่ถูกต้องไปให้ Viewer
