@@ -417,6 +417,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                                                     <div className="relative w-full">
                                                       <InputMask
                                                         {...field}
+                                                        value={field.value || ''} 
                                                         // (onChange Trigger - ถูกต้องแล้ว)
                                                         onChange={(e) => {
                                                           field.onChange(e);
@@ -510,6 +511,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                                                     <div className="relative w-full">
                                                       <InputMask
                                                         {...field}
+                                                        value={field.value || ''} // 👈 เพิ่มบรรทัดนี้
                                                         // (onChange Trigger - ถูกต้องแล้ว)
                                                         onChange={(e) => {
                                                           field.onChange(e);
@@ -606,6 +608,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                                             render={({ field }) => (
                                               <input
                                                 {...field}
+                                                value={field.value || ''}
                                                 type={inputItem.type || 'text'}
                                                 className={inputClass}
                                                 style={{ minWidth: '60px', maxWidth: '80px' }}
@@ -699,6 +702,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                           <div className="relative">
                             <InputMask
                               {...field}
+                              value={field.value || ''} // 👈 เพิ่มบรรทัดนี้
                               // (onChange Trigger - ถูกต้องแล้ว)
                               onChange={(e) => {
                                 field.onChange(e);
@@ -795,6 +799,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                           <div className="relative">
                             <InputMask
                               {...field}
+                              value={field.value || ''} // 👈 เพิ่มบรรทัดนี้
                               // (onChange Trigger - ถูกต้องแล้ว)
                               onChange={(e) => {
                                 field.onChange(e);

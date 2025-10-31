@@ -220,12 +220,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
             <tbody>
               <tr>
                 <td className={tdLeftClass}>CG-1C Weight (KG) :</td>
-                <td className={tdLeftClass}>  <input type="number" className={inputClass} {...register('cg1cWeighting.row1.cg1c', { valueAsNumber: true, required: 'กรุณากรอก CG-1C Weight' })} /></td>
-                {errors.cg1cWeighting?.row1?.cg1c &&
-                  <p className="text-sm text-danger mt-1">
-                    {errors.cg1cWeighting.row1.cg1c.message}
-                  </p>
-                }
+                <td className={tdLeftClass}>  <input type="number" className={inputClass} {...register('cg1cWeighting.row1.cg1c', { valueAsNumber: true, required: 'กรุณากรอก CG-1C Weight' })} />
+                  {errors.cg1cWeighting?.row1?.cg1c &&
+                    <p className="text-sm text-danger mt-1">
+                      {errors.cg1cWeighting.row1.cg1c.message}
+                    </p>
+                  }
+                </td>
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('cg1cWeighting.row1.bagNo')} /></td>
                 <td className={tdLeftClass}>Net weight (KG) :</td>
@@ -249,22 +250,24 @@ const FormStep2: React.FC<FormStep2Props> = ({
               </tr>
               <tr>
                 <td className={tdLeftClass}>15% NaCl Water Specific gravity</td>
-                <td className={tdLeftClass}><input type="number" step="0.001" className={inputClass} {...register('calculations.nacl15SpecGrav', { valueAsNumber: true, required: 'กรุณากรอก 15% NaCl Water Specific gravity' })} /></td>
-                {errors.calculations?.nacl15SpecGrav &&
-                  <p className="text-sm text-danger mt-1">
-                    {errors.calculations.nacl15SpecGrav.message}
-                  </p>
-                }
+                <td className={tdLeftClass}><input type="number" step="0.001" className={inputClass} {...register('calculations.nacl15SpecGrav', { valueAsNumber: true, required: 'กรุณากรอก 15% NaCl Water Specific gravity' })} />
+                  {errors.calculations?.nacl15SpecGrav &&
+                    <p className="text-sm text-danger mt-1">
+                      {errors.calculations.nacl15SpecGrav.message}
+                    </p>
+                  }
+                </td>
                 <td className={tdLeftClass} colSpan={4}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>CG - 1C Water Content (Moisture)</td>
-                <td className={tdLeftClass}><input type="number" step="0.01" className={inputClass} {...register('calculations.cg1cWaterContent', { valueAsNumber: true, required: 'กรุณากรอก 15% CG - 1C Water Content (Moisture)' })} /></td>
-                {errors.calculations?.cg1cWaterContent &&
-                  <p className="text-sm text-danger mt-1">
-                    {errors.calculations.cg1cWaterContent.message}
-                  </p>
-                }
+                <td className={tdLeftClass}><input type="number" step="0.01" className={inputClass} {...register('calculations.cg1cWaterContent', { valueAsNumber: true, required: 'กรุณากรอก 15% CG - 1C Water Content (Moisture)' })} />
+                  {errors.calculations?.cg1cWaterContent &&
+                    <p className="text-sm text-danger mt-1">
+                      {errors.calculations.cg1cWaterContent.message}
+                    </p>
+                  }
+                </td>
                 <td className={tdLeftClass} colSpan={4}></td>
               </tr>
               <tr>

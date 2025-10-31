@@ -15,6 +15,7 @@ import SharedFormStep4 from '../../../components/forms/SharedFormStep4_GENB';
 import ProgressBar from '../../../components/ProgressBar';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
 import { useProductionForm } from '../../../../../hooks/useProductionForm';
+import { initialFormValues } from '../../formDefaults';
 
 
 // สร้าง Interface เพื่อกำหนดว่า BZFormViewer ต้องรับข้อมูลอะไรเข้ามาบ้าง
@@ -46,15 +47,11 @@ const BZFormViewer: React.FC<BZFormViewerProps> = ({ formData, blueprints, isRea
   // สร้าง State `step` เพื่อเก็บว่าผู้ใช้กำลังดู Step ไหนอยู่, เริ่มต้นที่ 1
   const totalSteps = 4;
   const navigate = useNavigate();
-  const { formMethods } = useProductionForm({
-    formType: 'BZ',
-    netWeightOfYieldSTD: 800,
-     category: 'GEN_B'
-  });
-  const methods = useForm<IManufacturingReportForm>({  // ใช้ useForm เพื่อจัดการฟอร์ม
-    defaultValues: formData,
-    mode: 'onChange',      // 👈 เพิ่มโหมดการทำงาน
-    criteriaMode: "all", // 👈 บอกให้รายงานข้อผิดพลาดทั้งหมด
+
+  const methods = useForm<IManufacturingReportForm>({
+    defaultValues: initialFormValues, // 👈 4. เพิ่ม
+    mode: 'onChange',
+    criteriaMode: "all",
   });
 
 
@@ -84,7 +81,7 @@ const BZFormViewer: React.FC<BZFormViewerProps> = ({ formData, blueprints, isRea
     onTemplateLoaded: () => { },       // สร้างฟังก์ชันเปล่าๆ สำหรับ Prop นี้ เพราะในโหมด Viewer เราไม่ต้องการโหลด Template ใหม่
   };
 
-  const { trigger, formState: { errors } } = formMethods;
+ const { trigger, formState: { errors } } = methods;
 
   const { step, handleNext, handleBack } = useMultiStepForm({
     totalSteps: 4,
