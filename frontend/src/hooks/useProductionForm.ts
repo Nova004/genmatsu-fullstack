@@ -10,6 +10,7 @@ import { fireToast } from './fireToast';
 
 interface UseProductionFormProps {
   formType: 'BS3' | 'BZ3' | 'BZ' | 'AS2' | 'BZ5-C' | 'BS5-C';
+  category: 'GEN_A' | 'GEN_B'; // << เพิ่มบรรทัดนี้
   netWeightOfYieldSTD: number;
 }
 
@@ -22,10 +23,10 @@ interface UseProductionFormReturn {
   handleTemplateLoaded: (templateInfo: any) => void;
 }
 
-export const useProductionForm = ({ formType, netWeightOfYieldSTD }: UseProductionFormProps): UseProductionFormReturn => {
+export const useProductionForm = ({ formType, netWeightOfYieldSTD, category }: UseProductionFormProps): UseProductionFormReturn => { // << เพิ่ม category
   const { user } = useAuth();
   const navigate = useNavigate();
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadedTemplates, setLoadedTemplates] = useState<any[]>([]);
 
@@ -75,7 +76,8 @@ export const useProductionForm = ({ formType, netWeightOfYieldSTD }: UseProducti
     try {
       const result = await submitProductionForm(submissionPayload);
       fireToast('success', `บันทึกข้อมูลสำเร็จ! (ID: ${result.submissionId})`);
-      navigate('/reports/history/gen-b', {
+      const historyPath = category === 'GEN_A' ? '/reports/history/gen-a' : '/reports/history/gen-b';
+      navigate(historyPath, { // << ใช้ตัวแปร historyPath
         state: { highlightedId: result.submissionId },
       });
     } catch (error: any) {

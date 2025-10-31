@@ -49,6 +49,7 @@ const BZ5_CFormPrint: React.FC<BZ5_CFormPrintProps> = ({ formData, blueprints, i
   const { formMethods } = useProductionForm({
     formType: 'BZ5-C',
     netWeightOfYieldSTD: 800,
+     category: 'GEN_B'
   });
   const methods = useForm<IManufacturingReportForm>({  // ใช้ useForm เพื่อจัดการฟอร์ม
     defaultValues: formData,

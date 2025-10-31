@@ -41,6 +41,7 @@ function BS3_Form() {
     const { formMethods, isSubmitting, onSubmit, handleTemplateLoaded } = useProductionForm({
         formType: 'BS3',
         netWeightOfYieldSTD: 800,
+        category: 'GEN_B'
     });
 
     // ดึงสิ่งที่จำเป็นออกมาจาก formMethods

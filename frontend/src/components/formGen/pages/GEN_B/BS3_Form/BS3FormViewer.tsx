@@ -48,6 +48,7 @@ const BS3FormViewer: React.FC<BS3FormViewerProps> = ({ formData, blueprints, isR
   const { formMethods } = useProductionForm({
     formType: 'BS3',
     netWeightOfYieldSTD: 800,
+     category: 'GEN_B'
   });
   
   const methods = useForm<IManufacturingReportForm>({  // ใช้ useForm เพื่อจัดการฟอร์ม

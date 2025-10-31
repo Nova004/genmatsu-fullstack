@@ -48,6 +48,7 @@ const BS5_CFormViewer: React.FC<BS5_CFormViewerProps> = ({ formData, blueprints,
   const { formMethods } = useProductionForm({
     formType: 'BS5-C',
     netWeightOfYieldSTD: 800,
+     category: 'GEN_B'
   });
   
   const methods = useForm<IManufacturingReportForm>({  // ใช้ useForm เพื่อจัดการฟอร์ม

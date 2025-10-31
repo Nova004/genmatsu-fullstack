@@ -49,6 +49,7 @@ const BZFormViewer: React.FC<BZFormViewerProps> = ({ formData, blueprints, isRea
   const { formMethods } = useProductionForm({
     formType: 'BZ',
     netWeightOfYieldSTD: 800,
+     category: 'GEN_B'
   });
   const methods = useForm<IManufacturingReportForm>({  // ใช้ useForm เพื่อจัดการฟอร์ม
     defaultValues: formData,

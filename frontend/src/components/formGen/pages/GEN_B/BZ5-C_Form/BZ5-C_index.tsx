@@ -41,6 +41,7 @@ function BZ5_C_Form() {
     const { formMethods, isSubmitting, onSubmit, handleTemplateLoaded } = useProductionForm({
         formType: 'BZ5-C',
         netWeightOfYieldSTD: 800,
+        category: 'GEN_B'
     });
 
     // ดึงสิ่งที่จำเป็นออกมาจาก formMethods

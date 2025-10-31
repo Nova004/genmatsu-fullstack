@@ -40,6 +40,7 @@ function AS2_Form() {
     const { formMethods, isSubmitting, onSubmit, handleTemplateLoaded } = useProductionForm({
         formType: 'AS2',
         netWeightOfYieldSTD: 0,
+        category: 'GEN_A'
     });
 
     // ดึงสิ่งที่จำเป็นออกมาจาก formMethods

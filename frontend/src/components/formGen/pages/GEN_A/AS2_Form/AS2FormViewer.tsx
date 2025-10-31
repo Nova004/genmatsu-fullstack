@@ -49,6 +49,7 @@ const AS2FormViewer: React.FC<AS2FormViewerProps> = ({ formData, blueprints, isR
   const { formMethods } = useProductionForm({
     formType: 'AS2',
     netWeightOfYieldSTD: 800,
+    category: 'GEN_A'
   });
   const methods = useForm<IManufacturingReportForm>({  // ใช้ useForm เพื่อจัดการฟอร์ม
     defaultValues: formData,

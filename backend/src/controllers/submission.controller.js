@@ -551,7 +551,7 @@ exports.generatePdf = async (req, res) => {
       displayHeaderFooter: true,
       headerTemplate: dynamicHeaderTemplate,
       footerTemplate: `
-        <div style="width: 100%; border-top: 1px solid #ccc; padding: 5px 20px 0;
+        <div style="width: 100%; padding: 5px 20px 0;
                     font-size: 10px; color: #555;
                     display: flex; justify-content: space-between; align-items: center;">
           
