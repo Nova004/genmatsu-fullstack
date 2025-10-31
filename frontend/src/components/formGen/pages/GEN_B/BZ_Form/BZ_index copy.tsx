@@ -1,4 +1,4 @@
-// frontend/src/components/formGen/pages/GEN_B/BZ_Form/BZ_index.tsx 
+
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -41,7 +41,7 @@ function BZ_Form() {
     const navigate = useNavigate(); // ยังคงต้องใช้สำหรับปุ่ม Back to history
     const totalSteps = 4;
     // 🚀 เรียกใช้ Hook เพื่อจัดการ Logic ของฟอร์มทั้งหมด
-    const { formMethods, isSubmitting, onSubmit, handleTemplateLoaded } = useProductionForm({
+    const { formMethods, isSubmitting, onSubmit, onDraft, handleTemplateLoaded } = useProductionForm({
         formType: 'BZ',
         netWeightOfYieldSTD: 800,
         category: 'GEN_B'
@@ -81,19 +81,27 @@ function BZ_Form() {
                 <ProgressBar currentStep={step} totalSteps={4} />
 
                 <div className="my-6">
-                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="CG-1C" errors={errors} />}
-                    {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={handleTemplateLoaded} />}
-                    {step === 3 && <SharedFormStep3 register={register} errors={errors}trigger={trigger} control={control} getValues={getValues}  onTemplateLoaded={handleTemplateLoaded} templateName="BZ_Step3_Operations" />}
-                    {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="calculations.finalTotalWeight" />}
+                    <div className={step !== 1 ? 'hidden' : ''}>
+                        <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="CG-1C" errors={errors} />
+                    </div>
+                    <div className={step !== 2 ? 'hidden' : ''}>
+                        <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={handleTemplateLoaded} />
+                    </div>
+                    <div className={step !== 3 ? 'hidden' : ''}>
+                        <SharedFormStep3 register={register} errors={errors} trigger={trigger} control={control} getValues={getValues} onTemplateLoaded={handleTemplateLoaded} templateName="BZ_Step3_Operations" />
+                    </div>
+                    <div className={step !== 4 ? 'hidden' : ''}>
+                        <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="calculations.finalTotalWeight" />
+                    </div>
                 </div>
-
                 <div className="flex justify-center gap-4 rounded-sm border border-stroke p-4 dark:border-strokedark">
                     {step > 1 && (<button type="button" onClick={handleBack} className="rounded-md bg-warning px-10 py-2 font-medium text-white hover:bg-opacity-90">Back</button>)}
                     {step === 1 && (<button type="button" onClick={() => navigate('/reports/history/gen-b')} className="rounded-md bg-secondary px-10 py-2 font-medium text-white hover:bg-opacity-90" >Back</button>)}
                     {step < totalSteps && (<button type="button" onClick={handleNext} className="rounded-md bg-success px-10 py-2 font-medium text-white hover:bg-opacity-90">Next</button>)}
                     {step < 4 && (
                         <button
-                            type="submit"
+                            type="button" // 👈 1. เปลี่ยนเป็น "button"
+                            onClick={onDraft} // 👈 2. เพิ่ม onClick ให้เรียก onDraft
                             disabled={isSubmitting}
                             className={`rounded-md bg-primary px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
                         >

@@ -12,6 +12,7 @@ import FormHeader from '../../../components/FormHeader';
 import { fireToast } from '../../../../../hooks/fireToast';
 import ProgressBar from '../../../components/ProgressBar';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
+import { initialFormValues } from '../../formDefaults'; // (แก้ path ให้ถูก)
 
 // Props ที่ Component นี้จะรับเข้ามา
 interface BZFormEditProps {
@@ -58,6 +59,7 @@ const BZFormEdit: React.FC<BZFormEditProps> = ({ initialData, onSubmit }) => {
         reset,
     } = useForm<IManufacturingReportForm>({
         mode: 'onChange',
+        defaultValues: initialFormValues // 👈 จบ! สะอาดและใช้ซ้ำได้
     });
 
     // --- ใช้ useEffect เพื่อเติมข้อมูลเดิมลงในฟอร์มเมื่อ Component ถูกสร้างขึ้น ---
@@ -128,15 +130,14 @@ const BZFormEdit: React.FC<BZFormEditProps> = ({ initialData, onSubmit }) => {
                             Next
                         </button>
                     )}
-                    {step === totalSteps && (
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className={`rounded-md bg-primary px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
-                        >
-                            {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
-                        </button>
-                    )}
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className={`rounded-md bg-primary px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
+                    >
+                        {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
+                    </button>
+
                 </div>
             </form>
         </div>

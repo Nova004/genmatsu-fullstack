@@ -8,6 +8,7 @@ interface ChecklistItem {
   label: string;
   condition: string;
   isOperatorCheck?: boolean;
+
 }
 
 // กำหนด Props ที่ Component ต้องการ

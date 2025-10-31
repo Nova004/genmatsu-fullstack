@@ -7,7 +7,6 @@ import { IManufacturingReportForm } from '../components/formGen/pages/types';
 import { useAuth } from '../context/AuthContext';
 import { submitProductionForm } from '../services/submissionService';
 import { fireToast } from './fireToast';
-import { initialFormValues } from '../components/formGen/pages/formDefaults';
 
 interface UseProductionFormProps {
   formType: 'BS3' | 'BZ3' | 'BZ' | 'AS2' | 'BZ5-C' | 'BS5-C';
@@ -32,7 +31,12 @@ export const useProductionForm = ({ formType, netWeightOfYieldSTD, category }: U
 
   const formMethods = useForm<IManufacturingReportForm>({
     mode: 'onChange',
-    defaultValues: initialFormValues // 👈 จบ! สะอาดและใช้ซ้ำได้
+    defaultValues: {
+      mcOperators: Array(3).fill({ id: '', name: '', number: '' }),
+      assistants: Array(5).fill({ id: '', name: '', number: '' }),
+      conditions: Array(3).fill({ status: null, remark: '' }),
+      // ... default values อื่นๆ
+    },
   });
 
   const handleTemplateLoaded = useCallback((templateInfo: any) => {
@@ -112,10 +116,7 @@ export const useProductionForm = ({ formType, netWeightOfYieldSTD, category }: U
     try {
       const result = await submitProductionForm(submissionPayload);
       fireToast('success', `บันทึกร่างสำเร็จ! (ID: ${result.submissionId})`);
-      const historyPath = category === 'GEN_A' ? '/reports/history/gen-a' : '/reports/history/gen-b';
-      navigate(historyPath, {
-        state: { highlightedId: result.submissionId },
-      });
+      // (ปกติบันทึกร่างจะไม่เปลี่ยนหน้า)
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.message || "เกิดข้อผิดพลาดในการเชื่อมต่อ";
       fireToast('error', `บันทึกร่างไม่สำเร็จ: ${errorMessage}`);
