@@ -172,6 +172,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
                     {errors.cg1cWeighting.row2.cg1c.message}
                   </p>
                 }
+                
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('cg1cWeighting.row2.bagNo')} /></td>
                 <td className={tdLeftClass}>Net weight (KG) :</td>

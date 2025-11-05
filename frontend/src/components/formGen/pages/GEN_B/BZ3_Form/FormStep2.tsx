@@ -14,7 +14,7 @@ import RawMaterialTableRows from '../../../components/forms/RawMaterialTableRows
 // =================================================================
 
 
-const useBZ3Calculations = (
+export const useBZ3Calculations = (
   watch: UseFormWatch<IManufacturingReportForm>,
   setValue: UseFormSetValue<IManufacturingReportForm>
 ) => {
@@ -43,6 +43,18 @@ const useBZ3Calculations = (
 
     // ----- ขั้นตอน A: คำนวณ "Weight of RC-417 + Mg(OH)2 + Activated Carbon P-200U" -----
     const calculatedTotalMaterials = numRc417Total + numMagnesiumHydroxide + numActivatedCarbon;
+
+    if (calculatedTotalMaterials === 0) {
+      // ถ้าไม่มี Input, ให้ Set ทุกอย่างเป็น null แล้วหยุด
+      setValue('bz3Calculations.totalWeightOfMaterials', null);
+      setValue('bz3Calculations.totalNaclWater', null);
+      setValue('bz3Calculations.naclWater15', null);
+      setValue('rawMaterials.sodiumChloride', null, { shouldValidate: true });
+      setValue('bz3Calculations.lminRate', null);
+      setValue('bz3Calculations.totalWeightWithNcr', null);
+      return; // 👈 หยุดการทำงานของ useEffect ทันที
+    }
+    
     setValue('bz3Calculations.totalWeightOfMaterials', calculatedTotalMaterials > 0 ? calculatedTotalMaterials.toFixed(2) : null);
 
     // ----- ขั้นตอน B: คำนวณ "15% NaCl Water" (ค่าเริ่มต้น) -----
@@ -75,16 +87,16 @@ const useBZ3Calculations = (
       }
     }
 
-    // ----- ขั้นตอน D: คำนวณ "Total NaCl water" -----
+    // ----- ขั้นตอน D: (แก้ไข Bug) -----
     let totalNaclWaterResult: number | null = null;
-    if (rc417WaterContent) {
-      const T24_raw_final = rawInitialNaclWater15 || 0;
-      const AD24_raw_final = rawIntermediateWater || 0;
+    if (rawInitialNaclWater15 !== null && rawIntermediateWater !== null) {
+      const T24_raw_final = rawInitialNaclWater15; 
+      const AD24_raw_final = rawIntermediateWater; 
       const rawResult = T24_raw_final + AD24_raw_final;
-      totalNaclWaterResult = Number(rawResult.toFixed(2)); // ปัดเศษครั้งสุดท้ายที่นี่
+
+      totalNaclWaterResult = Number(rawResult.toFixed(2));
     }
     setValue('bz3Calculations.totalNaclWater', totalNaclWaterResult);
-
 
     // ----- ขั้นตอน E: คำนวณค่าสุดท้ายของ "15% NaCl Water" และค่าที่เหลือ -----
     let finalNaclWater15Result: number | null = null;
@@ -101,7 +113,8 @@ const useBZ3Calculations = (
     setValue('bz3Calculations.lminRate', lminRate > 0 ? lminRate.toFixed(0) : null);
 
     // คำนวณ "Total weight = NCR Genmatsu"
-    let totalWeightWithNcrResult: number | null = null;
+   let totalWeightWithNcrResult: number | null = null;
+    
     if (totalNaclWaterResult !== null) {
       const AD21_final = calculatedTotalMaterials;
       const AD25_final = totalNaclWaterResult;
@@ -224,12 +237,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
               </tr>
               <tr>
                 <td className={tdLeftClass}>RC-417 : Weight</td>
-                <td className={tdLeftClass}><input type="number" className={inputClass} {...register('rc417Weighting.row2.weight', { valueAsNumber: true, required: 'กรุณากรอก RC-417 : Weight' })} /></td>
-                {errors.rc417Weighting?.row2?.weight &&
-                  <p className="text-sm text-danger mt-1">
-                    {errors.rc417Weighting.row2.weight.message}
-                  </p>
-                }
+                <td className={tdLeftClass}><input type="number" className={inputClass} {...register('rc417Weighting.row2.weight', { valueAsNumber: true, required: 'กรุณากรอก RC-417 : Weight' })} />
+                  {errors.rc417Weighting?.row2?.weight &&
+                    <p className="text-sm text-danger mt-1">
+                      {errors.rc417Weighting.row2.weight.message}
+                    </p>
+                  }
+                </td>
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('rc417Weighting.row2.bagNo')} /></td>
                 <td className={tdLeftClass}>Net Weight</td>
@@ -263,19 +277,21 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>NaCl water =</td>
                 <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bz3Calculations.naclWater', { valueAsNumber: true })} value="15" readOnly disabled /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass}>NaCl Water Specific gravity</td>
-                <td className={tdLeftClass}><input type="text" className={inputClass} {...register('bz3Calculations.naclWaterSpecGrav', { valueAsNumber: true , required: 'กรุณากรอก NaCl Water Specific gravity'})} /></td>
-                {errors.bz3Calculations?.naclWaterSpecGrav &&
-                  <p className="text-sm text-danger mt-1">
-                    {errors.bz3Calculations.naclWaterSpecGrav.message}
-                  </p>
-                }
+                <td className={tdLeftClass}><input type="text" className={inputClass} {...register('bz3Calculations.naclWaterSpecGrav', { valueAsNumber: true, required: 'กรุณากรอก NaCl Water Specific gravity' })} />
+                  {errors.bz3Calculations?.naclWaterSpecGrav &&
+                    <p className="text-sm text-danger mt-1">
+                      {errors.bz3Calculations.naclWaterSpecGrav.message}
+                    </p>
+                  }
+                </td>
                 <td className={tdLeftClass}>Temperature</td>
-                <td className={tdLeftClass}><input type="number" step="0.1" className={inputClass} {...register('bz3Calculations.temperature', { valueAsNumber: true , required: 'กรุณากรอก Temperature'})} /></td>
-                   {errors.bz3Calculations?.temperature &&
-                  <p className="text-sm text-danger mt-1">
-                    {errors.bz3Calculations.temperature.message}
-                  </p>
-                }
+                <td className={tdLeftClass}><input type="number" step="0.1" className={inputClass} {...register('bz3Calculations.temperature', { valueAsNumber: true, required: 'กรุณากรอก Temperature' })} />
+                  {errors.bz3Calculations?.temperature &&
+                    <p className="text-sm text-danger mt-1">
+                      {errors.bz3Calculations.temperature.message}
+                    </p>
+                  }
+                </td>
                 <td className={tdLeftClass}>C°</td>
               </tr>
               <tr>

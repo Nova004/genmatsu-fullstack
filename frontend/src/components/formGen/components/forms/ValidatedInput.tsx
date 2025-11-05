@@ -38,6 +38,7 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({ config, inputIndex = 0,
     <div className='relative pt-2 pb-6'>
       <input
         type={inputConfig.type || 'text'}
+        step="any"
         className={inputConfig.is_disabled ? disabledInputClass : inputClass}
         disabled={inputConfig.is_disabled}
         {...register(fieldName, {

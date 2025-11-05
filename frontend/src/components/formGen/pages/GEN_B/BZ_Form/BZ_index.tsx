@@ -1,6 +1,3 @@
-
-
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import FormStep2 from './FormStep2';
 import SharedFormStep3 from '../../../components/forms/SharedFormStep3';
@@ -8,9 +5,8 @@ import SharedFormStep4 from '../../../components/forms/SharedFormStep4_GENB';
 import FormHeader from '../../../components/FormHeader';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
 import { useProductionForm } from '../../../../../hooks/useProductionForm';
-import ProgressBar from '../../../components/ProgressBar';
 import SharedFormStep1 from '../../../components/forms/SharedFormStep1_GENB';
-import { initialFormValues } from '../../formDefaults'; // (แก้ path ให้ถูก)
+
 
 
 
@@ -39,7 +35,6 @@ const BZ_VALIDATION_SCHEMA = {
 
 function BZ_Form() {
     const navigate = useNavigate(); // ยังคงต้องใช้สำหรับปุ่ม Back to history
-    const totalSteps = 4;
     // 🚀 เรียกใช้ Hook เพื่อจัดการ Logic ของฟอร์มทั้งหมด
     const { formMethods, isSubmitting, onSubmit, onDraft, handleTemplateLoaded } = useProductionForm({
         formType: 'BZ',
@@ -51,7 +46,7 @@ function BZ_Form() {
     const { register, trigger, watch, control, setValue, getValues, formState: { errors }} = formMethods;
 
     // เรียกใช้ Hook สำหรับจัดการ Step
-    const { step, handleNext, handleBack } = useMultiStepForm({
+    const { step, handleBack } = useMultiStepForm({
         totalSteps: 4,
         trigger,
         errors,
@@ -78,7 +73,6 @@ function BZ_Form() {
                     inputClass={inputClass}
                 />
 
-                <ProgressBar currentStep={step} totalSteps={4} />
 
                 <div className="my-6">
                     <div className={step !== 1 ? 'hidden' : ''}>

@@ -1,7 +1,7 @@
 
 
 // Import Library ที่จำเป็นจาก React และ React Hook Form
-import React, { useState, useEffect } from 'react';
+import React, {useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { IManufacturingReportForm } from '../../types';
 
@@ -13,7 +13,7 @@ import SharedFormStep4 from '../../../components/forms/SharedFormStep4_GENB';
 import { useNavigate } from 'react-router-dom';
 import ProgressBar from '../../../components/ProgressBar';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
-import { useProductionForm } from '../../../../../hooks/useProductionForm';
+
 
 
 // สร้าง Interface เพื่อกำหนดว่า BS5-CFormViewer ต้องรับข้อมูลอะไรเข้ามาบ้าง
@@ -29,11 +29,11 @@ const BS5_C_VALIDATION_SCHEMA = {
     scope: 'basicData',
     message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, และ Lot No. ให้ครบถ้วน',
   },
-  2: {
-    fields: 'rawMaterials',
-    scope: 'rawMaterials',
-    message: 'กรุณาตรวจสอบข้อมูลวัตถุดิบให้ถูกต้อง',
-  },
+   2: {
+         fields: [
+        ],
+        message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
+    },
   3: {
     fields: ['conditions', 'operationResults', 'operationRemark'],
     message: 'กรุณาตรวจสอบข้อมูลเงื่อนไขและผลการปฏิบัติงานให้ถูกต้อง',
@@ -45,11 +45,7 @@ const BS5_CFormViewer: React.FC<BS5_CFormViewerProps> = ({ formData, blueprints,
   // สร้าง State `step` เพื่อเก็บว่าผู้ใช้กำลังดู Step ไหนอยู่, เริ่มต้นที่ 1
   const totalSteps = 4;
   const navigate = useNavigate();
-  const { formMethods } = useProductionForm({
-    formType: 'BS5-C',
-    netWeightOfYieldSTD: 800,
-     category: 'GEN_B'
-  });
+
   
   const methods = useForm<IManufacturingReportForm>({  // ใช้ useForm เพื่อจัดการฟอร์ม
     defaultValues: formData,
@@ -84,7 +80,7 @@ const BS5_CFormViewer: React.FC<BS5_CFormViewerProps> = ({ formData, blueprints,
     onTemplateLoaded: () => { },       // สร้างฟังก์ชันเปล่าๆ สำหรับ Prop นี้ เพราะในโหมด Viewer เราไม่ต้องการโหลด Template ใหม่
   };
 
-  const { trigger,  formState: { errors } } = formMethods;
+  const { trigger,  formState: { errors } } =  methods;
 
   const { step, handleNext, handleBack } = useMultiStepForm({
     totalSteps: 4,

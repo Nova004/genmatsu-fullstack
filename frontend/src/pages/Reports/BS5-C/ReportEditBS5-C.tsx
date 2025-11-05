@@ -42,12 +42,12 @@ const ReportEditBS5_C: React.FC<ReportEditBS5_CProps> = ({ submission, templates
             try {
                 // เรียก service เพื่ออัปเดตข้อมูล
                 await updateSubmission(submission.submission_id, {
-                    lot_no: formData.lot_no,
+                    lot_no: formData.basicData.lotNo,
                     form_data: formData, // ส่งข้อมูลที่แก้ไขแล้วทั้งหมดไป
                 });
                 fireToast('success', 'บันทึกการเปลี่ยนแปลงสำเร็จ');
-                navigate('/reports/history/gen-b', { 
-                    state: { highlightedId: submission.submission_id } 
+                navigate('/reports/history/gen-b', {
+                    state: { highlightedId: submission.submission_id }
                 });
             } catch (error) {
                 console.error("Failed to update submission:", error);

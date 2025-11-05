@@ -30,9 +30,10 @@ const BZ5_C_VALIDATION_SCHEMA = {
     message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, และ Lot No. ให้ครบถ้วน',
   },
   2: {
-    fields: 'rawMaterials',
-    scope: 'rawMaterials',
-    message: 'กรุณาตรวจสอบข้อมูลวัตถุดิบให้ถูกต้อง',
+    fields: [
+    
+    ],
+    message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
   },
   3: {
     fields: ['conditions', 'operationResults', 'operationRemark'],
@@ -48,9 +49,9 @@ const BZ5_CFormViewer: React.FC<BZ5_CFormViewerProps> = ({ formData, blueprints,
   const { formMethods } = useProductionForm({
     formType: 'BZ5-C',
     netWeightOfYieldSTD: 800,
-     category: 'GEN_B'
+    category: 'GEN_B'
   });
-  
+
   const methods = useForm<IManufacturingReportForm>({  // ใช้ useForm เพื่อจัดการฟอร์ม
     defaultValues: formData,
     mode: 'onChange',      // 👈 เพิ่มโหมดการทำงาน
@@ -84,7 +85,7 @@ const BZ5_CFormViewer: React.FC<BZ5_CFormViewerProps> = ({ formData, blueprints,
     onTemplateLoaded: () => { },       // สร้างฟังก์ชันเปล่าๆ สำหรับ Prop นี้ เพราะในโหมด Viewer เราไม่ต้องการโหลด Template ใหม่
   };
 
-  const { trigger,  formState: { errors } } = formMethods;
+  const { trigger, formState: { errors } } = formMethods;
 
   const { step, handleNext, handleBack } = useMultiStepForm({
     totalSteps: 4,

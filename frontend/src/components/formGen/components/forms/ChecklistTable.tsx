@@ -24,8 +24,8 @@ const ChecklistTable: React.FC<ChecklistTableProps> = ({ register, errors, items
   const disabledInputClass = "w-full cursor-default rounded-lg border-[1.5px] border-stroke bg-slate-100 px-3 py-2 text-slate-500 outline-none dark:border-form-strokedark dark:bg-slate-800 dark:text-slate-400";
 
   // ดักฟังชื่อ operator จากฟอร์มหลัก (เหมือนเดิม)
-  const operatorName = watch('mcOperators.0.name'); 
-  
+  const operatorName = watch('mcOperators.0.name');
+
   return (
     <div className="rounded-b-sm border border-t-0 border-stroke p-5 dark:border-strokedark">
       <table className="w-full table-auto">
@@ -59,15 +59,20 @@ const ChecklistTable: React.FC<ChecklistTableProps> = ({ register, errors, items
                 <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                   <p className="text-black dark:text-white">{item.condition}</p>
                 </td>
-                <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
+             <td className="border-b border-[#eee] px-4 py-5 dark:border-strokedark">
                   <input
                     type="text"
                     
                     placeholder={!currentValue ? '-' : 'กรอกผลลัพธ์'}
                     
-                    className={disabledInputClass}
+                    // 1. ใช้ disabledClass ตลอด (เหมือนเดิม ถูกแล้ว)
+                    className={disabledInputClass} 
+                    
                     {...register(`checklist.${item.id}`)}
-                    disabled={isLinkedAndFilled} readOnly 
+
+                    // 2. ให้มัน readOnly "ตลอดเวลา" (ตามที่คุณอธิบาย)
+                    //    (ลบ disabled={isLinkedAndFilled} ทิ้งไปเลยครับ)
+                    readOnly 
                   />
                   {/* การแสดงผล Error (เหมือนเดิม) */}
                   {errors.checklist?.[item.id] && (

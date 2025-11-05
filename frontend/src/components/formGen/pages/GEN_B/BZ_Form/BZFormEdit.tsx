@@ -28,11 +28,12 @@ const BZ_VALIDATION_SCHEMA = {
     },
     2: {
         fields: [
-            'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
-            'cg1cWeighting.row1.cg1c',
-            'calculations.nacl15SpecGrav',
-            'calculations.cg1cWaterContent',
-            'calculations.temperature'
+            //'rawMaterials', 
+           // 'cg1cWeighting.row1.cg1c',
+           // 'cg1cWeighting.row2.cg1c',
+          //  'calculations.nacl15SpecGrav',
+          //  'calculations.cg1cWaterContent',
+          //  'calculations.temperature'
         ],
         message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
     },
@@ -46,7 +47,6 @@ const BZFormEdit: React.FC<BZFormEditProps> = ({ initialData, onSubmit }) => {
     const totalSteps = 4;
     const [isSubmitting, setIsSubmitting] = useState(false);
     const navigate = useNavigate();
-
     const {
         register,
         handleSubmit,
@@ -83,7 +83,7 @@ const BZFormEdit: React.FC<BZFormEditProps> = ({ initialData, onSubmit }) => {
     };
 
     // --- ฟังก์ชันสำหรับจัดการปุ่ม Next และ Back ---
-    const { step, handleNext, handleBack } = useMultiStepForm({
+    const { step, handleNext, handleBack,handleSubmit_form } = useMultiStepForm({
         totalSteps: 4,
         trigger,
         errors,
@@ -133,6 +133,7 @@ const BZFormEdit: React.FC<BZFormEditProps> = ({ initialData, onSubmit }) => {
                     <button
                         type="submit"
                         disabled={isSubmitting}
+                        onClick={handleSubmit_form}
                         className={`rounded-md bg-primary px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
                     >
                         {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}

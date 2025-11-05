@@ -31,9 +31,10 @@ const BZ3_VALIDATION_SCHEMA = {
     message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, และ Lot No. ให้ครบถ้วน',
   },
   2: {
-    fields: 'rawMaterials',
-    scope: 'rawMaterials',
-    message: 'กรุณาตรวจสอบข้อมูลวัตถุดิบให้ถูกต้อง',
+    fields: [
+     
+    ],
+    message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
   },
   3: {
     fields: ['conditions', 'operationResults', 'operationRemark'],
@@ -50,7 +51,7 @@ const BZ3FormViewer: React.FC<BZ3FormViewerProps> = ({ formData, blueprints, isR
   const { formMethods } = useProductionForm({
     formType: 'BZ3',
     netWeightOfYieldSTD: 800,
-     category: 'GEN_B'
+    category: 'GEN_B'
   });
 
   const methods = useForm<IManufacturingReportForm>({  // ใช้ useForm เพื่อจัดการฟอร์ม

@@ -15,7 +15,7 @@ import RawMaterialTableRows from '../../../components/forms/RawMaterialTableRows
 // =================================================================
 
 
-const useBZ5_CCalculations = (
+export const useBZ5_CCalculations = (
   watch: UseFormWatch<IManufacturingReportForm>,
   setValue: UseFormSetValue<IManufacturingReportForm>
 ) => {
@@ -330,12 +330,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
               {/* --- ส่วนที่ 1: การชั่งน้ำหนัก CDZ-1 --- */}
               <tr>
                 <td className={tdLeftClass}>CDZ-1 : Weight</td>
-                <td className={tdLeftClass}><input type="number" className={inputClass} {...register('rc417Weighting.row1.weight', { valueAsNumber: true, required: 'กรุณากรอก  CDZ-1 : Weight' })} /></td>
-                {errors.rc417Weighting?.row1?.weight &&
-                  <p className="text-sm text-danger mt-1">
-                    {errors.rc417Weighting.row1.weight.message}
-                  </p>
-                }
+                <td className={tdLeftClass}><input type="number" className={inputClass} {...register('rc417Weighting.row1.weight', { valueAsNumber: true, required: 'กรุณากรอก  CDZ-1 : Weight' })} />
+                  {errors.rc417Weighting?.row1?.weight &&
+                    <p className="text-sm text-danger mt-1">
+                      {errors.rc417Weighting.row1.weight.message}
+                    </p>
+                  }
+                </td>
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('rc417Weighting.row1.bagNo')} /></td>
                 <td className={tdLeftClass}>Net Weight</td>
@@ -343,12 +344,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
               </tr>
               <tr>
                 <td className={tdLeftClass}>CDZ-1 : Weight</td>
-                <td className={tdLeftClass}><input type="number" className={inputClass} {...register('rc417Weighting.row2.weight', { valueAsNumber: true, required: 'กรุณากรอก CDZ-1 : Weight' })} /></td>
-                {errors.rc417Weighting?.row2?.weight &&
-                  <p className="text-sm text-danger mt-1">
-                    {errors.rc417Weighting.row2.weight.message}
-                  </p>
-                }
+                <td className={tdLeftClass}><input type="number" className={inputClass} {...register('rc417Weighting.row2.weight', { valueAsNumber: true, required: 'กรุณากรอก CDZ-1 : Weight' })} />
+                  {errors.rc417Weighting?.row2?.weight &&
+                    <p className="text-sm text-danger mt-1">
+                      {errors.rc417Weighting.row2.weight.message}
+                    </p>
+                  }
+                </td>
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('rc417Weighting.row2.bagNo')} /></td>
                 <td className={tdLeftClass}>Net Weight</td>
@@ -361,7 +363,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>Net Weight of Yield</td>
                 <td className={tdLeftClass}><div className="flex items-center"><input type="text" className={disabledInputClass} readOnly value="1000" /><span className="ml-2">KG</span></div> </td>
                 <td className={tdLeftClass}>CDZ-1 of AD</td>
-                <td className={tdLeftClass}><div className="flex items-center"><input type="text" className={inputClass} {...register('rc417Weighting.cdz1ofad', { valueAsNumber: true, required: 'กรุณากรอก CDZ-1 of AD' })} /><span className="ml-2">g/mL</span></div> </td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="text" className={inputClass} {...register('rc417Weighting.cdz1ofad', { valueAsNumber: true, required: 'กรุณากรอก CDZ-1 of AD' })} /><span className="ml-2">g/mL</span></div>
+                  {errors.rc417Weighting?.cdz1ofad &&
+                    <p className="text-sm text-danger mt-1">
+                      {errors.rc417Weighting.cdz1ofad.message}
+                    </p>
+                  }
+                </td>
               </tr>
 
               {/* --- ส่วนที่ 2: การคำนวณสำหรับ BZ5-C --- */}
@@ -383,12 +391,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>NaCl water =</td>
                 <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bz5cCalculations.naclWater', { valueAsNumber: true })} value="15" readOnly disabled /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass}>NaCl Water Specific gravity</td>
-                <td className={tdLeftClass}><input type="text" className={inputClass} {...register('bz5cCalculations.naclWaterSpecGrav', { valueAsNumber: true, required: 'กรุณากรอก  NaCl Water Specific gravity' })} /></td>
-                {errors.bz5cCalculations?.naclWaterSpecGrav &&
-                  <p className="text-sm text-danger mt-1">
-                    {errors.bz5cCalculations.naclWaterSpecGrav.message}
-                  </p>
-                }
+                <td className={tdLeftClass}><input type="text" className={inputClass} {...register('bz5cCalculations.naclWaterSpecGrav', { valueAsNumber: true, required: 'กรุณากรอก  NaCl Water Specific gravity' })} />
+                  {errors.bz5cCalculations?.naclWaterSpecGrav &&
+                    <p className="text-sm text-danger mt-1">
+                      {errors.bz5cCalculations.naclWaterSpecGrav.message}
+                    </p>
+                  }
+                </td>
                 <td className={tdLeftClass}>Temperature</td>
                 <td className={tdLeftClass}><input type="number" step="0.1" className={inputClass} {...register('bz5cCalculations.temperature', { valueAsNumber: true })} /></td>
                 <td className={tdLeftClass}>C°</td>

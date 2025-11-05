@@ -3,15 +3,16 @@
 import React, { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { IManufacturingReportForm } from '../../types';
+import { useNavigate } from 'react-router-dom';
 import SharedFormStep1 from '../../../components/forms/SharedFormStep1_GENB';
 import FormStep2 from './FormStep2';
 import SharedFormStep3 from '../../../components/forms/SharedFormStep3';
 import SharedFormStep4 from '../../../components/forms/SharedFormStep4_GENB';
 import FormHeader from '../../../components/FormHeader';
 import { fireToast } from '../../../../../hooks/fireToast';
-import { useNavigate } from 'react-router-dom';
 import ProgressBar from '../../../components/ProgressBar';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
+import { initialFormValues } from '../../formDefaults'; // (แก้ path ให้ถูก)
 
 // Props ที่ Component นี้จะรับเข้ามา
 interface BS5_CFormEditProps {
@@ -26,11 +27,11 @@ const BS5_C_VALIDATION_SCHEMA = {
         message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, Lot No. และตรวจสอบสภาพบรรจุภัณฑ์ให้ครบถ้วน',
     },
     2: {
-         fields: [
-            'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
-            'rc417Weighting.row1.weight',
-            'rc417Weighting.row2.weight',
-            'bs3Calculations.naclWaterSpecGrav',
+        fields: [
+          //  'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
+            //'rc417Weighting.row1.weight',
+           // 'rc417Weighting.row2.weight',
+           // 'bs3Calculations.naclWaterSpecGrav',
         ],
         message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
     },
@@ -56,6 +57,7 @@ const BS5_CFormEdit: React.FC<BS5_CFormEditProps> = ({ initialData, onSubmit }) 
         reset,
     } = useForm<IManufacturingReportForm>({
         mode: 'onChange',
+        defaultValues: initialFormValues // 👈 จบ! สะอาดและใช้ซ้ำได้
     });
 
     // --- ใช้ useEffect เพื่อเติมข้อมูลเดิมลงในฟอร์มเมื่อ Component ถูกสร้างขึ้น ---
@@ -78,9 +80,9 @@ const BS5_CFormEdit: React.FC<BS5_CFormEditProps> = ({ initialData, onSubmit }) 
         }
     };
 
-    
+
     // --- ฟังก์ชันสำหรับจัดการปุ่ม Next และ Back ---
-    const { step, handleNext, handleBack } = useMultiStepForm({
+    const { step, handleNext, handleBack,handleSubmit_form } = useMultiStepForm({
         totalSteps: 4,
         trigger,
         errors,
@@ -108,9 +110,9 @@ const BS5_CFormEdit: React.FC<BS5_CFormEditProps> = ({ initialData, onSubmit }) 
                       เพราะเราจะแสดงผลข้อมูลตามที่ได้รับมาผ่าน initialData
                       แต่ยังคงส่ง props ที่จำเป็นอื่นๆ ให้กับ Step Components
                     */}
-                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="Diatomaceous Earth" errors={errors}  />}
+                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="Diatomaceous Earth" errors={errors} />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={() => { }} />}
-                    {step === 3 && <SharedFormStep3 register={register} errors={errors} trigger={trigger}  control={control} getValues={getValues} onTemplateLoaded={() => { }} templateName="BS5-C_Step3_Operations" />}
+                    {step === 3 && <SharedFormStep3 register={register} errors={errors} trigger={trigger} control={control} getValues={getValues} onTemplateLoaded={() => { }} templateName="BS5-C_Step3_Operations" />}
                     {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="bs5cCalculations.totalWeightWithNcr" />}
                 </div>
 
@@ -126,15 +128,15 @@ const BS5_CFormEdit: React.FC<BS5_CFormEditProps> = ({ initialData, onSubmit }) 
                             Next
                         </button>
                     )}
-                    {step === totalSteps && (
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className={`rounded-md bg-primary px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
-                        >
-                            {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
-                        </button>
-                    )}
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        onClick={handleSubmit_form}
+                        className={`rounded-md bg-primary px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
+                    >
+                        {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
+                    </button>
+
                 </div>
             </form>
         </div>

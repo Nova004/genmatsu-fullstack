@@ -563,7 +563,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                                   <span className="inline-flex items-center whitespace-nowrap rounded-l-md border border-r-0 border-stroke bg-gray-2 px-3 text-sm text-black dark:border-strokedark dark:bg-meta-4 dark:text-white">{col.input.label}</span>
                                   <input
                                     type={col.input.type || 'text'}
-                                    step={col.input.step || 'any'}
+                                    step={'any'}
                                     style={{ minWidth: '100px', maxWidth: '80px' }}
                                     className={`${inputClass} rounded-l-none rounded-r-none`}
                                     {...register(fieldName as any, {

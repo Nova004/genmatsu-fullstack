@@ -2,7 +2,7 @@
 
 
 // Import Library ที่จำเป็นจาก React และ React Hook Form
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { IManufacturingReportForm } from '../../types';
 import { useNavigate } from 'react-router-dom';
@@ -14,7 +14,7 @@ import SharedFormStep3 from '../../../components/forms/SharedFormStep3';
 import SharedFormStep4 from '../../../components/forms/SharedFormStep4_GENB';
 import ProgressBar from '../../../components/ProgressBar';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
-import { useProductionForm } from '../../../../../hooks/useProductionForm';
+
 import { initialFormValues } from '../../formDefaults';
 
 
@@ -31,10 +31,11 @@ const BZ_VALIDATION_SCHEMA = {
     scope: 'basicData',
     message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, และ Lot No. ให้ครบถ้วน',
   },
+
   2: {
-    fields: 'rawMaterials',
-    scope: 'rawMaterials',
-    message: 'กรุณาตรวจสอบข้อมูลวัตถุดิบให้ถูกต้อง',
+    fields: [
+    ],
+    message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
   },
   3: {
     fields: ['conditions', 'operationResults', 'operationRemark'],
@@ -81,7 +82,7 @@ const BZFormViewer: React.FC<BZFormViewerProps> = ({ formData, blueprints, isRea
     onTemplateLoaded: () => { },       // สร้างฟังก์ชันเปล่าๆ สำหรับ Prop นี้ เพราะในโหมด Viewer เราไม่ต้องการโหลด Template ใหม่
   };
 
- const { trigger, formState: { errors } } = methods;
+  const { trigger, formState: { errors } } = methods;
 
   const { step, handleNext, handleBack } = useMultiStepForm({
     totalSteps: 4,

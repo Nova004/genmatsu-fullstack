@@ -12,6 +12,7 @@ import { fireToast } from '../../../../../hooks/fireToast';
 import { useNavigate } from 'react-router-dom';
 import ProgressBar from '../../../components/ProgressBar';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
+import { initialFormValues } from '../../formDefaults'; // (แก้ path ให้ถูก)
 
 
 // Props ที่ Component นี้จะรับเข้ามา
@@ -27,11 +28,11 @@ const BZ3_VALIDATION_SCHEMA = {
     },
     2: {
         fields: [
-            'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
-            'rc417Weighting.row1.weight',
-            'rc417Weighting.row2.weight',
-            'bz3Calculations.naclWaterSpecGrav',
-            'bz3Calculations.temperature',
+          //  'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
+           // 'rc417Weighting.row1.weight',
+          //  'rc417Weighting.row2.weight',
+           // 'bz3Calculations.naclWaterSpecGrav',
+          //  'bz3Calculations.temperature',
         ],
         message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
     },
@@ -58,6 +59,7 @@ const BZ3FormEdit: React.FC<BZ3FormEditProps> = ({ initialData, onSubmit }) => {
         reset,
     } = useForm<IManufacturingReportForm>({
         mode: 'onChange',
+         defaultValues: initialFormValues
     });
 
     // --- ใช้ useEffect เพื่อเติมข้อมูลเดิมลงในฟอร์มเมื่อ Component ถูกสร้างขึ้น ---
@@ -81,7 +83,7 @@ const BZ3FormEdit: React.FC<BZ3FormEditProps> = ({ initialData, onSubmit }) => {
     };
 
     // --- ฟังก์ชันสำหรับจัดการปุ่ม Next และ Back ---
-    const { step, handleNext, handleBack } = useMultiStepForm({
+    const { step, handleNext, handleBack,handleSubmit_form  } = useMultiStepForm({
         totalSteps: 4,
         trigger,
         errors,
@@ -128,15 +130,16 @@ const BZ3FormEdit: React.FC<BZ3FormEditProps> = ({ initialData, onSubmit }) => {
                             Next
                         </button>
                     )}
-                    {step === totalSteps && (
+                  
                         <button
                             type="submit"
                             disabled={isSubmitting}
+                            onClick={handleSubmit_form}
                             className={`rounded-md bg-primary px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
                         >
                             {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
                         </button>
-                    )}
+            
                 </div>
             </form>
         </div>

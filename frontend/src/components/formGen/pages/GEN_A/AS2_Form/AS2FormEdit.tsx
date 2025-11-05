@@ -12,6 +12,7 @@ import FormHeader from '../../../components/FormHeader';
 import { fireToast } from '../../../../../hooks/fireToast';
 import ProgressBar from '../../../components/ProgressBar';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
+import { initialFormValues } from '../../formDefaults'; // (แก้ path ให้ถูก)
 
 // Props ที่ Component นี้จะรับเข้ามา
 interface AS2FormEditProps {
@@ -25,9 +26,9 @@ const AS2_VALIDATION_SCHEMA = {
         message: 'กรุณากรอกข้อมูลพื้นฐานและตรวจสอบสภาพบรรจุภัณฑ์ให้ครบถ้วน',
     },
     2: {
-        fields: 'rawMaterials',
-        scope: 'rawMaterials',
-        message: 'กรุณาตรวจสอบข้อมูลวัตถุดิบให้ถูกต้อง',
+        fields: [
+        ],
+        message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
     },
     3: {
         fields: ['conditions', 'operationResults', 'operationRemark'],
@@ -108,7 +109,7 @@ const AS2FormEdit: React.FC<AS2FormEditProps> = ({ initialData, onSubmit }) => {
                     */}
                     {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="Iron Powder" errors={errors} />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={() => { }} />}
-                    {step === 3 && <SharedFormStep3 register={register} errors={errors}  trigger={trigger} control={control} getValues={getValues} onTemplateLoaded={() => { }}  templateName="AS2_Step3_Operations" />}
+                    {step === 3 && <SharedFormStep3 register={register} errors={errors} trigger={trigger} control={control} getValues={getValues} onTemplateLoaded={() => { }} templateName="AS2_Step3_Operations" />}
                     {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="calculations.finalTotalWeight" />}
                 </div>
 
@@ -124,7 +125,6 @@ const AS2FormEdit: React.FC<AS2FormEditProps> = ({ initialData, onSubmit }) => {
                             Next
                         </button>
                     )}
-                    {step === totalSteps && (
                         <button
                             type="submit"
                             disabled={isSubmitting}
@@ -132,7 +132,6 @@ const AS2FormEdit: React.FC<AS2FormEditProps> = ({ initialData, onSubmit }) => {
                         >
                             {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
                         </button>
-                    )}
                 </div>
             </form>
         </div>

@@ -409,7 +409,7 @@ exports.deleteSubmission = async (req, res) => {
 exports.updateSubmission = async (req, res) => {
   const { id } = req.params;
   const { lot_no, form_data } = req.body; // รับข้อมูลใหม่จาก Frontend
-
+  console.log("Data received for update:", req.body);
   if (!lot_no || !form_data) {
     return res.status(400).send({ message: "กรุณากรอกข้อมูลให้ครบถ้วน" });
   }
@@ -484,7 +484,7 @@ exports.generatePdf = async (req, res) => {
 
       </div>
     `;
-    
+
     // 2. เปิดเบราว์เซอร์
     console.log(`[PDF Gen] 2. Launching browser...`);
     browser = await puppeteer.launch({
@@ -544,7 +544,7 @@ exports.generatePdf = async (req, res) => {
     ); //
 
     // 6. พิมพ์ PDF (เหมือนเดิม)
-    console.log('[PDF Gen] 6. Page is ready. Generating PDF buffer...');
+    console.log("[PDF Gen] 6. Page is ready. Generating PDF buffer...");
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
@@ -567,7 +567,7 @@ exports.generatePdf = async (req, res) => {
         </div>
       `,
       margin: {
-        top: '50px', // 👈 แก้ไข (ตามคำขอ)
+        top: "50px", // 👈 แก้ไข (ตามคำขอ)
         right: "10px", // (อันนี้คงไว้ หรือแก้เป็น 0px ก็ได้)
         bottom: "20px",
         left: "10px", // (อันนี้คงไว้ หรือแก้เป็น 0px ก็ได้)

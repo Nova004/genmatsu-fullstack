@@ -31,9 +31,9 @@ const AS2_VALIDATION_SCHEMA = {
     message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, และ Lot No. ให้ครบถ้วน',
   },
   2: {
-    fields: 'rawMaterials',
-    scope: 'rawMaterials',
-    message: 'กรุณาตรวจสอบข้อมูลวัตถุดิบให้ถูกต้อง',
+    fields: [
+    ],
+    message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
   },
   3: {
     fields: ['conditions', 'operationResults', 'operationRemark'],

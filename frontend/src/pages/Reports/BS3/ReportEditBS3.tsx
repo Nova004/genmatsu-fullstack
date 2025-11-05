@@ -42,7 +42,7 @@ const ReportEditBS3: React.FC<ReportEditBS3Props> = ({ submission, templates }) 
             try {
                 // เรียก service เพื่ออัปเดตข้อมูล
                 await updateSubmission(submission.submission_id, {
-                    lot_no: formData.lot_no,
+                   lot_no: formData.basicData.lotNo,
                     form_data: formData, // ส่งข้อมูลที่แก้ไขแล้วทั้งหมดไป
                 });
                 fireToast('success', 'บันทึกการเปลี่ยนแปลงสำเร็จ');

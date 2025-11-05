@@ -55,15 +55,19 @@ const ConditionCheckItem: React.FC<ConditionCheckItemProps> = ({ index, title, d
             <textarea
               className={textareaClass}
               {...register(`conditions.${index}.remark`, {
-                validate: value =>
-                  statusValue !== 'NG' ||
-                  (value && value.trim() !== '') ||
-                  'กรุณากรอกหมายเหตุเมื่อเลือก NG'
+                validate: (value) => {
+                  const currentStatus = watch(`conditions.${index}.status`);
+
+                  return (
+                    currentStatus !== 'NG' || // 👈 ใช้ค่าที่เพิ่งดึงมา
+                    (value && value.trim() !== '') ||
+                    'กรุณากรอกหมายเหตุเมื่อเลือก NG'
+                  );
+                }
               })}
             />
           </div>
-          {/* ส่วนแสดง Error (เหมือนเดิม) */}
-          {errors.conditions?.[index]?.status && !errors.conditions?.[index]?.remark && (
+          {errors.conditions?.[index]?.status && (
             <p className="mt-1 text-sm text-danger">
               {errors.conditions[index]?.status?.message}
             </p>
