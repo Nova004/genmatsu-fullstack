@@ -10,9 +10,12 @@ import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import ReportDetailBZ from './BZ/ReportDetailBZ';
 import ReportDetailBZ3 from './BZ3/ReportDetailBZ3';
 import ReportDetailBS3 from './BS3/ReportDetailBS3';
-import ReportDetailAS2 from './AS2/ReportDetailAS2';
 import ReportDetailBZ5_C from './BZ5-C/ReportDetailBZ5-C';
 import ReportDetailBS5_C from './BS5-C/ReportDetailBS5-C';
+
+import ReportDetailAS2 from './AS2/ReportDetailAS2';
+import ReportDetailAX9_B from './AX9-B/ReportDetailAX9-B';
+import ReportDetailAX2_B from './AX2-B/ReportDetailAX2-B';
 
 const ReportDetailDispatcher: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -101,6 +104,10 @@ const ReportDetailDispatcher: React.FC = () => {
         return <ReportDetailBS5_C submission={submission} blueprints={blueprints} />;
       case 'AS2':
         return <ReportDetailAS2 submission={submission} blueprints={blueprints} />;
+      case 'AX9-B':
+        return <ReportDetailAX9_B submission={submission} blueprints={blueprints} />;
+      case 'AX2-B':
+        return <ReportDetailAX2_B submission={submission} blueprints={blueprints} />;
       default:
         return <div>ไม่พบ Component สำหรับ Form Type: {submission.form_type}</div>;
 

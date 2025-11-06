@@ -27,7 +27,7 @@ const roundSafe = (num: number | null): number | null => {
 
 
 // ✨ [EDIT 1/4] เปลี่ยนชื่อ Hook เป็น BS5-C
-const useBS5_CCalculations = (
+export const useBS5_CCalculations = (
   watch: UseFormWatch<IManufacturingReportForm>,
   setValue: UseFormSetValue<IManufacturingReportForm>
 ) => {

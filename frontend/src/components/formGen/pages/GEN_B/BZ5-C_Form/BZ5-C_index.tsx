@@ -7,9 +7,9 @@ import SharedFormStep3 from '../../../components/forms/SharedFormStep3';
 import SharedFormStep4 from '../../../components/forms/SharedFormStep4_GENB';
 import FormHeader from '../../../components/FormHeader';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
-import { useProductionForm } from '../../../../../hooks/useProductionForm';
-import ProgressBar from '../../../components/ProgressBar';
+import { useProductionForm } from '../../../../../hooks/useProductionForm'
 import SharedFormStep1 from '../../../components/forms/SharedFormStep1_GENB';
+import { availableForms } from '../availableForms_GENB.ts';
 
 
 // ย้าย Schema ออกมาไว้นอก Component เพื่อไม่ให้ถูกสร้างใหม่ทุกครั้งที่ re-render
@@ -55,14 +55,7 @@ function BZ5_C_Form() {
         validationSchema: BZ5_C_VALIDATION_SCHEMA,
     });
 
-    // ค่าคงที่สำหรับ UI
-    const availableForms = [
-        { value: 'BZ', label: 'BZ', path: '/forms/bz-form' },
-        { value: 'BZ3', label: 'BZ3', path: '/forms/bz3-form' },
-        { value: 'BS3', label: 'BS3', path: '/forms/bs3-form' },
-        { value: 'BZ5-C', label: 'BZ5-C', path: '/forms/bz5-c-form' },
-        { value: 'BS5-C', label: 'BS5-C', path: '/forms/bs5-c-form' },
-    ];
+
     const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
 
     return (

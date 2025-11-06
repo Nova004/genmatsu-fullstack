@@ -26,6 +26,8 @@ export interface IManufacturingReportForm {
     diaEarth: number | null;
     sodiumChloride: number | null;
     magnesiumHydroxide: number | null;
+    IronOxideMTY80: number | null;
+    sg: number | null;
     remainedGenmatsu: { lot: string; actual: number | null; };
     shelfLife: number | null;
     ncrGenmatsu: { lot: string; actual: number | null; };

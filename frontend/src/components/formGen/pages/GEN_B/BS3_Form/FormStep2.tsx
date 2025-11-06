@@ -15,7 +15,7 @@ import RawMaterialTableRows from '../../../components/forms/RawMaterialTableRows
 // =================================================================
 
 
-const useBS3Calculations = (
+export const useBS3Calculations = (
   watch: UseFormWatch<IManufacturingReportForm>,
   setValue: UseFormSetValue<IManufacturingReportForm>
 ) => {
@@ -38,23 +38,7 @@ const useBS3Calculations = (
   // --- "ดักฟัง" ค่าที่ถูกคำนวณจากขั้นตอนก่อนหน้า ---
   const totalWeightOfMaterials = watch('bs3Calculations.totalWeightOfMaterials');
 
-  useEffect(() => {
-    // กำหนดค่าเริ่มต้นสำหรับค่าคงที่ที่ถูก Hardcode ใน JSX
-    // ตรวจสอบ: หากค่าปัจจุบันยังไม่มี (หรือเป็นค่าที่เราคาดหวังว่าควรจะเป็น)
 
-    // 1. NaCl Water (ควรเป็น 4)
-    if (!naclWater || Number(naclWater) === 0) { // ตรวจสอบว่ายังไม่มีค่า หรือค่าเป็น 0
-      setValue('bs3Calculations.naclWater', 4);
-      console.log("🛠️ Set Initial Value: bs3Calculations.naclWater to 4");
-    }
-
-    // 2. Std Mean Moisture (ควรเป็น 45.25)
-    if (!stdMeanMoisture || Number(stdMeanMoisture) === 0) {
-      setValue('bs3Calculations.stdMeanMoisture', 45.25);
-      console.log("🛠️ Set Initial Value: bs3Calculations.stdMeanMoisture to 45.25");
-    }
-
-  }, [naclWater, stdMeanMoisture, setValue]); // รันเมื่อค่าเหล่านี้ไม่มี หรือเป็น 0
 
   useEffect(() => {
     // --- 1. เริ่มต้น ---
@@ -63,7 +47,7 @@ const useBS3Calculations = (
 
     // --- 2. เตรียมข้อมูล (แปลงค่า Input เป็นตัวเลข) ---
     const numRc417Total = Number(rc417Total) || 0;
-     const numActual = Number(actual) || 0;
+    const numActual = Number(actual) || 0;
 
     const numMagnesiumHydroxide = Number(magnesiumHydroxide) || 0;
     const numActivatedCarbon = Number(activatedCarbon) || 0;
@@ -81,10 +65,27 @@ const useBS3Calculations = (
 
 
     // --- 3. เริ่มกระบวนการคำนวณตามลำดับ ---
+    const numStdMeanMoisture = Number(stdMeanMoisture) || 45.25; // 👈 ถ้าไม่มีค่า, ให้ใช้ 45.25
+    const numNaclWater = Number(naclWater) || 4; // 👈 ถ้าไม่มีค่า, ให้ใช้ 4
+    setValue('bs3Calculations.stdMeanMoisture', numStdMeanMoisture);
+    setValue('bs3Calculations.naclWater', numNaclWater);
 
     // ----- ขั้นตอน A: คำนวณ "Weight of RC-417 + Mg(OH)2 + Activated Carbon P-200U" -----
     console.group("--- ขั้นตอน A: Total Materials (AD21) ---");
     const calculatedTotalMaterials = numRc417Total + numMagnesiumHydroxide + numActivatedCarbon + numGypsumPlaster;
+    if (calculatedTotalMaterials === 0) {
+      console.log("[A_GUARD] ❌ calculatedTotalMaterials เป็น 0, หยุดคำนวณและ Set ค่าเป็น null");
+      // (Set เฉพาะค่าที่ยังไม่ Set)
+      setValue('bs3Calculations.totalWeightOfMaterials', null);
+      setValue('bs3Calculations.totalNaclWater', null);
+      setValue('bs3Calculations.naclWater4', null);
+      setValue('rawMaterials.sodiumChloride', null, { shouldValidate: true });
+      setValue('bs3Calculations.lminRate', null);
+      setValue('bs3Calculations.totalWeightWithNcr', null);
+      console.groupEnd();
+      console.log("🚀 --- [END] สิ้นสุดการคำนวณ (หยุดโดย Guard Clause) --- 🚀");
+      return;
+    }
     console.log(`[A1] คำนวณ: ${numRc417Total} + ${numMagnesiumHydroxide} + ${numActivatedCarbon} + ${numGypsumPlaster}`);
     console.log("[A2] ผลลัพธ์ดิบ (calculatedTotalMaterials):", calculatedTotalMaterials);
     const finalTotalMaterials = calculatedTotalMaterials > 0 ? calculatedTotalMaterials.toFixed(2) : null;
@@ -102,8 +103,8 @@ const useBS3Calculations = (
       const Q21_decimal = (Number(rc417WaterContent) / 100) || 0;
       const Q20 = numRc417Total;
       const AD21 = calculatedTotalMaterials; // (จากขั้นตอน A)
-      const Q22_decimal = (Number(stdMeanMoisture) / 100) || 0;
-      const O23_decimal = (Number(naclWater) / 100) || 0;
+      const Q22_decimal = (numStdMeanMoisture / 100) || 0; // 👈 (ใช้ตัวแปรนี้)
+      const O23_decimal = (numNaclWater / 100) || 0;     // 👈 (ใช้ตัวแปรนี้)
 
       console.log("[B3] ตัวแปรที่ใช้คำนวณ:", {
         Q21_decimal: Q21_decimal, // (rc417WaterContent / 100)
@@ -140,7 +141,7 @@ const useBS3Calculations = (
     if (rawInitialNaclWater15 !== null) {
       console.log("[C2] ✅ ผ่านเงื่อนไข (Input จาก B ไม่ใช่ null)");
       const T24_raw = rawInitialNaclWater15;
-      const O23_decimal_for_intermediate = (Number(naclWater) / 100) || 0;
+      const O23_decimal_for_intermediate = (numNaclWater / 100) || 0;
       console.log("[C3] ตัวแปร (O23_decimal):", O23_decimal_for_intermediate);
 
       if (O23_decimal_for_intermediate !== 0) {
@@ -160,24 +161,12 @@ const useBS3Calculations = (
     let totalNaclWaterResult: number | null = null;
     console.log("[D1] Input (rc417WaterContent):", rc417WaterContent);
 
-    if (rc417WaterContent) {
-      console.log("[D2] ✅ ผ่านเงื่อนไข (rc417WaterContent มีค่า)");
-      const T24_raw_final = rawInitialNaclWater15 || 0;
-      const AD24_raw_final = rawIntermediateWater || 0;
-      console.log("[D3] ตัวแปรที่ใช้คำนวณ:", {
-        T24_raw_final: T24_raw_final, // (ผลลัพธ์จาก B)
-        AD24_raw_final: AD24_raw_final // (ผลลัพธ์จาก C)
-      });
-
+    if (rawInitialNaclWater15 !== null && rawIntermediateWater !== null) {
+      const T24_raw_final = rawInitialNaclWater15; // (ไม่ต้อง || 0)
+      const AD24_raw_final = rawIntermediateWater; // (ไม่ต้อง || 0)
       const rawResult = T24_raw_final + AD24_raw_final;
-      console.log(`[D4] คำนวณ: ${T24_raw_final} + ${AD24_raw_final} =`, rawResult);
-
       totalNaclWaterResult = Number(rawResult.toFixed(2));
-      console.log("[D5] ผลลัพธ์ (totalNaclWaterResult) (ปัดเศษ .toFixed(2)):", totalNaclWaterResult);
-    } else {
-      console.log("[D2] ❌ ไม่ผ่านเงื่อนไข (rc417WaterContent ไม่มีค่า)");
     }
-    console.log("[D6] 🚀 setValue('bs3Calculations.totalNaclWater'):", totalNaclWaterResult);
     setValue('bs3Calculations.totalNaclWater', totalNaclWaterResult);
     console.groupEnd();
 
@@ -271,9 +260,9 @@ const useBS3Calculations = (
     activatedCarbon,
     GypsumPlaster, // ❗️ (เพิ่มตัวนี้เข้าไป)
     ncrGenmatsu,
-    totalWeightOfMaterials,
     rc417WaterContent,
     stdMeanMoisture,
+    actual,
     naclWater,
     naclWaterSpecGrav,
     setValue

@@ -1,0 +1,25 @@
+// frontend/src/pages/Reports/BZ/ReportDetailBZ.tsx
+
+import React from 'react';
+import AX2_BFormViewer from '../../../components/formGen/pages/GEN_A/AX2-B_Form/AX2-BFormViewer';
+
+interface ReportDetailAX2_BProps {
+  submission: any;
+  blueprints: any;
+}
+
+const ReportDetailAX2_B: React.FC<ReportDetailAX2_BProps> = ({ submission, blueprints }) => {
+  if (!submission || !submission.form_data_json) {
+    return <div>ไม่พบข้อมูลฟอร์ม</div>;
+  }
+
+  return (
+    <AX2_BFormViewer 
+      formData={submission.form_data_json}
+      blueprints={blueprints} // 👈 ส่งพิมพ์เขียวที่ถูกต้องไปให้ Viewer
+      isReadOnly={true}       // 👈 บอก Viewer ให้อยู่ในโหมดอ่านอย่างเดียว
+    />
+  );
+};
+
+export default ReportDetailAX2_B;

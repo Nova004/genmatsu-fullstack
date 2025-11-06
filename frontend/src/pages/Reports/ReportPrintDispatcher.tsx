@@ -6,6 +6,8 @@ import { getSubmissionById } from '../../services/submissionService';
 // --- ⬇️ (สำคัญ) Import Component "สำหรับพิมพ์" ทั้งหมดที่คุณมี ⬇️ ---
 // (คุณต้องสร้างไฟล์เหล่านี้ขึ้นมา โดยมี Layout สำหรับ A4)
 import PrintableReportAS2 from './AS2/PrintableReportAS2';
+import PrintableReportAX9_B from './AX9-B/PrintableReporAX9-B';
+import PrintableReportAX2_B from './AX2-B/PrintableReportAX2-B';
 import PrintableReportBZ5_C from './BZ5-C/PrintableReportBZ5-C';
 
 // --- ⬆️ สิ้นสุดส่วน Import Component ⬆️ ---
@@ -32,7 +34,7 @@ const ReportPrintDispatcher: React.FC = () => {
 
   useEffect(() => {
     document.title = `Loading Report ${id}...`; // << เพิ่มบรรทัดนี้
-    
+
     if (!id) {
       console.error('[PrintDispatcher] Error: No ID found in URL.');
       setError('ไม่พบ ID ใน URL');
@@ -80,6 +82,10 @@ const ReportPrintDispatcher: React.FC = () => {
       // --- ⬇️ ตรวจสอบ Case และชื่อ Component ให้ตรงกับที่คุณ Import มา ⬇️ ---
       case 'AS2':
         return <PrintableReportAS2 {...props} />;
+      case 'AX9-B':
+        return <PrintableReportAX9_B {...props} />;
+      case 'AX2-B':
+        return <PrintableReportAX2_B {...props} />;
       case 'BZ5-C':
         return <PrintableReportBZ5_C {...props} />;
       // --- ⬆️ เพิ่ม Case อื่นๆ ถ้ามี ⬆️ ---

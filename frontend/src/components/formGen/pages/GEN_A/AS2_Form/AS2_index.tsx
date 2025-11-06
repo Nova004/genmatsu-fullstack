@@ -9,7 +9,7 @@ import SharedFormStep4 from '../../../components/forms/SharedFormStep4_GENA';
 import FormHeader from '../../../components/FormHeader';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
 import { useProductionForm } from '../../../../../hooks/useProductionForm';
-import ProgressBar from '../../../components/ProgressBar';
+import { availableForms } from '../availableForms_GENA.ts';
 
 
 
@@ -54,12 +54,8 @@ function AS2_Form() {
         validationSchema: AS2_VALIDATION_SCHEMA, // 👈 ใช้ Schema ใหม่
     });
 
-    // ค่าคงที่สำหรับ UI
-    const availableForms = [
-        { value: 'AS2', label: 'AS2', path: '/forms/as2-form' },
-        { value: 'AX2', label: 'AX2', path: '/forms/ax2-form' },
-        { value: 'AZ', label: 'AZ', path: '/forms/az-form' },
-    ];
+
+    
     const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
 
     return (

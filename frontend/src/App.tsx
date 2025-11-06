@@ -29,8 +29,11 @@ import BZ_Form from './components/formGen/pages/GEN_B/BZ_Form/BZ_index';
 import BZ3_Form from './components/formGen/pages/GEN_B/BZ3_Form/BZ3_index';
 import BS3_Form from './components/formGen/pages/GEN_B/BS3_Form/BS3_index';
 import AS2_Form from './components/formGen/pages/GEN_A/AS2_Form/AS2_index';
+import AX9_B_Form from './components/formGen/pages/GEN_A/AX9-B_Form/AX9-B_index';
+import AX2_B_Form from './components/formGen/pages/GEN_A/AX2-B_Form/AX2-B_index';
 import BZ5_C_Form from './components/formGen/pages/GEN_B/BZ5-C_Form/BZ5-C_index.tsx';
 import BS5_C_Form from './components/formGen/pages/GEN_B/BS5-C_Form/BS5-C_index.tsx';
+
 
 import ReportEditDispatcher from './pages/Reports/ReportEditDispatcher';
 
@@ -219,7 +222,14 @@ function App() {
                           path="/forms/as2-form"
                           element={<><PageTitle title="AS2 Form" /><AS2_Form /></>}
                         />
-
+                        <Route
+                          path="/forms/ax9-b-form"
+                          element={<><PageTitle title="AX9-B Form" /><AX9_B_Form /></>}
+                        />
+                        <Route
+                          path="/forms/ax2-b-form"
+                          element={<><PageTitle title="AX2-B Form" /><AX2_B_Form /></>}
+                        />
                         <Route
                           path="/reports/edit/:id"
                           element={
