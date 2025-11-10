@@ -81,6 +81,82 @@ async function getSubmissionDataForPdf(submissionId) {
   };
 }
 
+async function createApprovalFlow(pool, submissionId, submittedBy) {
+  let transaction;
+  try {
+    console.log(
+      `[Approval] Creating flow for SubID: ${submissionId}, By: ${submittedBy}`
+    );
+
+    // 1. ดึง LV ของผู้บันทึก
+    const userRequest = new sql.Request(pool);
+    const userResult = await userRequest
+      .input("submittedBy", sql.NVarChar, submittedBy)
+      .query(
+        "SELECT LV_Approvals FROM AGT_SMART_SY.dbo.Gen_Manu_Member WHERE Gen_Manu_mem_Memid = @submittedBy"
+      );
+
+    if (userResult.recordset.length === 0) {
+      console.error(`[Approval] User not found: ${submittedBy}`);
+      return;
+    }
+
+    const userLevel = userResult.recordset[0].LV_Approvals;
+    console.log(`[Approval] User Level is: ${userLevel}`);
+
+    // 2. กำหนด Flow ตามกฎ
+    const flowSteps = [];
+    if (userLevel === 0) {
+      flowSteps.push({ sequence: 1, required_level: 1 });
+      flowSteps.push({ sequence: 2, required_level: 2 });
+      flowSteps.push({ sequence: 3, required_level: 3 });
+    } else if (userLevel === 1) {
+      flowSteps.push({ sequence: 1, required_level: 2 });
+      flowSteps.push({ sequence: 2, required_level: 3 });
+    } else if (userLevel === 2) {
+      flowSteps.push({ sequence: 1, required_level: 3 });
+    }
+
+    // 3. ถ้ามี Step ที่ต้องสร้าง ให้ INSERT ลง DB
+    if (flowSteps.length > 0) {
+      transaction = new sql.Transaction(pool);
+      await transaction.begin();
+
+      const flowRequest = new sql.Request(transaction);
+
+      const values = flowSteps
+        .map(
+          (step) =>
+            `(${submissionId}, ${step.sequence}, ${step.required_level})`
+        )
+        .join(", ");
+
+      const query = `
+        INSERT INTO Gen_Approval_Flow (submission_id, sequence, required_level)
+        VALUES ${values}
+      `;
+
+      await flowRequest.query(query);
+      await transaction.commit();
+      console.log(
+        `[Approval] Successfully created ${flowSteps.length} approval steps.`
+      );
+    } else {
+      console.log(
+        `[Approval] No approval required for this user level (${userLevel}).`
+      );
+    }
+  } catch (error) {
+    // 🚀 [แก้ไขจุดที่ 1] - แก้ไข Catch Block ของ createApprovalFlow
+    // เราแค่ Log Error ไว้ แต่ไม่โยน Error
+    console.error("Error creating approval flow:", error.message);
+    // ตรวจสอบ "state" ก่อน rollback
+    if (transaction && transaction.state === "begun") {
+      await transaction.rollback();
+    }
+  }
+}
+
 exports.createSubmission = async (req, res) => {
   const { formType, lotNo, templateIds, formData, submittedBy } = req.body;
 
@@ -200,16 +276,28 @@ exports.createSubmission = async (req, res) => {
       `);
 
     await transaction.commit();
+    await createApprovalFlow(pool, submissionId, submittedBy); // 👈 ถูกต้อง
+
     res.status(201).send({
       message: "Form submitted successfully!",
       submissionId: submissionId,
     });
-  } catch (err) {
-    await transaction.rollback();
-    console.error("!!! ERROR in createSubmission:", err); // 👈 มีตัวช่วย Debug แล้ว
+  } catch (error) {
+    console.error("Error creating submission:", error.message);
+
+    // 🚀 [แก้ไขจุดที่ 2] - แก้ไข Catch Block ของ createSubmission (บรรทัด ~291)
+    // ตรวจสอบ "state" ก่อน rollback
+    if (transaction && transaction.state === "begun") {
+      await transaction.rollback();
+    }
+
     res
       .status(500)
-      .send({ message: "Failed to submit form.", error: err.message });
+      .send({ message: "เกิดข้อผิดพลาดที่ Server", error: error.message });
+  } finally {
+    if (pool) {
+      pool.close();
+    }
   }
 };
 
@@ -351,58 +439,66 @@ exports.getSubmissionById = async (req, res) => {
 };
 
 exports.deleteSubmission = async (req, res) => {
-  // ดึง 'id' ที่ต้องการลบจาก URL parameter
   const { id } = req.params;
 
-  // สร้าง connection pool ใหม่ ตามสไตล์ของไฟล์นี้
   const pool = await sql.connect(dbConfig);
-  // เริ่ม transaction จาก pool ที่เพิ่งสร้าง
   const transaction = new sql.Transaction(pool);
 
   try {
-    // เริ่มต้น transaction
     await transaction.begin();
-
-    // สร้าง request ที่จะทำงานภายใต้ transaction นี้
     const request = new sql.Request(transaction);
-
-    // ผูกตัวแปร id เข้ากับ SQL query อย่างปลอดภัย
     request.input("submissionId", sql.Int, id);
 
-    // คำสั่งที่ 1: ลบข้อมูลจากตารางลูก (Form_Submission_Data) ก่อนเสมอ
+    // 🚀 [แก้ไข] เพิ่มคำสั่งลบ 2 ตารางใหม่ (ลูก)
+
+    // คำสั่งที่ 1: (ใหม่) ลบจากตาราง State (Gen_Approval_Flow)
+    await request.query(
+      "DELETE FROM Gen_Approval_Flow WHERE submission_id = @submissionId"
+    );
+
+    // คำสั่งที่ 2: (ใหม่) ลบจากตาราง Log (Gen_Approved_log)
+    await request.query(
+      "DELETE FROM Gen_Approved_log WHERE submission_id = @submissionId"
+    );
+
+    // คำสั่งที่ 3: (เดิม) ลบข้อมูลจากตารางลูก (Form_Submission_Data)
     await request.query(
       "DELETE FROM Form_Submission_Data WHERE submission_id = @submissionId"
     );
 
-    // คำสั่งที่ 2: ลบข้อมูลจากตารางแม่ (Form_Submissions)
+    // คำสั่งที่ 4: (เดิม) ลบข้อมูลจากตารางแม่ (Form_Submissions)
     const result = await request.query(
       "DELETE FROM Form_Submissions WHERE submission_id = @submissionId"
     );
 
-    // ตรวจสอบว่ามีข้อมูลถูกลบจริงหรือไม่
+    // (Logic การตรวจสอบ 404 และการ commit/rollback ที่เหลือของคุณถูกต้อง 100% ครับ)
     if (result.rowsAffected[0] === 0) {
-      // ถ้าไม่มีแถวไหนถูกลบ แสดงว่า ID นั้นไม่มีอยู่
-      // เรายังคง commit transaction เพราะไม่มีอะไรผิดพลาด แค่ไม่มีข้อมูลให้ลบ
+      // (หมายเหตุ: rowsAffected[0] จากคำสั่งสุดท้าย อาจจะเป็น 0
+      // ในขณะที่ 3 คำสั่งแรกอาจจะลบข้อมูลไปแล้ว แต่ก็ยังถือว่าไม่เจอ ID อยู่ดี)
       await transaction.commit();
       return res
         .status(404)
         .send({ message: `Submission with ID ${id} not found.` });
     }
 
-    // ถ้าทุกอย่างสำเร็จ ให้ commit transaction (ยืนยันการลบ)
     await transaction.commit();
-
-    // ส่งข้อความกลับไปบอก Frontend ว่าลบสำเร็จแล้ว (ใช้ .send ตามสไตล์ของคุณ)
     res
       .status(200)
       .send({ message: `Submission ID ${id} has been deleted successfully.` });
+
   } catch (err) {
-    // หากเกิดข้อผิดพลาด ให้ยกเลิกการเปลี่ยนแปลงทั้งหมด
-    await transaction.rollback();
-    // และส่ง Error กลับไป
+    // 🚀 [แก้ไข] เพิ่มการตรวจสอบ 'state' ก่อน rollback (เหมือนที่เราทำใน createSubmission)
+    if (transaction && transaction.state === "begun") {
+      await transaction.rollback();
+    }
     res
       .status(500)
       .send({ message: "Failed to delete submission.", error: err.message });
+  } finally {
+    // 🚀 [เพิ่ม] ต้องปิด pool เมื่อทำงานเสร็จ (สำคัญมาก)
+    if (pool) {
+      pool.close();
+    }
   }
 };
 

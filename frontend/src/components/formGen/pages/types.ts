@@ -276,3 +276,15 @@ export interface ValueInputItemProps {
   register: UseFormRegister<IManufacturingReportForm>;
   errors: FieldErrors<IManufacturingReportForm>;
 }
+
+
+export interface IApprovalFlowStep {
+  flow_id: number;
+  submission_id: number;
+  sequence: number;
+  required_level: number;
+  status: "Pending" | "Approved" | "Rejected" | "Skipped";
+  approver_user_id: string | null;
+  updated_at: string | null; // (JSON จะแปลง datetime เป็น string)
+  approver_name: string | null; // (นี่คือชื่อ-นามสกุล ที่เรา JOIN มาจาก Backend)
+}

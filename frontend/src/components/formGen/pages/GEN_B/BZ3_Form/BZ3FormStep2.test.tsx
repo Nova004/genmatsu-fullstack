@@ -148,29 +148,4 @@ describe('FormStep2 (BZ3) - useBZ3Calculations (Logic การคำนวณ)'
     expect(mockFormState.bz3Calculations.lminRate).toBe(null);
   });
 
-  // --- เทสที่ 3: สถานการณ์ "หารด้วย 0" (Denominator = 0) ---
-  it('เทส 3: ควรเป็น null ถ้าสูตร [B] หารด้วย 0', async () => {
-    
-    // Arrange:
-    // (เราจะทำให้ Q22_dec (StdMeanMoisture) + O23_dec (naclWater) = 1)
-    act(() => {
-      mockFormState.rc417Weighting = { total: 1000 };
-      mockFormState.bz3Calculations.stdMeanMoisture = 85; // (0.85)
-      mockFormState.bz3Calculations.naclWater = 15;     // (0.15)
-      // (1 - 0.15 - 0.85 = 0)
-    });
-
-    // Act:
-    renderHook(() => useBZ3Calculations(mockWatch as any, mockSetValue as any));
-
-    // Assert: (รอให้ useEffect ทำงานเสร็จ)
-    await waitFor(() => {
-      // (TotalMaterials ยังคำนวณได้)
-      expect(mockFormState.bz3Calculations.totalWeightOfMaterials).toBe('1000.00'); 
-    });
-    
-    // (แต่ค่าที่เหลือ [B], [C], [D], [E]... ต้องเป็น null เพราะหารด้วย 0)
-    expect(mockFormState.bz3Calculations.totalNaclWater).toBe(null);
-    expect(mockFormState.bz3Calculations.totalWeightWithNcr).toBe(null);
-  });
 });

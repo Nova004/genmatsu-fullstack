@@ -2,10 +2,9 @@
 
 const { pool, sql, poolConnect } = require("../db.js");
 
-
 // --- ฟังก์ชันดึงข้อมูล User ทั้งหมด ---
 
-exports.getAllUsers = async (req, res) => {
+exports.getAllUsersWithGenManu = async (req, res) => {
   try {
     await poolConnect;
     const result = await pool.request().query(`
@@ -20,7 +19,8 @@ exports.getAllUsers = async (req, res) => {
         m.agt_member_shift,
         m.agt_status_job,
         m.agt_member_location,
-        gm.Gen_Manu_mem_No  -- 2. เลือกคอลัมน์ Gen_Manu_mem_No ที่ต้องการ
+        gm.Gen_Manu_mem_No,  
+        gm.LV_Approvals
       FROM 
         dbo.agt_member AS m
       LEFT JOIN 
@@ -31,9 +31,9 @@ exports.getAllUsers = async (req, res) => {
       LEFT JOIN 
         dbo.Gen_Manu_Member AS gm ON m.agt_member_id = gm.Gen_Manu_mem_Memid COLLATE DATABASE_DEFAULT
       WHERE
-         m.agt_status_job = 'Working'
+         m.agt_status_job = 'Working' 
          AND m.agt_member_section = 'S010'
-        AND m.agt_member_position IN ('P012', 'P013', 'P015')
+        AND m.agt_member_position IN ('P012', 'P013', 'P015','P010','P009')
       ORDER BY 
         m.agt_member_id;
     `);
@@ -66,52 +66,63 @@ exports.searchUsers = async (req, res) => {
   }
 };
 
-// =============================================================
-// === ฟังก์ชันใหม่สำหรับ Update หรือ Insert (Upsert) Employee No. ===
-// =============================================================
-exports.updateUserEmployeeNo = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { Gen_Manu_mem_No } = req.body;
+// (ใน user.controller.js)
 
-    if (Gen_Manu_mem_No === undefined) {
-      return res
-        .status(400)
-        .json({ message: "Employee number (Gen_Manu_mem_No) is required." });
+// =============================================================
+// === (แก้ไข) ฟังก์ชัน Upsert Employee No และ LV ===
+// (Frontend เรียกใช้: apiService.put('/api/users/gen-manu-data'))
+// =============================================================
+exports.updateUserGenManuData = async (req, res) => {
+  try {
+    const { agtMemberId, genManuMemNo, lvApprovals } = req.body;
+
+    if (!agtMemberId) {
+      return res.status(400).json({ message: "agtMemberId is required." });
+    }
+    if (lvApprovals === undefined || lvApprovals === null) {
+      return res.status(400).json({ message: "lvApprovals is required." });
     }
 
     await poolConnect;
 
+    // 🚀 [แก้ไขจุดที่ 1] (เพิ่ม COLLATE)
     const existingRecord = await pool
       .request()
-      .input("id", sql.NVarChar, id)
-      .query("SELECT * FROM Gen_Manu_Member WHERE Gen_Manu_mem_Memid = @id");
+      .input("id", sql.NVarChar, agtMemberId).query(`
+        SELECT * FROM Gen_Manu_Member 
+        WHERE Gen_Manu_mem_Memid COLLATE DATABASE_DEFAULT = @id COLLATE DATABASE_DEFAULT
+      `);
 
     if (existingRecord.recordset.length > 0) {
-      // ถ้ามี, ให้อัปเดต
+      // --- UPDATE ---
+
+      // 🚀 [แก้ไขจุดที่ 2] (เพิ่ม COLLATE)
       await pool
         .request()
-        .input("id", sql.NVarChar, id)
-        .input("no", sql.NVarChar, Gen_Manu_mem_No)
+        .input("id", sql.NVarChar, agtMemberId)
+        .input("no", sql.NVarChar, genManuMemNo || '')
+        .input("lv", sql.Int, lvApprovals)
         .query(
-          "UPDATE Gen_Manu_Member SET Gen_Manu_mem_No = @no WHERE Gen_Manu_mem_Memid = @id"
+          `UPDATE Gen_Manu_Member 
+           SET 
+             Gen_Manu_mem_No = @no, 
+             LV_Approvals = @lv 
+           WHERE 
+             Gen_Manu_mem_Memid COLLATE DATABASE_DEFAULT = @id COLLATE DATABASE_DEFAULT`
         );
     } else {
-      // ถ้าไม่มี, ให้เพิ่มใหม่ (INSERT)
-      // 1. ดึงข้อมูลที่จำเป็นทั้งหมดจาก agt_member พร้อม JOIN
+      // --- INSERT ---
+
+      // 🚀 [แก้ไขจุดที่ 3] (เพิ่ม COLLATE ใน WHERE)
       const memberDataResult = await pool
         .request()
-        .input("id", sql.NVarChar, id).query(`
+        .input("id", sql.NVarChar, agtMemberId).query(`
           SELECT 
-            m.agt_member_nameEN,
-            p.agt_position_name, -- ดึงชื่อเต็มของ Position
-            m.agt_member_shift
-          FROM 
-            dbo.agt_member AS m
-          LEFT JOIN 
-            dbo.agt_position AS p ON m.agt_member_position = p.agt_position_id COLLATE DATABASE_DEFAULT
+            m.agt_member_nameEN, p.agt_position_name, m.agt_member_shift
+          FROM dbo.agt_member AS m
+          LEFT JOIN dbo.agt_position AS p ON m.agt_member_position = p.agt_position_id COLLATE DATABASE_DEFAULT
           WHERE 
-            m.agt_member_id = @id
+            m.agt_member_id COLLATE DATABASE_DEFAULT = @id COLLATE DATABASE_DEFAULT
         `);
 
       if (memberDataResult.recordset.length === 0) {
@@ -119,34 +130,33 @@ exports.updateUserEmployeeNo = async (req, res) => {
           .status(404)
           .json({ message: "Member not found in agt_member table." });
       }
-
       const memberData = memberDataResult.recordset[0];
 
-      // 2. ใช้ข้อมูลชื่อเต็ม (agt_position_name) ในการ INSERT
+      // (Query INSERT นี้ไม่ต้องแก้ เพราะมันไม่ได้เปรียบเทียบ)
       await pool
         .request()
-        .input("id", sql.NVarChar, id)
-        .input("no", sql.NVarChar, Gen_Manu_mem_No)
+        .input("id", sql.NVarChar, agtMemberId)
+        .input("no", sql.NVarChar, genManuMemNo || '')
+        .input("lv", sql.Int, lvApprovals || '')
         .input("nameEN", sql.NVarChar, memberData.agt_member_nameEN)
-        .input("position", sql.NVarChar, memberData.agt_position_name) // <-- ใช้ชื่อเต็มแล้ว
+        .input("position", sql.NVarChar, memberData.agt_position_name)
         .input("shift", sql.NVarChar, memberData.agt_member_shift).query(`
-          INSERT INTO Gen_Manu_Member (Gen_Manu_mem_Memid, Gen_Manu_mem_No, Gen_Manu_mem_NamEN, Gen_Manu_mem_Position, Gen_Manu_mem_Shift) 
-          VALUES (@id, @no, @nameEN, @position, @shift)
+          INSERT INTO Gen_Manu_Member 
+            (Gen_Manu_mem_Memid, Gen_Manu_mem_No, LV_Approvals, Gen_Manu_mem_NamEN, Gen_Manu_mem_Position, Gen_Manu_mem_Shift) 
+          VALUES 
+            (@id, @no, @lv, @nameEN, @position, @shift)
         `);
     }
 
-    res.status(200).json({ message: "Employee number updated successfully." });
+    res.status(200).json({ message: "User data updated successfully." });
   } catch (error) {
-    console.error("Error in updateUserEmployeeNo:", error);
-    res
-      .status(500)
-      .json({
-        message: "Error updating employee number",
-        error: error.message,
-      });
+    console.error("Error in updateUserGenManuData:", error);
+    res.status(500).json({
+      message: "Error updating user data",
+      error: error.message,
+    });
   }
 };
-
 
 // =============================================================
 // === ฟังก์ชันสำหรับค้นหา User จาก ID ===

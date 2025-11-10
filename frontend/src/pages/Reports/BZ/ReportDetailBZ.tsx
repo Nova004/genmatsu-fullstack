@@ -2,6 +2,7 @@
 
 import React from 'react';
 import BZFormViewer from '../../../components/formGen/pages/GEN_B/BZ_Form/BZFormViewer';
+import ApprovalFlowDisplay from "../../../components/formGen/components/forms/ApprovalFlowDisplay";
 
 interface ReportDetailBZProps {
   submission: any;
@@ -14,11 +15,15 @@ const ReportDetailBZ: React.FC<ReportDetailBZProps> = ({ submission, blueprints 
   }
 
   return (
-    <BZFormViewer 
-      formData={submission.form_data_json}
-      blueprints={blueprints} // 👈 ส่งพิมพ์เขียวที่ถูกต้องไปให้ Viewer
-      isReadOnly={true}       // 👈 บอก Viewer ให้อยู่ในโหมดอ่านอย่างเดียว
-    />
+    <>
+      <BZFormViewer
+        formData={submission.form_data_json}
+        blueprints={blueprints} // 👈 ส่งพิมพ์เขียวที่ถูกต้องไปให้ Viewer
+        isReadOnly={true}       // 👈 บอก Viewer ให้อยู่ในโหมดอ่านอย่างเดียว
+      />
+
+      <ApprovalFlowDisplay submissionId={submission.submission_id} />
+    </>
   );
 };
 

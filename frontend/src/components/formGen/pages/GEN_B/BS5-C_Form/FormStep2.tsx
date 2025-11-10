@@ -46,7 +46,7 @@ export const useBS5_CCalculations = (
   const ncrGenmatsu = watch('rawMaterials.ncrGenmatsu.actual');
   const rc417WaterContent = watch('bs5cCalculations.rc417WaterContentMoisture'); // (P21)
   const stdMeanMoisture = watch('bs5cCalculations.stdMeanMoisture');
-  const naclWater = watch('bs5cCalculations.naclWater');
+  const naclWater = 4;
   const naclWaterSpecGrav = watch('bs5cCalculations.naclWaterSpecGrav');
 
   // --- "ดักฟัง" ค่าที่ถูกคำนวณจากขั้นตอนก่อนหน้า (ไม่จำเป็นแล้ว เพราะคำนวณใน hook นี้) ---
@@ -436,7 +436,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               {/* --- ส่วนที่ 2: การคำนวณสำหรับ BZ5-C --- */}
               <tr>
                 <td className={tdLeftClass}>CDZ-1:WaterContent(Moisture)</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={inputClass} {...register('bs5cCalculations.rc417WaterContentMoisture', { valueAsNumber: true })} /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number"  step="0.01" min="0"  className={inputClass} {...register('bs5cCalculations.rc417WaterContentMoisture', { valueAsNumber: true })} /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass}> <span className="text-xs"> Weight of CDZ-1 + Mg(OH)<sub>2</sub> <br /> + Carbon </span> </td>
                 <td className={tdLeftClass}><div className="flex items-center"><input type="text" className={disabledInputClass} readOnly {...register('bs5cCalculations.totalWeightOfMaterials')} /><span className="ml-2">KG</span></div> </td>
                 <td className={tdLeftClass}></td>

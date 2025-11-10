@@ -5,6 +5,7 @@ interface User {
   username: string;
   nameEN: string;
   id: string;
+  LV_Approvals : number ;
 }
 
 interface AuthContextType {

@@ -66,7 +66,7 @@ describe('ChecklistTable (Unit Test)', () => {
   // ====================================================================
 
   // --- เทสที่ 1: (ผ่านแล้ว) ---
-  it('เทส 1: ควรender Items, Labels, และ Conditions ถูกต้อง', () => {
+  it('เทส 1: ควร ender Items, Labels, และ Conditions ถูกต้อง', () => {
     renderComponent();
     expect(screen.getByText('1. Check Cleanliness')).toBeTruthy();
     expect(screen.getByText('Must be clean')).toBeTruthy();

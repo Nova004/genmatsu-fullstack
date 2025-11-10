@@ -5,7 +5,7 @@ import Breadcrumb from '../../../Breadcrumbs/Breadcrumb';
 import EditUserModal from './EditUserModal';
 import axios from 'axios';
 import { fireToast } from '../../../../hooks/fireToast';
-
+import  apiClient  from '../../../../services/apiService';
 
 interface AgtMember {
   agt_member_id: string;
@@ -15,6 +15,7 @@ interface AgtMember {
   agt_member_shift: string;
   agt_status_job: string;
   Gen_Manu_mem_No: string | null;
+  LV_Approvals: string | null;
 }
 
 const UserMaster: React.FC = () => {
@@ -29,17 +30,12 @@ const UserMaster: React.FC = () => {
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
-      // 1. ใช้ axios.get และ URL ที่สั้นลง
-      const response = await axios.get('/api/users');
-
-      // 2. ข้อมูล users จะอยู่ใน response.data โดยตรง
+      const response = await apiClient.get('/api/users/all-with-gen-manu');
       setUsers(response.data);
-
     } catch (error) {
-      // 3. catch จะทำงานทันทีถ้า API มีปัญหา
       console.error("Failed to fetch users", error);
-      fireToast('error', 'Failed to load user data.'); // แจ้งเตือนผู้ใช้
-      setUsers([]); // กำหนดค่าว่างให้ State เพื่อป้องกัน Error
+      fireToast('error', 'Failed to load user data.');
+      setUsers([]);
     } finally {
       setIsLoading(false);
     }
@@ -59,25 +55,23 @@ const UserMaster: React.FC = () => {
     setEditingUser(null);
   };
 
-  const handleSaveUser = async (userId: string, newEmployeeNo: string) => {
+  const handleSaveUser = async (userId: string, newEmployeeNo: string, newLevel: number) => {
     try {
-      // 1. ใช้ axios.put และส่งข้อมูล (body) เป็น object ที่สอง
-      await axios.put(`/api/users/${userId}`, {
-        Gen_Manu_mem_No: newEmployeeNo
+      // 1. ใช้ apiService.put และ API Endpoint "ใหม่"
+      await apiClient.put(`/api/users/gen-manu-data`, {
+        // 2. ส่ง Body ตามที่ Backend (updateUserGenManuData) รอรับ
+        agtMemberId: userId,
+        genManuMemNo: newEmployeeNo,
+        lvApprovals: newLevel
       });
-      // 2. ถ้าสำเร็จ ให้แจ้งเตือนสวยๆ
-      fireToast('success', 'Employee number updated successfully!');
 
+      fireToast('success', 'User data updated successfully!');
       handleCloseModal();
-      fetchUsers(); // รีเฟรชข้อมูลในตาราง
+      fetchUsers(); // รีเฟรชข้อมูล
 
     } catch (error: any) {
-      // 3. catch จะทำงานทันทีถ้า API ตอบกลับมาเป็น Error
       console.error("Error saving user:", error);
-
-      // ดึงข้อความ error จากที่ backend ส่งมา (ถ้ามี)
-      const errorMessage = error.response?.data?.message || 'Failed to update employee number.';
-
+      const errorMessage = error.response?.data?.message || 'Failed to update user data.';
       fireToast('error', errorMessage);
     }
   };
@@ -122,12 +116,13 @@ const UserMaster: React.FC = () => {
                 <th className="py-4 px-4 font-medium text-black dark:text-white">Name (EN)</th>
                 <th className="py-4 px-4 font-medium text-black dark:text-white">Position</th>
                 <th className="py-4 px-4 font-medium text-black dark:text-white">Shift</th>
+                <th className="py-4 px-4 font-medium text-black dark:text-white">LV.</th>
                 <th className="py-4 px-4 font-medium text-black dark:text-white">Actions</th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={6} className="text-center p-10">Loading users...</td></tr>
+                <tr><td colSpan={7} className="text-center p-10">Loading users...</td></tr>
               ) : (
                 // --- 4. อัปเดตตารางให้แสดงผลจากข้อมูลที่ฟิลเตอร์แล้ว ---
                 filteredUsers.map((user) => (
@@ -146,6 +141,9 @@ const UserMaster: React.FC = () => {
                     </td>
                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                       <p className="text-black dark:text-white">{user.agt_member_shift}</p>
+                    </td>
+                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                      <p className="text-black dark:text-white">{user.LV_Approvals}</p>
                     </td>
                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                       <div className="flex items-center space-x-3.5">

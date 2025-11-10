@@ -4,18 +4,40 @@ const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const path = require("path");
 require("dotenv").config();
+
+// (ใน auth.controller.js)
+
 const login = async (req, res) => {
   try {
     const { userId, password } = req.body;
 
     // === 2. รอให้การเชื่อมต่อเสร็จสมบูรณ์ โดยใช้ poolConnect ===
-    await poolConnect;
+    await poolConnect; // (โค้ดเดิมของคุณ - ถูกต้อง)
 
-    // 3. ค้นหาผู้ใช้ด้วย agt_member_id (ตอนนี้เราใช้ pool ที่พร้อมใช้งานแล้ว)
+    // 🚀 [แก้ไข] เปลี่ยน Query ให้ JOIN 2 ตาราง
     const result = await pool
       .request()
-      .input("agt_member_id", sql.NVarChar, userId)
-      .query("SELECT agt_member_id, agt_member_password, agt_member_nameTH, agt_member_nameEN, agt_member_email, agt_member_position, agt_member_section, agt_member_shift, agt_status_job FROM agt_member WHERE agt_member_id = @agt_member_id");
+      .input("agt_member_id", sql.NVarChar, userId).query(`
+        SELECT 
+            a.agt_member_id, 
+            a.agt_member_password, 
+            a.agt_member_nameTH, 
+            a.agt_member_nameEN, 
+            a.agt_member_email, 
+            a.agt_member_position, 
+            a.agt_member_section, 
+            a.agt_member_shift, 
+            a.agt_status_job,
+            m.LV_Approvals -- 👈 [ใหม่] ดึง LV มาด้วย
+        FROM 
+            AGT_SMART_SY.dbo.agt_member AS a
+        LEFT JOIN 
+            AGT_SMART_SY.dbo.Gen_Manu_Member AS m 
+            -- (แก้ Collate Conflict ที่นี่ด้วย)
+            ON a.agt_member_id COLLATE DATABASE_DEFAULT = m.Gen_Manu_mem_Memid COLLATE DATABASE_DEFAULT
+        WHERE 
+            a.agt_member_id COLLATE DATABASE_DEFAULT = @agt_member_id COLLATE DATABASE_DEFAULT
+      `);
 
     if (result.recordset.length === 0) {
       return res
@@ -35,23 +57,24 @@ const login = async (req, res) => {
     const payload = {
       user: {
         id: user.agt_member_id,
-        username: user.agt_member_nameTH, 
+        username: user.agt_member_nameTH,
         email: user.agt_member_email,
         nameTH: user.agt_member_nameTH,
         nameEN: user.agt_member_nameEN,
+        LV_Approvals: user.LV_Approvals, // 👈 [ใหม่] เพิ่ม LV เข้าไปใน Payload
       },
     };
 
     const token = jwt.sign(
       payload,
-      process.env.JWT_SECRET || "default_secret", // ควรมี JWT_SECRET ในไฟล์ .env
+      process.env.JWT_SECRET || "default_secret",
       { expiresIn: "1h" }
     );
 
     res.status(200).json({
       message: "เข้าสู่ระบบสำเร็จ!",
       token: token,
-      user: payload.user,
+      user: payload.user, // 👈 (Frontend จะได้รับ user object ที่มี LV แล้ว)
     });
   } catch (error) {
     console.error("!!! SERVER ERROR DURING LOGIN !!!");

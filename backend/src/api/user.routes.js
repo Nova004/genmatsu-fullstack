@@ -5,13 +5,13 @@ const router = express.Router();
 const userController = require('../controllers/user.controller');
 
 // GET /api/users/
-router.get('/', userController.getAllUsers);
+router.get("/all-with-gen-manu", userController.getAllUsersWithGenManu);
 
 // GET /api/users/search
 router.get('/search', userController.searchUsers);
 
 // PUT /api/users/:id -> สำหรับอัปเดต Employee No.
-router.put('/:id', userController.updateUserEmployeeNo);
+router.put("/gen-manu-data", userController.updateUserGenManuData);
 
 // GET /api/users/:id -> สำหรับค้นหา User จาก ID
 router.get('/:id', userController.findUserById); // <-- แก้ไขตรงนี้

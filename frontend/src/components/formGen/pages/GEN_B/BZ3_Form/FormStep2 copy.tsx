@@ -24,7 +24,7 @@ export const useBZ3Calculations = (
   const activatedCarbon = watch('rawMaterials.activatedcarbon');
   const ncrGenmatsu = watch('rawMaterials.ncrGenmatsu.actual');
   const rc417WaterContent = watch('bz3Calculations.rc417WaterContent');
-  const stdMeanMoisture = 39.50;
+  const stdMeanMoisture = 39.50
   const naclWater = 15;
   const naclWaterSpecGrav = watch('bz3Calculations.naclWaterSpecGrav');
 
@@ -73,6 +73,7 @@ export const useBZ3Calculations = (
 
       }
     }
+
 
 
     // ----- ขั้นตอน C: คำนวณค่ากลาง (Intermediate Value) -----

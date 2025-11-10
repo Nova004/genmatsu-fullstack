@@ -7,6 +7,8 @@ const masterRoutes = require("./api/master.routes");
 const userRoutes = require("./api/user.routes"); // นำเข้า user routes
 const naclRoutes = require('./api/nacl.routes'); 
 const submissionRoutes = require('./api/submission.routes');
+const approvalRoutes = require("./api/approval.routes");
+
 
 const app = express();
 const port = 4000;
@@ -20,7 +22,7 @@ app.use("/api/forms", formRoutes);
 app.use("/api/master", masterRoutes);
 app.use("/api/users", userRoutes); // <-- เหลือแค่บรรทัดนี้สำหรับ User
 app.use('/api/submissions', submissionRoutes);
-
+app.use("/api/approvals", approvalRoutes); 
 app.use('/api/nacl', naclRoutes); 
 
 
