@@ -2,6 +2,7 @@
 
 import React from 'react';
 import AX2_BFormViewer from '../../../components/formGen/pages/GEN_A/AX2-B_Form/AX2-BFormViewer';
+import ApprovalFlowDisplay from "../../../components/formGen/components/forms/ApprovalFlowDisplay";
 
 interface ReportDetailAX2_BProps {
   submission: any;
@@ -14,11 +15,17 @@ const ReportDetailAX2_B: React.FC<ReportDetailAX2_BProps> = ({ submission, bluep
   }
 
   return (
-    <AX2_BFormViewer 
-      formData={submission.form_data_json}
-      blueprints={blueprints} // 👈 ส่งพิมพ์เขียวที่ถูกต้องไปให้ Viewer
-      isReadOnly={true}       // 👈 บอก Viewer ให้อยู่ในโหมดอ่านอย่างเดียว
-    />
+    <>
+      <AX2_BFormViewer
+        formData={submission.form_data_json}
+        blueprints={blueprints} // 👈 ส่งพิมพ์เขียวที่ถูกต้องไปให้ Viewer
+        isReadOnly={true}       // 👈 บอก Viewer ให้อยู่ในโหมดอ่านอย่างเดียว
+      />
+     <ApprovalFlowDisplay 
+        submissionId={submission.submission_id} 
+        submissionData={submission} // ‼️ คุณลืมเพิ่มบรรทัดนี้หรือเปล่าครับ? ‼️
+      />
+    </>
   );
 };
 

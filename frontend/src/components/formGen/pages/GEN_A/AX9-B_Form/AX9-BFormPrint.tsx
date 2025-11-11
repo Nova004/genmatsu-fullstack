@@ -11,9 +11,10 @@ interface AX9_BFormPrintProps {
   formData: IManufacturingReportForm;
   blueprints: any;
   isReadOnly: boolean;
+  approvalFlowComponent?: React.ReactNode;
 }
 
-const AX9_BFormPrint: React.FC<AX9_BFormPrintProps> = ({ formData, blueprints, isReadOnly }) => {
+const AX9_BFormPrint: React.FC<AX9_BFormPrintProps> = ({ formData, blueprints, isReadOnly, approvalFlowComponent }) => {
   const methods = useForm<IManufacturingReportForm>({
     defaultValues: formData,
     mode: 'onChange',
@@ -78,8 +79,10 @@ const AX9_BFormPrint: React.FC<AX9_BFormPrintProps> = ({ formData, blueprints, i
              {/* ‼️ ส่ง marginTop เข้าไป ‼️ */}
         
           </div>
-        </div>
+          
+            {approvalFlowComponent}
 
+        </div>
       </div>
     </FormProvider>
   );

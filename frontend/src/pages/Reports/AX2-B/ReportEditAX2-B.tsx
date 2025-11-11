@@ -60,6 +60,8 @@ const ReportEditAX2_B: React.FC<ReportEditAX2_BProps> = ({ submission, templates
         <AX2_BFormEdit
             initialData={initialData}
             onSubmit={handleUpdate}
+            submissionId={submission.submission_id}
+            status={submission.status}
         />
     );
 };

@@ -2,13 +2,15 @@
 
 import React from 'react';
 import AX2_BFormPrint from '../../../components/formGen/pages/GEN_A/AX2-B_Form/AX2-BFormPrint';
+import ApprovalFlowDisplay from "../../../components/formGen/components/forms/ApprovalFlowDisplay";
+
 
 interface ReportDetailAX2_BProps {
   submission: any;
   blueprints: any;
 }
 
-const ReportDetailAX2_B: React.FC<ReportDetailAX2_BProps> = ({ submission, blueprints }) => {
+const ReportDetailAX2_B: React.FC<ReportDetailAX2_BProps> = ({ submission, blueprints, }) => {
   if (!submission || !submission.form_data_json) {
     return <div>ไม่พบข้อมูลฟอร์ม</div>;
   }
@@ -19,6 +21,15 @@ const ReportDetailAX2_B: React.FC<ReportDetailAX2_BProps> = ({ submission, bluep
         formData={submission.form_data_json}
         blueprints={blueprints} // 👈 ส่งพิมพ์เขียวที่ถูกต้องไปให้ Viewer
         isReadOnly={true}       // 👈 บอก Viewer ให้อยู่ในโหมดอ่านอย่างเดียว
+
+        approvalFlowComponent={
+          submission.submission_id ? (
+            <ApprovalFlowDisplay
+              submissionId={submission.submission_id}
+              submissionData={submission} // ‼️ คุณลืมเพิ่มบรรทัดนี้หรือเปล่าครับ? ‼️
+            />
+          ) : null
+        }
       />
     </div>
   );

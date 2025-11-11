@@ -2,6 +2,7 @@
 
 import React from 'react';
 import BS5_CFormViewer from '../../../components/formGen/pages/GEN_B/BS5-C_Form/BS5-CFormViewer';
+import ApprovalFlowDisplay from "../../../components/formGen/components/forms/ApprovalFlowDisplay";
 
 interface ReportDetailBS5_CProps {
   submission: any;
@@ -14,11 +15,18 @@ const ReportDetailBS5_C: React.FC<ReportDetailBS5_CProps> = ({ submission, bluep
   }
 
   return (
-    <BS5_CFormViewer 
-      formData={submission.form_data_json}
-      blueprints={blueprints} // 👈 ส่งพิมพ์เขียวที่ถูกต้องไปให้ Viewer
-      isReadOnly={true}       // 👈 บอก Viewer ให้อยู่ในโหมดอ่านอย่างเดียว
-    />
+    <>
+      <BS5_CFormViewer
+        formData={submission.form_data_json}
+        blueprints={blueprints} // 👈 ส่งพิมพ์เขียวที่ถูกต้องไปให้ Viewer
+        isReadOnly={true}       // 👈 บอก Viewer ให้อยู่ในโหมดอ่านอย่างเดียว
+      />
+
+      <ApprovalFlowDisplay 
+        submissionId={submission.submission_id} 
+        submissionData={submission} // ‼️ คุณลืมเพิ่มบรรทัดนี้หรือเปล่าครับ? ‼️
+      />
+    </>
   );
 };
 

@@ -46,8 +46,8 @@ const ReportEditBZ: React.FC<ReportEditBZProps> = ({ submission, templates }) =>
                     form_data: formData, // ส่งข้อมูลที่แก้ไขแล้วทั้งหมดไป
                 });
                 fireToast('success', 'บันทึกการเปลี่ยนแปลงสำเร็จ');
-                navigate('/reports/history/gen-b', { 
-                    state: { highlightedId: submission.submission_id } 
+                navigate('/reports/history/gen-b', {
+                    state: { highlightedId: submission.submission_id }
                 });
             } catch (error) {
                 console.error("Failed to update submission:", error);
@@ -60,6 +60,8 @@ const ReportEditBZ: React.FC<ReportEditBZProps> = ({ submission, templates }) =>
         <BZFormEdit
             initialData={initialData}
             onSubmit={handleUpdate}
+            submissionId={submission.submission_id}
+            status={submission.status}
         />
     );
 };

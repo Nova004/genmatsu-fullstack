@@ -13,11 +13,14 @@ import { useNavigate } from 'react-router-dom';
 import ProgressBar from '../../../components/ProgressBar';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
 import { initialFormValues } from '../../formDefaults'; // (แก้ path ให้ถูก)
+import { resubmitSubmission } from '../../../../../services/submissionService';
 
 // Props ที่ Component นี้จะรับเข้ามา
 interface BS3FormEditProps {
     initialData: Partial<IManufacturingReportForm>; // ข้อมูลเดิมสำหรับเติมฟอร์ม
     onSubmit: SubmitHandler<IManufacturingReportForm>; // ฟังก์ชันที่จะทำงานเมื่อกดบันทึก
+    submissionId: number;
+    status: string;
 }
 
 const BS3_VALIDATION_SCHEMA = {
@@ -27,11 +30,11 @@ const BS3_VALIDATION_SCHEMA = {
         message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, Lot No. และตรวจสอบสภาพบรรจุภัณฑ์ให้ครบถ้วน',
     },
     2: {
-         fields: [
-          // 'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
-           // 'rc417Weighting.row1.weight',
-           // 'rc417Weighting.row2.weight',
-          //  'bs3Calculations.naclWaterSpecGrav',
+        fields: [
+            // 'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
+            // 'rc417Weighting.row1.weight',
+            // 'rc417Weighting.row2.weight',
+            //  'bs3Calculations.naclWaterSpecGrav',
         ],
         message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
     },
@@ -41,7 +44,7 @@ const BS3_VALIDATION_SCHEMA = {
     },
 };
 
-const BS3FormEdit: React.FC<BS3FormEditProps> = ({ initialData, onSubmit }) => {
+const BS3FormEdit: React.FC<BS3FormEditProps> = ({ initialData, onSubmit, submissionId, status }) => {
     const totalSteps = 4;
     const [isSubmitting, setIsSubmitting] = useState(false);
     const navigate = useNavigate();
@@ -57,7 +60,7 @@ const BS3FormEdit: React.FC<BS3FormEditProps> = ({ initialData, onSubmit }) => {
         reset,
     } = useForm<IManufacturingReportForm>({
         mode: 'onChange',
-          defaultValues: initialFormValues // 👈 จบ! สะอาดและใช้ซ้ำได้
+        defaultValues: initialFormValues // 👈 จบ! สะอาดและใช้ซ้ำได้
     });
 
     // --- ใช้ useEffect เพื่อเติมข้อมูลเดิมลงในฟอร์มเมื่อ Component ถูกสร้างขึ้น ---
@@ -80,9 +83,21 @@ const BS3FormEdit: React.FC<BS3FormEditProps> = ({ initialData, onSubmit }) => {
         }
     };
 
-    
+    const onResubmit = async (data: any) => {
+        try {
+            await resubmitSubmission(submissionId, data);
+            fireToast("success", "ส่งเอกสารแก้ไข และเริ่มอนุมัติใหม่สำเร็จ!");
+            navigate('/reports/history/gen-b', {
+                state: { highlightedId: submissionId }
+            });
+        } catch (error) {
+            console.error(error);
+            fireToast("error", "Resubmit ไม่สำเร็จ");
+        }
+    };
+
     // --- ฟังก์ชันสำหรับจัดการปุ่ม Next และ Back ---
-   const { step, handleNext, handleBack,handleSubmit_form } = useMultiStepForm({
+    const { step, handleNext, handleBack, handleSubmit_form } = useMultiStepForm({
         totalSteps: 4,
         trigger,
         errors,
@@ -110,9 +125,9 @@ const BS3FormEdit: React.FC<BS3FormEditProps> = ({ initialData, onSubmit }) => {
                       เพราะเราจะแสดงผลข้อมูลตามที่ได้รับมาผ่าน initialData
                       แต่ยังคงส่ง props ที่จำเป็นอื่นๆ ให้กับ Step Components
                     */}
-                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="RC-417" errors={errors}  />}
+                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="RC-417" errors={errors} />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={() => { }} />}
-                    {step === 3 && <SharedFormStep3 register={register} errors={errors} trigger={trigger}  control={control} getValues={getValues} onTemplateLoaded={() => { }} templateName="BS3_Step3_Operations" />}
+                    {step === 3 && <SharedFormStep3 register={register} errors={errors} trigger={trigger} control={control} getValues={getValues} onTemplateLoaded={() => { }} templateName="BS3_Step3_Operations" />}
                     {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="bs3Calculations.totalWeightWithNcr" />}
                 </div>
 
@@ -128,15 +143,25 @@ const BS3FormEdit: React.FC<BS3FormEditProps> = ({ initialData, onSubmit }) => {
                             Next
                         </button>
                     )}
-                  
+
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className={`rounded-md bg-amber-500 px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
+                    >
+                        {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
+                    </button>
+
+                    {status === 'Rejected' && (
                         <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className={`rounded-md bg-primary px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
+                            type="button" // 👈 ต้องเป็น "button"
+                            onClick={handleSubmit(onResubmit)}
+                            className="rounded bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-opacity-90"
                         >
-                            {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
+                            บันทึก และ ส่งอนุมัติใหม่ (Resubmit)
                         </button>
-     
+                    )}
+
                 </div>
             </form>
         </div>

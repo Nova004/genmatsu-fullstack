@@ -29,7 +29,7 @@ const EmployeeInputRow: React.FC<EmployeeInputRowProps> = ({ groupName, index, r
         // 2. ถ้าเจอข้อมูล ข้อมูลจะอยู่ใน response.data
         const userData = response.data;
 
-        // 3. นำข้อมูลไปใส่ในฟอร์ม
+        // 3. [‼️ แก้ไข] นำข้อมูลไปใส่ในฟอร์ม (เปลี่ยนจาก .agt_member_nameEN เป็น .fullName)
         setValue(`${groupName}.${index}.name`, userData.fullName);
         setValue(`${groupName}.${index}.number`, userData.userNumber);
 
@@ -74,7 +74,7 @@ const EmployeeInputRow: React.FC<EmployeeInputRowProps> = ({ groupName, index, r
           className={disabledInputClass}
           readOnly
           disabled
-          value={isLoading ? "Loading..." : watch(`${groupName}.${index}.name`)}
+          value={isLoading ? "Loading..." : watch(`${groupName}.${index}.name`) || ''}
         />
       </div>
       <div className={`md:col-span-2 ${inputGroupClass}`}>

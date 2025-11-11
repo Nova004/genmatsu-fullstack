@@ -494,6 +494,11 @@ span.flatpickr-weekday,
     visibility: visible;
   }
 
+  .print-this-too,
+  .print-this-too * {
+    visibility: visible;
+  }
+
   /* จัดตำแหน่งหน้าพิมพ์ให้อยู่มุมบนซ้าย */
   .a4-page-container {
     position: absolute;

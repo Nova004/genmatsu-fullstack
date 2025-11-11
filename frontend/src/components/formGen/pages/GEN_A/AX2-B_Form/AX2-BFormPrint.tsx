@@ -11,9 +11,10 @@ interface AX2_BFormPrintProps {
   formData: IManufacturingReportForm;
   blueprints: any;
   isReadOnly: boolean;
+  approvalFlowComponent?: React.ReactNode;
 }
 
-const AX2_BFormPrint: React.FC<AX2_BFormPrintProps> = ({ formData, blueprints, isReadOnly }) => {
+const AX2_BFormPrint: React.FC<AX2_BFormPrintProps> = ({ formData, blueprints, isReadOnly, approvalFlowComponent }) => {
   const methods = useForm<IManufacturingReportForm>({
     defaultValues: formData,
     mode: 'onChange',
@@ -37,7 +38,7 @@ const AX2_BFormPrint: React.FC<AX2_BFormPrintProps> = ({ formData, blueprints, i
     ...methods,
     errors: methods.formState.errors,
     isReadOnly: isReadOnly,
-    onTemplateLoaded: () => {},
+    onTemplateLoaded: () => { },
   };
 
 
@@ -48,7 +49,7 @@ const AX2_BFormPrint: React.FC<AX2_BFormPrintProps> = ({ formData, blueprints, i
       <div className="a4-page-container relative rounded-sm border border-stroke bg-white flex flex-col">
 
         {/* --- ส่วนเนื้อหา (ลบ flex-grow ออก) --- */}
-        <div> 
+        <div>
           {/* === หน้า 1 === */}
           <div className="flex w-full flex-col border-r border-stroke">
             <div className="form-section p-1 border-b border-stroke">
@@ -58,7 +59,7 @@ const AX2_BFormPrint: React.FC<AX2_BFormPrintProps> = ({ formData, blueprints, i
               <FormStep2 {...formStepProps} staticBlueprint={blueprints['AX2-B_Step2_RawMaterials']} />
             </div>
             {/* ‼️ ส่ง marginTop เข้าไป ‼️ */}
-           
+
           </div>
 
           {/* === หน้า 2 === */}
@@ -66,8 +67,8 @@ const AX2_BFormPrint: React.FC<AX2_BFormPrintProps> = ({ formData, blueprints, i
             <div className="form-section p-1 border-b border-stroke">
               <SharedFormStep3 {...formStepProps} staticBlueprint={blueprints['AX2-B_Step3_Operations']} templateName="AX2-B_Step3_Operations" />
             </div>
-             {/* ‼️ ส่ง marginTop เข้าไป ‼️ */}
-         
+            {/* ‼️ ส่ง marginTop เข้าไป ‼️ */}
+
           </div>
 
           {/* === หน้า 3 === */}
@@ -75,9 +76,12 @@ const AX2_BFormPrint: React.FC<AX2_BFormPrintProps> = ({ formData, blueprints, i
             <div className="form-section p-1">
               <SharedFormStep4 {...formStepProps} totalWeightFieldName="calculations.finalTotalWeight" />
             </div>
-             {/* ‼️ ส่ง marginTop เข้าไป ‼️ */}
-        
+            {/* ‼️ ส่ง marginTop เข้าไป ‼️ */}
+
           </div>
+
+          {approvalFlowComponent}
+          
         </div>
 
       </div>

@@ -60,6 +60,8 @@ const ReportEditBS3: React.FC<ReportEditBS3Props> = ({ submission, templates }) 
         <BS3FormEdit
             initialData={initialData}
             onSubmit={handleUpdate}
+            submissionId={submission.submission_id}
+            status={submission.status}
         />
     );
 };

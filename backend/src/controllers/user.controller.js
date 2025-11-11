@@ -100,7 +100,7 @@ exports.updateUserGenManuData = async (req, res) => {
       await pool
         .request()
         .input("id", sql.NVarChar, agtMemberId)
-        .input("no", sql.NVarChar, genManuMemNo || '')
+        .input("no", sql.NVarChar, genManuMemNo || "")
         .input("lv", sql.Int, lvApprovals)
         .query(
           `UPDATE Gen_Manu_Member 
@@ -136,8 +136,8 @@ exports.updateUserGenManuData = async (req, res) => {
       await pool
         .request()
         .input("id", sql.NVarChar, agtMemberId)
-        .input("no", sql.NVarChar, genManuMemNo || '')
-        .input("lv", sql.Int, lvApprovals || '')
+        .input("no", sql.NVarChar, genManuMemNo || "")
+        .input("lv", sql.Int, lvApprovals || "")
         .input("nameEN", sql.NVarChar, memberData.agt_member_nameEN)
         .input("position", sql.NVarChar, memberData.agt_position_name)
         .input("shift", sql.NVarChar, memberData.agt_member_shift).query(`
@@ -173,12 +173,28 @@ exports.findUserById = async (req, res) => {
     await poolConnect;
 
     // 3. เมื่อเชื่อมต่อสำเร็จแล้ว ก็สามารถใช้ "pool" ได้เลย
-    const result = await pool
-      .request()
-      .input("employeeId", sql.VarChar, id)
-      .query(
-        "SELECT Gen_Manu_mem_NamEN, Gen_Manu_mem_No FROM Gen_Manu_Member WHERE Gen_Manu_mem_Memid = @employeeId"
-      );
+    const result = await pool.request().input("employeeId", sql.VarChar, id)
+      .query(`
+        SELECT 
+            -- 1. [แก้ไข] ดึงชื่อจริงจาก agt_member
+            am.agt_member_nameEN, 
+            
+            -- 2. [เหมือนเดิม] ดึงเบอร์จาก Gen_Manu_Member
+            gmm.Gen_Manu_mem_No,
+
+            -- 3. [เพิ่ม] ดึง Level มาด้วย (สำคัญมาก)
+            gmm.LV_Approvals 
+        FROM 
+            -- (ต้องใช้ชื่อเต็มเพื่อความปลอดภัย)
+            AGT_SMART_SY.dbo.Gen_Manu_Member gmm
+        
+        -- 4. [เพิ่ม] JOIN ตาราง agt_member
+        LEFT JOIN 
+            AGT_SMART_SY.dbo.agt_member am 
+            ON gmm.Gen_Manu_mem_Memid COLLATE DATABASE_DEFAULT = am.agt_member_id COLLATE DATABASE_DEFAULT
+        WHERE 
+            gmm.Gen_Manu_mem_Memid = @employeeId
+      `);
 
     if (result.recordset.length === 0) {
       return res.status(404).json({ message: "ไม่พบข้อมูลพนักงาน" });
@@ -187,9 +203,11 @@ exports.findUserById = async (req, res) => {
     const user = result.recordset[0];
 
     res.status(200).json({
-      fullName: user.Gen_Manu_mem_NamEN,
+      fullName: user.agt_member_nameEN, // 👈 แก้ไขที่นี่
       userNumber: user.Gen_Manu_mem_No,
+      level: user.LV_Approvals, // 👈 (ผมเพิ่ม Level กลับไปให้ด้วย เผื่อ Frontend ต้องใช้)
     });
+    
   } catch (error) {
     console.error("Error in findUserById:", error); // เพิ่ม context ให้ error log
     res.status(500).json({ message: "เกิดข้อผิดพลาดที่เซิร์ฟเวอร์" });

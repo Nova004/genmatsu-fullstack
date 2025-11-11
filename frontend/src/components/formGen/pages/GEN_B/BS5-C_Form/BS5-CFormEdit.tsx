@@ -13,11 +13,14 @@ import { fireToast } from '../../../../../hooks/fireToast';
 import ProgressBar from '../../../components/ProgressBar';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
 import { initialFormValues } from '../../formDefaults'; // (แก้ path ให้ถูก)
+import { resubmitSubmission } from '../../../../../services/submissionService';
 
 // Props ที่ Component นี้จะรับเข้ามา
 interface BS5_CFormEditProps {
     initialData: Partial<IManufacturingReportForm>; // ข้อมูลเดิมสำหรับเติมฟอร์ม
     onSubmit: SubmitHandler<IManufacturingReportForm>; // ฟังก์ชันที่จะทำงานเมื่อกดบันทึก
+    submissionId: number;
+    status: string;
 }
 
 const BS5_C_VALIDATION_SCHEMA = {
@@ -28,10 +31,10 @@ const BS5_C_VALIDATION_SCHEMA = {
     },
     2: {
         fields: [
-          //  'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
+            //  'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
             //'rc417Weighting.row1.weight',
-           // 'rc417Weighting.row2.weight',
-           // 'bs3Calculations.naclWaterSpecGrav',
+            // 'rc417Weighting.row2.weight',
+            // 'bs3Calculations.naclWaterSpecGrav',
         ],
         message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
     },
@@ -41,7 +44,7 @@ const BS5_C_VALIDATION_SCHEMA = {
     },
 };
 
-const BS5_CFormEdit: React.FC<BS5_CFormEditProps> = ({ initialData, onSubmit }) => {
+const BS5_CFormEdit: React.FC<BS5_CFormEditProps> = ({ initialData, onSubmit, submissionId, status }) => {
     const totalSteps = 4;
     const [isSubmitting, setIsSubmitting] = useState(false);
     const navigate = useNavigate();
@@ -80,9 +83,21 @@ const BS5_CFormEdit: React.FC<BS5_CFormEditProps> = ({ initialData, onSubmit }) 
         }
     };
 
+    const onResubmit = async (data: any) => {
+        try {
+            await resubmitSubmission(submissionId, data);
+            fireToast("success", "ส่งเอกสารแก้ไข และเริ่มอนุมัติใหม่สำเร็จ!");
+            navigate('/reports/history/gen-b', {
+                state: { highlightedId: submissionId }
+            });
+        } catch (error) {
+            console.error(error);
+            fireToast("error", "Resubmit ไม่สำเร็จ");
+        }
+    };
 
     // --- ฟังก์ชันสำหรับจัดการปุ่ม Next และ Back ---
-    const { step, handleNext, handleBack,handleSubmit_form } = useMultiStepForm({
+    const { step, handleNext, handleBack, handleSubmit_form } = useMultiStepForm({
         totalSteps: 4,
         trigger,
         errors,
@@ -132,10 +147,20 @@ const BS5_CFormEdit: React.FC<BS5_CFormEditProps> = ({ initialData, onSubmit }) 
                         type="submit"
                         disabled={isSubmitting}
                         onClick={handleSubmit_form}
-                        className={`rounded-md bg-primary px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
+                        className={`rounded-md bg-amber-500 px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
                     >
                         {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
                     </button>
+
+                    {status === 'Rejected' && (
+                        <button
+                            type="button" // 👈 ต้องเป็น "button"
+                            onClick={handleSubmit(onResubmit)}
+                            className="rounded bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-opacity-90"
+                        >
+                            บันทึก และ ส่งอนุมัติใหม่ (Resubmit)
+                        </button>
+                    )}
 
                 </div>
             </form>

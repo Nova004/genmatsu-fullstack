@@ -94,4 +94,16 @@ export const generatePdfById = async (id: string): Promise<Blob> => {
     throw new Error(error.response?.data?.message || `Failed to generate PDF for submission ${id}`);
   }
 };
-// --- สิ้นสุดฟังก์ชันที่เพิ่ม ---
+
+export const resubmitSubmission = async (id: number, formDataJson: any) => {
+  try {
+  
+    const response = await apiClient.put(`/api/submissions/resubmit/${id}`, { 
+      formDataJson // ส่งเฉพาะข้อมูลใหม่ไป
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error resubmitting submission ${id}:`, error);
+    throw error;
+  }
+};

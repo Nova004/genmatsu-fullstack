@@ -2,6 +2,7 @@
 
 import React from 'react';
 import AS2FormViewer from '../../../components/formGen/pages/GEN_A/AS2_Form/AS2FormViewer';
+import ApprovalFlowDisplay from "../../../components/formGen/components/forms/ApprovalFlowDisplay";
 
 interface ReportDetailAS2Props {
   submission: any;
@@ -14,11 +15,17 @@ const ReportDetailAS2: React.FC<ReportDetailAS2Props> = ({ submission, blueprint
   }
 
   return (
-    <AS2FormViewer 
-      formData={submission.form_data_json}
-      blueprints={blueprints} // 👈 ส่งพิมพ์เขียวที่ถูกต้องไปให้ Viewer
-      isReadOnly={true}       // 👈 บอก Viewer ให้อยู่ในโหมดอ่านอย่างเดียว
-    />
+    <>
+      <AS2FormViewer
+        formData={submission.form_data_json}
+        blueprints={blueprints} // 👈 ส่งพิมพ์เขียวที่ถูกต้องไปให้ Viewer
+        isReadOnly={true}       // 👈 บอก Viewer ให้อยู่ในโหมดอ่านอย่างเดียว
+      />
+     <ApprovalFlowDisplay 
+        submissionId={submission.submission_id} 
+        submissionData={submission} // ‼️ คุณลืมเพิ่มบรรทัดนี้หรือเปล่าครับ? ‼️
+      />
+    </>
   );
 };
 

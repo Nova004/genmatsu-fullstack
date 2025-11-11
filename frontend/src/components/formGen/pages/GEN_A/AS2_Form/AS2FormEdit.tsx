@@ -12,12 +12,15 @@ import FormHeader from '../../../components/FormHeader';
 import { fireToast } from '../../../../../hooks/fireToast';
 import ProgressBar from '../../../components/ProgressBar';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
-import { initialFormValues } from '../../formDefaults'; // (แก้ path ให้ถูก)
+
+import { resubmitSubmission } from '../../../../../services/submissionService';
 
 // Props ที่ Component นี้จะรับเข้ามา
 interface AS2FormEditProps {
     initialData: Partial<IManufacturingReportForm>; // ข้อมูลเดิมสำหรับเติมฟอร์ม
     onSubmit: SubmitHandler<IManufacturingReportForm>; // ฟังก์ชันที่จะทำงานเมื่อกดบันทึก
+    submissionId: number;
+    status: string;
 }
 
 const AS2_VALIDATION_SCHEMA = {
@@ -37,7 +40,11 @@ const AS2_VALIDATION_SCHEMA = {
 };
 
 
-const AS2FormEdit: React.FC<AS2FormEditProps> = ({ initialData, onSubmit }) => {
+const AS2FormEdit: React.FC<AS2FormEditProps> = ({ initialData, onSubmit, submissionId, status }) => {
+
+    console.log('--- ตรวจสอบ Status ที่ได้รับมา ---');
+    console.log('Status คือ:', status);
+    console.log('เทียบกับ "Rejected":', status === 'Rejected');
 
     const totalSteps = 4;
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -77,6 +84,19 @@ const AS2FormEdit: React.FC<AS2FormEditProps> = ({ initialData, onSubmit }) => {
         }
     };
 
+    const onResubmit = async (data: any) => {
+        try {
+            await resubmitSubmission(submissionId, data);
+            fireToast("success", "ส่งเอกสารแก้ไข และเริ่มอนุมัติใหม่สำเร็จ!");
+            navigate('/reports/history/gen-a', {
+                state: { highlightedId: submissionId }
+            });
+        } catch (error) {
+            console.error(error);
+            fireToast("error", "Resubmit ไม่สำเร็จ");
+        }
+    };
+
     // --- ฟังก์ชันสำหรับจัดการปุ่ม Next และ Back ---
     const { step, handleNext, handleBack } = useMultiStepForm({
         totalSteps: 4,
@@ -84,7 +104,6 @@ const AS2FormEdit: React.FC<AS2FormEditProps> = ({ initialData, onSubmit }) => {
         errors,
         validationSchema: AS2_VALIDATION_SCHEMA,
     });
-
 
     // --- ค่าคงที่สำหรับ Styling และ Dropdown ---
     const availableForms = [{ value: 'AS2', label: 'AS2', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข
@@ -125,13 +144,23 @@ const AS2FormEdit: React.FC<AS2FormEditProps> = ({ initialData, onSubmit }) => {
                             Next
                         </button>
                     )}
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className={`rounded-md bg-amber-500 px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
+                    >
+                        {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
+                    </button>
+
+                    {status === 'Rejected' && (
                         <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className={`rounded-md bg-primary px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
+                            type="button" // 👈 ต้องเป็น "button"
+                            onClick={handleSubmit(onResubmit)}
+                            className="rounded bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-opacity-90"
                         >
-                            {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
+                            บันทึก และ ส่งอนุมัติใหม่ (Resubmit)
                         </button>
+                    )}
                 </div>
             </form>
         </div>

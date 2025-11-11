@@ -287,4 +287,5 @@ export interface IApprovalFlowStep {
   approver_user_id: string | null;
   updated_at: string | null; // (JSON จะแปลง datetime เป็น string)
   approver_name: string | null; // (นี่คือชื่อ-นามสกุล ที่เรา JOIN มาจาก Backend)
+  comment: string | null;
 }

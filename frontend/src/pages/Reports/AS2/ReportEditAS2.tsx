@@ -60,6 +60,8 @@ const ReportEditAS2: React.FC<ReportEditAS2Props> = ({ submission, templates }) 
         <AS2FormEdit
             initialData={initialData}
             onSubmit={handleUpdate}
+            submissionId={submission.submission_id}
+            status={submission.status}
         />
     );
 };

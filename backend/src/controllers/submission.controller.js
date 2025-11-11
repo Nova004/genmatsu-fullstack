@@ -11,6 +11,7 @@ async function getSubmissionDataForPdf(submissionId) {
 
   console.log(`[PDF-Helper] Fetching submission data for ID: ${submissionId}`);
   // 1. ดึงข้อมูลหลัก
+  // 1. ดึงข้อมูลหลัก (‼️ [แก้ไข Query นี้] ‼️)
   const submissionResult = await request.input(
     "submissionId",
     sql.Int,
@@ -18,9 +19,18 @@ async function getSubmissionDataForPdf(submissionId) {
   ).query(`
       SELECT 
           fs.submission_id, fs.version_set_id, fs.form_type, fs.lot_no,
-          fs.submitted_by, fs.submitted_at, fsd.form_data_json
+          fs.submitted_by, fs.submitted_at, fsd.form_data_json,
+
+          -- 1. [เพิ่ม] เลือกคอลัมน์ชื่อจากตาราง agt_member
+          u.agt_member_nameEN AS submitted_by_name
+
       FROM Form_Submissions fs
       JOIN Form_Submission_Data fsd ON fs.submission_id = fsd.submission_id
+
+      -- 2. [เพิ่ม] JOIN ตาราง agt_member และแก้ Collation
+      LEFT JOIN
+          agt_member u ON fs.submitted_by COLLATE Thai_CI_AS = u.agt_member_id
+
       WHERE fs.submission_id = @submissionId
     `);
 
@@ -351,21 +361,26 @@ exports.getSubmissionById = async (req, res) => {
     // 1. ดึงข้อมูลหลักจาก Submissions และ Submission_Data
     const submissionResult = await request.input("submissionId", sql.Int, id)
       .query(`
-                SELECT 
-                    fs.submission_id,
-                    fs.version_set_id,
-                    fs.form_type,
-                    fs.lot_no,
-                    fs.submitted_by,
-                    fs.submitted_at,
-                    fsd.form_data_json
-                FROM 
-                    Form_Submissions fs
-                JOIN 
-                    Form_Submission_Data fsd ON fs.submission_id = fsd.submission_id
-                WHERE 
-                    fs.submission_id = @submissionId
-            `);
+           SELECT
+                fs.submission_id,
+                fs.version_set_id,
+                fs.form_type,
+                fs.lot_no,
+                fs.submitted_by,
+                fs.submitted_at,
+                fs.status,
+                fsd.form_data_json,
+                u.agt_member_nameEN AS submitted_by_name
+            FROM
+                Form_Submissions fs
+            JOIN
+                Form_Submission_Data fsd ON fs.submission_id = fsd.submission_id
+
+          LEFT JOIN
+                agt_member u ON fs.submitted_by = u.agt_member_id COLLATE SQL_Latin1_General_CP1_CI_AS
+            WHERE
+                fs.submission_id = @submissionId
+                  `);
 
     if (submissionResult.recordset.length === 0) {
       return res.status(404).send({ message: "Submission not found." });
@@ -485,7 +500,6 @@ exports.deleteSubmission = async (req, res) => {
     res
       .status(200)
       .send({ message: `Submission ID ${id} has been deleted successfully.` });
-
   } catch (err) {
     // 🚀 [แก้ไข] เพิ่มการตรวจสอบ 'state' ก่อน rollback (เหมือนที่เราทำใน createSubmission)
     if (transaction && transaction.state === "begun") {
@@ -700,5 +714,83 @@ exports.generatePdf = async (req, res) => {
     res
       .status(500)
       .send({ message: "Failed to generate PDF", error: error.message });
+  }
+};
+
+exports.resubmitSubmission = async (req, res) => {
+  const { id } = req.params; // submission_id ที่จะแก้ไข
+  const { formDataJson } = req.body; // ข้อมูลฟอร์มใหม่
+
+  let pool;
+  let transaction;
+
+  try {
+    pool = await sql.connect(dbConfig);
+    transaction = new sql.Transaction(pool);
+    await transaction.begin();
+
+    const request = new sql.Request(transaction);
+
+    // 1. "ประกาศ" Input ทั้งหมดแค่ครั้งเดียว (เหมือนเดิม)
+    request.input("submissionId", sql.Int, id);
+    request.input("formDataJson", sql.NVarChar, JSON.stringify(formDataJson));
+
+    // --- (A) บันทึกข้อมูลใหม่ ---
+
+    // 2. อัปเดต JSON Data (เหมือนเดิม)
+    await request.query(`
+          UPDATE Form_Submission_Data 
+          SET form_data_json = @formDataJson 
+          WHERE submission_id = @submissionId
+      `);
+
+    // 3. ‼️ [แก้ไข] อัปเดตตารางหลัก (เพิ่มการเปลี่ยน status) ‼️
+    await request.query(`
+          UPDATE Form_Submissions 
+          SET 
+              submitted_at = GETDATE(),
+              status = 'Drafted' -- 👈 [ใหม่] เปลี่ยน status กลับเป็น Drafted
+          WHERE 
+              submission_id = @submissionId
+              AND status = 'Rejected' -- 👈 (Update เฉพาะถ้ามันเป็น Rejected)
+      `);
+
+    // --- (B) ล้างค่าการอนุมัติเดิม ---
+
+    // 4. "รีเซ็ต" Flow (เหมือนเดิม)
+    await request.query(`
+          UPDATE Gen_Approval_Flow 
+          SET 
+              status = 'Pending', 
+              approver_user_id = NULL, 
+              updated_at = NULL 
+          WHERE 
+              submission_id = @submissionId
+              AND (status = 'Rejected' OR status = 'Pending')
+      `);
+
+    // 5. "ล้าง" Log เก่า (เหมือนเดิม)
+    await request.query(`
+          DELETE FROM AGT_SMART_SY.dbo.Gen_Approved_log
+          WHERE 
+              submission_id = @submissionId
+              AND action = 'Rejected' 
+      `);
+
+    // --- จบงาน ---
+    await transaction.commit();
+    res.status(200).json({ message: "Resubmitted successfully." });
+  } catch (error) {
+    if (transaction) {
+      await transaction.rollback();
+    }
+    console.error("Error resubmitting submission:", error);
+    res
+      .status(500)
+      .json({ message: "Failed to resubmit", error: error.message });
+  } finally {
+    if (pool) {
+      pool.close();
+    }
   }
 };

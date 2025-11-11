@@ -12,9 +12,8 @@ import SharedFormStep1 from '../../../components/forms/SharedFormStep1_GENB';
 import FormStep2 from './FormStep2';
 import SharedFormStep3 from '../../../components/forms/SharedFormStep3';
 import SharedFormStep4 from '../../../components/forms/SharedFormStep4_GENB';
-import ProgressBar from '../../../components/ProgressBar';
-import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
 import { useProductionForm } from '../../../../../hooks/useProductionForm';
+
 
 
 // สร้าง Interface เพื่อกำหนดว่า BZ5-CFormPrint ต้องรับข้อมูลอะไรเข้ามาบ้าง
@@ -22,6 +21,7 @@ interface BZ5_CFormPrintProps {
   formData: IManufacturingReportForm; // 1. ข้อมูลที่ถูกบันทึกไว้จากฐานข้อมูล
   blueprints: any;                   // 2. "พิมพ์เขียว" (Master Template) ที่ใช้ตอนบันทึก
   isReadOnly: boolean;               // 3. ตัวแปรสำหรับบอกว่าเป็นโหมด "อ่านอย่างเดียว" หรือไม่
+  approvalFlowComponent?: React.ReactNode;
 }
 
 const BZ5_C_VALIDATION_SCHEMA = {
@@ -41,7 +41,7 @@ const BZ5_C_VALIDATION_SCHEMA = {
   },
 };
 // --- ส่วน Component หลัก ---
-const BZ5_CFormPrint: React.FC<BZ5_CFormPrintProps> = ({ formData, blueprints, isReadOnly }) => {
+const BZ5_CFormPrint: React.FC<BZ5_CFormPrintProps> = ({ formData, blueprints, isReadOnly, approvalFlowComponent }) => {
 
   // --- (ส่วน Logic: ยึดตามโค้ดของคุณเป๊ะๆ) ---
   const totalSteps = 4;
@@ -49,7 +49,7 @@ const BZ5_CFormPrint: React.FC<BZ5_CFormPrintProps> = ({ formData, blueprints, i
   const { formMethods } = useProductionForm({
     formType: 'BZ5-C',
     netWeightOfYieldSTD: 800,
-     category: 'GEN_B'
+    category: 'GEN_B'
   });
   const methods = useForm<IManufacturingReportForm>({  // ใช้ useForm เพื่อจัดการฟอร์ม
     defaultValues: formData,
@@ -141,6 +141,8 @@ const BZ5_CFormPrint: React.FC<BZ5_CFormPrintProps> = ({ formData, blueprints, i
             <SharedFormStep4 {...formStepProps} totalWeightFieldName="bz5cCalculations.totalWeightWithNcr" />
           </div>
         </div>
+          {approvalFlowComponent}
+
       </div>
     </FormProvider >
   );

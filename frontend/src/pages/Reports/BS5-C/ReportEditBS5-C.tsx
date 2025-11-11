@@ -60,6 +60,8 @@ const ReportEditBS5_C: React.FC<ReportEditBS5_CProps> = ({ submission, templates
         <BS5_CFormEdit
             initialData={initialData}
             onSubmit={handleUpdate}
+            submissionId={submission.submission_id}
+            status={submission.status}
         />
     );
 };
