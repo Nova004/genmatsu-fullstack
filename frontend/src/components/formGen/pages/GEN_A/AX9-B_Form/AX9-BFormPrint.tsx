@@ -37,7 +37,7 @@ const AX9_BFormPrint: React.FC<AX9_BFormPrintProps> = ({ formData, blueprints, i
   const formStepProps = {
     ...methods,
     errors: methods.formState.errors,
-    isReadOnly: isReadOnly,
+    isReadOnly: false,
     onTemplateLoaded: () => {},
   };
 

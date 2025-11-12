@@ -12,13 +12,14 @@ import FormHeader from '../../../components/FormHeader';
 import { fireToast } from '../../../../../hooks/fireToast';
 import ProgressBar from '../../../components/ProgressBar';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
-import { resubmitSubmission } from '../../../../../services/submissionService';
+
 
 // Props ที่ Component นี้จะรับเข้ามา
 interface AX9_BFormEditProps {
     initialData: Partial<IManufacturingReportForm>; // ข้อมูลเดิมสำหรับเติมฟอร์ม
     onSubmit: SubmitHandler<IManufacturingReportForm>; // ฟังก์ชันที่จะทำงานเมื่อกดบันทึก
-    submissionId: number;
+    onResubmit: SubmitHandler<IManufacturingReportForm>; // ฟังก์ชันที่จะทำงานเมื่อกดส่งอนุมัติใหม่
+    submissionId: number; // ID ของ submission ที่กำลังแก้ไ
     status: string;
 }
 
@@ -39,7 +40,7 @@ const AX9_B_VALIDATION_SCHEMA = {
 };
 
 
-const AX9_BFormEdit: React.FC<AX9_BFormEditProps> = ({ initialData, onSubmit, submissionId, status }) => {
+const AX9_BFormEdit: React.FC<AX9_BFormEditProps> = ({ initialData, onSubmit, onResubmit, submissionId, status }) => {
 
     const totalSteps = 4;
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -80,18 +81,6 @@ const AX9_BFormEdit: React.FC<AX9_BFormEditProps> = ({ initialData, onSubmit, su
     };
 
 
-    const onResubmit = async (data: any) => {
-        try {
-            await resubmitSubmission(submissionId, data);
-            fireToast("success", "ส่งเอกสารแก้ไข และเริ่มอนุมัติใหม่สำเร็จ!");
-            navigate('/reports/history/gen-a', {
-                state: { highlightedId: submissionId }
-            });
-        } catch (error) {
-            console.error(error);
-            fireToast("error", "Resubmit ไม่สำเร็จ");
-        }
-    };
 
     // --- ฟังก์ชันสำหรับจัดการปุ่ม Next และ Back ---
     const { step, handleNext, handleBack } = useMultiStepForm({
@@ -153,9 +142,10 @@ const AX9_BFormEdit: React.FC<AX9_BFormEditProps> = ({ initialData, onSubmit, su
                         <button
                             type="button" // 👈 ต้องเป็น "button"
                             onClick={handleSubmit(onResubmit)}
-                            className="rounded bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-opacity-90"
+                            disabled={isSubmitting}
+                            className={`rounded-md bg-indigo-600 px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
                         >
-                            บันทึก และ ส่งอนุมัติใหม่ (Resubmit)
+                            {isSubmitting ? 'กำลังบันทึก...' : 'บันทึก และ ส่งอนุมัติใหม่ (Resubmit)'}
                         </button>
                     )}
                 </div>

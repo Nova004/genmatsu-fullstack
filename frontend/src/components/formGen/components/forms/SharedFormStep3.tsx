@@ -69,7 +69,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
   if (error) return <div className="p-4 text-red-500">{error}</div>;
 
   const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-3 py-2 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
-  const disabledInputClass = "w-full cursor-default rounded-lg border-[1.5px] border-stroke bg-gray-2 px-3 py-2 text-black outline-none dark:border-form-strokedark dark:bg-meta-4 dark:text-white";
+  const disabledInputClass = "w-full cursor-default rounded-lg border-[1.5px] border-stroke bg-gray-2 bg-neutral-500 px-3 py-2 text-black outline-none dark:border-form-strokedark dark:bg-meta-4 dark:text-white";
   const thClass = "border-b border-stroke px-4 py-3 text-center font-medium text-black dark:border-strokedark dark:text-white";
   const tdClass = "border-b border-stroke px-4 py-3 text-black dark:border-strokedark dark:text-white";
   const tdCenterClass = `${tdClass} text-center align-top pt-4`;
@@ -336,7 +336,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                                       const subItemsArray = col.description?.subItems || [];
 
                                       const timeInputClass = "w-full rounded-r-lg border-[1.5px] border-l-0 border-stroke bg-transparent px-3 py-1 text-sm text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
-                                      const disabledTimeInputClass = "w-full cursor-default rounded-r-lg border-[1.5px] border-l-0 border-stroke bg-gray-2 px-3 py-1 text-sm text-black outline-none dark:border-form-strokedark dark:bg-meta-4 dark:text-white";
+                                      const disabledTimeInputClass = "w-full cursor-default rounded-r-lg border-[1.5px] bg-neutral-500  border-l-0 border-stroke bg-gray-2 px-3 py-1 text-sm text-black outline-none dark:border-form-strokedark dark:bg-meta-4 dark:text-white";
                                       const labelClass = "inline-flex items-center whitespace-nowrap rounded-l-md border border-r-0 border-stroke bg-gray-2 px-3 text-sm text-black dark:border-strokedark dark:bg-meta-4 dark:text-white";
 
                                       return (
@@ -359,7 +359,10 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                                                   control={control}
                                                   rules={{
                                                     validate: {
-                                                      // 1. แนวตั้ง (Duration)
+                                                      isRequired: (value) => {
+                                                        if (!isSubStartTimeEnabled) return true; // ถ้าถูกปิด = ผ่าน
+                                                        return (value && value.trim() !== '') || 'กรุณากรอกเวลา';
+                                                      },
                                                       lessThanFinish: (value) => {
                                                         if (!isSubFinishTimeEnabled) return true;
                                                         const finishTime = getValues(subItemFinishTimeField as any);
@@ -417,7 +420,7 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                                                     <div className="relative w-full">
                                                       <InputMask
                                                         {...field}
-                                                        value={field.value || ''} 
+                                                        value={field.value || ''}
                                                         // (onChange Trigger - ถูกต้องแล้ว)
                                                         onChange={(e) => {
                                                           field.onChange(e);
@@ -453,7 +456,10 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                                                   control={control}
                                                   rules={{
                                                     validate: {
-                                                      // 1. แนวตั้ง (Duration)
+                                                      isRequired: (value) => {
+                                                        if (!isSubFinishTimeEnabled) return true; // ถ้าถูกปิด = ผ่าน
+                                                        return (value && value.trim() !== '') || 'กรุณากรอกเวลา';
+                                                      },
                                                       greaterThanStart: (value) => {
                                                         if (!isSubStartTimeEnabled) return true;
                                                         const startTime = getValues(subItemStartTimeField as any);
@@ -644,7 +650,10 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                         control={control}
                         rules={{
                           validate: {
-                            // 1. แนวตั้ง (Duration)
+                            isRequired: (value) => {
+                              if (isStartTimeDisabled) return true; // ถ้าถูกปิด = ผ่าน
+                              return (value && value.trim() !== '') || 'กรุณากรอกเวลา';
+                            },
                             lessThanFinish: (value) => {
                               if (isFinishTimeDisabled) return true;
                               const finishTime = getValues(`operationResults.${index}.finishTime`);
@@ -741,7 +750,10 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
                         control={control}
                         rules={{
                           validate: {
-                            // 1. แนวตั้ง (Duration)
+                            isRequired: (value) => {
+                              if (isFinishTimeDisabled) return true; // ถ้าถูกปิด = ผ่าน
+                              return (value && value.trim() !== '') || 'กรุณากรอกเวลา';
+                            },
                             greaterThanStart: (value) => {
                               if (isStartTimeDisabled) return true;
                               const startTime = getValues(`operationResults.${index}.startTime`);

@@ -43,14 +43,8 @@ const BZ5_C_VALIDATION_SCHEMA = {
 // --- ส่วน Component หลัก ---
 const BZ5_CFormPrint: React.FC<BZ5_CFormPrintProps> = ({ formData, blueprints, isReadOnly, approvalFlowComponent }) => {
 
-  // --- (ส่วน Logic: ยึดตามโค้ดของคุณเป๊ะๆ) ---
-  const totalSteps = 4;
-  const navigate = useNavigate();
-  const { formMethods } = useProductionForm({
-    formType: 'BZ5-C',
-    netWeightOfYieldSTD: 800,
-    category: 'GEN_B'
-  });
+
+
   const methods = useForm<IManufacturingReportForm>({  // ใช้ useForm เพื่อจัดการฟอร์ม
     defaultValues: formData,
     mode: 'onChange',      // 👈 เพิ่มโหมดการทำงาน
@@ -80,7 +74,7 @@ const BZ5_CFormPrint: React.FC<BZ5_CFormPrintProps> = ({ formData, blueprints, i
   const formStepProps = {
     ...methods, // ส่งทุกฟังก์ชันจาก `useForm` (register, watch, setValue, etc.)
     errors: methods.formState.errors, // ส่ง state ของ error ไปด้วย
-    isReadOnly: isReadOnly, // 👈 (แก้ไข) ผมขอแก้ 'false' เป็น 'isReadOnly' เพื่อให้มันอ่านอย่างเดียว
+    isReadOnly: false, // 👈 (แก้ไข) ผมขอแก้ 'false' เป็น 'isReadOnly' เพื่อให้มันอ่านอย่างเดียว
     onTemplateLoaded: () => { },       // สร้างฟังก์ชันเปล่าๆ สำหรับ Prop นี้ เพราะในโหมด Print เราไม่ต้องการโหลด Template ใหม่
   };
   // --- (สิ้นสุดส่วน Logic) ---
@@ -141,7 +135,7 @@ const BZ5_CFormPrint: React.FC<BZ5_CFormPrintProps> = ({ formData, blueprints, i
             <SharedFormStep4 {...formStepProps} totalWeightFieldName="bz5cCalculations.totalWeightWithNcr" />
           </div>
         </div>
-          {approvalFlowComponent}
+        {approvalFlowComponent}
 
       </div>
     </FormProvider >

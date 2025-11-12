@@ -38,7 +38,7 @@ const AS2FormPrint: React.FC<AS2FormPrintProps> = ({ formData, blueprints, isRea
   const formStepProps = {
     ...methods,
     errors: methods.formState.errors,
-    isReadOnly: isReadOnly,
+    isReadOnly: false,
     onTemplateLoaded: () => { },
   };
 

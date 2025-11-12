@@ -1,44 +1,37 @@
-// location: frontend/src/components/formGen/pages/BZ3_Form/BZFormEdit.tsx
+// location: frontend/src/components/formGen/pages/AS2_Form/AS2FormEdit.tsx
 
 import React, { useState, useEffect } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm, SubmitHandler, SubmitErrorHandler } from 'react-hook-form';
 import { IManufacturingReportForm } from '../../types';
-import SharedFormStep1 from '../../../components/forms/SharedFormStep1_GENB';
+import { useNavigate } from 'react-router-dom';
+import SharedFormStep1 from '../../../components/forms/SharedFormStep1_GENA';
 import FormStep2 from './FormStep2';
 import SharedFormStep3 from '../../../components/forms/SharedFormStep3';
-import SharedFormStep4 from '../../../components/forms/SharedFormStep4_GENB';
+import SharedFormStep4 from '../../../components/forms/SharedFormStep4_GENA';
 import FormHeader from '../../../components/FormHeader';
 import { fireToast } from '../../../../../hooks/fireToast';
-import { useNavigate } from 'react-router-dom';
 import ProgressBar from '../../../components/ProgressBar';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
-import { initialFormValues } from '../../formDefaults'; // (แก้ path ให้ถูก)
-
 
 
 // Props ที่ Component นี้จะรับเข้ามา
-interface BZ3FormEditProps {
+interface AS2FormEditProps {
     initialData: Partial<IManufacturingReportForm>; // ข้อมูลเดิมสำหรับเติมฟอร์ม
     onSubmit: SubmitHandler<IManufacturingReportForm>; // ฟังก์ชันที่จะทำงานเมื่อกดบันทึก
     onResubmit: SubmitHandler<IManufacturingReportForm>; // ฟังก์ชันที่จะทำงานเมื่อกดส่งอนุมัติใหม่
-    submissionId: number; // ID ของ submission ที่กำลังแก้ไ
+    submissionId: number; // ID ของ submission ที่กำลังแก้ไข
     status: string;
 }
-const BZ3_VALIDATION_SCHEMA = {
+
+const AS2_VALIDATION_SCHEMA = {
     1: {
-        fields: ['basicData.date', 'basicData.machineName', 'basicData.lotNo', 'conditions'], // 👈 เพิ่ม 'conditions'
-        scope: 'basicData',
-        message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, Lot No. และตรวจสอบสภาพบรรจุภัณฑ์ให้ครบถ้วน',
+        fields: ['basicData.date', 'basicData.machineName', 'basicData.lotNo', 'conditions'],
+        message: 'กรุณากรอกข้อมูลพื้นฐานและตรวจสอบสภาพบรรจุภัณฑ์ให้ครบถ้วน',
     },
     2: {
-        fields: [
-            //  'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
-            // 'rc417Weighting.row1.weight',
-            //  'rc417Weighting.row2.weight',
-            // 'bz3Calculations.naclWaterSpecGrav',
-            //  'bz3Calculations.temperature',
-        ],
-        message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
+        fields: ['rawMaterials.sg', 'rawMaterials.moistureContent', 'rawMaterials.weightBeforeMixing'],
+        scope: 'rawMaterials',
+        message: 'กรุณาตรวจสอบข้อมูลวัตถุดิบให้ถูกต้อง',
     },
     3: {
         fields: ['conditions', 'operationResults', 'operationRemark'],
@@ -46,7 +39,13 @@ const BZ3_VALIDATION_SCHEMA = {
     },
 };
 
-const BZ3FormEdit: React.FC<BZ3FormEditProps> = ({ initialData, onSubmit, onResubmit, submissionId, status }) => {
+
+const AS2FormEdit: React.FC<AS2FormEditProps> = ({ initialData, onSubmit, onResubmit, submissionId, status }) => {
+
+    console.log('--- ตรวจสอบ Status ที่ได้รับมา ---');
+    console.log('Status คือ:', status);
+    console.log('เทียบกับ "Rejected":', status === 'Rejected');
+
     const totalSteps = 4;
     const [isSubmitting, setIsSubmitting] = useState(false);
     const navigate = useNavigate();
@@ -56,14 +55,14 @@ const BZ3FormEdit: React.FC<BZ3FormEditProps> = ({ initialData, onSubmit, onResu
         handleSubmit,
         trigger,
         watch,
-        getValues,
         setValue,
+        getValues,
         control,
         formState: { errors },
         reset,
     } = useForm<IManufacturingReportForm>({
         mode: 'onChange',
-        defaultValues: initialFormValues
+        criteriaMode: "all",
     });
 
     // --- ใช้ useEffect เพื่อเติมข้อมูลเดิมลงในฟอร์มเมื่อ Component ถูกสร้างขึ้น ---
@@ -86,28 +85,44 @@ const BZ3FormEdit: React.FC<BZ3FormEditProps> = ({ initialData, onSubmit, onResu
         }
     };
 
-    
+    const onInvalid: SubmitErrorHandler<IManufacturingReportForm> = (validationErrors) => {
+        console.error("Validation Failed:", validationErrors);
+        
+        // (หาข้อความ Error แรกที่เจอ)
+        let firstErrorMessage = "กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน (เช็คทุก Step)";
+        
+        // (พยายามหา Error Message จาก Step 3 (เวลา) ก่อน)
+        if (validationErrors.operationResults) {
+            firstErrorMessage = "กรุณากรอก 'เวลา','ค่าต่างๆ' ใน Step 3 ให้ครบถ้วน";
+        } 
+        // (พยายามหา Error Message จาก Step 1)
+        else if (validationErrors.basicData) {
+            firstErrorMessage = "กรุณากรอกข้อมูลพื้นฐานใน Step 1 ให้ครบ";
+        }
+
+        fireToast('error', firstErrorMessage);
+    };
+
 
     // --- ฟังก์ชันสำหรับจัดการปุ่ม Next และ Back ---
-    const { step, handleNext, handleBack, handleSubmit_form } = useMultiStepForm({
+    const { step, handleNext, handleBack } = useMultiStepForm({
         totalSteps: 4,
         trigger,
         errors,
-        validationSchema: BZ3_VALIDATION_SCHEMA,
+        validationSchema: AS2_VALIDATION_SCHEMA,
     });
 
-
     // --- ค่าคงที่สำหรับ Styling และ Dropdown ---
-    const availableForms = [{ value: 'BZ3', label: 'BZ3', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข
+    const availableForms = [{ value: 'AS2', label: 'AS2', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข
     const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
 
     return (
         <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
-            <form onSubmit={handleSubmit(handleFormSubmit)}>
+            <form onSubmit={handleSubmit(handleFormSubmit, onInvalid)}>
                 <FormHeader
-                    title="แก้ไขใบรายงานการผลิต (BZ3)" // เปลี่ยน Title สำหรับหน้าแก้ไข
+                    title="แก้ไขใบรายงานการผลิต (AS2)" // เปลี่ยน Title สำหรับหน้าแก้ไข
                     formTypes={availableForms}
-                    currentValue="BZ3"
+                    currentValue="AS2"
                     inputClass={inputClass}
                 />
 
@@ -118,10 +133,10 @@ const BZ3FormEdit: React.FC<BZ3FormEditProps> = ({ initialData, onSubmit, onResu
                       เพราะเราจะแสดงผลข้อมูลตามที่ได้รับมาผ่าน initialData
                       แต่ยังคงส่ง props ที่จำเป็นอื่นๆ ให้กับ Step Components
                     */}
-                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="RC-417" errors={errors} />}
+                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="Iron Powder" errors={errors} />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={() => { }} />}
-                    {step === 3 && <SharedFormStep3 register={register} errors={errors} trigger={trigger} control={control} getValues={getValues} onTemplateLoaded={() => { }} templateName="BZ3_Step3_Operations" />}
-                    {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="bz3Calculations.totalWeightWithNcr" />}
+                    {step === 3 && <SharedFormStep3 register={register} errors={errors} trigger={trigger} control={control} getValues={getValues} onTemplateLoaded={() => { }} templateName="AS2_Step3_Operations" />}
+                    {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="calculations.finalTotalWeight" />}
                 </div>
 
                 <div className="flex justify-center gap-4 rounded-sm border border-stroke p-4 dark:border-strokedark">
@@ -130,37 +145,33 @@ const BZ3FormEdit: React.FC<BZ3FormEditProps> = ({ initialData, onSubmit, onResu
                             Back
                         </button>
                     )}
-                    {step === 1 && (<button type="button" onClick={() => navigate('/reports/history/gen-b')} className="rounded-md bg-secondary px-10 py-2 font-medium text-white hover:bg-opacity-90" >Back</button>)}
+                    {step === 1 && (<button type="button" onClick={() => navigate('/reports/history/gen-a')} className="rounded-md bg-secondary px-10 py-2 font-medium text-white hover:bg-opacity-90" >Back</button>)}
                     {step < totalSteps && (
                         <button type="button" onClick={handleNext} className="rounded-md bg-success px-10 py-2 font-medium text-white hover:bg-opacity-90">
                             Next
                         </button>
                     )}
-
-                    <button
-                        type="submit"
+                   <button
+                        type="submit" // 👈 (อันนี้จะไปเรียก <form onSubmit...>)
                         disabled={isSubmitting}
-                        onClick={handleSubmit_form}
                         className={`rounded-md bg-amber-500 px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
                     >
                         {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
                     </button>
 
-                      {status === 'Rejected' && (
+                    {status === 'Rejected' && (
                         <button
-                            type="button" // 👈 ต้องเป็น "button"
-                            onClick={handleSubmit(onResubmit)}
-                            disabled={isSubmitting}
-                            className={`rounded-md bg-indigo-600 px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
+                            type="button" 
+                            onClick={handleSubmit(onResubmit, onInvalid)} // 👈 เพิ่ม onInvalid ที่นี่
+                            className="rounded bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-opacity-90"
                         >
-                            {isSubmitting ? 'กำลังบันทึก...' : 'บันทึก และ ส่งอนุมัติใหม่ (Resubmit)'}
+                            บันทึก และ ส่งอนุมัติใหม่ (Resubmit)
                         </button>
                     )}
-
                 </div>
             </form>
         </div>
     );
 };
 
-export default BZ3FormEdit;
+export default AS2FormEdit;
