@@ -670,7 +670,7 @@ exports.generatePdf = async (req, res) => {
           </span>
           
           <span style="flex: 1; text-align: center;">
-            หน้า <span class="pageNumber"></span> / <span class="totalPages"></span>
+            Page <span class="pageNumber"></span> / <span class="totalPages"></span>
           </span>
 
           <span style="flex: 1; text-align: right;"></span>

@@ -163,7 +163,7 @@ const ApprovalFlowDisplay: React.FC<Props> = ({ submissionId, submissionData }) 
           {/* A: ถ้าไม่มีข้อมูล step นี้ (เช่น L0 เขียน, L1 ข้ามไป) */}
           {!stepData && (
             <span className="font-medium text-gray-400 dark:text-gray-600">
-              - (ข้าม) -
+              —
             </span>
           )}
 
@@ -215,7 +215,7 @@ const ApprovalFlowDisplay: React.FC<Props> = ({ submissionId, submissionData }) 
         {/* 3. ส่วนท้าย (Date) */}
         <div className="border-t border-stroke p-2 text-center text-sm dark:border-strokedark">
           {stepData?.updated_at ? ( // ⚠️ เช็คว่ามี 'updated_at' ใน Type IApprovalFlowStep หรือยัง
-            new Date(stepData.updated_at).toLocaleDateString("th-TH", {
+            new Date(stepData.updated_at).toLocaleDateString("en-GB", {
               day: "2-digit",
               month: "short",
               year: "numeric",
@@ -230,9 +230,10 @@ const ApprovalFlowDisplay: React.FC<Props> = ({ submissionId, submissionData }) 
 
   return (
     <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark">
-      <h4 className="mb-4 text-lg font-semibold text-black dark:text-white">
-        สถานะการอนุมัติ (Approval Flow)
-      </h4>
+
+      <div className="border-b-2 border-stroke py-2 text-center bg-black dark:border-strokedark ">
+        <h4 className="font-medium text-white text-lg"> สถานะการอนุมัติ (Approval Flow)</h4>
+      </div>
 
       {/* --- นี่คือตาราง 4 ช่อง (Grid 4 คอลัมน์) --- */}
       <div className="grid grid-cols-4 border-l border-t border-stroke dark:border-strokedark">
@@ -249,7 +250,7 @@ const ApprovalFlowDisplay: React.FC<Props> = ({ submissionId, submissionData }) 
           </div>
           <div className="border-t border-stroke p-2 text-center text-sm dark:border-strokedark">
             {creator.date ? (
-              new Date(creator.date).toLocaleDateString("th-TH", {
+              new Date(creator.date).toLocaleDateString("en-GB", {
                 day: "2-digit",
                 month: "short",
                 year: "numeric",

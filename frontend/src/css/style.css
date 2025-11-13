@@ -328,7 +328,7 @@ span.flatpickr-weekday,
 .a4-page-container .form-section input[type="text"],
 .a4-page-container .form-section input[type="number"],
 .a4-page-container .form-section input[type="date"],
-.a4-page-container .form-section select,
+/*.a4-page-container .form-section select,*/
 .a4-page-container .form-section textarea {
   /* ลด Padding บน-ล่าง (ค่าตัวอย่าง, เดิมอาจจะเป็น py-2 หรือ py-3) */
   padding-top: 0.05rem !important;
@@ -416,7 +416,9 @@ span.flatpickr-weekday,
      margin-top: 3px;
   }
 
-  
+
+
+
    [class="border-b border-stroke px-4 py-3 text-black dark:border-strokedark dark:text-white text-center align-top pt-4"] {
     border-bottom: 1px solid #000 !important;
      margin-bottom: 3px;

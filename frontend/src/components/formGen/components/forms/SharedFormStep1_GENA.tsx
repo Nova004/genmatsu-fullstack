@@ -1,4 +1,4 @@
-// frontend/src/components/formGen/components/forms/SharedFormStep1.tsx
+// frontend/src/components/formGen/components/forms/SharedFormStep1_GENA.tsx
 
 import React, { useEffect } from 'react';
 import { UseFormRegister, UseFormWatch, UseFormSetValue } from 'react-hook-form';
@@ -26,6 +26,14 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
   const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
   const firstMcOperatorName = watch('mcOperators.0.name');
   const firstMcOperatorNo = watch('mcOperators.0.number');
+  const dropdownClass = "w-fit rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary text-center";
+  const mcOperatorRole = watch('basicData.mcOperatorRole');
+
+  useEffect(() => {
+    if (mcOperatorRole === undefined) {
+      setValue('basicData.mcOperatorRole', 'M/C operator');
+    }
+  }, [mcOperatorRole, setValue]);
 
   useEffect(() => {
     // ตรวจสอบว่ามีทั้ง "ชื่อ" และ "เลขที่" แล้วหรือยัง
@@ -64,7 +72,17 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
           </div>
         </div>
         <div className="mb-6 grid grid-cols-1 gap-6 border-b border-black pb-6 dark:border-strokedark lg:grid-cols-6">
-          <div className="flex items-center justify-center text-center font-medium text-black dark:text-white lg:col-span-1">M/C operator</div>
+          {/* (เพิ่ม items-center เพื่อจัดกลางแนวนอน) */}
+          <div className="flex flex-col justify-center items-center gap-1 lg:col-span-1">
+            <select
+              {...register('basicData.mcOperatorRole')}
+              className={dropdownClass + " font-bold"} // 👈 เพิ่ม font-bold
+            >
+              {/* ‼️ [แก้ไข] 3. เพิ่ม text-center ให้ <option> ‼️ */}
+              <option value="M/C operator" className="text-center font-bold">M/C operator</option>
+              <option value="Shift Leader" className="text-center font-bold">Shift Leader</option>
+            </select>
+          </div>
           <div className="flex flex-col gap-5 lg:col-span-5">
             {[...Array(3)].map((_, index) => (
               <EmployeeInputRow key={`mc-${index}`} groupName="mcOperators" index={index} register={register} watch={watch} setValue={setValue} />

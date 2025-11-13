@@ -1,3 +1,5 @@
+// frontend/src/components/formGen/components/forms/ChecklistTable.tsx
+
 import React from 'react';
 import { UseFormRegister, FieldErrors, UseFormWatch } from 'react-hook-form';
 import { IManufacturingReportForm } from '../../pages/types';

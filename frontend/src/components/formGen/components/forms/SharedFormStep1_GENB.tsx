@@ -1,6 +1,6 @@
 // frontend/src/components/formGen/components/forms/SharedFormStep1_GENB.tsx
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { UseFormRegister, UseFormWatch, UseFormSetValue } from 'react-hook-form';
 import { IManufacturingReportForm } from '../../pages/types';
 import EmployeeInputRow from './EmployeeInputRow';
@@ -23,6 +23,16 @@ const checklistItems = [
 
 const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setValue, packagingWarningItemName, errors }) => {
   const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
+  const firstMcOperatorName = watch('mcOperators.0.name');
+  const firstMcOperatorNo = watch('mcOperators.0.number');
+  const dropdownClass = "w-fit rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary text-center";
+  const mcOperatorRole = watch('basicData.mcOperatorRole');
+
+  useEffect(() => {
+    if (mcOperatorRole === undefined) {
+      setValue('basicData.mcOperatorRole', 'M/C operator');
+    }
+  }, [mcOperatorRole, setValue]);
 
   return (
     <div>
@@ -46,7 +56,17 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
           </div>
         </div>
         <div className="mb-6 grid grid-cols-1 gap-6 border-b border-black pb-6 dark:border-strokedark lg:grid-cols-6">
-          <div className="flex items-center justify-center text-center font-medium text-black dark:text-white lg:col-span-1">M/C operator</div>
+          {/* (เพิ่ม items-center เพื่อจัดกลางแนวนอน) */}
+          <div className="flex flex-col justify-center items-center gap-1 lg:col-span-1">
+            <select
+              {...register('basicData.mcOperatorRole')}
+              className={dropdownClass + " font-bold"} // 👈 เพิ่ม font-bold
+            >
+              {/* ‼️ [แก้ไข] 3. เพิ่ม text-center ให้ <option> ‼️ */}
+              <option value="M/C operator" className="text-center font-bold">M/C operator</option>
+              <option value="Shift Leader" className="text-center font-bold">Shift Leader</option>
+            </select>
+          </div>
           <div className="flex flex-col gap-5 lg:col-span-5">
             {[...Array(3)].map((_, index) => (
               <EmployeeInputRow key={`mc-${index}`} groupName="mcOperators" index={index} register={register} watch={watch} setValue={setValue} />
@@ -77,7 +97,7 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
       {/* ส่วน Check the condition (แก้ไขเล็กน้อย) */}
 
       {/* ส่วน Check the condition (แก้ไขเล็กน้อย) */}
-       <div className="border-b-2 border-stroke py-2 text-center bg-black dark:border-strokedark">
+      <div className="border-b-2 border-stroke py-2 text-center bg-black dark:border-strokedark">
         <h5 className="font-medium text-white text-lg">Check the condition (ตรวจสอบสภาพบรรจุภัณฑ์)</h5>
       </div>
       <div className="rounded-b-sm border border-t-0 border-stroke p-5 dark:border-strokedark">

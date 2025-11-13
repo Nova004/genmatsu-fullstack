@@ -15,8 +15,8 @@ const EmployeeInputRow: React.FC<EmployeeInputRowProps> = ({ groupName, index, r
 
   useEffect(() => {
     if (!employeeId || employeeId.length < 5) {
-      setValue(`${groupName}.${index}.name`, '');
-      setValue(`${groupName}.${index}.number`, '');
+      setValue(`${groupName}.${index}.name`, '-');
+      setValue(`${groupName}.${index}.number`, '-');
       return;
     }
 
@@ -37,7 +37,8 @@ const EmployeeInputRow: React.FC<EmployeeInputRowProps> = ({ groupName, index, r
         // 4. catch ของ axios จะทำงานทั้งกรณีหาไม่เจอ (404) และเน็ตเวิร์คพัง
         console.error("Error fetching user data:", error);
         setValue(`${groupName}.${index}.name`, 'ไม่พบข้อมูลพนักงาน');
-        setValue(`${groupName}.${index}.number`, '');
+        setValue(`${groupName}.${index}.number`, '-');
+
       } finally {
         setIsLoading(false);
       }
@@ -74,7 +75,7 @@ const EmployeeInputRow: React.FC<EmployeeInputRowProps> = ({ groupName, index, r
           className={disabledInputClass}
           readOnly
           disabled
-          value={isLoading ? "Loading..." : watch(`${groupName}.${index}.name`) || ''}
+          value={isLoading ? "Loading..." : watch(`${groupName}.${index}.name`) || '-'}
         />
       </div>
       <div className={`md:col-span-2 ${inputGroupClass}`}>
@@ -85,6 +86,7 @@ const EmployeeInputRow: React.FC<EmployeeInputRowProps> = ({ groupName, index, r
           readOnly
           disabled
           {...register(`${groupName}.${index}.number`)}
+          value={watch(`${groupName}.${index}.number`) || '-'}
         />
       </div>
     </div>

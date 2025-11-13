@@ -6,7 +6,7 @@ import { UseFormRegister, UseFormWatch, UseFormSetValue, FieldErrors } from "rea
 export interface IManufacturingReportForm {
   // Step 1
   reportType: 'AS2' | 'BZ' | 'BZ3' | 'BS3';
-  basicData: { date: string; machineName: string; lotNo: string; };
+  basicData: { date: string; machineName: string; lotNo: string; mcOperatorRole: string; };
   mcOperators: { id: string; name: string; number: string }[];
   assistants: { id: string; name: string; number: string }[];
   conditions: { status: 'OK' | 'NG' | null; remark: string; }[];
