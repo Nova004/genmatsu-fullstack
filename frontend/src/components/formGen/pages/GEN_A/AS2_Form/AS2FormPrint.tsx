@@ -5,7 +5,7 @@ import SharedFormStep1 from '../../../components/forms/SharedFormStep1_GENA';
 import FormStep2 from './FormStep2';
 import SharedFormStep3 from '../../../components/forms/SharedFormStep3';
 import SharedFormStep4 from '../../../components/forms/SharedFormStep4_GENA';
-
+import ApprovalFlowDisplay from "../../../components/forms/ApprovalFlowDisplay";
 
 
 interface AS2FormPrintProps {
@@ -28,12 +28,7 @@ const AS2FormPrint: React.FC<AS2FormPrintProps> = ({ formData, blueprints, isRea
     }
   }, [formData, methods]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      methods.trigger();
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [formData, methods]);
+
 
   const formStepProps = {
     ...methods,

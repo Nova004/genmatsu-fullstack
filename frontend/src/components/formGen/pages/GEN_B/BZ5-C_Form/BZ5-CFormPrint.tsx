@@ -5,14 +5,14 @@
 import React, { useState, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { IManufacturingReportForm } from '../../types';
-import { useNavigate } from 'react-router-dom';
+
 
 // Import Component ของแต่ละ Step ที่จะนำมาใช้ซ้ำในการแสดงผล
 import SharedFormStep1 from '../../../components/forms/SharedFormStep1_GENB';
 import FormStep2 from './FormStep2';
 import SharedFormStep3 from '../../../components/forms/SharedFormStep3';
 import SharedFormStep4 from '../../../components/forms/SharedFormStep4_GENB';
-import { useProductionForm } from '../../../../../hooks/useProductionForm';
+
 
 
 
@@ -24,22 +24,6 @@ interface BZ5_CFormPrintProps {
   approvalFlowComponent?: React.ReactNode;
 }
 
-const BZ5_C_VALIDATION_SCHEMA = {
-  1: {
-    fields: ['basicData.date', 'basicData.machineName', 'basicData.lotNo'],
-    scope: 'basicData',
-    message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, และ Lot No. ให้ครบถ้วน',
-  },
-  2: {
-    fields: 'rawMaterials',
-    scope: 'rawMaterials',
-    message: 'กรุณาตรวจสอบข้อมูลวัตถุดิบให้ถูกต้อง',
-  },
-  3: {
-    fields: ['conditions', 'operationResults', 'operationRemark'],
-    message: 'กรุณาตรวจสอบข้อมูลเงื่อนไขและผลการปฏิบัติงานให้ถูกต้อง',
-  },
-};
 // --- ส่วน Component หลัก ---
 const BZ5_CFormPrint: React.FC<BZ5_CFormPrintProps> = ({ formData, blueprints, isReadOnly, approvalFlowComponent }) => {
 
@@ -60,15 +44,6 @@ const BZ5_CFormPrint: React.FC<BZ5_CFormPrintProps> = ({ formData, blueprints, i
     }
   }, [formData, methods]);
 
-  useEffect(() => {
-    // ใช้ setTimeout เล็กน้อยเพื่อให้แน่ใจว่าฟอร์มได้ reset ค่าใหม่เข้าไปเรียบร้อยแล้ว
-    const timer = setTimeout(() => {
-      // สั่งให้ react-hook-form ตรวจสอบค่าทั้งหมดในฟอร์ม
-      methods.trigger();
-    }, 100); // delay 100ms
-
-    return () => clearTimeout(timer); // cleanup function
-  }, [formData, methods]); // ให้ re-trigger ทุกครั้งที่ formData เปลี่ยนแปลง
 
   // สร้าง Object `formStepProps` เพื่อรวบรวม Props ที่ต้องส่งให้ทุก Step ไว้ในที่เดียว
   const formStepProps = {

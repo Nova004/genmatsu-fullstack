@@ -8,6 +8,7 @@ import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 
 // -- Import Component แบบปกติ --
 import ReportDetailBZ from './BZ/ReportDetailBZ';
+import ReportDetailBS_B from './BS-B/ReportDetailBS-B';
 import ReportDetailBZ3 from './BZ3/ReportDetailBZ3';
 import ReportDetailBS3 from './BS3/ReportDetailBS3';
 import ReportDetailBZ5_C from './BZ5-C/ReportDetailBZ5-C';
@@ -94,6 +95,8 @@ const ReportDetailDispatcher: React.FC = () => {
     switch (submission.form_type) {
       case 'BZ':
         return <ReportDetailBZ submission={submission} blueprints={blueprints} />;
+      case 'BS-B':
+        return <ReportDetailBS_B submission={submission} blueprints={blueprints} />;
       case 'BZ3':
         return <ReportDetailBZ3 submission={submission} blueprints={blueprints} />;
       case 'BS3':

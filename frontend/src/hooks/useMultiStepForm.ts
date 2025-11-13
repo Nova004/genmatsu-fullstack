@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { UseFormTrigger, FieldErrors } from 'react-hook-form';
+import { UseFormTrigger, FieldErrors, SubmitErrorHandler } from 'react-hook-form';
 import { fireToast } from './fireToast'; // (ตรวจสอบว่า import path ถูกต้อง)
 
 // (Interface UseMultiStepFormProps ของคุณ)

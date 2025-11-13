@@ -25,13 +25,14 @@ interface AS2FormEditProps {
 
 const AS2_VALIDATION_SCHEMA = {
     1: {
-        fields: ['basicData.date', 'basicData.machineName', 'basicData.lotNo', 'conditions'],
-        message: 'กรุณากรอกข้อมูลพื้นฐานและตรวจสอบสภาพบรรจุภัณฑ์ให้ครบถ้วน',
+        fields: ['basicData.date', 'basicData.machineName', 'basicData.lotNo', 'conditions'], // 👈 เพิ่ม 'conditions'
+        scope: 'basicData',
+        message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, Lot No. และตรวจสอบสภาพบรรจุภัณฑ์ให้ครบถ้วน',
     },
     2: {
-        fields: [
-        ],
-        message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
+        fields: ['rawMaterials'],
+        scope: 'rawMaterials',
+        message: 'กรุณาตรวจสอบข้อมูลวัตถุดิบให้ถูกต้อง',
     },
     3: {
         fields: ['conditions', 'operationResults', 'operationRemark'],
@@ -86,13 +87,12 @@ const AS2FormEdit: React.FC<AS2FormEditProps> = ({ initialData, onSubmit, onResu
 
 
     // --- ฟังก์ชันสำหรับจัดการปุ่ม Next และ Back ---
-    const { step, handleNext, handleBack } = useMultiStepForm({
+    const { step, handleNext, handleBack, handleSubmit_form } = useMultiStepForm({
         totalSteps: 4,
         trigger,
         errors,
         validationSchema: AS2_VALIDATION_SCHEMA,
     });
-
     // --- ค่าคงที่สำหรับ Styling และ Dropdown ---
     const availableForms = [{ value: 'AS2', label: 'AS2', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข
     const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
@@ -135,6 +135,7 @@ const AS2FormEdit: React.FC<AS2FormEditProps> = ({ initialData, onSubmit, onResu
                     <button
                         type="submit"
                         disabled={isSubmitting}
+                        onClick={handleSubmit_form}
                         className={`rounded-md bg-amber-500 px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
                     >
                         {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}

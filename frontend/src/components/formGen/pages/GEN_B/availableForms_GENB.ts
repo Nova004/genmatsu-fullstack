@@ -1,5 +1,6 @@
 export const availableForms = [
     { value: 'BZ', label: 'BZ', path: '/forms/bz-form' },
+    { value: 'BS-B', label: 'BS-B', path: '/forms/bs-b-form' },
     { value: 'BZ3', label: 'BZ3', path: '/forms/bz3-form' },
     { value: 'BS3', label: 'BS3', path: '/forms/bs3-form' },
     { value: 'BZ5-C', label: 'BZ5-C', path: '/forms/bz5-c-form' },

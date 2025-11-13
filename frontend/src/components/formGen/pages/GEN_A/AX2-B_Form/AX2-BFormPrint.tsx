@@ -27,13 +27,6 @@ const AX2_BFormPrint: React.FC<AX2_BFormPrintProps> = ({ formData, blueprints, i
     }
   }, [formData, methods]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      methods.trigger();
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [formData, methods]);
-
   const formStepProps = {
     ...methods,
     errors: methods.formState.errors,
