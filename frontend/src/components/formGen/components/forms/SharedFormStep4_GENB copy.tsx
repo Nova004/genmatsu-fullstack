@@ -78,7 +78,7 @@ const useStep4Calculations = (
     console.log("--- 2. Yield % Calculation ---");
     console.log("Inputs:");
     console.log(`  Calculated Product: ${calculatedProduct}`);
-    console.log(` Final Total Weight (${totalWeightFieldName}): ${finalTotalWeight}`);
+    console.log(`  Final Total Weight (${totalWeightFieldName}): ${finalTotalWeight}`);
 
     const numFinalWeight = Number(finalTotalWeight) || 0;
     const numProduct = Number(calculatedProduct) || 0;
@@ -104,7 +104,7 @@ const useStep4Calculations = (
 const SharedFormStep4: React.FC<SharedFormStep4Props> = ({ register, watch, setValue, totalWeightFieldName, formType }) => {
 
   // 5. ส่งชื่อฟิลด์เข้าไปใน Hook
-  const { actualMultiplier } = useStep4Calculations(watch, setValue, totalWeightFieldName, formType);
+  useStep4Calculations(watch, setValue, totalWeightFieldName, formType);
 
   // 6. ใช้ชื่อฟิลด์ในการดึงค่ามาแสดงผล
   const calculatedProductForDisplay = watch('packingResults.quantityOfProduct.calculated');
@@ -125,7 +125,7 @@ const SharedFormStep4: React.FC<SharedFormStep4Props> = ({ register, watch, setV
           register={register}
           watch={watch}
           setValue={setValue}
-          cansMultiplier={actualMultiplier}
+          cansMultiplier={12} // เเค่เเสดงผมเฉยๆ ไม่มีผลกับการคำนวณ
           formType={formType}
         />
         <div className="mb-6 overflow-x-auto">

@@ -66,32 +66,79 @@ exports.deleteNaCl = async (req, res) => {
 };
 
 exports.lookupNaClValue = async (req, res) => {
-  const { cgWater } = req.params;
+  // 1. ดึงค่าทั้งหมดออกจาก URL Parameters
+  // รูปแบบ URL: /api/nacl/lookup/:cgWater/:naclType/:chemicalsType
+  const { cgWater, naclType, chemicalsType } = req.params;
 
-  // ตรวจสอบว่าค่าที่ส่งมาเป็นตัวเลขหรือไม่
+  // --- การจัดการและตรวจสอบ Input ---
+
+  // ตรวจสอบ cgWater และ naclType (เหมือนเดิม)
   if (isNaN(parseFloat(cgWater))) {
     return res
       .status(400)
       .send({ message: "Invalid input: cgWater must be a number." });
   }
+  if (!naclType || typeof naclType !== "string") {
+    return res
+      .status(400)
+      .send({ message: "Invalid input: naclType is required." });
+  }
+
+  // 2. จัดการค่า Chemicals_Type ที่เป็น Optional
+  // ถ้า Front-end ส่ง 'null' มา (ตามที่เรากำหนดใน Hook) ให้แปลงเป็น null เพื่อใช้ในการกรอง SQL
+  // ถ้าส่งค่าอื่นมา (เช่น 'S10'), ให้ใช้ค่านั้น
+  const chemicalsTypeValue =
+    chemicalsType === "null" || !chemicalsType ? null : chemicalsType;
+
+  // --- การเรียกฐานข้อมูล ---
 
   try {
     const pool = await sql.connect(dbConfig);
-    const result = await pool
-      .request()
-      .input("cgWaterValue", sql.Float, parseFloat(cgWater))
-      .query(
-        "SELECT NaCl_NaCl_Water FROM Gen_NaCl_MT WHERE NaCl_CG_Water = @cgWaterValue"
-      );
+    const request = pool.request();
+    let sqlQuery = "";
+
+    // 3. เพิ่ม Input Parameters
+    request.input("cgWaterValue", sql.Float, parseFloat(cgWater));
+    request.input("naclTypeValue", sql.NVarChar, naclType);
+    // เพิ่ม Input Parameter สำหรับ Chemicals_Type (ใช้ NVarChar)
+    request.input("chemicalsTypeValue", sql.NVarChar, chemicalsTypeValue);
+
+    // 4. เริ่มต้น SQL Query ด้วยเงื่อนไขหลักสองข้อ
+    sqlQuery = `
+            SELECT 
+                NaCl_NaCl_Water 
+            FROM 
+                Gen_NaCl_MT 
+            WHERE 
+                NaCl_CG_Water = @cgWaterValue 
+            AND 
+                NaCl_per_centum = @naclTypeValue
+        `;
+
+    // 🔽 5. เพิ่มเงื่อนไข Chemicals_Type ตาม Logic ที่คุณต้องการ
+    if (chemicalsTypeValue !== null) {
+      // กรณีที่ 1: มีการระบุ Chemicals_Type มา (เช่น 'S10')
+      // ต้องค้นหาแถวที่มีค่า Chemicals_Type ตรงกันเท่านั้น
+      sqlQuery += " AND Chemicals_Type = @chemicalsTypeValue";
+    } else {
+      // กรณีที่ 2: ไม่ได้ระบุ Chemicals_Type มา (ส่งมาเป็น 'null')
+      // ต้องค้นหาแถวที่คอลัมน์ Chemicals_Type ในฐานข้อมูลเป็น NULL เท่านั้น
+      sqlQuery += " AND Chemicals_Type IS NULL";
+    }
+
+    const result = await request.query(sqlQuery);
 
     if (result.recordset.length > 0) {
-      // ถ้าเจอข้อมูล ส่งค่ากลับไป
       res.status(200).json(result.recordset[0]);
     } else {
-      // ถ้าไม่เจอข้อมูล
-      res.status(404).send({ message: "Value not found in NaCl table." });
+      res.status(404).send({
+        message: `Value not found in NaCl table for CG Water ${cgWater}, Type ${naclType}, and Chemicals Type ${
+          chemicalsTypeValue === null ? "NULL" : chemicalsTypeValue
+        }.`,
+      });
     }
   } catch (err) {
+    console.error("Database Lookup Error:", err);
     res.status(500).send({ message: err.message });
   }
 };

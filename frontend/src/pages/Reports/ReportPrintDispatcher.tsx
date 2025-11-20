@@ -9,6 +9,8 @@ import PrintableReportAS2 from './AS2/PrintableReportAS2';
 import PrintableReportAX9_B from './AX9-B/PrintableReporAX9-B';
 import PrintableReportAX2_B from './AX2-B/PrintableReportAX2-B';
 import PrintableReportBZ5_C from './BZ5-C/PrintableReportBZ5-C';
+import PrintableReportBS_B from './BS-B/PrintableReportBS-B';
+import PrintableReportBN from './BN/PrintableReportBN';
 
 // --- ⬆️ สิ้นสุดส่วน Import Component ⬆️ ---
 
@@ -88,6 +90,11 @@ const ReportPrintDispatcher: React.FC = () => {
         return <PrintableReportAX2_B {...props} />;
       case 'BZ5-C':
         return <PrintableReportBZ5_C {...props} />;
+      case 'BS-B':
+        return <PrintableReportBS_B {...props} />;
+      case 'BN':
+        return <PrintableReportBN {...props} />;
+
       // --- ⬆️ เพิ่ม Case อื่นๆ ถ้ามี ⬆️ ---
       default:
         console.error(`[PrintDispatcher] Unknown form_type: ${submission.form_type}`);

@@ -223,7 +223,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               {/* --- ส่วนที่ 1: การชั่งน้ำหนัก RC-417 --- */}
               <tr>
                 <td className={tdLeftClass}>RC-417 : Weight</td>
-                <td className={tdLeftClass}><input type="number" className={inputClass} {...register('rc417Weighting.row1.weight', { valueAsNumber: true, required: 'กรุณากรอก RC-417 : Weight' })} /></td>
+                <td className={tdLeftClass}><input type="number" step="0.001"  className={inputClass} {...register('rc417Weighting.row1.weight', { valueAsNumber: true, required: 'กรุณากรอก RC-417 : Weight' })} /></td>
                 {errors.rc417Weighting?.row1?.weight &&
                   <p className="text-sm text-danger mt-1">
                     {errors.rc417Weighting.row1.weight.message}
@@ -232,7 +232,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('rc417Weighting.row1.bagNo')} /></td>
                 <td className={tdLeftClass}>Net Weight</td>
-                <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row1.net')} /></td>
+                <td className={tdLeftClass}><input type="number" step="0.001"  className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row1.net')} /></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>RC-417 : Weight</td>

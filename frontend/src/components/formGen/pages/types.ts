@@ -1,11 +1,10 @@
-// location: frontend/src/components/formGen/pages/BZ_Form/BZFormEdit.tsx
+// location: frontend/src/components/formGen/pages/types.ts
 
 import { UseFormRegister, UseFormWatch, UseFormSetValue, FieldErrors } from "react-hook-form";
 
 // --- Interface สำหรับข้อมูลทั้งหมดในฟอร์ม ---
 export interface IManufacturingReportForm {
   // Step 1
-  reportType: 'AS2' | 'BZ' | 'BZ3' | 'BS3';
   basicData: { date: string; machineName: string; lotNo: string; mcOperatorRole: string; };
   mcOperators: { id: string; name: string; number: string }[];
   assistants: { id: string; name: string; number: string }[];
@@ -24,6 +23,8 @@ export interface IManufacturingReportForm {
     gypsumplaster: number | null;
     activatedcarbon: number | null;
     diaEarth: number | null;
+    ZeoliteJikulite: number | null;
+    ZeoliteNatto: number | null;
     sodiumChloride: number | null;
     magnesiumHydroxide: number | null;
     IronOxideMTY80: number | null;
@@ -51,6 +52,7 @@ export interface IManufacturingReportForm {
     waterCalc: number | null;
     saltCalc: number | null;
     finalTotalWeight: number | null;
+    finalTotalWeightFixed: number | null;
   };
   qouRemark: string;
   valued: number | null;

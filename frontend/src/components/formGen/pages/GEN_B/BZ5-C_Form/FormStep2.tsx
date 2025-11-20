@@ -290,7 +290,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
   const disabledInputClass = "w-full cursor-default rounded-lg border-[1.5px] border-stroke bg-slate-100 px-3 py-2 text-slate-500 outline-none dark:border-form-strokedark dark:bg-slate-800 dark:text-slate-400"; // แก้ 1.Spx เป็น 1.5px
   const thClass = "border-b border-stroke px-4 py-3 text-center font-medium text-black dark:border-strokedark dark:text-white";
   const tdClass = "border-b border-stroke px-4 py-3 text-black dark:border-strokedark dark:text-white";
-  const tdCenterClass = `${tdClass} text-center align-middle`;
+  //const tdCenterClass = `${tdClass} text-center align-middle`;
   const tdLeftClass = `${tdClass} align-middle`;
   const textareaClass = "w-full h-[50px] rounded-r-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
 

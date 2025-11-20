@@ -11,6 +11,11 @@ const NaClMaster = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<any | null>(null);
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+  const [percentFilter, setPercentFilter] = useState(''); // สำหรับ NaCl %
+  const [chemicalTypeFilter, setChemicalTypeFilter] = useState(''); // สำหรับ Chemicals Type
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -71,6 +76,34 @@ const NaClMaster = () => {
     }
   };
 
+  // ใช้ States ใหม่: percentFilter และ chemicalTypeFilter
+  const filteredUsers = data.filter(dataItem => {
+    // --- 1. ตรวจสอบเงื่อนไข Search Term (ช่องค้นหา) ---
+    const term = searchTerm.toLowerCase();
+    const matchesSearchTerm = term === '' ? true : (
+      // ... (ส่วนนี้ใช้ได้แล้ว)
+      String(dataItem.NaCl_id || '').toLowerCase().includes(term) ||
+      String(dataItem.NaCl_CG_Water || '').toLowerCase().includes(term) ||
+      String(dataItem.NaCl_NaCl_Water || '').toLowerCase().includes(term) ||
+      String(dataItem.Chemicals_Type || '').toLowerCase().includes(term)
+    );
+
+    // --- 2. ตรวจสอบเงื่อนไข NaCl % Filter (Dropdown 1) ---
+    const percentValue = String(dataItem['NaCl_per_centum'] || '');
+    const matchesPercentFilter = percentFilter === '' ? true : (
+      percentValue === percentFilter
+    );
+
+    // --- 3. ตรวจสอบเงื่อนไข Chemicals Type Filter (Dropdown 2) ---
+    const chemicalTypeValue = String(dataItem['Chemicals_Type'] || '');
+    const matchesChemicalTypeFilter = chemicalTypeFilter === '' ? true : (
+      chemicalTypeValue === chemicalTypeFilter
+    );
+
+    // --- 4. ต้องเป็นจริงทั้ง 3 เงื่อนไข (AND) ---
+    return matchesSearchTerm && matchesPercentFilter && matchesChemicalTypeFilter;
+  });
+
   return (
     <>
       <Breadcrumb pageName="NaCl Master" />
@@ -88,6 +121,40 @@ const NaClMaster = () => {
             </button>
           </div>
 
+          <div className="mb-6 sm:mb-0 flex flex-col sm:flex-row justify-end items-center gap-4">
+            {/* ===== 🔽 Dropdown อัปเดตตัวเลือกใหม่ ===== */}
+            <select
+              value={percentFilter}
+              onChange={(e) => setPercentFilter(e.target.value)}
+              className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-2 px-4 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary sm:w-48"
+            >
+              <option value="">All Types</option>
+              {/* ⬇️ อัปเดตตัวเลือกที่นี่ */}
+              <option value="15%">15%</option>
+              <option value="4%">4%</option>
+              <option value="13%">13%</option>
+            </select>
+
+            <select
+              value={chemicalTypeFilter} // 👈 ใช้ State ใหม่
+              onChange={(e) => setChemicalTypeFilter(e.target.value)} // 👈 ใช้ Setter ใหม่
+              className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-2 px-4 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary sm:w-48"
+            >
+              <option value="">Chemicals Type</option>
+              <option value="Zeolite">Zeolite</option>
+            </select>
+            {/* ===== 🔼 สิ้นสุด Dropdown ===== */}
+
+            {/* Input ค้นหาเดิม */}
+            <input
+              type="text"
+              placeholder="Filter by ID, Name, No., Position..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-2 px-4 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary sm:w-64"
+            />
+          </div>
+
           <div className="max-w-full overflow-x-auto">
             <table className="w-full table-auto">
               <thead>
@@ -102,6 +169,12 @@ const NaClMaster = () => {
                     NaCl Water
                   </th>
                   <th className="py-4 px-4 font-medium text-black dark:text-white">
+                    NaCl %
+                  </th>
+                  <th className="py-4 px-4 font-medium text-black dark:text-white">
+                    Chemicals Type
+                  </th>
+                  <th className="py-4 px-4 font-medium text-black dark:text-white">
                     Actions
                   </th>
                 </tr>
@@ -114,33 +187,43 @@ const NaClMaster = () => {
                     </td>
                   </tr>
                 ) : (
-                  data.map((row) => (
-                    <tr key={row.NaCl_id}>
+                  filteredUsers.map((data) => (
+                    <tr key={data.NaCl_id}>
                       <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                         <p className="text-black dark:text-white">
-                          {row.NaCl_id}
+                          {data.NaCl_id}
                         </p>
                       </td>
                       <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                         <p className="text-black dark:text-white">
-                          {row.NaCl_CG_Water}
+                          {data.NaCl_CG_Water}
                         </p>
                       </td>
                       <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                         <p className="text-black dark:text-white">
-                          {row.NaCl_NaCl_Water}
+                          {data.NaCl_NaCl_Water}
+                        </p>
+                      </td>
+                      <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                        <p className="text-black dark:text-white">
+                          {data.NaCl_per_centum}
+                        </p>
+                      </td>
+                      <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                        <p className="text-black dark:text-white">
+                          {data.Chemicals_Type}
                         </p>
                       </td>
                       <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                         <div className="flex items-center space-x-3.5">
                           <button
-                            onClick={() => handleOpenModal(row)}
+                            onClick={() => handleOpenModal(data)}
                             className="hover:text-primary"
                           >
                             Edit
                           </button>
                           <button
-                            onClick={() => handleDelete(row.NaCl_id)}
+                            onClick={() => handleDelete(data.NaCl_id)}
                             className="hover:text-danger"
                           >
                             Delete

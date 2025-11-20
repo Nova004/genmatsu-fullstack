@@ -1,6 +1,6 @@
 // src/components/forms/PackingResultTable.tsx
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { UseFormRegister, UseFormWatch, UseFormSetValue } from 'react-hook-form';
 import { IManufacturingReportForm } from '../../pages/types';
 
@@ -10,9 +10,10 @@ interface PackingResultTableProps {
   watch: UseFormWatch<IManufacturingReportForm>;
   setValue: UseFormSetValue<IManufacturingReportForm>;
   cansMultiplier: number; // Prop ใหม่สำหรับรับค่าตัวคูณ
+  formType?: string;
 }
 
-const PackingResultTable: React.FC<PackingResultTableProps> = ({ register, watch, setValue, cansMultiplier }) => {
+const PackingResultTable: React.FC<PackingResultTableProps> = ({ register, watch, setValue, cansMultiplier, formType }) => {
   // --- ส่วนจัดการ Class ของ UI (เหมือนเดิม) ---
   const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-3 py-2 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
   const disabledInputClass = "w-full cursor-default rounded-lg border-[1.5px] border-stroke bg-slate-100 px-3 py-2 text-slate-500 outline-none dark:border-form-strokedark dark:bg-slate-800 dark:text-slate-400";
@@ -23,18 +24,26 @@ const PackingResultTable: React.FC<PackingResultTableProps> = ({ register, watch
   // --- Logic การคำนวณ ---
   const quantityOfCans = watch('packingResults.quantityOfProduct.cans');
 
+  const actualMultiplier = useMemo(() => {
+    if (formType === 'BN') {
+      return 15; 
+    }
+    return cansMultiplier;
+  }, [formType, cansMultiplier]); 
+
+   //console.log(`Using actualMultiplier: ${actualMultiplier} for formType: ${formType}`);
+
   useEffect(() => {
     if (quantityOfCans === null || quantityOfCans === undefined) {
       setValue('packingResults.quantityOfProduct.calculated', null);
       return;
     }
 
-    // 2. ใช้ cansMultiplier ที่รับมาจาก Prop แทนเลข 12
-    const calculatedValue = Number(quantityOfCans) * cansMultiplier;
+    // 4. ใช้ actualMultiplier ที่คำนวณแล้วในการคำนวณ
+    const calculatedValue = Number(quantityOfCans) * actualMultiplier;
     setValue('packingResults.quantityOfProduct.calculated', calculatedValue);
 
-  }, [quantityOfCans, setValue, cansMultiplier]); // เพิ่ม cansMultiplier ใน dependency array
-
+  }, [quantityOfCans, setValue, actualMultiplier]); // 5. ใช้ actualMultiplier ใน Dependency array
 
   return (
     <div className="mb-6 overflow-x-auto">
@@ -51,7 +60,7 @@ const PackingResultTable: React.FC<PackingResultTableProps> = ({ register, watch
             <td className={tdLeftClass} colSpan={2}>Quantity of Product</td>
             <td className={tdCenterClass}><input type="number" className={inputClass} {...register('packingResults.quantityOfProduct.cans', { valueAsNumber: true })} /></td>
             {/* 3. แสดงผลค่าตัวคูณแบบ Dynamic */}
-            <td className={tdCenterClass}>Cans x {cansMultiplier}</td>
+            <td className={tdCenterClass}>Cans x {actualMultiplier}</td>
             <td className={tdCenterClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('packingResults.quantityOfProduct.calculated')} /></td>
             <td className={tdCenterClass}>(10)</td>
           </tr>

@@ -8,6 +8,7 @@ import Loader from '../../common/Loader';
 
 import ReportEditBZ from './BZ/ReportEditBZ';
 import ReportEditBS_B from './BS-B/ReportEditBS-B';
+import ReportEditBN from './BN/ReportEditBN';
 import ReportEditBZ3 from './BZ3/ReportEditBZ3';
 import ReportEditBS3 from './BS3/ReportEditBS3';
 import ReportEditBZ5_C from './BZ5-C/ReportEditBZ5-C';
@@ -64,6 +65,8 @@ const ReportEditDispatcher: React.FC = () => {
                 return <ReportEditBZ submission={submission} templates={templates} />;
             case 'BS-B':
                 return <ReportEditBS_B submission={submission} templates={templates} />;
+            case 'BN':
+                return <ReportEditBN submission={submission} templates={templates} />;
             case 'BZ3':
                 return <ReportEditBZ3 submission={submission} templates={templates} />;
             case 'BS3':

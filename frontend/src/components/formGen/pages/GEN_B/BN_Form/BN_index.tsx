@@ -11,7 +11,7 @@ import { availableForms } from '../availableForms_GENB.ts';
 
 
 // ย้าย Schema ออกมาไว้นอก Component เพื่อไม่ให้ถูกสร้างใหม่ทุกครั้งที่ re-render
-const BS_B_VALIDATION_SCHEMA = {
+const BN_VALIDATION_SCHEMA = {
     1: {
         fields: ['basicData.date', 'basicData.machineName', 'basicData.lotNo', 'conditions'], // 👈 เพิ่ม 'conditions'
         scope: 'basicData',
@@ -33,12 +33,12 @@ const BS_B_VALIDATION_SCHEMA = {
     },
 };
 
-function BS_B_Form() {
+function BN_Form() {
     const navigate = useNavigate(); // ยังคงต้องใช้สำหรับปุ่ม Back to history
     // 🚀 เรียกใช้ Hook เพื่อจัดการ Logic ของฟอร์มทั้งหมด
     const { formMethods, isSubmitting, onSubmit, onDraft, handleTemplateLoaded } = useProductionForm({
-        formType: 'BS-B',
-        netWeightOfYieldSTD: 800,
+        formType: 'BN',
+        netWeightOfYieldSTD: 1200,
         category: 'GEN_B'
     });
 
@@ -50,7 +50,7 @@ function BS_B_Form() {
         totalSteps: 4,
         trigger,
         errors,
-        validationSchema: BS_B_VALIDATION_SCHEMA,
+        validationSchema: BN_VALIDATION_SCHEMA,
     });
 
  
@@ -60,9 +60,9 @@ function BS_B_Form() {
         <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
             <form onSubmit={onSubmit}>
                 <FormHeader
-                    title="ใบรายงานการผลิต (BS-B)"
+                    title="ใบรายงานการผลิต (BN)"
                     formTypes={availableForms}
-                    currentValue="BS-B"
+                    currentValue="BN"
                     inputClass={inputClass}
                 />
 
@@ -75,10 +75,10 @@ function BS_B_Form() {
                         <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={handleTemplateLoaded} />
                     </div>
                     <div className={step !== 3 ? 'hidden' : ''}>
-                        <SharedFormStep3 register={register} errors={errors} trigger={trigger} control={control} getValues={getValues} onTemplateLoaded={handleTemplateLoaded} templateName="BS-B_Step3_Operations" />
+                        <SharedFormStep3 register={register} errors={errors} trigger={trigger} control={control} getValues={getValues} onTemplateLoaded={handleTemplateLoaded} templateName="BN_Step3_Operations" />
                     </div>
                     <div className={step !== 4 ? 'hidden' : ''}>
-                        <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="calculations.finalTotalWeightFixed" />
+                        <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="calculations.finalTotalWeightFixed" formType = "BN" />
                     </div>
                 </div>
                 <div className="flex justify-center gap-4 rounded-sm border border-stroke p-4 dark:border-strokedark">
@@ -100,4 +100,4 @@ function BS_B_Form() {
     );
 }
 
-export default BS_B_Form;
+export default BN_Form;

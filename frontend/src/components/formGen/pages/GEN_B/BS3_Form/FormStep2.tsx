@@ -353,7 +353,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               {/* --- ส่วนที่ 1: การชั่งน้ำหนัก RC-417 --- */}
               <tr>
                 <td className={tdLeftClass}>RC-417 : Weight</td>
-                <td className={tdLeftClass}><input type="number" className={inputClass} {...register('rc417Weighting.row1.weight', { valueAsNumber: true, required: 'กรุณากรอก  RC-417 : Weight' })} />
+                <td className={tdLeftClass}><input type="number" className={inputClass} step="0.001" {...register('rc417Weighting.row1.weight', { valueAsNumber: true, required: 'กรุณากรอก  RC-417 : Weight' })} />
                   {errors.rc417Weighting?.row1?.weight &&
                     <p className="text-sm text-danger mt-1">
                       {errors.rc417Weighting.row1.weight.message}
@@ -367,7 +367,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               </tr>
               <tr>
                 <td className={tdLeftClass}>RC-417 : Weight</td>
-                <td className={tdLeftClass}><input type="number" className={inputClass} {...register('rc417Weighting.row2.weight', { valueAsNumber: true, required: 'กรุณากรอก RC-417 : Weight' })} />
+                <td className={tdLeftClass}><input type="number" className={inputClass} step="0.001" {...register('rc417Weighting.row2.weight', { valueAsNumber: true, required: 'กรุณากรอก RC-417 : Weight' })} />
                   {errors.rc417Weighting?.row2?.weight &&
                     <p className="text-sm text-danger mt-1">
                       {errors.rc417Weighting.row2.weight.message}

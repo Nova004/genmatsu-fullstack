@@ -1,0 +1,37 @@
+// frontend/src/pages/Reports/AS/PrintableReportBN.tsx
+
+import React from 'react';
+import BNFormPrint from '../../../components/formGen/pages/GEN_B/BN_Form/BNFormPrint';
+import ApprovalFlowDisplay from "../../../components/formGen/components/forms/ApprovalFlowDisplay";
+
+interface ReportDetailBNProps {
+  submission: any;
+  blueprints: any;
+}
+
+const ReportDetailBN: React.FC<ReportDetailBNProps> = ({ submission, blueprints }) => {
+  if (!submission || !submission.form_data_json) {
+    return <div>ไม่พบข้อมูลฟอร์ม</div>;
+  }
+
+  return (
+    <div style={{ zoom: 1.55 }} className="print-compact">
+      <BNFormPrint
+        formData={submission.form_data_json}
+        blueprints={blueprints} // 👈 ส่งพิมพ์เขียวที่ถูกต้องไปให้ Viewer
+        isReadOnly={true}       // 👈 บอก Viewer ให้อยู่ในโหมดอ่านอย่างเดียว
+
+        approvalFlowComponent={
+          submission.submission_id ? (
+            <ApprovalFlowDisplay
+              submissionId={submission.submission_id}
+              submissionData={submission} // ‼️ คุณลืมเพิ่มบรรทัดนี้หรือเปล่าครับ? ‼️
+            />
+          ) : null
+        }
+      />
+    </div>
+  );
+};
+
+export default ReportDetailBN;

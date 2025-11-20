@@ -1,19 +1,157 @@
 {
-  "row_type": "SINGLE_INPUT",
-  "label": "Iron Oxide MTY-80",
-  "std_value": "40  ± 0.1",
-  "unit": "Kg.",
-  "inputs": [
+  "reportType": "BZ",
+  "basicData": {
+    "date": "2025-11-13",
+    "machineName": "02",
+    "lotNo": "test",
+    "mcOperatorRole": "M/C operator"
+  },
+  "mcOperators": [
     {
-      "type": "number",
-      "step": "0.01",
-      "field_name": "rawMaterials.IronOxideMTY80"
-    }
+      "id": "201634\t\t\t",
+      "name": "Mr.Tinnakon  Thuengkhamphu",
+      "number": "2"
+    },
+    { "id": "201339\t\t\t", "name": "Mr.Sawat  Kaewthong", "number": "3" },
+    { "id": "-", "name": "-", "number": "-" }
   ],
-  "validation": {
-    "type": "RANGE_TOLERANCE",
-    "min": 47.9,
-    "max": 48.1,
-    "errorMessage": "ค่าต้องอยู่ระหว่าง 40  ± 0.1"
-  }
+  "assistants": [
+    { "id": "201963\t\t\t", "name": "Mr.Nikorn Saksit", "number": "11" },
+    { "id": "201964\t\t\t", "name": "Mr.Chanchai Upatham", "number": "12" },
+    { "id": "-", "name": "-", "number": "-" },
+    { "id": "-", "name": "-", "number": "-" },
+    { "id": "-", "name": "-", "number": "-" }
+  ],
+  "conditions": [
+    { "status": "OK", "remark": "" },
+    { "status": "OK", "remark": "" },
+    { "status": "OK", "remark": "" }
+  ],
+  "values": [],
+  "checklist": { "coolingValve": "", "butterflyValve": "" },
+  "rawMaterials": {
+    "gypsumplaster": null,
+    "activatedcarbon": null,
+    "diaEarth": null,
+    "sodiumChloride": null,
+    "magnesiumHydroxide": null,
+    "remainedGenmatsu": { "lot": "", "actual": null },
+    "shelfLife": null,
+    "ncrGenmatsu": { "lot": "", "actual": null },
+    "calciumchloride": null,
+    "activated": null,
+    "ZeoliteJikulite": null,
+    "ZeoliteNatto": null,
+    "netWeightOfYieldSTD": 800
+  },
+  "cg1cWeighting": {
+    "row1": { "cg1c": null, "bagNo": "", "bagWeight": "", "net": null },
+    "row2": { "cg1c": null, "bagNo": "", "bagWeight": "", "net": null },
+    "total": null
+  },
+  "calculations": {
+    "nacl15SpecGrav": null,
+    "cg1cWaterContent": null,
+    "temperature": null,
+    "naclBrewingTable": null,
+    "naclWaterCalc": null,
+    "waterCalc": null,
+    "saltCalc": null,
+    "finalTotalWeight": null
+  },
+  "qouRemark": "",
+  "valued": null,
+  "rc417Weighting": {
+    "row1": { "weight": null, "bagNo": "", "net": null },
+    "row2": { "weight": null, "bagNo": "", "net": null },
+    "total": null,
+    "cdz1ofad": null
+  },
+  "bz3Calculations": {
+    "rc417WaterContent": null,
+    "intermediateWaterCalc": null,
+    "totalWeightOfMaterials": null,
+    "stdMeanMoisture": null,
+    "naclWater": null,
+    "naclWaterSpecGrav": null,
+    "temperature": null,
+    "naclWater15": null,
+    "lminRate": null,
+    "totalNaclWater": null,
+    "totalWeightWithNcr": null
+  },
+  "bs3Calculations": {
+    "rc417WaterContent": null,
+    "intermediateWaterCalc": null,
+    "totalWeightOfMaterials": null,
+    "stdMeanMoisture": null,
+    "naclWater": null,
+    "naclWaterSpecGrav": null,
+    "temperature": null,
+    "naclWater4": null,
+    "lminRate": null,
+    "totalNaclWater": null,
+    "totalWeightWithNcr": null
+  },
+  "bz5cCalculations": {
+    "rc417WaterContentMoisture": null,
+    "rc417WaterContentweight": null,
+    "intermediateWaterCalc": null,
+    "totalWeightOfMaterials": null,
+    "stdMeanMoisture": null,
+    "naclWater": null,
+    "naclWaterSpecGrav": null,
+    "temperature": null,
+    "naclWater4": null,
+    "lminRate": null,
+    "totalNaclWater": null,
+    "totalWeightWithNcr": null
+  },
+  "bs5cCalculations": {
+    "rc417WaterContentMoisture": null,
+    "rc417WaterContentweight": null,
+    "intermediateWaterCalc": null,
+    "totalWeightOfMaterials": null,
+    "stdMeanMoisture": null,
+    "naclWater": null,
+    "naclWaterSpecGrav": null,
+    "temperature": null,
+    "naclWater4": null,
+    "lminRate": null,
+    "totalNaclWater": null,
+    "totalWeightWithNcr": null,
+    "Netweightofwaterper": null
+  },
+  "operationResults": [
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    { "humidity": null },
+    {}
+  ],
+  "operationRemark": "",
+  "packingResults": {
+    "diameter": null,
+    "weighttank": { "tank": null, "others": null },
+    "quantityOfProduct": { "cans": null, "calculated": null },
+    "meshPass40": null,
+    "remain": null,
+    "yieldPercent": null
+  },
+  "palletInfo": [
+    { "no": "", "qty": null, "canNo": "" },
+    { "no": "", "qty": null, "canNo": "" },
+    { "no": "", "qty": null, "canNo": "" },
+    { "no": "", "qty": null, "canNo": "" },
+    { "no": "", "qty": null, "canNo": "" },
+    { "no": "", "qty": null, "canNo": "" }
+  ]
 }

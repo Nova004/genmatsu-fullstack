@@ -6,11 +6,11 @@ import { IManufacturingReportForm } from './types';
 // เรากำหนดค่าเริ่มต้นให้ครบทุก field เพื่อป้องกัน Warning "uncontrolled input"
 export const initialFormValues: IManufacturingReportForm = {
   // --- Step 1 ---
-  reportType: 'BZ', // (สามารถเปลี่ยนเป็น 'AS2' หรือค่าเริ่มต้นอื่นๆ ที่คุณต้องการ)
   basicData: {
     date: '', // (ใช้ null ปลอดภัยที่สุดสำหรับ Date Picker)
     machineName: '',
     lotNo: '',
+    mcOperatorRole: 'M/C operator',
   },
   mcOperators: Array(3).fill({ id: '', name: '', number: '' }),
   assistants: Array(5).fill({ id: '', name: '', number: '' }),
@@ -33,6 +33,10 @@ export const initialFormValues: IManufacturingReportForm = {
     ncrGenmatsu: { lot: '', actual: null },
     calciumchloride: null,
     activated: null,
+    ZeoliteJikulite: null,
+    ZeoliteNatto: null,
+    IronOxideMTY80: null,
+    sg: null,
   },
 
   // --- BZ ---
@@ -50,6 +54,7 @@ export const initialFormValues: IManufacturingReportForm = {
     waterCalc: null,
     saltCalc: null,
     finalTotalWeight: null,
+    finalTotalWeightFixed: null,
   },
   qouRemark: '',
   valued: null,

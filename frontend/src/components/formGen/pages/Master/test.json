@@ -1,108 +1,160 @@
 {
+  "basicData": {
+    "date": "2025-11-13",
+    "machineName": "02",
+    "lotNo": "test",
+    "mcOperatorRole": "M/C operator"
+  },
   "mcOperators": [
-    { "id": "201052\t\t", "name": "Mr. Chatchai Thaijaroen", "number": "2" },
-    { "id": "", "name": "", "number": "" },
-    { "id": "", "name": "", "number": "" }
+    {
+      "id": "201634\t\t\t",
+      "name": "Mr.Tinnakon  Thuengkhamphu",
+      "number": "2"
+    },
+    { "id": "201339\t\t\t", "name": "Mr.Sawat  Kaewthong", "number": "3" },
+    { "id": "-", "name": "-", "number": "-" }
   ],
   "assistants": [
-    { "id": "202061", "name": "Mr. Chitsanupong Dachthuyawat", "number": "12" },
-    { "id": "202095", "name": "Mr. Korawich Jaimon", "number": "14" },
-    { "id": "", "name": "", "number": "" },
-    { "id": "", "name": "", "number": "" },
-    { "id": "", "name": "", "number": "" }
+    { "id": "201963\t\t\t", "name": "Mr.Nikorn Saksit", "number": "11" },
+    { "id": "201964\t\t\t", "name": "Mr.Chanchai Upatham", "number": "12" },
+    { "id": "-", "name": "-", "number": "-" },
+    { "id": "-", "name": "-", "number": "-" },
+    { "id": "-", "name": "-", "number": "-" }
   ],
   "conditions": [
     { "status": "OK", "remark": "" },
     { "status": "OK", "remark": "" },
-    { "status": null, "remark": "" }
+    { "status": "OK", "remark": "" }
   ],
-  "basicData": {
-    "date": "2025-10-17",
-    "machineName": "A\t",
-    "lotNo": "5284 A3\t\t"
-  },
-  "checklist": {
-    "butterflyValve": "Mr. Chatchai Thaijaroen (2)",
-    "coolingValve": "Mr. Chatchai Thaijaroen (2)"
+  "values": [],
+  "checklist": { "coolingValve": "", "butterflyValve": "" },
+  "rawMaterials": {
+    "gypsumplaster": 75,
+    "activatedcarbon": 20,
+    "diaEarth": 1201,
+    "sodiumChloride": 460.21,
+    "magnesiumHydroxide": 60,
+    "remainedGenmatsu": { "lot": "-", "actual": 0 },
+    "shelfLife": -1,
+    "ncrGenmatsu": { "lot": "-", "actual": 0 },
+    "calciumchloride": null,
+    "activated": null,
+    "ZeoliteJikulite": 603,
+    "ZeoliteNatto": 629,
+    "IronOxideMTY80": null,
+    "sg": null,
+    "netWeightOfYieldSTD": 1200
   },
   "cg1cWeighting": {
-    "row1": { "cg1c": 1005, "bagNo": "", "net": 1003 },
-    "row2": { "cg1c": 1005, "bagNo": "", "net": 1003 },
-    "total": 2006
+    "row1": { "cg1c": 605, "bagNo": "-", "bagWeight": "", "net": 603 },
+    "row2": { "cg1c": 631, "bagNo": "-", "bagWeight": "", "net": 629 },
+    "total": 1201
   },
-  "calculations": { "finalTotalWeight": 2066 },
+  "calculations": {
+    "nacl15SpecGrav": 1.033,
+    "cg1cWaterContent": 5.22,
+    "temperature": 25,
+    "naclBrewingTable": 475,
+    "naclWaterCalc": 475.4,
+    "waterCalc": 404.09,
+    "saltCalc": 71.31,
+    "finalTotalWeight": 1831.396,
+    "finalTotalWeightFixed": null
+  },
   "qouRemark": "",
-  "rawMaterials": {
-    "diaEarth": 2006,
-    "calciumchloride": 40,
-    "sg": 1.373,
-    "activated": 10,
-    "magnesiumHydroxide": 10,
-    "remainedGenmatsu": { "lot": "", "actual": 0 },
-    "shelfLife": 0,
-    "ncrGenmatsu": { "lot": "", "actual": 0 },
-    "rowater": 40,
-    "netWeightOfYieldSTD": 0
+  "valued": null,
+  "rc417Weighting": {
+    "row1": { "weight": null, "bagNo": "", "net": null },
+    "row2": { "weight": null, "bagNo": "", "net": null },
+    "total": null,
+    "cdz1ofad": null
+  },
+  "bz3Calculations": {
+    "rc417WaterContent": null,
+    "intermediateWaterCalc": null,
+    "totalWeightOfMaterials": null,
+    "stdMeanMoisture": null,
+    "naclWater": null,
+    "naclWaterSpecGrav": null,
+    "temperature": null,
+    "naclWater15": null,
+    "lminRate": null,
+    "totalNaclWater": null,
+    "totalWeightWithNcr": null
+  },
+  "bs3Calculations": {
+    "rc417WaterContent": null,
+    "intermediateWaterCalc": null,
+    "totalWeightOfMaterials": null,
+    "stdMeanMoisture": null,
+    "naclWater": null,
+    "naclWaterSpecGrav": null,
+    "temperature": null,
+    "naclWater4": null,
+    "lminRate": null,
+    "totalNaclWater": null,
+    "totalWeightWithNcr": null
+  },
+  "bz5cCalculations": {
+    "rc417WaterContentMoisture": null,
+    "rc417WaterContentweight": null,
+    "intermediateWaterCalc": null,
+    "totalWeightOfMaterials": null,
+    "stdMeanMoisture": null,
+    "naclWater": null,
+    "naclWaterSpecGrav": null,
+    "temperature": null,
+    "naclWater4": null,
+    "lminRate": null,
+    "totalNaclWater": null,
+    "totalWeightWithNcr": null
+  },
+  "bs5cCalculations": {
+    "rc417WaterContentMoisture": null,
+    "rc417WaterContentweight": null,
+    "intermediateWaterCalc": null,
+    "totalWeightOfMaterials": null,
+    "stdMeanMoisture": null,
+    "naclWater": null,
+    "naclWaterSpecGrav": null,
+    "temperature": null,
+    "naclWater4": null,
+    "lminRate": null,
+    "totalNaclWater": null,
+    "totalWeightWithNcr": null,
+    "Netweightofwaterper": null
   },
   "operationResults": [
-    { "startTime": "22:51", "finishTime": "" },
-    { "startTime": "", "finishTime": "" },
-    {
-      "subItems": [{ "startTime": "", "finishTime": "23:08" }],
-      "startTime": "23:01",
-      "finishTime": "23:04"
-    },
-    {
-      "subItems": [{ "startTime": "23:10", "finishTime": "23:20" }],
-      "startTime": "",
-      "finishTime": ""
-    },
-    {
-      "subItems": [{ "startTime": "23:22", "finishTime": "23:35" }],
-      "startTime": "",
-      "finishTime": ""
-    },
-    {
-      "subItems": [{ "startTime": "23:37", "finishTime": "24:07" }],
-      "startTime": "",
-      "finishTime": ""
-    },
-    {
-      "tempPoint1": 130,
-      "tempPoint2": 131,
-      "tempPoint3": 134,
-      "startTime": "",
-      "finishTime": ""
-    },
-    { "startTime": "", "finishTime": "" },
-    { "startTime": "24:09", "finishTime": "" },
-    { "startTime": "", "finishTime": "24:49" },
-    { "startTime": "01:29", "finishTime": "01:30" },
-    { "startTime": "01:50", "finishTime": "01:51" },
-    { "humidity": 2.64, "startTime": "", "finishTime": "" },
-    {
-      "tempPoint1": 83,
-      "tempPoint2": 88,
-      "tempPoint3": 92,
-      "startTime": "",
-      "finishTime": ""
-    },
-    { "startTime": "01:53", "finishTime": "02:06" }
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    { "humidity": null },
+    {}
   ],
-  "operationRemark": "test",
+  "operationRemark": "",
   "packingResults": {
-    "yieldPercent": 100.19,
-    "quantityOfProduct": { "cans": 13, "calculated": 2070 },
-    "weighttank": { "tank": 120 },
-    "remain": "30",
-    "meshPass40": 2
+    "diameter": null,
+    "weighttank": { "tank": null, "others": null },
+    "quantityOfProduct": { "cans": null, "calculated": null },
+    "meshPass40": null,
+    "remain": null,
+    "yieldPercent": null
   },
   "palletInfo": [
-    { "no": "834", "qty": 300, "canNo": "1-2" },
-    { "no": "835\t\t \t\t", "qty": 750, "canNo": "3-7" },
-    { "no": "836", "qty": 750, "canNo": "8-12" },
-    { "no": "837", "qty": 270, "canNo": "13-14\t\t \t\t" },
+    { "no": "", "qty": null, "canNo": "" },
+    { "no": "", "qty": null, "canNo": "" },
+    { "no": "", "qty": null, "canNo": "" },
+    { "no": "", "qty": null, "canNo": "" },
     { "no": "", "qty": null, "canNo": "" },
     { "no": "", "qty": null, "canNo": "" }
-  ]
+  ],
+  "lot_no": "test"
 }

@@ -10,6 +10,6 @@ router.get('/', naclController.getAllNaCl);
 router.post('/', naclController.createNaCl);
 router.put('/:id', naclController.updateNaCl);
 router.delete('/:id', naclController.deleteNaCl);
+router.get('/lookup/:cgWater/:naclType/:chemicalsType', naclController.lookupNaClValue);
 
-router.get('/lookup/:cgWater', naclController.lookupNaClValue); 
 module.exports = router;

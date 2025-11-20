@@ -7,6 +7,7 @@ import apiClient from '../../../../../services/apiService';
 import { useTemplateLoader } from '../../../../../hooks/useTemplateLoader';
 import { useWeightingCalculation, WeightingCalculationConfig } from '../../../../../hooks/useWeightCalculations';
 import RawMaterialTableRows from '../../../components/forms/RawMaterialTableRows';
+import useNaclBrewingLookup from '../../../../../hooks/useNaclBrewingLookup';
 
 // =================================================================
 // ╔═══════════════════════════════════════════════════════════════╗
@@ -14,40 +15,6 @@ import RawMaterialTableRows from '../../../components/forms/RawMaterialTableRows
 // ╚═══════════════════════════════════════════════════════════════╝
 // =================================================================
 
-
-
-
-/**
- * 🚀 HOOK 2: จัดการการค้นหาค่าจากตาราง NaCl Brewing แบบ Debounce
- */
-const useNaclBrewingLookup = (
-  watch: UseFormWatch<IManufacturingReportForm>,
-  setValue: UseFormSetValue<IManufacturingReportForm>
-) => {
-  const cg1cWaterContent = watch('calculations.cg1cWaterContent');
-
-  useEffect(() => {
-    if (cg1cWaterContent === null || cg1cWaterContent === undefined || isNaN(cg1cWaterContent)) {
-      setValue('calculations.naclBrewingTable', null);
-      return;
-    }
-
-    const fetchBrewingValue = async () => {
-      try {
-        // ใช้ apiClient ที่วิ่งผ่าน Proxy
-        const response = await apiClient.get(`/api/nacl/lookup/${cg1cWaterContent}`);
-        const naclValue = response.data?.NaCl_NaCl_Water;
-        setValue('calculations.naclBrewingTable', naclValue !== undefined ? naclValue : null);
-      } catch (error) {
-        console.error("NaCl lookup failed:", error);
-        setValue('calculations.naclBrewingTable', null);
-      }
-    };
-
-    const delayDebounceFn = setTimeout(() => fetchBrewingValue(), 500);
-    return () => clearTimeout(delayDebounceFn);
-  }, [cg1cWaterContent, setValue]);
-};
 
 
 /**
@@ -63,9 +30,11 @@ export const useExcelFormulaCalculations = (
   const naclSpecGrav = watch('calculations.nacl15SpecGrav');
   const magnesiumHydroxide = watch('rawMaterials.magnesiumHydroxide');
   const ncrGenmatsu = watch('rawMaterials.ncrGenmatsu.actual');
-  const stdYield = 800;
+  const stdYield = 800; // ค่าคงที่
 
   useEffect(() => {
+    console.groupCollapsed('📊 START: Excel Formula Calculations (ใช้ค่าดิบ)'); // เริ่ม Log Group
+
     // --- แปลงค่าทั้งหมดเป็นตัวเลข ---
     const numNaclBrewingTable = Number(naclBrewingTable) || 0;
     const numTotalWeight = Number(totalWeight) || 0;
@@ -73,55 +42,119 @@ export const useExcelFormulaCalculations = (
     const numMagnesiumHydroxide = Number(magnesiumHydroxide) || 0;
     const numNcrGenmatsu = Number(ncrGenmatsu) || 0;
 
+    // Log: ค่า Input ที่ใช้
+    console.log('--- Input Values (ค่าที่ดึงมาจาก Form) ---');
+    console.log(`[Y20] NaCl Table Value: ${numNaclBrewingTable}`);
+    console.log(`[Q18] Total Weight: ${numTotalWeight}`);
+    console.log(`[Q19] NaCl Spec Grav: ${numNaclSpecGrav}`);
+    console.log(`[Y18] Std Yield (Fixed): ${stdYield}`);
+    console.log(`Magnesium Hydroxide: ${numMagnesiumHydroxide}`);
+    console.log(`NCR Genmatsu: ${numNcrGenmatsu}`);
+    console.log('-------------------------------------------');
+
+    // ตัวแปรสำหรับเก็บค่าดิบ (Unrounded Value)
+    let _rawNaclWaterCalc: number | null = null;
 
     // =================================================================
-    // === 🔽 ส่วนที่แก้ไข: แยกการคำนวณตามที่คุณต้องการ 🔽 ===
+    // === 1. คำนวณ Sodium Chloride ===
     // =================================================================
-
-    // --- คำนวณสูตรดั้งเดิมสำหรับ Sodium Chloride ---
     let sodiumChlorideResult: number | null = null;
-    if (numNaclBrewingTable > 0 && stdYield > 0 && numNaclSpecGrav > 0) {
+    if (numNaclBrewingTable > 0 && numTotalWeight > 0 && numNaclSpecGrav > 0) {
       // สูตร: (Q18 * Y20) / (Y18 * Q19)
-      const rawResult = (numTotalWeight * numNaclBrewingTable) / (stdYield * numNaclSpecGrav);
-      sodiumChlorideResult = Number(rawResult.toFixed(2));
+      const numerator = numTotalWeight * numNaclBrewingTable;
+      const denominator = stdYield * numNaclSpecGrav;
+      const rawResult = numerator / denominator;
+      sodiumChlorideResult = Number(rawResult.toFixed(2)); // ปัดเศษเฉพาะผลลัพธ์สุดท้าย
+
+      console.log('--- 1. Sodium Chloride ---');
+      console.log(`Formula: (${numTotalWeight} * ${numNaclBrewingTable}) / (${stdYield} * ${numNaclSpecGrav})`);
+      console.log(`Raw Result: ${rawResult}`);
+      console.log(`✅ SET: rawMaterials.sodiumChloride = ${sodiumChlorideResult}`);
+    } else {
+      console.log('--- 1. Sodium Chloride --- (Skip: Input values are zero/null)');
+      setValue('rawMaterials.sodiumChloride', null, { shouldValidate: true });
     }
-    // นำผลลัพธ์จากสูตรดั้งเดิมไปใส่ในช่อง Sodium Chloride
-    setValue('rawMaterials.sodiumChloride', sodiumChlorideResult, { shouldValidate: true });
 
 
-    // --- คำนวณสูตรที่ 1 & 2 (naclWaterCalc) ---
-    // ส่วนนี้จะคำนวณค่า W23 เหมือนเดิม เพื่อใช้ในขั้นตอนถัดไป
+    // =================================================================
+    // === 2. คำนวณ naclWaterCalc (ค่า NaCl + Water - W23) ===
+    // =================================================================
     let naclWaterCalcResult: number | null = null;
-    if (numNaclBrewingTable > 0 && stdYield > 0) {
+
+    if (numNaclBrewingTable > 0 && numTotalWeight > 0) {
+      // สูตร: (Q18 * Y20) / Y18
       const rawResult = (numTotalWeight * numNaclBrewingTable) / stdYield;
-      naclWaterCalcResult = Number(rawResult.toFixed(2));
-    }
-    setValue('calculations.naclWaterCalc', naclWaterCalcResult);
+      _rawNaclWaterCalc = rawResult; // 🔴 เก็บค่าดิบ (Unrounded) ไว้ใช้ในขั้นตอน 3, 4, 5
+      naclWaterCalcResult = Number(rawResult.toFixed(2)); // ปัดเศษเพื่อแสดงผลเท่านั้น
 
-    // --- คำนวณสูตรที่ 3 (waterCalc) ---
+      console.log('--- 2. naclWaterCalc (W23) ---');
+      console.log(`Formula: (${numTotalWeight} * ${numNaclBrewingTable}) / ${stdYield}`);
+      console.log(`➡️ ค่าดิบที่ถูกส่งต่อไป: ${_rawNaclWaterCalc}`);
+      console.log(`✅ SET: calculations.naclWaterCalc = ${naclWaterCalcResult}`);
+    } else {
+      console.log('--- 2. naclWaterCalc (W23) --- (Skip: Input values are zero/null)');
+      setValue('calculations.naclWaterCalc', null);
+    }
+
+    // =================================================================
+    // === 3. คำนวณ waterCalc (น้ำ) ===
+    // =================================================================
     let waterCalcResult: number | null = null;
-    if (naclWaterCalcResult !== null) {
-      const rawResult = naclWaterCalcResult * 0.85;
-      waterCalcResult = Number(rawResult.toFixed(2));
-    }
-    setValue('calculations.waterCalc', waterCalcResult);
+    // 🔴 ใช้ _rawNaclWaterCalc ในการคำนวณ
+    if (_rawNaclWaterCalc !== null) {
+      // สูตร: W23 (ค่าดิบ) * 0.85
+      const rawResult = _rawNaclWaterCalc * 0.85;
+      waterCalcResult = Number(rawResult.toFixed(2)); // ปัดเศษเฉพาะผลลัพธ์สุดท้าย
 
-    // --- คำนวณสูตรที่ 4 (saltCalc) ---
+      console.log('--- 3. waterCalc (น้ำ) ---');
+      console.log(`Formula: ${_rawNaclWaterCalc} (Raw) * 0.85`);
+      console.log(`Raw Result: ${rawResult}`);
+      console.log(`✅ SET: calculations.waterCalc = ${waterCalcResult}`);
+    } else {
+      setValue('calculations.waterCalc', null);
+    }
+
+    // =================================================================
+    // === 4. คำนวณ saltCalc (เกลือบริสุทธิ์) ===
+    // =================================================================
     let saltCalcResult: number | null = null;
-    if (naclWaterCalcResult !== null) {
-      const rawResult = naclWaterCalcResult * 0.15;
-      saltCalcResult = Number(rawResult.toFixed(2));
-    }
-    setValue('calculations.saltCalc', saltCalcResult);
+    // 🔴 ใช้ _rawNaclWaterCalc ในการคำนวณ
+    if (_rawNaclWaterCalc !== null) {
+      // สูตร: W23 (ค่าดิบ) * 0.15
+      const rawResult = _rawNaclWaterCalc * 0.15;
+      saltCalcResult = Number(rawResult.toFixed(2)); // ปัดเศษเฉพาะผลลัพธ์สุดท้าย
 
-    // --- คำนวณสูตรที่ 5 (finalTotalWeight) ---
+      console.log('--- 4. saltCalc (เกลือ) ---');
+      console.log(`Formula: ${_rawNaclWaterCalc} (Raw) * 0.15`);
+      console.log(`Raw Result: ${rawResult}`);
+      console.log(`✅ SET: calculations.saltCalc = ${saltCalcResult}`);
+    } else {
+      setValue('calculations.saltCalc', null);
+    }
+
+    // =================================================================
+    // === 5. คำนวณ finalTotalWeight (น้ำหนักรวมสุดท้าย) ===
+    // =================================================================
     let finalTotalWeight: number | null = null;
-    if (totalWeight !== null && totalWeight !== undefined) {
-      const total = numTotalWeight + (naclWaterCalcResult || 0) + numMagnesiumHydroxide + numNcrGenmatsu;
-      finalTotalWeight = Number(total.toFixed(2));
-    }
-    setValue('calculations.finalTotalWeight', finalTotalWeight);
+    // 🔴 ใช้ค่าดิบ (Unrounded) ในการรวมน้ำหนัก
+    const naclWaterRaw = _rawNaclWaterCalc || 0;
 
+    // รวบรวมน้ำหนักทั้งหมด
+    const total = numTotalWeight + naclWaterRaw + numMagnesiumHydroxide + numNcrGenmatsu;
+
+    if (total > 0) {
+      finalTotalWeight = Number(total.toFixed(2)); // ปัดเศษเฉพาะผลลัพธ์สุดท้าย
+
+      console.log('--- 5. finalTotalWeight (น้ำหนักรวมสุดท้าย) ---');
+      console.log(`Sum: ${numTotalWeight} + ${naclWaterRaw} (NaCl+Water Raw) + ${numMagnesiumHydroxide} + ${numNcrGenmatsu}`);
+      console.log(`Raw Total: ${total}`);
+      console.log(`✅ SET: calculations.finalTotalWeight = ${finalTotalWeight}`);
+    } else {
+      console.log('--- 5. finalTotalWeight --- (Skip: Total sum is zero)');
+      setValue('calculations.finalTotalWeight', null);
+    }
+
+    console.groupEnd(); // สิ้นสุด Log Group
   }, [
     naclBrewingTable,
     totalWeight,
@@ -171,11 +204,11 @@ const FormStep2: React.FC<FormStep2Props> = ({
   });
 
 
-
+  const rawNaclBrewingTableValue = watch('calculations.naclBrewingTable'); // ดักฟังค่า NaCl Brewing Table เพื่อแสดงผลแบบปัดเศษใน Input Field
 
   // --- Logic 2: เรียกใช้ Custom Hooks ที่เราสร้างไว้ ---
   useWeightingCalculation(watch, setValue, bzWeightingConfig);
-  useNaclBrewingLookup(watch, setValue);
+  useNaclBrewingLookup(watch, setValue, '15%');
   useExcelFormulaCalculations(watch, setValue);
 
 
@@ -187,7 +220,6 @@ const FormStep2: React.FC<FormStep2Props> = ({
   const tdLeftClass = `${tdClass} align-middle`;
 
   // --- ฟังก์ชันสำหรับสร้าง Input Field พร้อม Validation ---
-
 
   return (
     <div>
@@ -220,7 +252,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
             <tbody>
               <tr>
                 <td className={tdLeftClass}>CG-1C Weight (KG) :</td>
-                <td className={tdLeftClass}>  <input type="number"  className={inputClass} {...register('cg1cWeighting.row1.cg1c', { valueAsNumber: true, required: 'กรุณากรอก CG-1C Weight ROW 1' })} />
+                <td className={tdLeftClass}>  <input type="number" className={inputClass} {...register('cg1cWeighting.row1.cg1c', { valueAsNumber: true, required: 'กรุณากรอก CG-1C Weight ROW 1' })} />
                   {errors.cg1cWeighting?.row1?.cg1c &&
                     <p className="text-sm text-danger mt-1">
                       {errors.cg1cWeighting.row1.cg1c.message}
@@ -284,7 +316,17 @@ const FormStep2: React.FC<FormStep2Props> = ({
               </tr>
               <tr>
                 <td className={tdLeftClass}>NaCl brewing table</td>
-                <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.naclBrewingTable')} /></td>
+                <input
+                  type="text" // 💡 ใช้ type="text"
+                  className={disabledInputClass}
+                  readOnly
+                  disabled
+                  {...register('calculations.naclBrewingTable')}
+                  // ⬅️ วิธีที่ง่ายที่สุด: ใช้ .toFixed(4) บนค่าที่ watch มาโดยตรง
+                  value={rawNaclBrewingTableValue !== null && rawNaclBrewingTableValue !== undefined
+                    ? Number(rawNaclBrewingTableValue).toFixed(4)
+                    : ''}
+                />
                 <td className={tdLeftClass} colSpan={4}></td>
               </tr>
               <tr>
