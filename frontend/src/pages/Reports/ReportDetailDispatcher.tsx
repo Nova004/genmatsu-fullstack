@@ -9,11 +9,17 @@ import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 // -- Import Component แบบปกติ --
 import ReportDetailBZ from './BZ/ReportDetailBZ';
 import ReportDetailBS_B from './BS-B/ReportDetailBS-B';
+import ReportDetailBS from './BS/ReportDetailBS';
 import ReportDetailBN from './BN/ReportDetailBN';
 import ReportDetailBZ3 from './BZ3/ReportDetailBZ3';
+import ReportDetailBZ3_B from './BZ3-B/ReportDetailBZ3-B';
 import ReportDetailBS3 from './BS3/ReportDetailBS3';
+import ReportDetailBS3_B from './BS3-B/ReportDetailBS3-B';
+import ReportDetailBS3_B1 from './BS3-B1/ReportDetailBS3-B1';
+import ReportDetailBS3_C from './BS3-C/ReportDetailBS3-C';
 import ReportDetailBZ5_C from './BZ5-C/ReportDetailBZ5-C';
 import ReportDetailBS5_C from './BS5-C/ReportDetailBS5-C';
+
 
 import ReportDetailAS2 from './AS2/ReportDetailAS2';
 import ReportDetailAX9_B from './AX9-B/ReportDetailAX9-B';
@@ -98,12 +104,22 @@ const ReportDetailDispatcher: React.FC = () => {
         return <ReportDetailBZ submission={submission} blueprints={blueprints} />;
       case 'BS-B':
         return <ReportDetailBS_B submission={submission} blueprints={blueprints} />;
+      case 'BS':
+        return <ReportDetailBS submission={submission} blueprints={blueprints} />;
       case 'BN':
         return <ReportDetailBN submission={submission} blueprints={blueprints} />;
       case 'BZ3':
         return <ReportDetailBZ3 submission={submission} blueprints={blueprints} />;
+      case 'BZ3-B':
+        return <ReportDetailBZ3_B submission={submission} blueprints={blueprints} />;
       case 'BS3':
         return <ReportDetailBS3 submission={submission} blueprints={blueprints} />;
+      case 'BS3-C':
+        return <ReportDetailBS3_C submission={submission} blueprints={blueprints} />;
+      case 'BS3-B':
+        return <ReportDetailBS3_B submission={submission} blueprints={blueprints} />;
+      case 'BS3-B1':
+        return <ReportDetailBS3_B1 submission={submission} blueprints={blueprints} />;
       case 'BZ5-C':
         return <ReportDetailBZ5_C submission={submission} blueprints={blueprints} />;
       case 'BS5-C':

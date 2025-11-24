@@ -1,9 +1,8 @@
-// src/pages/BZ_Form/FormStep2.tsx
+// src/pages/BS_Form/FormStep2.tsx
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UseFormWatch, UseFormSetValue, FieldErrors } from 'react-hook-form';
 import { IManufacturingReportForm, IStep2ConfigJson } from '../../types';
-import apiClient from '../../../../../services/apiService';
 import { useTemplateLoader } from '../../../../../hooks/useTemplateLoader';
 import { useWeightingCalculation, WeightingCalculationConfig } from '../../../../../hooks/useWeightCalculations';
 import RawMaterialTableRows from '../../../components/forms/RawMaterialTableRows';
@@ -14,6 +13,14 @@ import useNaclBrewingLookup from '../../../../../hooks/useNaclBrewingLookup';
 // ║                     CUSTOM HOOKS (ส่วนจัดการ Logic)            
 // ╚═══════════════════════════════════════════════════════════════╝
 // =================================================================
+
+
+
+
+/**
+ * 🚀 HOOK 2: จัดการการค้นหาค่าจากตาราง NaCl Brewing แบบ Debounce
+ */
+
 
 /**
  * 🚀 HOOK 3: จัดการการคำนวณตามสูตร Excel ที่มีความต่อเนื่องกันทั้งหมด
@@ -28,144 +35,104 @@ export const useExcelFormulaCalculations = (
   const naclSpecGrav = watch('calculations.nacl15SpecGrav');
   const magnesiumHydroxide = watch('rawMaterials.magnesiumHydroxide');
   const ncrGenmatsu = watch('rawMaterials.ncrGenmatsu.actual');
+  const activatedcarbon = watch('rawMaterials.activatedcarbon');
+  const gypsumplaster = watch('rawMaterials.gypsumplaster');
+
+
   const stdYield = 800; // ค่าคงที่
 
   useEffect(() => {
-    console.groupCollapsed('📊 START: Excel Formula Calculations (ใช้ค่าดิบ)'); // เริ่ม Log Group
-
     // --- แปลงค่าทั้งหมดเป็นตัวเลข ---
     const numNaclBrewingTable = Number(naclBrewingTable) || 0;
     const numTotalWeight = Number(totalWeight) || 0;
     const numNaclSpecGrav = Number(naclSpecGrav) || 0;
     const numMagnesiumHydroxide = Number(magnesiumHydroxide) || 0;
     const numNcrGenmatsu = Number(ncrGenmatsu) || 0;
+    const numActivatedCarbon = Number(activatedcarbon) || 0;
+    const numGypsumPlaster = Number(gypsumplaster) || 0;
 
-    // Log: ค่า Input ที่ใช้
-    console.log('--- Input Values (ค่าที่ดึงมาจาก Form) ---');
-    console.log(`[Y20] NaCl Table Value: ${numNaclBrewingTable}`);
-    console.log(`[Q18] Total Weight: ${numTotalWeight}`);
-    console.log(`[Q19] NaCl Spec Grav: ${numNaclSpecGrav}`);
-    console.log(`[Y18] Std Yield (Fixed): ${stdYield}`);
-    console.log(`Magnesium Hydroxide: ${numMagnesiumHydroxide}`);
-    console.log(`NCR Genmatsu: ${numNcrGenmatsu}`);
-    console.log('-------------------------------------------');
-
-    // ตัวแปรสำหรับเก็บค่าดิบ (Unrounded Value)
-    let _rawNaclWaterCalc: number | null = null;
+    // ตัวแปรสำหรับเก็บผลลัพธ์ดิบ (Raw Result) ที่ไม่ปัดเศษ เพื่อใช้ในสูตรถัดไป
+    let _rawNaclWaterCalcResult: number | null = null;
 
     // =================================================================
     // === 1. คำนวณ Sodium Chloride ===
     // =================================================================
     let sodiumChlorideResult: number | null = null;
-    if (numNaclBrewingTable > 0 && numTotalWeight > 0 && numNaclSpecGrav > 0) {
+    if (numNaclBrewingTable > 0 && stdYield > 0 && numNaclSpecGrav > 0) {
       // สูตร: (Q18 * Y20) / (Y18 * Q19)
-      const numerator = numTotalWeight * numNaclBrewingTable;
-      const denominator = stdYield * numNaclSpecGrav;
-      const rawResult = numerator / denominator;
-      sodiumChlorideResult = Number(rawResult.toFixed(2)); // ปัดเศษเฉพาะผลลัพธ์สุดท้าย
-
-      console.log('--- 1. Sodium Chloride ---');
-      console.log(`Formula: (${numTotalWeight} * ${numNaclBrewingTable}) / (${stdYield} * ${numNaclSpecGrav})`);
-      console.log(`Raw Result: ${rawResult}`);
-      console.log(`✅ SET: rawMaterials.sodiumChloride = ${sodiumChlorideResult}`);
-      setValue('rawMaterials.sodiumChloride', sodiumChlorideResult, { shouldValidate: true });
-    } else {
-      console.log('--- 1. Sodium Chloride --- (Skip: Input values are zero/null)');
-      setValue('rawMaterials.sodiumChloride', null, { shouldValidate: true });
+      const rawResult = (numTotalWeight * numNaclBrewingTable) / (stdYield * numNaclSpecGrav);
+      // ✅ ปัดเศษเฉพาะผลลัพธ์สุดท้ายนี้เพื่อแสดงผล
+      sodiumChlorideResult = Number(rawResult.toFixed(2));
     }
+    setValue('rawMaterials.sodiumChloride', sodiumChlorideResult, { shouldValidate: true });
 
 
     // =================================================================
-    // === 2. คำนวณ naclWaterCalc (ค่า NaCl + Water - W23) ===
+    // === 2. คำนวณ naclWaterCalc (W23) ===
     // =================================================================
     let naclWaterCalcResult: number | null = null;
-
-    if (numNaclBrewingTable > 0 && numTotalWeight > 0) {
-      // สูตร: (Q18 * Y20) / Y18
+    if (numNaclBrewingTable > 0 && stdYield > 0) {
       const rawResult = (numTotalWeight * numNaclBrewingTable) / stdYield;
-      _rawNaclWaterCalc = rawResult; // 🔴 เก็บค่าดิบ (Unrounded) ไว้ใช้ในขั้นตอน 3, 4, 5
-      naclWaterCalcResult = Number(rawResult.toFixed(2)); // ปัดเศษเพื่อแสดงผลเท่านั้น
-      setValue('calculations.naclWaterCalc', naclWaterCalcResult, { shouldValidate: true });
-      console.log('--- 2. naclWaterCalc (W23) ---');
-      console.log(`Formula: (${numTotalWeight} * ${numNaclBrewingTable}) / ${stdYield}`);
-      console.log(`➡️ ค่าดิบที่ถูกส่งต่อไป: ${_rawNaclWaterCalc}`);
-      console.log(`✅ SET: calculations.naclWaterCalc = ${naclWaterCalcResult}`);
-    } else {
-      console.log('--- 2. naclWaterCalc (W23) --- (Skip: Input values are zero/null)');
-      setValue('calculations.naclWaterCalc', null);
+
+      // ➡️ เก็บค่าดิบ (ไม่ปัดเศษ) ไว้ในตัวแปร _raw... สำหรับการคำนวณถัดไป
+      _rawNaclWaterCalcResult = rawResult;
+
+      // ✅ ปัดเศษเฉพาะผลลัพธ์ที่จะ setVaule (สำหรับการแสดงผล)
+      naclWaterCalcResult = Number(rawResult.toFixed(2));
     }
+    setValue('calculations.naclWaterCalc', naclWaterCalcResult);
+
 
     // =================================================================
     // === 3. คำนวณ waterCalc (น้ำ) ===
     // =================================================================
     let waterCalcResult: number | null = null;
-    // 🔴 ใช้ _rawNaclWaterCalc ในการคำนวณ
-    if (_rawNaclWaterCalc !== null) {
-      // สูตร: W23 (ค่าดิบ) * 0.85
-      const rawResult = _rawNaclWaterCalc * 0.85;
-      waterCalcResult = Number(rawResult.toFixed(2)); // ปัดเศษเฉพาะผลลัพธ์สุดท้าย
-      setValue('calculations.waterCalc', waterCalcResult, { shouldValidate: true });
-      console.log('--- 3. waterCalc (น้ำ) ---');
-      console.log(`Formula: ${_rawNaclWaterCalc} (Raw) * 0.85`);
-      console.log(`Raw Result: ${rawResult}`);
-      console.log(`✅ SET: calculations.waterCalc = ${waterCalcResult}`);
-    } else {
-      setValue('calculations.waterCalc', null);
+    // ➡️ ใช้ค่าดิบ (_rawNaclWaterCalcResult) ในการคำนวณ
+    if (_rawNaclWaterCalcResult !== null) {
+      const rawResult = _rawNaclWaterCalcResult * 0.96;
+      // ✅ ปัดเศษเฉพาะผลลัพธ์สุดท้ายนี้เพื่อแสดงผล
+      waterCalcResult = Number(rawResult.toFixed(2));
     }
+    setValue('calculations.waterCalc', waterCalcResult);
+
 
     // =================================================================
-    // === 4. คำนวณ saltCalc (เกลือบริสุทธิ์) ===
+    // === 4. คำนวณ saltCalc (เกลือ) ===
     // =================================================================
     let saltCalcResult: number | null = null;
-    // 🔴 ใช้ _rawNaclWaterCalc ในการคำนวณ
-    if (_rawNaclWaterCalc !== null) {
-      // สูตร: W23 (ค่าดิบ) * 0.15
-      const rawResult = _rawNaclWaterCalc * 0.15;
-      saltCalcResult = Number(rawResult.toFixed(2)); // ปัดเศษเฉพาะผลลัพธ์สุดท้าย
-
-      console.log('--- 4. saltCalc (เกลือ) ---');
-      console.log(`Formula: ${_rawNaclWaterCalc} (Raw) * 0.15`);
-      console.log(`Raw Result: ${rawResult}`);
-      console.log(`✅ SET: calculations.saltCalc = ${saltCalcResult}`);
-      setValue('calculations.saltCalc', saltCalcResult, { shouldValidate: true });
-    } else {
-      setValue('calculations.saltCalc', null);
+    // ➡️ ใช้ค่าดิบ (_rawNaclWaterCalcResult) ในการคำนวณ
+    if (_rawNaclWaterCalcResult !== null) {
+      const rawResult = _rawNaclWaterCalcResult * 0.04;
+      // ✅ ปัดเศษเฉพาะผลลัพธ์สุดท้ายนี้เพื่อแสดงผล
+      saltCalcResult = Number(rawResult.toFixed(2));
     }
+    setValue('calculations.saltCalc', saltCalcResult);
+
 
     // =================================================================
-    // === 5. คำนวณ finalTotalWeight (น้ำหนักรวมสุดท้าย) ===
+    // === 5. คำนวณ finalTotalWeight ===
     // =================================================================
     let finalTotalWeight: number | null = null;
-    // 🔴 ใช้ค่าดิบ (Unrounded) ในการรวมน้ำหนัก
-    const naclWaterRaw = _rawNaclWaterCalc || 0;
-
-    // รวบรวมน้ำหนักทั้งหมด
-    const total = numTotalWeight + naclWaterRaw + numMagnesiumHydroxide + numNcrGenmatsu;
-
-    if (total > 0) {
-      finalTotalWeight = Number(total.toFixed(2)); // ปัดเศษเฉพาะผลลัพธ์สุดท้าย
-      setValue('calculations.finalTotalWeight', finalTotalWeight); // ⬅️ ต้อง setValue ด้วย
-
-      console.log('--- 5. finalTotalWeight (น้ำหนักรวมสุดท้าย) ---');
-      console.log(`Sum: ${numTotalWeight} + ${naclWaterRaw} (NaCl+Water Raw) + ${numMagnesiumHydroxide} + ${numNcrGenmatsu}`);
-      console.log(`Raw Total: ${total}`);
-      console.log(`✅ SET: calculations.finalTotalWeight = ${finalTotalWeight}`);
-    } else {
-      console.log('--- 5. finalTotalWeight --- (Skip: Total sum is zero)');
-      setValue('calculations.finalTotalWeight', null);
+    if (totalWeight !== null && totalWeight !== undefined) {
+      // ➡️ ใช้ค่าดิบ (_rawNaclWaterCalcResult) ในการคำนวณ
+      const naclWater = _rawNaclWaterCalcResult || 0;
+      const total = numTotalWeight + naclWater + numMagnesiumHydroxide + numNcrGenmatsu + numActivatedCarbon + numGypsumPlaster;
+      // ✅ ปัดเศษเฉพาะผลลัพธ์สุดท้ายนี้เพื่อแสดงผล
+      finalTotalWeight =Number(total.toFixed(3));
     }
+    setValue('calculations.finalTotalWeight', finalTotalWeight);
 
-    console.groupEnd(); // สิ้นสุด Log Group
   }, [
     naclBrewingTable,
     totalWeight,
     naclSpecGrav,
     magnesiumHydroxide,
+    activatedcarbon,
+    gypsumplaster,
     ncrGenmatsu,
     setValue
   ]);
 };
-
 // =================================================================
 // ╔═══════════════════════════════════════════════════════════════╗
 // ║                     MAIN COMPONENT (ส่วนแสดงผล)                
@@ -199,17 +166,17 @@ const FormStep2: React.FC<FormStep2Props> = ({
 }) => {
 
   const { fields, isLoading, error } = useTemplateLoader({
-    templateName: 'BZ_Step2_RawMaterials', // 👈 แค่ระบุชื่อ Template ที่ถูกต้อง
+    templateName: 'BS_Step2_RawMaterials', // 👈 แค่ระบุชื่อ Template ที่ถูกต้อง
     onTemplateLoaded,
     staticBlueprint,
   });
 
 
-  const rawNaclBrewingTableValue = watch('calculations.naclBrewingTable'); // ดักฟังค่า NaCl Brewing Table เพื่อแสดงผลแบบปัดเศษใน Input Field
+
 
   // --- Logic 2: เรียกใช้ Custom Hooks ที่เราสร้างไว้ ---
   useWeightingCalculation(watch, setValue, bzWeightingConfig);
-  useNaclBrewingLookup(watch, setValue, '15%');
+  useNaclBrewingLookup(watch, setValue, '4%');
   useExcelFormulaCalculations(watch, setValue);
 
 
@@ -220,18 +187,8 @@ const FormStep2: React.FC<FormStep2Props> = ({
   const tdCenterClass = `${tdClass} text-center align-middle`;
   const tdLeftClass = `${tdClass} align-middle`;
 
-  const naclTableValueToDisplay = useMemo(() => {
-    const num = Number(rawNaclBrewingTableValue);
-    return rawNaclBrewingTableValue !== null && rawNaclBrewingTableValue !== undefined && !isNaN(num)
-      ? num.toFixed(4)
-      : '';
-  }, [rawNaclBrewingTableValue]);
-
-
-  // 🔴 2. ดึง Prop ที่จำเป็นสำหรับการ register ออกมา (เพื่อหลีกเลี่ยง conflict กับ value)
-  const naclBrewingTableProps = register('calculations.naclBrewingTable');
-
   // --- ฟังก์ชันสำหรับสร้าง Input Field พร้อม Validation ---
+
 
   return (
     <div>
@@ -300,8 +257,8 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}></td>
               </tr>
               <tr>
-                <td className={tdLeftClass}>15% NaCl Water Specific gravity</td>
-                <td className={tdLeftClass}><input type="number" step="0.001" className={inputClass} {...register('calculations.nacl15SpecGrav', { valueAsNumber: true, required: 'กรุณากรอก 15% NaCl Water Specific gravity' })} />
+                <td className={tdLeftClass}>4% NaCl Water Specific gravity</td>
+                <td className={tdLeftClass}><input type="number" step="0.001" className={inputClass} {...register('calculations.nacl15SpecGrav', { valueAsNumber: true, required: 'กรุณากรอก 4% NaCl Water Specific gravity' })} />
                   {errors.calculations?.nacl15SpecGrav &&
                     <p className="text-sm text-danger mt-1">
                       {errors.calculations.nacl15SpecGrav.message}
@@ -319,27 +276,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
                     </p>
                   }
                 </td>
-                <td className={tdLeftClass} colSpan={4}></td>
-              </tr>
-              <tr>
                 <td className={tdLeftClass}>Temperature (˚C)</td>
                 <td className={tdLeftClass}><input type="number" step="0.1" className={inputClass} {...register('calculations.temperature', { valueAsNumber: true })} /></td>
-                <td className={tdLeftClass} colSpan={4}></td>
+                <td className={tdLeftClass} colSpan={3}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>NaCl brewing table</td>
-                <td className={tdLeftClass}> {/* 💡 ห่อ Input ด้วย td ที่ถูกต้อง */}
-                  <input
-                    type="text"
-                    className={disabledInputClass}
-                    readOnly
-                    disabled
-                    // ⬅️ Prop RHF
-                    {...naclBrewingTableProps}
-                    // ⬅️ Prop Value ที่ต้องการปัดเศษ (จะทับ Prop value ที่มาจาก RHF)
-                    value={naclTableValueToDisplay}
-                  />
-                </td>
+                <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.naclBrewingTable')} /></td>
                 <td className={tdLeftClass} colSpan={4}></td>
               </tr>
               <tr>
@@ -349,12 +292,12 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass} colSpan={3}></td>
               </tr>
               <tr>
-                <td className={tdLeftClass}>Water (8) * 0.85</td>
+                <td className={tdLeftClass}>Water (8) * 0.96</td>
                 <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.waterCalc')} /></td>
                 <td className={tdLeftClass} colSpan={4}></td>
               </tr>
               <tr>
-                <td className={tdLeftClass}>Salt (8) * 0.15</td>
+                <td className={tdLeftClass}>Salt (8) * 0.04</td>
                 <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.saltCalc')} /></td>
                 <td className={tdLeftClass} colSpan={4}></td>
               </tr>

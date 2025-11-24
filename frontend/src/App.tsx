@@ -28,13 +28,18 @@ import ReportDetailDispatcher from './pages/Reports/ReportDetailDispatcher';
 import BZ_Form from './components/formGen/pages/GEN_B/BZ_Form/BZ_index';
 import BN_Form from './components/formGen/pages/GEN_B/BN_Form/BN_index';
 import BS_B_Form from './components/formGen/pages/GEN_B/BS-B_Form/BS-B_index';
+import BS_Form from './components/formGen/pages/GEN_B/BS_Form/BS_index';
 import BZ3_Form from './components/formGen/pages/GEN_B/BZ3_Form/BZ3_index';
 import BS3_Form from './components/formGen/pages/GEN_B/BS3_Form/BS3_index';
+import BZ3_B_Form from './components/formGen/pages/GEN_B/BZ3-B_Form/BZ3-B_index';
+import BS3_B_Form from './components/formGen/pages/GEN_B/BS3-B_Form/BS3-B_index';
+import BS3_B1_Form from './components/formGen/pages/GEN_B/BS3-B1_Form/BS3-B1_index';
 import AS2_Form from './components/formGen/pages/GEN_A/AS2_Form/AS2_index';
 import AX9_B_Form from './components/formGen/pages/GEN_A/AX9-B_Form/AX9-B_index';
 import AX2_B_Form from './components/formGen/pages/GEN_A/AX2-B_Form/AX2-B_index';
 import BZ5_C_Form from './components/formGen/pages/GEN_B/BZ5-C_Form/BZ5-C_index.tsx';
 import BS5_C_Form from './components/formGen/pages/GEN_B/BS5-C_Form/BS5-C_index.tsx';
+import BS3_C_Form from './components/formGen/pages/GEN_B/BS3-C_Form/BS3-C_index.tsx';
 
 
 import ReportEditDispatcher from './pages/Reports/ReportEditDispatcher';
@@ -253,6 +258,10 @@ function App() {
                           element={<><PageTitle title="BS-B Form" /><BS_B_Form /></>}
                         />
                         <Route
+                          path="/forms/bs-form"
+                          element={<><PageTitle title="BS Form" /><BS_Form /></>}
+                        />
+                        <Route
                           path="/forms/bn-form"
                           element={<><PageTitle title="BN Form" /><BN_Form /></>}
                         />
@@ -263,6 +272,22 @@ function App() {
                         <Route
                           path="/forms/bs3-form"
                           element={<><PageTitle title="BS3 Form" /><BS3_Form /></>}
+                        />
+                        <Route
+                          path="/forms/bs3-c-form"
+                          element={<><PageTitle title="BS3-C Form" /><BS3_C_Form /></>}
+                        />
+                        <Route
+                          path="/forms/bs3-b-form"
+                          element={<><PageTitle title="BS3-B Form" /><BS3_B_Form /></>}
+                        />
+                        <Route
+                          path="/forms/bs3-b1-form"
+                          element={<><PageTitle title="BS3-B Form" /><BS3_B1_Form /></>}
+                        />
+                        <Route
+                          path="/forms/bz3-b-form"
+                          element={<><PageTitle title="BZ3-B Form" /><BZ3_B_Form /></>}
                         />
                         <Route
                           path="/forms/bz5-c-form"

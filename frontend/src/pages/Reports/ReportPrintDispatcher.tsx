@@ -10,7 +10,14 @@ import PrintableReportAX9_B from './AX9-B/PrintableReporAX9-B';
 import PrintableReportAX2_B from './AX2-B/PrintableReportAX2-B';
 import PrintableReportBZ5_C from './BZ5-C/PrintableReportBZ5-C';
 import PrintableReportBS_B from './BS-B/PrintableReportBS-B';
+import PrintableReportBS from './BS/PrintableReportBS';
 import PrintableReportBN from './BN/PrintableReportBN';
+import PrintableReportBS3_B from './BS3-B/PrintableReportBS3-B';
+import PrintableReportBS3_B1 from './BS3-B1/PrintableReportBS3-B1';
+import PrintableReportBZ3_B from './BZ3-B/PrintableReportBZ3-B';
+import PrintableReportBZ from './BZ/PrintableReportBZ';
+import PrintableReportBS5_C from './BS5-C/PrintableReportBS5-C';
+import PrintableReportBS3_C from './BS3-C/PrintableReportBS3-C';
 
 // --- ⬆️ สิ้นสุดส่วน Import Component ⬆️ ---
 
@@ -90,10 +97,24 @@ const ReportPrintDispatcher: React.FC = () => {
         return <PrintableReportAX2_B {...props} />;
       case 'BZ5-C':
         return <PrintableReportBZ5_C {...props} />;
+      case 'BZ3-B':
+        return <PrintableReportBZ3_B {...props} />;
+      case 'BS3-B':
+        return <PrintableReportBS3_B {...props} />;
+      case 'BS3-B1':
+        return <PrintableReportBS3_B1 {...props} />;
+      case 'BS3-C':
+        return <PrintableReportBS3_C {...props} />;
       case 'BS-B':
         return <PrintableReportBS_B {...props} />;
+      case 'BS':
+        return <PrintableReportBS {...props} />;
       case 'BN':
         return <PrintableReportBN {...props} />;
+      case 'BZ':
+        return <PrintableReportBZ {...props} />;
+      case 'BS5-C':
+        return <PrintableReportBS5_C {...props} />;
 
       // --- ⬆️ เพิ่ม Case อื่นๆ ถ้ามี ⬆️ ---
       default:

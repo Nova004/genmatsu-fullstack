@@ -1,6 +1,6 @@
 // src/pages/BZ_Form/FormStep2.tsx
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UseFormWatch, UseFormSetValue, FieldErrors } from 'react-hook-form';
 import { IManufacturingReportForm, IStep2ConfigJson } from '../../types';
 import apiClient from '../../../../../services/apiService';
@@ -14,6 +14,8 @@ import useNaclBrewingLookup from '../../../../../hooks/useNaclBrewingLookup';
 // ║                     CUSTOM HOOKS (ส่วนจัดการ Logic)            
 // ╚═══════════════════════════════════════════════════════════════╝
 // =================================================================
+
+
 
 /**
  * 🚀 HOOK 3: จัดการการคำนวณตามสูตร Excel ที่มีความต่อเนื่องกันทั้งหมด
@@ -68,7 +70,6 @@ export const useExcelFormulaCalculations = (
       console.log(`Formula: (${numTotalWeight} * ${numNaclBrewingTable}) / (${stdYield} * ${numNaclSpecGrav})`);
       console.log(`Raw Result: ${rawResult}`);
       console.log(`✅ SET: rawMaterials.sodiumChloride = ${sodiumChlorideResult}`);
-      setValue('rawMaterials.sodiumChloride', sodiumChlorideResult, { shouldValidate: true });
     } else {
       console.log('--- 1. Sodium Chloride --- (Skip: Input values are zero/null)');
       setValue('rawMaterials.sodiumChloride', null, { shouldValidate: true });
@@ -85,7 +86,7 @@ export const useExcelFormulaCalculations = (
       const rawResult = (numTotalWeight * numNaclBrewingTable) / stdYield;
       _rawNaclWaterCalc = rawResult; // 🔴 เก็บค่าดิบ (Unrounded) ไว้ใช้ในขั้นตอน 3, 4, 5
       naclWaterCalcResult = Number(rawResult.toFixed(2)); // ปัดเศษเพื่อแสดงผลเท่านั้น
-      setValue('calculations.naclWaterCalc', naclWaterCalcResult, { shouldValidate: true });
+
       console.log('--- 2. naclWaterCalc (W23) ---');
       console.log(`Formula: (${numTotalWeight} * ${numNaclBrewingTable}) / ${stdYield}`);
       console.log(`➡️ ค่าดิบที่ถูกส่งต่อไป: ${_rawNaclWaterCalc}`);
@@ -104,7 +105,7 @@ export const useExcelFormulaCalculations = (
       // สูตร: W23 (ค่าดิบ) * 0.85
       const rawResult = _rawNaclWaterCalc * 0.85;
       waterCalcResult = Number(rawResult.toFixed(2)); // ปัดเศษเฉพาะผลลัพธ์สุดท้าย
-      setValue('calculations.waterCalc', waterCalcResult, { shouldValidate: true });
+
       console.log('--- 3. waterCalc (น้ำ) ---');
       console.log(`Formula: ${_rawNaclWaterCalc} (Raw) * 0.85`);
       console.log(`Raw Result: ${rawResult}`);
@@ -127,7 +128,6 @@ export const useExcelFormulaCalculations = (
       console.log(`Formula: ${_rawNaclWaterCalc} (Raw) * 0.15`);
       console.log(`Raw Result: ${rawResult}`);
       console.log(`✅ SET: calculations.saltCalc = ${saltCalcResult}`);
-      setValue('calculations.saltCalc', saltCalcResult, { shouldValidate: true });
     } else {
       setValue('calculations.saltCalc', null);
     }
@@ -144,7 +144,6 @@ export const useExcelFormulaCalculations = (
 
     if (total > 0) {
       finalTotalWeight = Number(total.toFixed(2)); // ปัดเศษเฉพาะผลลัพธ์สุดท้าย
-      setValue('calculations.finalTotalWeight', finalTotalWeight); // ⬅️ ต้อง setValue ด้วย
 
       console.log('--- 5. finalTotalWeight (น้ำหนักรวมสุดท้าย) ---');
       console.log(`Sum: ${numTotalWeight} + ${naclWaterRaw} (NaCl+Water Raw) + ${numMagnesiumHydroxide} + ${numNcrGenmatsu}`);
@@ -219,17 +218,6 @@ const FormStep2: React.FC<FormStep2Props> = ({
   const tdClass = "border-b border-stroke px-4 py-3 text-black dark:border-strokedark dark:text-white";
   const tdCenterClass = `${tdClass} text-center align-middle`;
   const tdLeftClass = `${tdClass} align-middle`;
-
-  const naclTableValueToDisplay = useMemo(() => {
-    const num = Number(rawNaclBrewingTableValue);
-    return rawNaclBrewingTableValue !== null && rawNaclBrewingTableValue !== undefined && !isNaN(num)
-      ? num.toFixed(4)
-      : '';
-  }, [rawNaclBrewingTableValue]);
-
-
-  // 🔴 2. ดึง Prop ที่จำเป็นสำหรับการ register ออกมา (เพื่อหลีกเลี่ยง conflict กับ value)
-  const naclBrewingTableProps = register('calculations.naclBrewingTable');
 
   // --- ฟังก์ชันสำหรับสร้าง Input Field พร้อม Validation ---
 
@@ -328,16 +316,17 @@ const FormStep2: React.FC<FormStep2Props> = ({
               </tr>
               <tr>
                 <td className={tdLeftClass}>NaCl brewing table</td>
-                <td className={tdLeftClass}> {/* 💡 ห่อ Input ด้วย td ที่ถูกต้อง */}
+                <td className={tdLeftClass}>
                   <input
-                    type="text"
+                    type="text" // 💡 ใช้ type="text"
                     className={disabledInputClass}
                     readOnly
                     disabled
-                    // ⬅️ Prop RHF
-                    {...naclBrewingTableProps}
-                    // ⬅️ Prop Value ที่ต้องการปัดเศษ (จะทับ Prop value ที่มาจาก RHF)
-                    value={naclTableValueToDisplay}
+                    {...register('calculations.naclBrewingTable')}
+                    // ⬅️ วิธีที่ง่ายที่สุด: ใช้ .toFixed(4) บนค่าที่ watch มาโดยตรง
+                    value={rawNaclBrewingTableValue !== null && rawNaclBrewingTableValue !== undefined
+                      ? Number(rawNaclBrewingTableValue).toFixed(4)
+                      : ''}
                   />
                 </td>
                 <td className={tdLeftClass} colSpan={4}></td>

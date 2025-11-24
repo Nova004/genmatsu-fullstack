@@ -8,11 +8,17 @@ import Loader from '../../common/Loader';
 
 import ReportEditBZ from './BZ/ReportEditBZ';
 import ReportEditBS_B from './BS-B/ReportEditBS-B';
+import ReportEditBS from './BS/ReportEditBS';
 import ReportEditBN from './BN/ReportEditBN';
 import ReportEditBZ3 from './BZ3/ReportEditBZ3';
+import ReportEditBZ3_B from './BZ3-B/ReportEditBZ3-B';
 import ReportEditBS3 from './BS3/ReportEditBS3';
+import ReportEditBS3_B from './BS3-B/ReportEditBS3-B';
+import ReportEditBS3_B1 from './BS3-B1/ReportEditBS3-B1';
 import ReportEditBZ5_C from './BZ5-C/ReportEditBZ5-C';
 import ReportEditBS5_C from './BS5-C/ReportEditBS5-C';
+import ReportEditBS3_C from './BS3-C/ReportEditBS3-C';
+
 
 import ReportEditAS2 from './AS2/ReportEditAS2';
 import ReportEditAX9_B from './AX9-B/ReportEditAX9-B';
@@ -65,12 +71,22 @@ const ReportEditDispatcher: React.FC = () => {
                 return <ReportEditBZ submission={submission} templates={templates} />;
             case 'BS-B':
                 return <ReportEditBS_B submission={submission} templates={templates} />;
+            case 'BS':
+                return <ReportEditBS submission={submission} templates={templates} />;
             case 'BN':
                 return <ReportEditBN submission={submission} templates={templates} />;
             case 'BZ3':
                 return <ReportEditBZ3 submission={submission} templates={templates} />;
+            case 'BZ3-B':
+                return <ReportEditBZ3_B submission={submission} templates={templates} />;
+            case 'BS3-B1':
+                return <ReportEditBS3_B1 submission={submission} templates={templates} />;
             case 'BS3':
                 return <ReportEditBS3 submission={submission} templates={templates} />;
+            case 'BS3-C':
+                return <ReportEditBS3_C submission={submission} templates={templates} />;
+            case 'BS3-B':
+                return <ReportEditBS3_B submission={submission} templates={templates} />;
             case 'BZ5-C':
                 return <ReportEditBZ5_C submission={submission} templates={templates} />;
             case 'BS5-C':
