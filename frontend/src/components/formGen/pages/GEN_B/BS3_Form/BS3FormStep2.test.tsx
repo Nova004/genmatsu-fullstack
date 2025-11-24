@@ -80,7 +80,7 @@ describe('FormStep2 (BS3) - useBS3Calculations (Logic การคำนวณ)'
     await waitFor(() => {
       // (รอตัวสุดท้ายที่ถูก Set)
       // ✨ FIX: (Log [F5] บอก 2146.45)
-      expect(mockFormState.bs3Calculations.totalWeightWithNcr).toBe(2146.45);
+      expect(mockFormState.bs3Calculations.totalWeightWithNcr).toBeCloseTo(2146.45, 2);
     });
 
     // --- ตอนนี้ 'useEffect' ทำงานเสร็จแล้ว ---

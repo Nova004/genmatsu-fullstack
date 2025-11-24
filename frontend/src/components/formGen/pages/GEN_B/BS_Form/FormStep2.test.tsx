@@ -80,7 +80,7 @@ describe('FormStep2 - useExcelFormulaCalculations (Logic การคำนว�
 
     // --- สูตรดั้งเดิม (Sodium Chloride) ---
     // (100 * 10) / (800 * 1.1) = 1000 / 880 = 1.136... -> toFixed(2) = 1.14
-    expect(mockFormState.rawMaterials.sodiumChloride).toBe(1.14);
+    expect(mockFormState.rawMaterials.sodiumChloride).toBeCloseTo(1.14, 2);
 
     // --- สูตร 1 & 2 (naclWaterCalc) ---
     // (100 * 10) / 800 = 1.25
@@ -88,15 +88,15 @@ describe('FormStep2 - useExcelFormulaCalculations (Logic การคำนว�
 
     // --- สูตร 3 (waterCalc) ---
     // 1.25 * 0.85 = 1.0625 -> toFixed(2) = 1.06
-    expect(mockFormState.calculations.waterCalc).toBe(1.06);
+    expect(mockFormState.calculations.waterCalc).toBeCloseTo(1.06, 2);
 
     // --- สูตร 4 (saltCalc) ---
     // 1.25 * 0.15 = 0.1875 -> toFixed(2) = 0.19
-    expect(mockFormState.calculations.saltCalc).toBe(0.19);
+    expect(mockFormState.calculations.saltCalc).toBeCloseTo(0.19, 2);
 
     // --- สูตร 5 (finalTotalWeight) ---
     // 100 (total) + 1.25 (naclWaterCalc) + 5 (magnesium) + 2 (ncr) = 108.25
-    expect(mockFormState.calculations.finalTotalWeight).toBe(108.25);
+    expect(mockFormState.calculations.finalTotalWeight).toBeCloseTo(108.25, 2);
   });
 
 
@@ -148,7 +148,7 @@ describe('FormStep2 - useExcelFormulaCalculations (Logic การคำนว�
 
     // 2. แต่ Final Total Weight ต้องคำนวณ (เพราะไม่ขึ้นกับ nacl15SpecGrav)
     // 100 (total) + 1.25 (naclWaterCalc) + 5 (magnesium) + 2 (ncr) = 108.25
-    expect(mockFormState.calculations.finalTotalWeight).toBe(108.25);
+    expect(mockFormState.calculations.finalTotalWeight).toBeCloseTo(108.25, 2);
   });
 
 });

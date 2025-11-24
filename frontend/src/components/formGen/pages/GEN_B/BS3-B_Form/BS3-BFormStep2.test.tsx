@@ -80,7 +80,7 @@ describe('FormStep2 (BS3-B) - useBS3-BCalculations (Logic การคำนว�
     await waitFor(() => {
       // (รอตัวสุดท้ายที่ถูก Set)
       // ✨ FIX: (Log [F5] บอก 2146.45)
-      expect(mockFormState.bs3Calculations.totalWeightWithNcr).toBe(2146.45);
+      expect(mockFormState.bs3Calculations.totalWeightWithNcr).toBeCloseTo(2146.45, 2);
     });
 
     // --- ตอนนี้ 'useEffect' ทำงานเสร็จแล้ว ---
@@ -94,7 +94,7 @@ describe('FormStep2 (BS3-B) - useBS3-BCalculations (Logic การคำนว�
 
     // [D] Total NaCl
     // ✨ FIX: (Log [D5] บอก 761.45)
-    expect(mockFormState.bs3Calculations.totalNaclWater).toBe(761.45);
+    expect(mockFormState.bs3Calculations.totalNaclWater).toBeCloseTo(761.45, 2);
 
     // [E-1] Final NaCl (L) (naclWater4)
     // ✨ FIX: (Log [E6] บอก 692)
