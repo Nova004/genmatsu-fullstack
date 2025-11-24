@@ -1,4 +1,5 @@
 import apiClient from './apiService';
+import API_ENDPOINTS from '../constants/api';
 
 /**
  * ฟังก์ชันสำหรับดึงข้อมูลพิมพ์เขียว (Template) เวอร์ชันล่าสุดตามชื่อ
@@ -7,7 +8,7 @@ import apiClient from './apiService';
 
 export const getLatestTemplateByName = async (templateName: string) => {
   try {
-    const response = await apiClient.get(`/api/master/template/${templateName}/latest`);
+    const response = await apiClient.get(`${API_ENDPOINTS.MASTER}/template/${templateName}/latest`);
     return response.data;
   } catch (error) {
     console.error(`Failed to fetch template ${templateName}`, error);

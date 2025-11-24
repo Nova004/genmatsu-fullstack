@@ -1,6 +1,7 @@
 // frontend/src/services/approvalService.ts
 
 import apiClient from './apiService';
+import API_ENDPOINTS from '../constants/api';
 import { IApprovalFlowStep } from "../components/formGen/pages/types"; // (เราจะสร้าง Type นี้ในขั้นตอนถัดไป)
 
 /**
@@ -10,7 +11,7 @@ export const getApprovalFlowBySubmissionId = async (
   submissionId: number
 ): Promise<IApprovalFlowStep[]> => {
   try {
-    const response = await apiClient.get(`/api/approvals/flow/${submissionId}`);
+    const response = await apiClient.get(`${API_ENDPOINTS.APPROVALS}/flow/${submissionId}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching approval flow:", error);
@@ -28,7 +29,7 @@ interface ApprovalActionPayload {
 export const performApprovalAction = async (payload: ApprovalActionPayload) => {
   try {
     // ยิง API (POST /api/approvals/action) ที่เราเพิ่งสร้าง
-    const response = await apiClient.post("/api/approvals/action", payload);
+    const response = await apiClient.post(`${API_ENDPOINTS.APPROVALS}/action`, payload);
     return response.data;
   } catch (error) {
     console.error("Error performing approval action:", error);
