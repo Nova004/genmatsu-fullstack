@@ -2,7 +2,10 @@ const express = require("express");
 const router = express.Router();
 const submissionController = require("../controllers/submission.controller");
 
-router.post("/", submissionController.createSubmission);
+const validate = require('../middlewares/validation.middleware');
+const submissionSchemas = require('../validators/submission.validator');
+
+router.post("/", validate(submissionSchemas.createSubmission), submissionController.createSubmission);
 
 // 🎯 Route ใหม่: สำหรับ "ดึงรายการทั้งหมด" 🎯
 router.get("/", submissionController.getAllSubmissions);
@@ -14,7 +17,7 @@ router.get("/:id", submissionController.getSubmissionById);
 router.delete("/:id", submissionController.deleteSubmission);
 
 // PUT /api/submissions/:id - สำหรับอัปเดตข้อมูล submission
-router.put("/:id", submissionController.updateSubmission);
+router.put("/:id", validate(submissionSchemas.updateSubmission), submissionController.updateSubmission);
 
 router.get("/print/:id", submissionController.generatePdf);
 
