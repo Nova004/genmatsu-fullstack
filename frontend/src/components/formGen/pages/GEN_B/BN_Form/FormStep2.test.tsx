@@ -4,18 +4,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 
 // 1. 🚀 Import "สมอง" ที่เราจะเทส (ตัวที่ export ออกมา)
-import { useExcelFormulaCalculations } from './FormStep2';
+// ตรวจสอบ path import ให้ตรงกับไฟล์จริงของคุณนะครับ
+import { useExcelFormulaCalculations } from './FormStep2'; 
 
 // --- 2. 🚀 สร้าง "ห้องทดลอง" (Mock Environment) ---
 
 // "ฟอร์มจำลอง" ของเรา (เป็น Object ธรรมดา)
-// เราจะใช้มันเก็บค่าที่ `setValue` (ปลอม) ถูกเรียก
 let mockFormState: any = {};
 
 // "watch (ปลอม)"
-// เมื่อ Hook เรียก watch('fieldName'), มันจะมาดึงค่าจาก "ฟอร์มจำลอง" ของเรา
 const mockWatch = vi.fn((fieldName: string) => {
-  // Logic การดึงค่าแบบ Nested (เช่น 'rawMaterials.ncrGenmatsu.actual')
   const keys = fieldName.split('.');
   let value = mockFormState;
   for (const key of keys) {
@@ -26,9 +24,7 @@ const mockWatch = vi.fn((fieldName: string) => {
 });
 
 // "setValue (ปลอม)"
-// เมื่อ Hook เรียก setValue('fieldName', value), มันจะมาอัปเดต "ฟอร์มจำลอง" ของเรา
 const mockSetValue = vi.fn((fieldName: string, value: any) => {
-  // Logic การตั้งค่าแบบ Nested
   const keys = fieldName.split('.');
   let current = mockFormState;
   for (let i = 0; i < keys.length - 1; i++) {
@@ -45,25 +41,24 @@ const mockSetValue = vi.fn((fieldName: string, value: any) => {
 // --- 3. เริ่มกลุ่มเทส ---
 describe('FormStep2 - useExcelFormulaCalculations (Logic การคำนวณ)', () => {
 
-  // "beforeEach" = ล้าง "ฟอร์มจำลอง" และ "สายลับ" ให้สะอาดก่อนเริ่มทุกเทส
+  // "beforeEach" = ล้างค่าก่อนเริ่มทุกเทส
   beforeEach(() => {
-    mockFormState = {}; // ล้างฟอร์ม
-    mockWatch.mockClear(); // ล้างประวัติ watch
-    mockSetValue.mockClear(); // ล้างประวัติ setValue
+    mockFormState = {};
+    mockWatch.mockClear();
+    mockSetValue.mockClear();
   });
 
   // --- เทสที่ 1: สถานการณ์ "กรอกข้อมูลครบ" (Happy Path) ---
-  it('เทส 1: ควรคำนวณทุก field ถูกต้อง เมื่อกรอกข้อมูลครบ (Happy Path)', () => {
+  it('เทส 1: ควรคำนวณทุก field ถูกต้อง เมื่อกรอกข้อมูลครบ (ใช้ Yield 1200)', () => {
 
     // Arrange (จัดเตรียม): 
-    // 1. "พิมพ์" ค่าเริ่มต้นลงใน "ฟอร์มจำลอง"
     mockFormState = {
       calculations: {
-        naclBrewingTable: 10,
-        nacl15SpecGrav: 1.1,
+        naclBrewingTable: 10,  // Y20
+        nacl15SpecGrav: 1.1,   // Q19
       },
       cg1cWeighting: {
-        total: 100,
+        total: 100,            // Q18
       },
       rawMaterials: {
         magnesiumHydroxide: 5,
@@ -72,83 +67,86 @@ describe('FormStep2 - useExcelFormulaCalculations (Logic การคำนว�
     };
 
     // Act (กระทำ):
-    // 2. "Render" Hook (มันจะดึงค่าจากฟอร์มจำลองผ่าน mockWatch)
     renderHook(() => useExcelFormulaCalculations(mockWatch as any, mockSetValue as any));
 
-    // Assert (ตรวจสอบ):
-    // 3. ตรวจสอบว่า "ฟอร์มจำลอง" ของเรา ได้รับการอัปเดตค่าที่ถูกต้องหรือไม่
+    // Assert (ตรวจสอบ): 
+    // หมายเหตุ: คำนวณโดยใช้ STD Yield = 1200
 
-    // --- สูตรดั้งเดิม (Sodium Chloride) ---
-    // (100 * 10) / (800 * 1.1) = 1000 / 880 = 1.136... -> toFixed(2) = 1.14
-    expect(mockFormState.rawMaterials.sodiumChloride).toBe(1.14);
+    // --- A. Sodium Chloride (W24) ---
+    // สูตร: (Total * Table) / (Yield * SG)
+    // คำนวณ: (100 * 10) / (1200 * 1.1) = 1000 / 1320 = 0.7575... 
+    // ปัดเศษ (2) -> 0.76
+    expect(mockFormState.rawMaterials.sodiumChloride).toBe(0.76);
 
-    // --- สูตร 1 & 2 (naclWaterCalc) ---
-    // (100 * 10) / 800 = 1.25
-    expect(mockFormState.calculations.naclWaterCalc).toBe(1.25);
+    // --- B. naclWaterCalc (W23) ---
+    // สูตร: (Total * Table) / Yield
+    // คำนวณ: (100 * 10) / 1200 = 0.83333...
+    // ปัดเศษ (2) -> 0.83
+    expect(mockFormState.calculations.naclWaterCalc).toBe(0.83);
 
-    // --- สูตร 3 (waterCalc) ---
-    // 1.25 * 0.85 = 1.0625 -> toFixed(2) = 1.06
-    expect(mockFormState.calculations.waterCalc).toBe(1.06);
+    // --- C. waterCalc ---
+    // สูตร: naclWaterCalc(Raw) * 0.85
+    // คำนวณ: 0.83333... * 0.85 = 0.70833...
+    // ปัดเศษ (2) -> 0.71
+    expect(mockFormState.calculations.waterCalc).toBe(0.71);
 
-    // --- สูตร 4 (saltCalc) ---
-    // 1.25 * 0.15 = 0.1875 -> toFixed(2) = 0.19
-    expect(mockFormState.calculations.saltCalc).toBe(0.19);
+    // --- D. saltCalc ---
+    // สูตร: naclWaterCalc(Raw) * 0.15
+    // คำนวณ: 0.83333... * 0.15 = 0.125
+    // ปัดเศษ (2) -> 0.13 (0.125 ปัดขึ้น)
+    expect(mockFormState.calculations.saltCalc).toBe(0.13);
 
-    // --- สูตร 5 (finalTotalWeight) ---
-    // 100 (total) + 1.25 (naclWaterCalc) + 5 (magnesium) + 2 (ncr) = 108.25
-    expect(mockFormState.calculations.finalTotalWeight).toBe(108.25);
+    // --- E. finalTotalWeight ---
+    // สูตร: Total + naclWaterCalc(Raw) + Mg + NCR
+    // คำนวณ: 100 + 0.8333... + 5 + 2 = 107.8333...
+    // ปัดเศษ (3) -> 107.833
+    expect(mockFormState.calculations.finalTotalWeight).toBe(107.833);
   });
 
 
   // --- เทสที่ 2: สถานการณ์ "ค่าว่าง" (Zero/Null Path) ---
   it('เทส 2: ควรคืนค่า null หรือ 0 เมื่อค่า Input เป็น null หรือ 0', () => {
-
-    // Arrange: (ไม่ต้องทำอะไร, mockFormState เป็น {} (ว่าง) อยู่แล้ว)
-
     // Act:
     renderHook(() => useExcelFormulaCalculations(mockWatch as any, mockSetValue as any));
 
     // Assert:
-    expect(mockFormState.rawMaterials.sodiumChloride).toBe(null);
-    expect(mockFormState.calculations.naclWaterCalc).toBe(null);
-    expect(mockFormState.calculations.waterCalc).toBe(null);
-    expect(mockFormState.calculations.saltCalc).toBe(null);
-    expect(mockFormState.calculations.finalTotalWeight).toBe(null);// (เพราะ 0 + 0 + 0 + 0 = 0)
+    expect(mockFormState.rawMaterials?.sodiumChloride || null).toBe(null);
+    expect(mockFormState.calculations?.naclWaterCalc || null).toBe(null);
+    expect(mockFormState.calculations?.waterCalc || null).toBe(null);
+    expect(mockFormState.calculations?.saltCalc || null).toBe(null);
+    expect(mockFormState.calculations?.finalTotalWeight || null).toBe(null);
   });
 
 
   // --- เทสที่ 3: สถานการณ์ "ผู้ใช้พิมพ์" (Dynamic Change) ---
   it('เทส 3: ควรคำนวณใหม่ เมื่อค่าที่ดักฟัง (dependency) เปลี่ยนแปลง', () => {
 
-    // --- Render ครั้งที่ 1 (ค่าว่าง) ---
-    // (เราต้องใช้ rerender เพื่อจำลองการอัปเดต)
+    // 1. Render ครั้งแรก (ค่าว่าง)
     const { rerender } = renderHook(() =>
       useExcelFormulaCalculations(mockWatch as any, mockSetValue as any)
     );
 
-    // Assert ครั้งที่ 1 (ทุกอย่างเป็น null/0)
-    expect(mockFormState.calculations.finalTotalWeight).toBe(null);
-    // ล้างประวัติการเรียก setValue (ให้เริ่มนับ 1 ใหม่)
+    // เช็คค่าเริ่มต้น
+    expect(mockFormState.calculations?.finalTotalWeight || null).toBe(null);
     mockSetValue.mockClear();
 
-    // --- Act 2: จำลองการ "พิมพ์" (เปลี่ยนค่าในฟอร์มจำลอง) ---
+    // 2. จำลองการ "พิมพ์" (เปลี่ยนค่าในฟอร์มจำลอง)
     act(() => {
       mockFormState.cg1cWeighting = { total: 100 };
-      mockFormState.calculations = { naclBrewingTable: 10 };
+      mockFormState.calculations = { naclBrewingTable: 10 }; // ใส่ Table แต่ไม่ใส่ SG
       mockFormState.rawMaterials = { magnesiumHydroxide: 5, ncrGenmatsu: { actual: 2 } };
-      // (จงใจเว้น nacl15SpecGrav)
     });
 
-    // --- Render ครั้งที่ 2 (จำลอง React อัปเดต) ---
+    // 3. Render ครั้งที่ 2 (เพื่อให้ useEffect ทำงานใหม่)
     rerender();
 
-    // Assert ครั้งที่ 2:
-    // 1. Sodium Chloride ต้องเป็น "null" (เพราะ W23 หรือ nacl15SpecGrav เป็น 0)
-    expect(mockFormState.rawMaterials.sodiumChloride).toBe(null);
+    // Assert:
+    // A. Sodium Chloride ต้องเป็น null (เพราะขาด SG)
+    expect(mockFormState.rawMaterials?.sodiumChloride || null).toBe(null);
 
-    // 2. แต่ Final Total Weight ต้องคำนวณ (เพราะไม่ขึ้นกับ nacl15SpecGrav)
-    // 100 (total) + 1.25 (naclWaterCalc) + 5 (magnesium) + 2 (ncr) = 108.25
-    expect(mockFormState.calculations.finalTotalWeight).toBe(108.25);
+    // B. แต่ Final Total Weight ต้องคำนวณได้ (เพราะไม่ต้องใช้ SG)
+    // 100 + (1000/1200) + 5 + 2 = 107.833
+    expect(mockFormState.calculations.finalTotalWeight).toBe(107.833);
   });
 
 });

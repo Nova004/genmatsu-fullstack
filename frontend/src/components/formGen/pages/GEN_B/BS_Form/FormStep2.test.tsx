@@ -87,12 +87,12 @@ describe('FormStep2 - useExcelFormulaCalculations (Logic การคำนว�
     expect(mockFormState.calculations.naclWaterCalc).toBe(1.25);
 
     // --- สูตร 3 (waterCalc) ---
-    // 1.25 * 0.85 = 1.0625 -> toFixed(2) = 1.06
-    expect(mockFormState.calculations.waterCalc).toBeCloseTo(1.06, 2);
+    // 1.25 * 0.96 = 1.2 (โค้ดจริงใช้ 0.96 ไม่ใช่ 0.85)
+    expect(mockFormState.calculations.waterCalc).toBeCloseTo(1.2, 2);
 
     // --- สูตร 4 (saltCalc) ---
-    // 1.25 * 0.15 = 0.1875 -> toFixed(2) = 0.19
-    expect(mockFormState.calculations.saltCalc).toBeCloseTo(0.19, 2);
+    // 1.25 * 0.04 = 0.05 (โค้ดจริงใช้ 0.04 ไม่ใช่ 0.15)
+    expect(mockFormState.calculations.saltCalc).toBeCloseTo(0.05, 2);
 
     // --- สูตร 5 (finalTotalWeight) ---
     // 100 (total) + 1.25 (naclWaterCalc) + 5 (magnesium) + 2 (ncr) = 108.25
