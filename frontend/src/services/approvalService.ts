@@ -2,16 +2,22 @@
 
 import apiClient from './apiService';
 import API_ENDPOINTS from '../constants/api';
-import { IApprovalFlowStep } from "../components/formGen/pages/types"; // (เราจะสร้าง Type นี้ในขั้นตอนถัดไป)
+import type {
+  ApprovalFlowStep,
+  ApprovalActionPayload,
+  ApprovalActionResponse,
+} from '../types/api';
 
 /**
  * ดึงข้อมูล Flow การอนุมัติทั้งหมดสำหรับเอกสาร (Submission) ID ที่กำหนด
  */
 export const getApprovalFlowBySubmissionId = async (
   submissionId: number
-): Promise<IApprovalFlowStep[]> => {
+): Promise<ApprovalFlowStep[]> => {
   try {
-    const response = await apiClient.get(`${API_ENDPOINTS.APPROVALS}/flow/${submissionId}`);
+    const response = await apiClient.get<ApprovalFlowStep[]>(
+      `${API_ENDPOINTS.APPROVALS}/flow/${submissionId}`
+    );
     return response.data;
   } catch (error) {
     console.error("Error fetching approval flow:", error);
@@ -19,17 +25,15 @@ export const getApprovalFlowBySubmissionId = async (
   }
 };
 
-interface ApprovalActionPayload {
-  submissionId: number;
-  action: 'Approved' | 'Rejected';
-  comment: string;
-  approverUserId: string; // 👈 [ใหม่] เราต้องส่ง ID ของผู้กดไปด้วย
-}
-
-export const performApprovalAction = async (payload: ApprovalActionPayload) => {
+export const performApprovalAction = async (
+  payload: ApprovalActionPayload
+): Promise<ApprovalActionResponse> => {
   try {
     // ยิง API (POST /api/approvals/action) ที่เราเพิ่งสร้าง
-    const response = await apiClient.post(`${API_ENDPOINTS.APPROVALS}/action`, payload);
+    const response = await apiClient.post<ApprovalActionResponse>(
+      `${API_ENDPOINTS.APPROVALS}/action`,
+      payload
+    );
     return response.data;
   } catch (error) {
     console.error("Error performing approval action:", error);
