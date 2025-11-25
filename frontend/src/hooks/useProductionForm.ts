@@ -10,7 +10,7 @@ import { fireToast } from './fireToast';
 import { initialFormValues } from '../components/formGen/pages/formDefaults';
 
 interface UseProductionFormProps {
-  formType: 'BS3' | 'BZ3' | 'BZ' | 'AS2' | 'BZ5-C' | 'BS5-C' | 'AX9-B' | 'AX2-B' | 'BS-B' | 'BN' | 'BS3-B' |'BS3-B1' | 'BZ3-B' | 'BS3-C' | 'BS';
+  formType: 'BS3' | 'BZ3' | 'BZ' | 'AS2' | 'BZ5-C' | 'BS5-C' | 'AX9-B' | 'AX2-B' | 'BS-B' | 'BN' | 'BS3-B' |'BS3-B1' | 'BZ3-B' | 'BS3-C' | 'BS' | 'AZ1';
   category: 'GEN_A' | 'GEN_B';
   netWeightOfYieldSTD: number;
 }

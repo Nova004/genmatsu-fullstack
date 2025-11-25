@@ -8,15 +8,18 @@
 // ============================================
 
 export interface Submission {
-  submission_id: number;
-  form_type: string;
-  lot_no: string;
-  submitted_at: string;
-  status: 'Drafted' | 'Pending' | 'Approved' | 'Rejected';
-  submitted_by: string;
-  category: 'GEN_A' | 'GEN_B';
-  version_set_id: number;
-  form_data_json: Record<string, any>; // Complex nested structure
+  submission: {
+    submission_id: number;
+    form_type: string;
+    lot_no: string;
+    submitted_at: string;
+    status: 'Drafted' | 'Pending' | 'Approved' | 'Rejected';
+    submitted_by: string;
+    category: 'GEN_A' | 'GEN_B';
+    version_set_id: number;
+    form_data_json: Record<string, any>; // Complex nested structure
+  };
+  blueprints: any;
 }
 
 export interface SubmissionWithDetails extends Submission {

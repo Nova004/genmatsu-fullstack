@@ -45,7 +45,10 @@ const ReportEditDispatcher: React.FC = () => {
             }
             try {
                 const data = await getSubmissionById(id);
-                setSubmissionData(data);
+                setSubmissionData({
+                    submission: data.submission,
+                    templates: data.blueprints
+                });
             } catch (err) {
                 setError('ไม่สามารถดึงข้อมูลรายงานได้');
                 console.error(err);

@@ -32,10 +32,9 @@ interface SubmissionData {
   submitted_at: string;
   status: string;
   form_type: string;
-  submitted_by_name: string; // 👈 เพิ่มชื่อเต็ม
-  category: string;          // 👈 เพิ่ม category
+  submitted_by_name: string;
+  category: string;
 }
-
 
 // =============================================================================
 // --- 3. COMPONENT DEFINITION ---
@@ -64,11 +63,24 @@ const ReportHistory_GEN_A: React.FC = () => {
   useEffect(() => {
     const fetchSubmissions = async () => {
       try {
-        // --- 👇 ส่งคำสั่ง 'GEN_A' ไปให้ Backend เลย! 👇 ---
-        const data: SubmissionData[] = await getAllSubmissions('GEN_A');
+        // 1. ดึงข้อมูลมาเป็น any หรือ type เดิมก่อน (เพื่อเลี่ยง error ตอนรับค่า)
+        const response: any[] = await getAllSubmissions('GEN_A');
 
-        setSubmissions(data);
+        // 2. แปลงข้อมูล (Map) ให้ตรงกับ SubmissionData
+        const formattedData: SubmissionData[] = response.map((item) => ({
+          submission_id: item.id || item.submission_id, // API อาจส่งมาเป็น id
+          lot_no: item.lot_no,
+          submitted_at: item.created_at || item.submitted_at, // API อาจส่งมาเป็น created_at
+          status: item.status,
+          form_type: item.form_type,
+          // เช็คว่า API ส่งมาเป็น Object user หรือส่งมาเป็นชื่อเลย
+          submitted_by_name: item.user?.username || item.submitted_by || 'Unknown',
+          category: item.category || 'GEN_A'
+        }));
+
+        setSubmissions(formattedData);
       } catch (err) {
+        console.error(err); // Log error ดูด้วย
         setError('ไม่สามารถดึงข้อมูลประวัติการบันทึก (GEN_A) ได้');
       } finally {
         setIsLoading(false);

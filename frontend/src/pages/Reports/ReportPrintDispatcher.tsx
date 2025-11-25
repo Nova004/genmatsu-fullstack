@@ -25,7 +25,7 @@ import PrintableReportBS3_C from './BS3-C/PrintableReportBS3-C';
 // (ถ้ามี) สร้าง Interface/Type สำหรับ submissionData เพื่อความชัดเจน
 interface SubmissionPrintData {
   submission: {
-    id: number;
+    submission_id: number;
     lot_no: string;
     form_type: string;
     form_data_json: any; // ควรสร้าง Type ที่ละเอียดกว่านี้
