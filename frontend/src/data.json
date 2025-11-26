@@ -1,157 +1,23 @@
 {
-  "reportType": "BZ",
-  "basicData": {
-    "date": "2025-11-13",
-    "machineName": "02",
-    "lotNo": "test",
-    "mcOperatorRole": "M/C operator"
-  },
-  "mcOperators": [
+  "row_type": "DUAL_INPUT",
+  "label": "Genmatsu AZ-R Lot no.",
+  "std_value": "≤150",
+  "unit": "KG",
+  "inputs": [
     {
-      "id": "201634\t\t\t",
-      "name": "Mr.Tinnakon  Thuengkhamphu",
-      "number": "2"
+      "type": "text",
+      "placeholder": "Enter Lot No.",
+      "field_name": "rawMaterials.AZ-RGenmatsu.lot"
     },
-    { "id": "201339\t\t\t", "name": "Mr.Sawat  Kaewthong", "number": "3" },
-    { "id": "-", "name": "-", "number": "-" }
-  ],
-  "assistants": [
-    { "id": "201963\t\t\t", "name": "Mr.Nikorn Saksit", "number": "11" },
-    { "id": "201964\t\t\t", "name": "Mr.Chanchai Upatham", "number": "12" },
-    { "id": "-", "name": "-", "number": "-" },
-    { "id": "-", "name": "-", "number": "-" },
-    { "id": "-", "name": "-", "number": "-" }
-  ],
-  "conditions": [
-    { "status": "OK", "remark": "" },
-    { "status": "OK", "remark": "" },
-    { "status": "OK", "remark": "" }
-  ],
-  "values": [],
-  "checklist": { "coolingValve": "", "butterflyValve": "" },
-  "rawMaterials": {
-    "gypsumplaster": null,
-    "activatedcarbon": null,
-    "diaEarth": null,
-    "sodiumChloride": null,
-    "magnesiumHydroxide": null,
-    "remainedGenmatsu": { "lot": "", "actual": null },
-    "shelfLife": null,
-    "ncrGenmatsu": { "lot": "", "actual": null },
-    "calciumchloride": null,
-    "activated": null,
-    "ZeoliteJikulite": null,
-    "ZeoliteNatto": null,
-    "netWeightOfYieldSTD": 800
-  },
-  "cg1cWeighting": {
-    "row1": { "cg1c": null, "bagNo": "", "bagWeight": "", "net": null },
-    "row2": { "cg1c": null, "bagNo": "", "bagWeight": "", "net": null },
-    "total": null
-  },
-  "calculations": {
-    "nacl15SpecGrav": null,
-    "cg1cWaterContent": null,
-    "temperature": null,
-    "naclBrewingTable": null,
-    "naclWaterCalc": null,
-    "waterCalc": null,
-    "saltCalc": null,
-    "finalTotalWeight": null
-  },
-  "qouRemark": "",
-  "valued": null,
-  "rc417Weighting": {
-    "row1": { "weight": null, "bagNo": "", "net": null },
-    "row2": { "weight": null, "bagNo": "", "net": null },
-    "total": null,
-    "cdz1ofad": null
-  },
-  "bz3Calculations": {
-    "rc417WaterContent": null,
-    "intermediateWaterCalc": null,
-    "totalWeightOfMaterials": null,
-    "stdMeanMoisture": null,
-    "naclWater": null,
-    "naclWaterSpecGrav": null,
-    "temperature": null,
-    "naclWater15": null,
-    "lminRate": null,
-    "totalNaclWater": null,
-    "totalWeightWithNcr": null
-  },
-  "bs3Calculations": {
-    "rc417WaterContent": null,
-    "intermediateWaterCalc": null,
-    "totalWeightOfMaterials": null,
-    "stdMeanMoisture": null,
-    "naclWater": null,
-    "naclWaterSpecGrav": null,
-    "temperature": null,
-    "naclWater4": null,
-    "lminRate": null,
-    "totalNaclWater": null,
-    "totalWeightWithNcr": null
-  },
-  "bz5cCalculations": {
-    "rc417WaterContentMoisture": null,
-    "rc417WaterContentweight": null,
-    "intermediateWaterCalc": null,
-    "totalWeightOfMaterials": null,
-    "stdMeanMoisture": null,
-    "naclWater": null,
-    "naclWaterSpecGrav": null,
-    "temperature": null,
-    "naclWater4": null,
-    "lminRate": null,
-    "totalNaclWater": null,
-    "totalWeightWithNcr": null
-  },
-  "bs5cCalculations": {
-    "rc417WaterContentMoisture": null,
-    "rc417WaterContentweight": null,
-    "intermediateWaterCalc": null,
-    "totalWeightOfMaterials": null,
-    "stdMeanMoisture": null,
-    "naclWater": null,
-    "naclWaterSpecGrav": null,
-    "temperature": null,
-    "naclWater4": null,
-    "lminRate": null,
-    "totalNaclWater": null,
-    "totalWeightWithNcr": null,
-    "Netweightofwaterper": null
-  },
-  "operationResults": [
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    { "humidity": null },
-    {}
-  ],
-  "operationRemark": "",
-  "packingResults": {
-    "diameter": null,
-    "weighttank": { "tank": null, "others": null },
-    "quantityOfProduct": { "cans": null, "calculated": null },
-    "meshPass40": null,
-    "remain": null,
-    "yieldPercent": null
-  },
-  "palletInfo": [
-    { "no": "", "qty": null, "canNo": "" },
-    { "no": "", "qty": null, "canNo": "" },
-    { "no": "", "qty": null, "canNo": "" },
-    { "no": "", "qty": null, "canNo": "" },
-    { "no": "", "qty": null, "canNo": "" },
-    { "no": "", "qty": null, "canNo": "" }
+    {
+      "type": "number",
+      "placeholder": "Enter Weight",
+      "field_name": "rawMaterials.AZ-RGenmatsu.actual",
+      "validation": {
+        "type": "MAX_VALUE",
+        "max": 150,
+        "errorMessage": "ค่าต้องไม่เกิน 150"
+      }
+    }
   ]
 }

@@ -32,6 +32,7 @@ export interface IManufacturingReportForm {
     remainedGenmatsu: { lot: string; actual: number | null; };
     shelfLife: number | null;
     ncrGenmatsu: { lot: string; actual: number | null; };
+    AZRGenmatsu: { lot: string; actual: number | null; };
     calciumchloride: number | null;
     activated: number | null;
   };

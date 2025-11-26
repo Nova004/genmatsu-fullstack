@@ -18,11 +18,11 @@ import ReportEditBS3_B1 from './BS3-B1/ReportEditBS3-B1';
 import ReportEditBZ5_C from './BZ5-C/ReportEditBZ5-C';
 import ReportEditBS5_C from './BS5-C/ReportEditBS5-C';
 import ReportEditBS3_C from './BS3-C/ReportEditBS3-C';
-
-
 import ReportEditAS2 from './AS2/ReportEditAS2';
+import ReportEditAZ1 from './AZ1/ReportEditAZ1';
 import ReportEditAX9_B from './AX9-B/ReportEditAX9-B';
 import ReportEditAX2_B from './AX2-B/ReportEditAX2-B';
+import ReportEditAZ from './AZ/ReportEditAZ';
 
 // Interface สำหรับข้อมูล Submission ที่คาดหวัง
 interface SubmissionPayload {
@@ -96,10 +96,14 @@ const ReportEditDispatcher: React.FC = () => {
                 return <ReportEditBS5_C submission={submission} templates={templates} />;
             case 'AS2':
                 return <ReportEditAS2 submission={submission} templates={templates} />;
+            case 'AZ1':
+                return <ReportEditAZ1 submission={submission} templates={templates} />;
             case 'AX9-B':
                 return <ReportEditAX9_B submission={submission} templates={templates} />;
             case 'AX2-B':
                 return <ReportEditAX2_B submission={submission} templates={templates} />;
+            case 'AZ':
+                return <ReportEditAZ submission={submission} templates={templates} />;
             default:
                 return <div>ไม่รองรับการแก้ไขฟอร์มประเภท: {formType}</div>;
         }

@@ -31,6 +31,7 @@ export const initialFormValues: IManufacturingReportForm = {
     remainedGenmatsu: { lot: '', actual: null },
     shelfLife: null,
     ncrGenmatsu: { lot: '', actual: null },
+    AZRGenmatsu: { lot: '', actual: null },
     calciumchloride: null,
     activated: null,
     ZeoliteJikulite: null,

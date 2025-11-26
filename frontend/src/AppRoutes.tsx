@@ -39,11 +39,13 @@ const BZ3_B_Form = lazy(() => import('./components/formGen/pages/GEN_B/BZ3-B_For
 const BS3_B_Form = lazy(() => import('./components/formGen/pages/GEN_B/BS3-B_Form/BS3-B_index'));
 const BS3_B1_Form = lazy(() => import('./components/formGen/pages/GEN_B/BS3-B1_Form/BS3-B1_index'));
 const AS2_Form = lazy(() => import('./components/formGen/pages/GEN_A/AS2_Form/AS2_index'));
+const AZ1_Form = lazy(() => import('./components/formGen/pages/GEN_A/AZ1_Form/AZ1_index'));
 const AX9_B_Form = lazy(() => import('./components/formGen/pages/GEN_A/AX9-B_Form/AX9-B_index'));
 const AX2_B_Form = lazy(() => import('./components/formGen/pages/GEN_A/AX2-B_Form/AX2-B_index'));
 const BZ5_C_Form = lazy(() => import('./components/formGen/pages/GEN_B/BZ5-C_Form/BZ5-C_index.tsx'));
 const BS5_C_Form = lazy(() => import('./components/formGen/pages/GEN_B/BS5-C_Form/BS5-C_index.tsx'));
 const BS3_C_Form = lazy(() => import('./components/formGen/pages/GEN_B/BS3-C_Form/BS3-C_index.tsx'));
+const AZ_Form = lazy(() => import('./components/formGen/pages/GEN_A/AZ_Form/AZ_index'));
 
 const AppRoutes = () => {
   return (
@@ -77,7 +79,7 @@ const AppRoutes = () => {
             <ProtectedRoute>
               <Routes>
                 {/* Routes without DefaultLayout */}
-                
+
                 {/* Routes with DefaultLayout */}
                 <Route
                   path="*"
@@ -193,12 +195,20 @@ const AppRoutes = () => {
                           element={<><PageTitle title="AS2 Form" /><AS2_Form /></>}
                         />
                         <Route
+                          path="/forms/az1-form"
+                          element={<><PageTitle title="AZ1 Form" /><AZ1_Form /></>}
+                        />
+                        <Route
                           path="/forms/ax9-b-form"
                           element={<><PageTitle title="AX9-B Form" /><AX9_B_Form /></>}
                         />
                         <Route
                           path="/forms/ax2-b-form"
                           element={<><PageTitle title="AX2-B Form" /><AX2_B_Form /></>}
+                        />
+                        <Route
+                          path="/forms/az-form"
+                          element={<><PageTitle title="AZ Form" /><AZ_Form /></>}
                         />
                         <Route
                           path="/reports/edit/:id"

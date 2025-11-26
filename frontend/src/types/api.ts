@@ -83,6 +83,11 @@ export interface ApprovalFlowStep {
   approved_by: string | null;
   approved_at: string | null;
   comment: string | null;
+  
+  // ✅ [เพิ่มใหม่] ฟิลด์เหล่านี้มาจากการ JOIN ใน Backend เพื่อใช้แสดงผล
+  approver_name?: string;      // ชื่อผู้อนุมัติ (เช่น "John Doe")
+  approver_user_id?: string;   // ID ของผู้อนุมัติ
+  updated_at?: string;         // วันที่อัปเดตสถานะล่าสุด (ใช้แสดงวันที่ในตาราง)
 }
 
 export interface ApprovalActionPayload {

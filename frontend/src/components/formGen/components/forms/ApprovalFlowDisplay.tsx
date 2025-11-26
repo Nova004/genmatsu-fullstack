@@ -3,7 +3,10 @@ import {
   getApprovalFlowBySubmissionId,
   performApprovalAction,
 } from "../../../../services/approvalService";
-import { IApprovalFlowStep } from "../../pages/types";
+// ❌ ลบอันเก่า: import { ApprovalFlowStep } from "../../pages/types";
+// ✅ ใช้อันใหม่จาก api.ts แทน:
+import type { ApprovalFlowStep } from "../../../../types/api"; 
+
 import Loader from "../../../../common/Loader";
 import { useAuth } from "../../../../context/AuthContext";
 import { fireToast } from "../../../../hooks/fireToast";
@@ -28,7 +31,7 @@ const getLevelName = (level: number) => {
 };
 
 // (ฟังก์ชัน getStatusAttributes เหมือนเดิม - เราอาจจะไม่ได้ใช้ className โดยตรง แต่ยังใช้สีได้)
-const getStatusAttributes = (status: IApprovalFlowStep["status"]) => {
+const getStatusAttributes = (status: ApprovalFlowStep["status"]) => {
   switch (status) {
     case "Approved":
       return {
@@ -51,7 +54,7 @@ const getStatusAttributes = (status: IApprovalFlowStep["status"]) => {
 
 const ApprovalFlowDisplay: React.FC<Props> = ({ submissionId, submissionData }) => {
   const { user } = useAuth();
-  const [flowSteps, setFlowSteps] = useState<IApprovalFlowStep[]>([]);
+  const [flowSteps, setFlowSteps] = useState<ApprovalFlowStep[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -142,7 +145,7 @@ const ApprovalFlowDisplay: React.FC<Props> = ({ submissionId, submissionData }) 
   // ‼️ 4. ฟังก์ชันผู้ช่วยสำหรับวาด "ช่อง" อนุมัติ (LV1, LV2, LV3) ‼️
   const renderApprovalCell = (
     title: string,
-    stepData: IApprovalFlowStep | undefined
+    stepData: ApprovalFlowStep | undefined
   ) => {
     // เช็คว่าใช่ช่องที่เรารออนุมัติหรือไม่
     const isCurrentActionableStep =
@@ -214,7 +217,7 @@ const ApprovalFlowDisplay: React.FC<Props> = ({ submissionId, submissionData }) 
 
         {/* 3. ส่วนท้าย (Date) */}
         <div className="border-t border-stroke p-2 text-center text-sm dark:border-strokedark">
-          {stepData?.updated_at ? ( // ⚠️ เช็คว่ามี 'updated_at' ใน Type IApprovalFlowStep หรือยัง
+          {stepData?.updated_at ? ( // ⚠️ เช็คว่ามี 'updated_at' ใน Type ApprovalFlowStep หรือยัง
             new Date(stepData.updated_at).toLocaleDateString("en-GB", {
               day: "2-digit",
               month: "short",

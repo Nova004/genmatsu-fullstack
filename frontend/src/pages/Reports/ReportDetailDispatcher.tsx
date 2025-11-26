@@ -19,11 +19,12 @@ import ReportDetailBS3_B1 from './BS3-B1/ReportDetailBS3-B1';
 import ReportDetailBS3_C from './BS3-C/ReportDetailBS3-C';
 import ReportDetailBZ5_C from './BZ5-C/ReportDetailBZ5-C';
 import ReportDetailBS5_C from './BS5-C/ReportDetailBS5-C';
-
-
 import ReportDetailAS2 from './AS2/ReportDetailAS2';
+import ReportDetailAZ1 from './AZ1/ReportDetailAZ1';
 import ReportDetailAX9_B from './AX9-B/ReportDetailAX9-B';
 import ReportDetailAX2_B from './AX2-B/ReportDetailAX2-B';
+import ReportDetailAZ from './AZ/ReportDetailAZ';
+
 
 const ReportDetailDispatcher: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -126,10 +127,14 @@ const ReportDetailDispatcher: React.FC = () => {
         return <ReportDetailBS5_C submission={submission} blueprints={blueprints} />;
       case 'AS2':
         return <ReportDetailAS2 submission={submission} blueprints={blueprints} />;
+      case 'AZ1':
+        return <ReportDetailAZ1 submission={submission} blueprints={blueprints} />;
       case 'AX9-B':
         return <ReportDetailAX9_B submission={submission} blueprints={blueprints} />;
       case 'AX2-B':
         return <ReportDetailAX2_B submission={submission} blueprints={blueprints} />;
+      case 'AZ':
+        return <ReportDetailAZ submission={submission} blueprints={blueprints} />;
       default:
         return <div>ไม่พบ Component สำหรับ Form Type: {submission.form_type}</div>;
 

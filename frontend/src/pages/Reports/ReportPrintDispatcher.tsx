@@ -6,6 +6,7 @@ import { getSubmissionById } from '../../services/submissionService';
 // --- ⬇️ (สำคัญ) Import Component "สำหรับพิมพ์" ทั้งหมดที่คุณมี ⬇️ ---
 // (คุณต้องสร้างไฟล์เหล่านี้ขึ้นมา โดยมี Layout สำหรับ A4)
 import PrintableReportAS2 from './AS2/PrintableReportAS2';
+import PrintableReportAZ1 from './AZ1/PrintableReportAZ1';
 import PrintableReportAX9_B from './AX9-B/PrintableReporAX9-B';
 import PrintableReportAX2_B from './AX2-B/PrintableReportAX2-B';
 import PrintableReportBZ5_C from './BZ5-C/PrintableReportBZ5-C';
@@ -18,6 +19,7 @@ import PrintableReportBZ3_B from './BZ3-B/PrintableReportBZ3-B';
 import PrintableReportBZ from './BZ/PrintableReportBZ';
 import PrintableReportBS5_C from './BS5-C/PrintableReportBS5-C';
 import PrintableReportBS3_C from './BS3-C/PrintableReportBS3-C';
+import PrintableReportAZ from './AZ/PrintableReportAZ';
 
 // --- ⬆️ สิ้นสุดส่วน Import Component ⬆️ ---
 
@@ -91,6 +93,8 @@ const ReportPrintDispatcher: React.FC = () => {
       // --- ⬇️ ตรวจสอบ Case และชื่อ Component ให้ตรงกับที่คุณ Import มา ⬇️ ---
       case 'AS2':
         return <PrintableReportAS2 {...props} />;
+      case 'AZ1':
+        return <PrintableReportAZ1 {...props} />;
       case 'AX9-B':
         return <PrintableReportAX9_B {...props} />;
       case 'AX2-B':
@@ -115,6 +119,8 @@ const ReportPrintDispatcher: React.FC = () => {
         return <PrintableReportBZ {...props} />;
       case 'BS5-C':
         return <PrintableReportBS5_C {...props} />;
+      case 'AZ':
+        return <PrintableReportAZ {...props} />;
 
       // --- ⬆️ เพิ่ม Case อื่นๆ ถ้ามี ⬆️ ---
       default:
