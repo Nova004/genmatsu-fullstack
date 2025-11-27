@@ -66,7 +66,7 @@ function BS5_C_Form() {
 
                 <div className="my-6">
                     <div className={step !== 1 ? 'hidden' : ''}>
-                        <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="Diatomaceous Earth" errors={errors} />
+                        <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="CDZ-Z" errors={errors} />
                     </div>
                     <div className={step !== 2 ? 'hidden' : ''}>
                         <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={handleTemplateLoaded} />

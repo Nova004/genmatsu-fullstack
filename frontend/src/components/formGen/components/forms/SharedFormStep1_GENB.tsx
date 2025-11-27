@@ -76,7 +76,7 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-6">
           <div className="flex items-center justify-center text-center font-medium text-black dark:text-white lg:col-span-1">Assistant M/C</div>
           <div className="flex flex-col gap-5 lg:col-span-5">
-            {[...Array(5)].map((_, index) => (
+            {[...Array(4)].map((_, index) => (
               <EmployeeInputRow key={`asst-${index}`} groupName="assistants" index={index} register={register} watch={watch} setValue={setValue} />
             ))}
           </div>

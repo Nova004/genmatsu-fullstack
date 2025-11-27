@@ -30,6 +30,41 @@ interface SubmissionPayload {
     templates: any;
 }
 
+const formatNumberPreserve = (num: number | null): string | null => {
+    if (num === null) return null;
+
+    const multiplier = 100000000;
+    const cleanNum = Math.round(num * multiplier) / multiplier;
+
+    let str = cleanNum.toString();
+
+    const parts = str.split('.');
+
+    if (parts.length === 1) {
+        return str + ".00";
+    } else if (parts[1].length === 1) {
+        return str + "0";
+    }
+    return str;
+};
+
+const formatDecimalsDeep = (data: any): any => {
+    if (Array.isArray(data)) {
+        return data.map(formatDecimalsDeep);
+    }
+    if (data !== null && typeof data === 'object') {
+        return Object.fromEntries(
+            Object.entries(data).map(([key, val]) => {
+                if (typeof val === 'number') {
+                    return [key, formatNumberPreserve(val)];
+                }
+                return [key, formatDecimalsDeep(val)];
+            })
+        );
+    }
+    return data;
+};
+
 const ReportEditDispatcher: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const [submissionData, setSubmissionData] = useState<SubmissionPayload | null>(null);
@@ -45,10 +80,17 @@ const ReportEditDispatcher: React.FC = () => {
             }
             try {
                 const data = await getSubmissionById(id);
+
+                const formattedSubmission = {
+                    ...data.submission,
+                    form_data_json: formatDecimalsDeep(data.submission.form_data_json)
+                };
+
                 setSubmissionData({
-                    submission: data.submission,
+                    submission: formattedSubmission,
                     templates: data.blueprints
                 });
+
             } catch (err) {
                 setError('ไม่สามารถดึงข้อมูลรายงานได้');
                 console.error(err);
