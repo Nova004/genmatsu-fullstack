@@ -286,8 +286,8 @@ interface FormStep2Props {
 
 const bs3WeightingConfig: WeightingCalculationConfig = {
   rows: [
-    { grossWeightPath: 'rc417Weighting.row1.weight', netWeightPath: 'rc417Weighting.row1.net', tare: 3 },
-    { grossWeightPath: 'rc417Weighting.row2.weight', netWeightPath: 'rc417Weighting.row2.net', tare: 3 },
+    { grossWeightPath: 'rc417Weighting.row1.weight', netWeightPath: 'rc417Weighting.row1.net',  bagWeightPath: 'cg1cWeighting.row1.bagWeight' },
+    { grossWeightPath: 'rc417Weighting.row2.weight', netWeightPath: 'rc417Weighting.row2.net',  bagWeightPath: 'cg1cWeighting.row2.bagWeight' },
   ],
   totalPath: 'rc417Weighting.total',
   destinationPath: 'rawMaterials.diaEarth',
@@ -362,6 +362,8 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 </td>
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('rc417Weighting.row1.bagNo')} /></td>
+                <td className={tdLeftClass}>BagWeight</td>
+                <td className={tdLeftClass}><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row1.bagWeight')} /></td>
                 <td className={tdLeftClass}>Net Weight</td>
                 <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row1.net')} /></td>
               </tr>
@@ -376,6 +378,8 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 </td>
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('rc417Weighting.row2.bagNo')} /></td>
+                <td className={tdLeftClass}>BagWeight</td>
+                <td className={tdLeftClass}><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row2.bagWeight')} /></td>
                 <td className={tdLeftClass}>Net Weight</td>
                 <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row2.net')} /></td>
               </tr>

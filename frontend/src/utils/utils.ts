@@ -1,3 +1,11 @@
+// ไว้ข้างนอก Component หรือในไฟล์ utils
+export const toDecimal = (e: React.FocusEvent<HTMLInputElement>) => {
+  const value = parseFloat(e.target.value);
+  if (!isNaN(value)) {
+    e.target.value = value.toFixed(2); // แปลงค่าใน input เป็น .00 ทันที
+  }
+};
+
 // ฟังก์ชันจัดรูปแบบตัวเลขเดี่ยวๆ (พระเอกของเรา)
 export const formatNumberPreserve = (num: number | string | null | undefined): string => {
   if (num === null || num === undefined || num === '') return '';

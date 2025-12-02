@@ -73,7 +73,7 @@ const PackingResultTable: React.FC<PackingResultTableProps> = ({ register, watch
           </tr>
           <tr>
             <td className={tdLeftClass} colSpan={2}>Remain</td>
-            <td className={tdCenterClass}><input type="number" step="any" className={inputClass} {...register('packingResults.remain')} /></td>
+            <td className={tdCenterClass}><input type="number" step="any" className={inputClass} {...register('packingResults.remain', { valueAsNumber: true })} /></td>
             <td className={tdCenterClass}>KG</td>
             <td className={tdCenterClass}></td>
             <td className={tdCenterClass}></td>

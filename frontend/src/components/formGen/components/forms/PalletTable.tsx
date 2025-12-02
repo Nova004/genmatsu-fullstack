@@ -31,7 +31,7 @@ const PalletTable: React.FC<PalletTableProps> = ({
             {[...Array(numberOfRows)].map((_, index) => (
               <tr key={index}>
                 <td className={tdCenterClass}><input type="text" className={inputClass} {...register(`${fieldName}.${index}.no`)} /></td>
-                <td className={tdCenterClass}><input type="number" className={inputClass} {...register(`${fieldName}.${index}.qty`, { valueAsNumber: true })} /></td>
+                <td className={tdCenterClass}><input type="text" className={inputClass} {...register(`${fieldName}.${index}.qty`)} /></td>
                 <td className={tdCenterClass}><input type="text" className={inputClass} {...register(`${fieldName}.${index}.canNo`)} /></td>
               </tr>
             ))}

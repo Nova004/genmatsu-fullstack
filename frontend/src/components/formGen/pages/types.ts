@@ -40,8 +40,8 @@ export interface IManufacturingReportForm {
   // --- เพิ่มโครงสร้างใหม่สำหรับ BZ ---
 
   cg1cWeighting: {
-    row1: { cg1c: number | null; bagNo: string; bagWeight: string; net: number | null; };
-    row2: { cg1c: number | null; bagNo: string; bagWeight: string; net: number | null; };
+    row1: { cg1c: number | null; bagNo: string; bagWeight: number; net: number | null; };
+    row2: { cg1c: number | null; bagNo: string; bagWeight: number; net: number | null; };
     total: number | null;
   };
   calculations: {
@@ -52,7 +52,7 @@ export interface IManufacturingReportForm {
     naclWaterCalc: number | null;
     waterCalc: number | null;
     saltCalc: number | null;
-    finalTotalWeight: number | null;
+    finalTotalWeight: string | number | null;
     finalTotalWeightFixed: number | null;
   };
   qouRemark: string;
@@ -61,8 +61,8 @@ export interface IManufacturingReportForm {
   // ---  เพิ่มโครงสร้างใหม่สำหรับ BZ3  & BS3 & bz5-c  ใช้ตัวเปรเดียวกัน 
 
   rc417Weighting?: {
-    row1: { weight: number | null; bagNo: string; net: number | null };
-    row2: { weight: number | null; bagNo: string; net: number | null };
+    row1: { weight: number | null; bagNo: string; bagWeight: number;  net: number | null };
+    row2: { weight: number | null; bagNo: string; bagWeight: number; net: number | null };
     total: number | null;
     cdz1ofad: number | null;
 

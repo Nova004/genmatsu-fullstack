@@ -320,8 +320,8 @@ interface FormStep2Props {
 // เราอาจจะต้องอัปเดต config นี้ให้ตรงกับ BZ5-C ต่อไปนะครับ
 const bs5cWeightingConfig: WeightingCalculationConfig = {
   rows: [
-    { grossWeightPath: 'rc417Weighting.row1.weight', netWeightPath: 'rc417Weighting.row1.net', tare: 2 },
-    { grossWeightPath: 'rc417Weighting.row2.weight', netWeightPath: 'rc417Weighting.row2.net', tare: 2 },
+    { grossWeightPath: 'rc417Weighting.row1.weight', netWeightPath: 'rc417Weighting.row1.net', bagWeightPath: 'cg1cWeighting.row1.bagWeight' },
+    { grossWeightPath: 'rc417Weighting.row2.weight', netWeightPath: 'rc417Weighting.row2.net', bagWeightPath: 'cg1cWeighting.row2.bagWeight' },
   ],
   totalPath: 'rc417Weighting.total',
   destinationPath: 'rawMaterials.diaEarth', // 👈 (อันนี้อาจจะต้องเปลี่ยนเป็น rawMaterials.rc417Total หรือฟิลด์อื่นของ BZ5-C)
@@ -400,6 +400,8 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 </td>
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('rc417Weighting.row1.bagNo')} /></td>
+                <td className={tdLeftClass}>BagWeight</td>
+                <td className={tdLeftClass}><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row1.bagWeight')} /></td>
                 <td className={tdLeftClass}>Net Weight</td>
                 <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row1.net')} /></td>
               </tr>
@@ -414,13 +416,14 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 </td>
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('rc417Weighting.row2.bagNo')} /></td>
+                <td className={tdLeftClass}>BagWeight</td>
+                <td className={tdLeftClass}><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row2.bagWeight')} /></td>
                 <td className={tdLeftClass}>Net Weight</td>
                 <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row2.net')} /></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>CDZ-1 :Total Weight</td>
-                <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.total')} /></td>
-
+                <td className={tdLeftClass}><input type="text" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.total')} /></td>
                 <td className={tdLeftClass}>Net Weight of Yield</td>
                 <td className={tdLeftClass}><div className="flex items-center"><input type="text" className={disabledInputClass} readOnly value="1000" /><span className="ml-2">KG</span></div> </td>
                 <td className={tdLeftClass}>CDZ-1 of AD</td>
@@ -431,30 +434,30 @@ const FormStep2: React.FC<FormStep2Props> = ({
                     </p>
                   }
                 </td>
+                <td className={tdLeftClass} colSpan={2}></td>
               </tr>
 
               {/* --- ส่วนที่ 2: การคำนวณสำหรับ BZ5-C --- */}
               <tr>
-                <td className={tdLeftClass}>CDZ-1:WaterContent(Moisture)</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number"  step="0.01" min="0"  className={inputClass} {...register('bs5cCalculations.rc417WaterContentMoisture', { valueAsNumber: true })} /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}>CDZ-1: Water Content (Moisture)</td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" step="0.01" min="0" className={inputClass} {...register('bs5cCalculations.rc417WaterContentMoisture', { valueAsNumber: true })} /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass}> <span className="text-xs"> Weight of CDZ-1 + Mg(OH)<sub>2</sub> <br /> + Carbon </span> </td>
                 <td className={tdLeftClass}><div className="flex items-center"><input type="text" className={disabledInputClass} readOnly {...register('bs5cCalculations.totalWeightOfMaterials')} /><span className="ml-2">KG</span></div> </td>
-                <td className={tdLeftClass}></td>
-                <td className={tdLeftClass}></td>
+                <td className={tdLeftClass} colSpan={4}></td>
               </tr>
               <tr>
-                <td className={tdLeftClass}>CDZ-1:WaterContant(weight)</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} readOnly  {...register('bs5cCalculations.rc417WaterContentweight', { valueAsNumber: true })} /><span className="ml-2">%</span></div> </td>
-                <td className={tdLeftClass} colSpan={4}></td>
+                <td className={tdLeftClass}>CDZ-1: Water Contant (weight)</td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} readOnly  {...register('bs5cCalculations.rc417WaterContentweight', { valueAsNumber: true })} /><span className="ml-2">KG</span></div> </td>
+                <td className={tdLeftClass} colSpan={6}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>% Moisture Gen B (STD mean.)</td>
                 <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bs5cCalculations.stdMeanMoisture', { valueAsNumber: true })} value="37" readOnly disabled /><span className="ml-2">%</span></div> </td>
-                <td className={tdLeftClass} colSpan={4}></td>
+                <td className={tdLeftClass} colSpan={6}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>NaCl water =</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bs5cCalculations.naclWater', { valueAsNumber: true })} value="4" readOnly disabled /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bs5cCalculations.naclWater', { valueAsNumber: true })} value="4.00" readOnly disabled /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass}>NaCl Water Specific gravity</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('bs5cCalculations.naclWaterSpecGrav', { valueAsNumber: true, required: 'กรุณากรอก  NaCl Water Specific gravity' })} />
                   {errors.bs5cCalculations?.naclWaterSpecGrav &&
@@ -466,34 +469,39 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>Temperature</td>
                 <td className={tdLeftClass}><input type="number" step="0.1" className={inputClass} {...register('bs5cCalculations.temperature', { valueAsNumber: true })} /></td>
                 <td className={tdLeftClass}>C°</td>
+                <td className={tdLeftClass} colSpan={2}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Net weight of water per <br></br>1000 Kg of CDZ-1 =</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bs5cCalculations.Netweightofwaterper', { valueAsNumber: true })} value="649.8" readOnly disabled /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bs5cCalculations.Netweightofwaterper', { valueAsNumber: true })} value="649.80" readOnly disabled /><span className="ml-2">KG</span></div> </td>
                 <td className={tdLeftClass}> <span className="text-xs">(Calculated by 4% NaCl 654L, Specific gravity = 1.035) </span> </td>
+                <td className={tdLeftClass} colSpan={5}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Total NaCl water=</td>
                 <td className={tdLeftClass}><input type="number" step="0.1" className={disabledInputClass} readOnly {...register('bs5cCalculations.totalNaclWater', { valueAsNumber: true })} /></td>
                 <td className={tdLeftClass}>Kg./B</td>
+                <td className={tdLeftClass} colSpan={5}></td>
               </tr>
               <tr>
-                <td className={tdLeftClass}>15% NaCl Water</td>
+                <td className={tdLeftClass}>Feeding Volume</td>
                 <td className={tdLeftClass}><input type="number" className={disabledInputClass} {...register('bs5cCalculations.naclWater4', { valueAsNumber: true })} readOnly disabled /></td>
                 <td className={tdLeftClass}>(L/B)/20 min. =</td>
                 <td className={tdLeftClass}><input type="text" className={disabledInputClass} readOnly {...register('bs5cCalculations.lminRate')} /></td>
                 <td className={tdLeftClass}>'L/min </td>
+                <td className={tdLeftClass} colSpan={3}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Total weight = NCR Genmatsu =</td>
-                <td className={tdLeftClass}><input type="number" step="0.1" className={disabledInputClass} readOnly {...register('bs5cCalculations.totalWeightWithNcr', { valueAsNumber: true })} /></td>
+                <td className={tdLeftClass}><input type="text"  className={disabledInputClass} readOnly {...register('bs5cCalculations.totalWeightWithNcr', { valueAsNumber: true })} /></td>
                 <td className={tdLeftClass}>Kg. </td>
+                <td className={tdLeftClass} colSpan={6}></td>
               </tr>
 
               {/* --- ส่วนที่ 3: หมายเหตุ --- */}
               <tr>
                 <td className={tdLeftClass}>Remark (หมายเหตุ) :</td>
-                <td className={tdLeftClass} colSpan={5}><textarea className={`${inputClass} h-25`} {...register('qouRemark')} /></td>
+                <td className={tdLeftClass} colSpan={7}><textarea className={`${inputClass} h-15`} {...register('qouRemark')} /></td>
               </tr>
             </tbody>
           </table>

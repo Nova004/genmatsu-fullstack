@@ -1,50 +1,70 @@
-// frontend/src/hooks/useWeightCalculations.ts
-
 import { useEffect } from 'react';
 import { UseFormWatch, UseFormSetValue, Path } from 'react-hook-form';
 import { IManufacturingReportForm } from '../components/formGen/pages/types';
 
-// 1. กำหนด Type สำหรับ Config ของแต่ละแถว
 interface WeightingRowConfig {
-  grossWeightPath: Path<IManufacturingReportForm>; // Path ไปยังน้ำหนักตั้งต้น
-  netWeightPath: Path<IManufacturingReportForm>;   // Path ที่จะเก็บค่าน้ำหนัก Net
-  tare: number;                                     // น้ำหนักภาชนะที่จะลบ
+  grossWeightPath: Path<IManufacturingReportForm>;
+  netWeightPath: Path<IManufacturingReportForm>;
+  tare?: number;
+  bagWeightPath?: Path<IManufacturingReportForm>;
 }
 
-// 2. กำหนด Type สำหรับ Config หลัก
 export interface WeightingCalculationConfig {
   rows: WeightingRowConfig[];
   totalPath: Path<IManufacturingReportForm>;
   destinationPath: Path<IManufacturingReportForm>;
 }
 
-/**
- * 🚀 HOOK กลาง: สำหรับการคำนวณน้ำหนัก (Net & Total) ตาม Config ที่ส่งเข้ามา
- */
+
+
 export const useWeightingCalculation = (
   watch: UseFormWatch<IManufacturingReportForm>,
   setValue: UseFormSetValue<IManufacturingReportForm>,
-  config: WeightingCalculationConfig // 3. รับ Config เข้ามา
+  config: WeightingCalculationConfig
 ) => {
-  // 4. สร้าง Array ของ dependencies จาก Path ทั้งหมดใน config
-  const watchedPaths = config.rows.map(row => row.grossWeightPath);
-  const watchedValues = watch(watchedPaths);
+  const grossPaths = config.rows.map(r => r.grossWeightPath);
+  const bagPaths = config.rows.map(r => r.bagWeightPath || r.grossWeightPath);
+
+  const grossValues = watch(grossPaths);
+  const bagValues = watch(bagPaths);
 
   useEffect(() => {
     let totalNet = 0;
 
-    // 5. วนลูปคำนวณแต่ละแถวตาม config
     config.rows.forEach((row, index) => {
-      const grossWeight = Number(watchedValues[index]) || 0;
-      const netWeight = grossWeight > 0 ? grossWeight - row.tare : 0;
+      const gross = Number(grossValues[index]) || 0;
 
-      setValue(row.netWeightPath, netWeight > 0 ? netWeight : null);
-      totalNet += netWeight;
+      let tare = 0;
+      if (row.bagWeightPath) {
+        tare = Number(bagValues[index]) || 0;
+      } else {
+        tare = row.tare || 0;
+      }
+
+      // 1. คำนวณ Net ดิบๆ
+      let rawNet = gross > 0 ? gross - tare : 0;
+
+      // 2. เตรียมค่าที่เป็นตัวเลขเอาไว้บวก Total (ใช้ตัวเลขดิบ หรือจะปัดเศษก่อนบวกก็ได้ตาม business logic)
+      const finalNetNum = rawNet > 0 ? rawNet : 0;
+
+      // 3. Set ค่าเข้า Form เป็น String เพื่อให้มี .00
+      // ตรงนี้คือจุดที่แก้ไข: ใช้ .toFixed(2) และส่งค่าเป็น String ไป
+      setValue(row.netWeightPath, finalNetNum > 0 ? finalNetNum.toFixed(2) : null);
+
+      // 4. บวกเข้า Total (ต้องใช้ตัวแปรที่เป็น Number นะครับ ห้ามเอา String มาบวก)
+      totalNet += finalNetNum;
     });
+    // 4. ปัดเศษ Total ก่อนส่ง
+    const finalTotal = totalNet.toFixed(2);
 
-    // 6. ตั้งค่าผลรวม และส่งไปยังปลายทาง
-    setValue(config.totalPath, totalNet > 0 ? totalNet : null);
-    setValue(config.destinationPath, totalNet > 0 ? totalNet : null, { shouldValidate: true });
+    // 5. ส่งค่า Total ที่ปัดแล้ว
+    setValue(config.totalPath, totalNet > 0 ? finalTotal : null);
+    setValue(config.destinationPath, totalNet > 0 ? finalTotal : null, { shouldValidate: true });
 
-  }, [...watchedValues, setValue, config]); // ให้ re-run เมื่อค่าใดๆ ที่ watch อยู่เปลี่ยนไป
+  }, [
+    grossValues.join(','),
+    bagValues.join(','),
+    config,
+    setValue
+  ]);
 };

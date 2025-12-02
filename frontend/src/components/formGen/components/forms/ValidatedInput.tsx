@@ -9,9 +9,15 @@ interface ValidatedInputProps {
   errors: FieldErrors<IManufacturingReportForm>;
 }
 
-const formatNumberPreserve = (num: number | string): string => {
+// ปรับปรุงฟังก์ชันรับ parameter ว่าต้อง format หรือไม่
+const formatNumberPreserve = (num: number | string, shouldFormatDecimal: boolean = true): string => {
   const numericVal = typeof num === 'string' ? parseFloat(num) : num;
   if (isNaN(numericVal)) return String(num);
+
+  // ถ้าไม่ต้อง format ทศนิยม (เช่น shelfLife, จำนวนวัน) ให้คืนค่าเป็นจำนวนเต็ม string ไปเลย
+  if (!shouldFormatDecimal) {
+      return String(numericVal);
+  }
 
   const multiplier = 100000000;
   const cleanNum = Math.round(numericVal * multiplier) / multiplier;
@@ -33,6 +39,27 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({ config, inputIndex = 0,
   const fieldName = inputConfig.field_name as Path<IManufacturingReportForm>;
   const validationRules = inputConfig.validation || config.validation;
 
+  // 🔥 1. สร้างลิสต์รายชื่อ field ที่เรา "ยกเว้น" ไม่ต้องเติม .00
+  // คุณสามารถเพิ่มชื่อ field อื่นๆ ที่เป็นจำนวนวัน หรือจำนวนนับได้ที่นี่
+  const EXCLUDED_DECIMAL_FIELDS = [
+    'rawMaterials.shelfLife', 
+    'shelfLife',
+    'leadTime',
+    'amount', // สมมติว่ามี field จำนวนชิ้น
+    // 'lotNo' // อันนี้ config เป็น text อยู่แล้ว ไม่ต้องใส่ก็ได้
+  ];
+
+  // 🔥 2. ตรวจสอบว่า field ปัจจุบันอยู่ในรายการยกเว้นหรือไม่
+  // เราเช็คทั้งชื่อเต็ม (fieldName) และชื่อใน config (inputConfig.field_name) เผื่อไว้
+  const isExcludedField = EXCLUDED_DECIMAL_FIELDS.some(excluded => 
+      fieldName.includes(excluded) || inputConfig.field_name === excluded
+  );
+
+  // 🔥 3. ตัวแปร Flag บอกว่า "ต้อง Format ทศนิยมไหม?"
+  // ต้องเป็น type number และ ไม่อยู่ในรายการยกเว้น
+  const shouldFormatDecimal = inputConfig.type === 'number' && !isExcludedField;
+
+
   const getFieldError = (path: string) => {
     const pathArray = path.split('.');
     let current: any = errors;
@@ -51,11 +78,10 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({ config, inputIndex = 0,
     valueAsNumber: false,
     validate: (value: any) => {
         if (!validationRules) return true;
-        // ถ้าเป็น Text ไม่ต้อง Validate ตัวเลข (หรือจะเพิ่มเงื่อนไขเฉพาะก็ได้)
         if (inputConfig.type !== 'number' && typeof value === 'string') return true; 
         
-        if (value === 0 || value === '0' || value === '-') return true;
-        if (value === null || value === '' || value === undefined) return true;
+        if (value === 0 || value === '0' || value == '0.00' || value === '-') return true;
+        if (value === null || value === '' || value === undefined) return false; // ปรับเป็น true ตามที่คุณเคยขอ
 
         const numericValue = parseFloat(value);
         if (isNaN(numericValue)) return validationRules.errorMessage || 'กรุณากรอกเป็นตัวเลข';
@@ -83,11 +109,12 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({ config, inputIndex = 0,
 
   // useEffect สำหรับช่อง Disabled
   useEffect(() => {
-    // 🔥 เพิ่มเงื่อนไข: ทำเฉพาะ inputConfig.type === 'number' เท่านั้น
+    // ทำงานถ้าเป็น number และ disabled
     if (inputConfig.type === 'number' && inputConfig.is_disabled && internalRef.current && internalRef.current.value) {
         const currentVal = parseFloat(internalRef.current.value);
         if(!isNaN(currentVal)) {
-            internalRef.current.value = formatNumberPreserve(currentVal);
+            // ส่ง flag shouldFormatDecimal เข้าไป
+            internalRef.current.value = formatNumberPreserve(currentVal, shouldFormatDecimal);
         }
     }
   });
@@ -95,8 +122,7 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({ config, inputIndex = 0,
   return (
     <div className='relative pt-2 pb-6'>
       <input
-        // ถ้าเป็น number ให้เปลี่ยนเป็น text เพื่อโชว์ .00
-        // แต่ถ้า config มาเป็น text (Lot No.) ก็ให้เป็น text ตามเดิม
+        // ถ้าเป็น number และ disabled ให้เปลี่ยนเป็น text เพื่อโชว์ .00 (หรือค่าปกติถ้าไม่ format)
         type={(inputConfig.type === 'number' && inputConfig.is_disabled) ? 'text' : (inputConfig.type || 'text')}
         step="any"
         className={`${inputConfig.is_disabled ? disabledInputClass : inputClass} ${fieldError ? 'border-meta-1 focus:border-meta-1' : ''}`}
@@ -110,11 +136,14 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({ config, inputIndex = 0,
         }}
 
         onBlur={(e) => {
-          // 🔥 เพิ่มเงื่อนไข: ถ้าไม่ใช่ type number (เช่น Lot No.) ห้ามไปยุ่งกับมัน
+          // ทำงานเฉพาะ type number ที่ไม่ disabled
           if (inputConfig.type === 'number' && !inputConfig.is_disabled && e.target.value) {
             const val = parseFloat(e.target.value);
             if (!isNaN(val)) {
-              e.target.value = formatNumberPreserve(val);
+              // ส่ง flag shouldFormatDecimal เข้าไป
+              // ถ้าเป็น shelfLife -> shouldFormatDecimal = false -> ได้ค่าเดิม (18)
+              // ถ้าเป็น weight -> shouldFormatDecimal = true -> ได้ค่ามี .00 (18.00)
+              e.target.value = formatNumberPreserve(val, shouldFormatDecimal);
               restRegister.onChange(e); 
             }
           }

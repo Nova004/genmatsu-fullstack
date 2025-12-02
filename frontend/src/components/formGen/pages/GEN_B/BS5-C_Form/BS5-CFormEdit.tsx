@@ -1,4 +1,4 @@
-// location: frontend/src/components/formGen/pages/BS5-C_Form/BZFormEdit.tsx
+// location: frontend/src/components/formGen/pages/BS5-C_Form/BS5-CFormEdit.tsx
 
 import React, { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
@@ -30,14 +30,10 @@ const BS5_C_VALIDATION_SCHEMA = {
         scope: 'basicData',
         message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, Lot No. และตรวจสอบสภาพบรรจุภัณฑ์ให้ครบถ้วน',
     },
-    2: {
-        fields: [
-            //  'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
-            //'rc417Weighting.row1.weight',
-            // 'rc417Weighting.row2.weight',
-            // 'bs3Calculations.naclWaterSpecGrav',
-        ],
-        message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
+     2: {
+        fields: ['rawMaterials'],
+        scope: 'rawMaterials',
+        message: 'กรุณาตรวจสอบข้อมูลวัตถุดิบให้ถูกต้อง', 
     },
     3: {
         fields: ['conditions', 'operationResults', 'operationRemark'],

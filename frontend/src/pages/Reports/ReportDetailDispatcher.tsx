@@ -25,6 +25,61 @@ import ReportDetailAX9_B from './AX9-B/ReportDetailAX9-B';
 import ReportDetailAX2_B from './AX2-B/ReportDetailAX2-B';
 import ReportDetailAZ from './AZ/ReportDetailAZ';
 
+const formatNumberPreserve = (num: number | string, shouldFormatDecimal: boolean = true): string => {
+  const numericVal = typeof num === 'string' ? parseFloat(num) : num;
+  if (isNaN(numericVal)) return String(num);
+
+  if (!shouldFormatDecimal) {
+    return String(numericVal);
+  }
+
+  const multiplier = 100000000;
+  const cleanNum = Math.round(numericVal * multiplier) / multiplier;
+  let str = cleanNum.toString();
+  const parts = str.split('.');
+
+  if (parts.length === 1) return str + ".00";
+  if (parts[1].length === 1) return str + "0";
+  return str;
+};
+
+// ✅ 2. เพิ่มรายชื่อ Field ที่ยกเว้นทศนิยม
+const EXCLUDED_DECIMAL_FIELDS = [
+  'rawMaterials.shelfLife',
+  'shelfLife',
+  'leadTime',
+  'amount',
+  'palletCount',
+  'lotNo',
+  'submissionId',
+  'id',
+  'step'
+];
+
+const processTemplateData = (data: any, parentKey: string = ''): any => {
+  if (Array.isArray(data)) {
+    return data.map(item => processTemplateData(item, parentKey));
+  }
+  if (data !== null && typeof data === 'object') {
+    return Object.fromEntries(
+      Object.entries(data).map(([key, val]) => {
+        const currentPath = parentKey ? `${parentKey}.${key}` : key;
+
+        if (typeof val === 'number') {
+          // เช็คเงื่อนไขยกเว้น
+          const isExcluded = EXCLUDED_DECIMAL_FIELDS.some(excluded =>
+            currentPath.includes(excluded) || key === excluded
+          );
+          // แปลงค่า (ถ้าไม่ยกเว้น ก็เติม .00)
+          return [key, formatNumberPreserve(val, !isExcluded)];
+        }
+
+        return [key, processTemplateData(val, currentPath)];
+      })
+    );
+  }
+  return data;
+};
 
 const ReportDetailDispatcher: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -44,8 +99,20 @@ const ReportDetailDispatcher: React.FC = () => {
     const fetchDetails = async () => {
       console.log(`[Dispatcher] Attempting to fetch data for ID: ${id}`);
       try {
-        const data = await getSubmissionById(id); // คืองการดึงข้อมูล submission
-        setSubmissionData(data); // data ควรมีโครงสร้าง { submission: {...}, blueprints: [...] }
+        const data = await getSubmissionById(id);
+
+        // ✅ 4. ดักแปลงข้อมูล submission ให้มีทศนิยมสวยงามก่อน
+        if (data && data.submission) {
+          const processedSubmission = processTemplateData(data.submission);
+
+          // อัปเดต state โดยใช้ submission ตัวใหม่ที่แปลงแล้ว
+          setSubmissionData({
+            ...data,
+            submission: processedSubmission
+          });
+        } else {
+          setSubmissionData(data);
+        }
       } catch (err) {
         setError(`ไม่สามารถดึงข้อมูลสำหรับ ID: ${id} ได้`);
       } finally {

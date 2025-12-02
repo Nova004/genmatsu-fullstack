@@ -1,160 +1,39 @@
 {
-  "basicData": {
-    "date": "2025-11-13",
-    "machineName": "02",
-    "lotNo": "test",
-    "mcOperatorRole": "M/C operator"
-  },
-  "mcOperators": [
+  "layout_type": "DYNAMIC_ROW",
+  "columns": [
     {
-      "id": "201634\t\t\t",
-      "name": "Mr.Tinnakon  Thuengkhamphu",
-      "number": "2"
-    },
-    { "id": "201339\t\t\t", "name": "Mr.Sawat  Kaewthong", "number": "3" },
-    { "id": "-", "name": "-", "number": "-" }
+      "type": "MULTI_INPUT_GROUP",
+      "span": 2,
+      "description": "หยุดเครื่องเปิด Filter Cover ทั้ง 3 ตัว เช็คอุณหภูมิ 3 จุด บันทึกค่าที่วัดได้ (STD. ≤150)",
+      "validation": {
+        "type": "MAX_VALUE",
+        "max": 150,
+        "errorMessage": "อุณหภูมิต้องไม่เกิน 150 C"
+      },
+      "inputs": [
+        {
+          "label": "Temp Point 1",
+          "unit": "˚C ≤150",
+          "type": "number",
+          "field_name": "operationResults.{index}.tempPoint1"
+        },
+        {
+          "label": "Temp Point 2",
+          "unit": "˚C ≤150",
+          "type": "number",
+          "field_name": "operationResults.{index}.tempPoint2"
+        },
+        {
+          "label": "Temp Point 3",
+          "unit": "˚C ≤150",
+          "type": "number",
+          "field_name": "operationResults.{index}.tempPoint3"
+        }
+      ]
+    }
   ],
-  "assistants": [
-    { "id": "201963\t\t\t", "name": "Mr.Nikorn Saksit", "number": "11" },
-    { "id": "201964\t\t\t", "name": "Mr.Chanchai Upatham", "number": "12" },
-    { "id": "-", "name": "-", "number": "-" },
-    { "id": "-", "name": "-", "number": "-" },
-    { "id": "-", "name": "-", "number": "-" }
-  ],
-  "conditions": [
-    { "status": "OK", "remark": "" },
-    { "status": "OK", "remark": "" },
-    { "status": "OK", "remark": "" }
-  ],
-  "values": [],
-  "checklist": { "coolingValve": "", "butterflyValve": "" },
-  "rawMaterials": {
-    "gypsumplaster": 75,
-    "activatedcarbon": 20,
-    "diaEarth": 1201,
-    "sodiumChloride": 460.21,
-    "magnesiumHydroxide": 60,
-    "remainedGenmatsu": { "lot": "-", "actual": 0 },
-    "shelfLife": -1,
-    "ncrGenmatsu": { "lot": "-", "actual": 0 },
-    "calciumchloride": null,
-    "activated": null,
-    "ZeoliteJikulite": 603,
-    "ZeoliteNatto": 629,
-    "IronOxideMTY80": null,
-    "sg": null,
-    "netWeightOfYieldSTD": 1200
-  },
-  "cg1cWeighting": {
-    "row1": { "cg1c": 605, "bagNo": "-", "bagWeight": "", "net": 603 },
-    "row2": { "cg1c": 631, "bagNo": "-", "bagWeight": "", "net": 629 },
-    "total": 1201
-  },
-  "calculations": {
-    "nacl15SpecGrav": 1.033,
-    "cg1cWaterContent": 5.22,
-    "temperature": 25,
-    "naclBrewingTable": 475,
-    "naclWaterCalc": 475.4,
-    "waterCalc": 404.09,
-    "saltCalc": 71.31,
-    "finalTotalWeight": 1831.396,
-    "finalTotalWeightFixed": null
-  },
-  "qouRemark": "",
-  "valued": null,
-  "rc417Weighting": {
-    "row1": { "weight": null, "bagNo": "", "net": null },
-    "row2": { "weight": null, "bagNo": "", "net": null },
-    "total": null,
-    "cdz1ofad": null
-  },
-  "bz3Calculations": {
-    "rc417WaterContent": null,
-    "intermediateWaterCalc": null,
-    "totalWeightOfMaterials": null,
-    "stdMeanMoisture": null,
-    "naclWater": null,
-    "naclWaterSpecGrav": null,
-    "temperature": null,
-    "naclWater15": null,
-    "lminRate": null,
-    "totalNaclWater": null,
-    "totalWeightWithNcr": null
-  },
-  "bs3Calculations": {
-    "rc417WaterContent": null,
-    "intermediateWaterCalc": null,
-    "totalWeightOfMaterials": null,
-    "stdMeanMoisture": null,
-    "naclWater": null,
-    "naclWaterSpecGrav": null,
-    "temperature": null,
-    "naclWater4": null,
-    "lminRate": null,
-    "totalNaclWater": null,
-    "totalWeightWithNcr": null
-  },
-  "bz5cCalculations": {
-    "rc417WaterContentMoisture": null,
-    "rc417WaterContentweight": null,
-    "intermediateWaterCalc": null,
-    "totalWeightOfMaterials": null,
-    "stdMeanMoisture": null,
-    "naclWater": null,
-    "naclWaterSpecGrav": null,
-    "temperature": null,
-    "naclWater4": null,
-    "lminRate": null,
-    "totalNaclWater": null,
-    "totalWeightWithNcr": null
-  },
-  "bs5cCalculations": {
-    "rc417WaterContentMoisture": null,
-    "rc417WaterContentweight": null,
-    "intermediateWaterCalc": null,
-    "totalWeightOfMaterials": null,
-    "stdMeanMoisture": null,
-    "naclWater": null,
-    "naclWaterSpecGrav": null,
-    "temperature": null,
-    "naclWater4": null,
-    "lminRate": null,
-    "totalNaclWater": null,
-    "totalWeightWithNcr": null,
-    "Netweightofwaterper": null
-  },
-  "operationResults": [
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    { "humidity": null },
-    {}
-  ],
-  "operationRemark": "",
-  "packingResults": {
-    "diameter": null,
-    "weighttank": { "tank": null, "others": null },
-    "quantityOfProduct": { "cans": null, "calculated": null },
-    "meshPass40": null,
-    "remain": null,
-    "yieldPercent": null
-  },
-  "palletInfo": [
-    { "no": "", "qty": null, "canNo": "" },
-    { "no": "", "qty": null, "canNo": "" },
-    { "no": "", "qty": null, "canNo": "" },
-    { "no": "", "qty": null, "canNo": "" },
-    { "no": "", "qty": null, "canNo": "" },
-    { "no": "", "qty": null, "canNo": "" }
-  ],
-  "lot_no": "test"
+  "inputs": {
+    "startTime": { "enabled": false },
+    "finishTime": { "enabled": false }
+  }
 }

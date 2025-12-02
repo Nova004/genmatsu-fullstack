@@ -30,7 +30,7 @@ const AZ1_VALIDATION_SCHEMA = {
         message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, Lot No. และตรวจสอบสภาพบรรจุภัณฑ์ให้ครบถ้วน',
     },
     2: {
-        fields: ['rawMaterials'],
+        fields: ['rawMaterials', 'rawMaterials.remainedGenmatsu.actual', 'rawMaterials.calciumchloride', 'rawMaterials.diatomaceousEarth'],
         scope: 'rawMaterials',
         message: 'กรุณาตรวจสอบข้อมูลวัตถุดิบให้ถูกต้อง',
     },

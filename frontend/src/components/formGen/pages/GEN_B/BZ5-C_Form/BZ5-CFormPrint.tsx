@@ -72,7 +72,7 @@ const BZ5_CFormPrint: React.FC<BZ5_CFormPrintProps> = ({ formData, blueprints, i
           {/* --- Section 1 (Header) --- */}
           <div className="form-section p-1 md:p-1 border-b border-stroke dark:border-strokedark">
             {/* ผมเดาว่า Component Step 1 ของ BZ5-C น่าจะชื่อประมาณนี้นะครับ */}
-            <SharedFormStep1 {...formStepProps} packagingWarningItemName="RC-417" />
+            <SharedFormStep1 {...formStepProps} packagingWarningItemName="CDZ-1" />
           </div>
 
           {/* --- Section 2 (Raw Materials) --- */}

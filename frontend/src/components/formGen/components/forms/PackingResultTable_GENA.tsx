@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import { UseFormRegister, UseFormWatch, UseFormSetValue } from 'react-hook-form';
 import { IManufacturingReportForm } from '../../pages/types';
+import { toDecimal } from '../../../../utils/utils'
 
 // 1. เพิ่ม cansMultiplier เข้าไปใน Props
 interface PackingResultTableProps {
@@ -41,16 +42,16 @@ const PackingResultTable: React.FC<PackingResultTableProps> = ({ register, watch
         <tbody>
           <tr>
             <td className={tdLeftClass} colSpan={2}>Quantity<br></br>(จำนวนถังเต็ม x 150 kg.) + น้ำหนักถังเศษ</td>
-            <td className={tdCenterClass}><input type="number" className={inputClass} {...register('packingResults.quantityOfProduct.cans', { valueAsNumber: true })} /></td>
+            <td className={tdCenterClass}><input type="number" step="any" className={inputClass} {...register('packingResults.quantityOfProduct.cans', { valueAsNumber: true })} /></td>
             {/* 3. แสดงผลค่าตัวคูณแบบ Dynamic */}
             <td className={tdCenterClass}>Cans x {cansMultiplier} KG + </td>
-            <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={inputClass} {...register('packingResults.weighttank.tank', { valueAsNumber: true })} /><span className="ml-2">KG</span></div></td>
+            <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={inputClass} {...register('packingResults.weighttank.tank')} /><span className="ml-2">KG</span></div></td>
             <td className={tdCenterClass}>=</td>
             <td className={tdCenterClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('packingResults.quantityOfProduct.calculated')} /><span className="ml-2">KG</span></div></td>
           </tr>
           <tr>
             <td className={tdLeftClass} colSpan={2}>Remain</td>
-            <td className={tdCenterClass}><div className="flex items-center"> <input type="number" className={inputClass} {...register('packingResults.remain')} /><span className="ml-2">KG</span></div> </td>
+            <td className={tdCenterClass}><input type="number" step="any" className={inputClass} {...register('packingResults.remain', { valueAsNumber: true })} /></td>
             <td className={tdLeftClass} colSpan={4}><span className="text-s">(Genmatsu ที่ผ่านการผลิตเรียบร้อยแล้ว ถูกแบ่งเก็บไว้สำหรับเทปิดรูวาล์วในการผลิตครั้งต่อไป)</span></td>
           </tr>
           <tr>

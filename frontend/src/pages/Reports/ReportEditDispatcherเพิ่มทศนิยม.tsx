@@ -34,6 +34,7 @@ const formatNumberPreserve = (num: number | string, shouldFormatDecimal: boolean
     const numericVal = typeof num === 'string' ? parseFloat(num) : num;
     if (isNaN(numericVal)) return String(num);
 
+    // ถ้าไม่ต้อง format ทศนิยม (เช่น shelfLife, จำนวนวัน) ให้คืนค่าเป็นจำนวนเต็ม string ไปเลย
     if (!shouldFormatDecimal) {
         return String(numericVal);
     }
@@ -48,46 +49,6 @@ const formatNumberPreserve = (num: number | string, shouldFormatDecimal: boolean
     return str;
 };
 
-// 2. รายชื่อ Field ที่ยกเว้น
-const EXCLUDED_DECIMAL_FIELDS = [
-    'rawMaterials.shelfLife',
-    'shelfLife',
-    'leadTime',
-    'amount',
-    'palletCount',
-    'lotNo',
-    'submissionId',
-    'id',
-    'step'
-];
-
-const processTemplateData = (data: any, parentKey: string = ''): any => {
-    if (Array.isArray(data)) {
-        return data.map(item => processTemplateData(item, parentKey));
-    }
-    if (data !== null && typeof data === 'object') {
-        return Object.fromEntries(
-            Object.entries(data).map(([key, val]) => {
-                const currentPath = parentKey ? `${parentKey}.${key}` : key;
-
-                if (typeof val === 'number') {
-                    // ✅ 1. เช็คว่า Field นี้ต้องยกเว้นทศนิยมไหม?
-                    const isExcluded = EXCLUDED_DECIMAL_FIELDS.some(excluded =>
-                        currentPath.includes(excluded) || key === excluded
-                    );
-
-                    // ✅ 2. แปลงค่าตัวเลขให้เป็น String ที่มี Format ถูกต้อง
-                    // ถ้า isExcluded = true (เช่น shelfLife) -> shouldFormatDecimal = false -> ได้ "18"
-                    // ถ้า isExcluded = false (เช่น weight) -> shouldFormatDecimal = true -> ได้ "25.00"
-                    return [key, formatNumberPreserve(val, !isExcluded)];
-                }
-
-                return [key, processTemplateData(val, currentPath)];
-            })
-        );
-    }
-    return data;
-};
 
 const formatDecimalsDeep = (data: any): any => {
     if (Array.isArray(data)) {

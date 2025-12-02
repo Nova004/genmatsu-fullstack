@@ -42,8 +42,8 @@ export const initialFormValues: IManufacturingReportForm = {
 
   // --- BZ ---
   cg1cWeighting: {
-    row1: { cg1c: null, bagNo: '', bagWeight: '', net: null },
-    row2: { cg1c: null, bagNo: '', bagWeight: '', net: null },
+    row1: { cg1c: null, bagNo: '', bagWeight: 0 , net: null },
+    row2: { cg1c: null, bagNo: '', bagWeight: 0 , net: null },
     total: null,
   },
   calculations: {
@@ -62,8 +62,8 @@ export const initialFormValues: IManufacturingReportForm = {
 
   // --- BZ3 & BS3 & BZ5-C & BS5-C (Optional fields ก็ต้องใส่) ---
   rc417Weighting: {
-    row1: { weight: null, bagNo: '', net: null },
-    row2: { weight: null, bagNo: '', net: null },
+    row1: { weight: null, bagNo: '',  bagWeight: 0 , net: null },
+    row2: { weight: null, bagNo: '',  bagWeight: 0 , net: null },
     total: null,
     cdz1ofad: null,
   },

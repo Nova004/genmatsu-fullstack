@@ -41,7 +41,7 @@ const ChecklistTable: React.FC<ChecklistTableProps> = ({ register, errors, items
               Condition / Standard
             </th>
             <th className="w-2/5 px-4 py-4 font-medium text-black dark:text-white">
-              Result
+              Check by.
             </th>
           </tr>
         </thead>

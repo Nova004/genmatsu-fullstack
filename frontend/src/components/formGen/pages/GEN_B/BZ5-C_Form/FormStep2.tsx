@@ -259,8 +259,8 @@ interface FormStep2Props {
 // เราอาจจะต้องอัปเดต config นี้ให้ตรงกับ BZ5-C ต่อไปนะครับ
 const bz5cWeightingConfig: WeightingCalculationConfig = {
   rows: [
-    { grossWeightPath: 'rc417Weighting.row1.weight', netWeightPath: 'rc417Weighting.row1.net', tare: 2 },
-    { grossWeightPath: 'rc417Weighting.row2.weight', netWeightPath: 'rc417Weighting.row2.net', tare: 2 },
+    { grossWeightPath: 'rc417Weighting.row1.weight', netWeightPath: 'rc417Weighting.row1.net', bagWeightPath: 'cg1cWeighting.row1.bagWeight' },
+    { grossWeightPath: 'rc417Weighting.row2.weight', netWeightPath: 'rc417Weighting.row2.net', bagWeightPath: 'cg1cWeighting.row2.bagWeight' },
   ],
   totalPath: 'rc417Weighting.total',
   destinationPath: 'rawMaterials.diaEarth', // 👈 (อันนี้อาจจะต้องเปลี่ยนเป็น rawMaterials.rc417Total หรือฟิลด์อื่นของ BZ5-C)
@@ -339,6 +339,8 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 </td>
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('rc417Weighting.row1.bagNo')} /></td>
+                <td className={tdLeftClass}>BagWeight</td>
+                <td className={tdLeftClass}><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row1.bagWeight')} /></td>
                 <td className={tdLeftClass}>Net Weight</td>
                 <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row1.net')} /></td>
               </tr>
@@ -353,6 +355,8 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 </td>
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('rc417Weighting.row2.bagNo')} /></td>
+                <td className={tdLeftClass}>BagWeight</td>
+                <td className={tdLeftClass}><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row2.bagWeight')} /></td>
                 <td className={tdLeftClass}>Net Weight</td>
                 <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row2.net')} /></td>
               </tr>
@@ -374,22 +378,22 @@ const FormStep2: React.FC<FormStep2Props> = ({
 
               {/* --- ส่วนที่ 2: การคำนวณสำหรับ BZ5-C --- */}
               <tr>
-                <td className={tdLeftClass}>CDZ-1:WaterContent(Moisture)</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number"  step="0.01" min="0" className={inputClass} {...register('bz5cCalculations.rc417WaterContentMoisture', { valueAsNumber: true })} /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}>CDZ-1: Water Content (Moisture)</td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" step="0.01" min="0" className={inputClass} {...register('bz5cCalculations.rc417WaterContentMoisture', { valueAsNumber: true })} /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass}> <span className="text-xs"> Weight of CDZ-1 + Mg(OH)<sub>2</sub> <br /> + Carbon </span> </td>
                 <td className={tdLeftClass}><div className="flex items-center"><input type="text" className={disabledInputClass} readOnly {...register('bz5cCalculations.totalWeightOfMaterials')} /><span className="ml-2">KG</span></div> </td>
                 <td className={tdLeftClass}></td>
                 <td className={tdLeftClass}></td>
               </tr>
               <tr>
-                <td className={tdLeftClass}>CDZ-1:WaterContant(weight)</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} readOnly  {...register('bz5cCalculations.rc417WaterContentweight', { valueAsNumber: true })} /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}>CDZ-1: Water Contant (weight)</td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} readOnly  {...register('bz5cCalculations.rc417WaterContentweight', { valueAsNumber: true })} /><span className="ml-2">KG</span></div> </td>
                 <td className={tdLeftClass}>Moisture Gen BZ5-C (STD mean.)</td>
                 <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bz5cCalculations.stdMeanMoisture', { valueAsNumber: true })} value="33.94" readOnly disabled /><span className="ml-2">%</span></div> </td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>NaCl water =</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bz5cCalculations.naclWater', { valueAsNumber: true })} value="15" readOnly disabled /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bz5cCalculations.naclWater', { valueAsNumber: true })} value="15.00" readOnly disabled /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass}>NaCl Water Specific gravity</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('bz5cCalculations.naclWaterSpecGrav', { valueAsNumber: true, required: 'กรุณากรอก  NaCl Water Specific gravity' })} />
                   {errors.bz5cCalculations?.naclWaterSpecGrav &&

@@ -35,6 +35,61 @@ interface SubmissionPrintData {
   blueprints: any; // ควรสร้าง Type ที่ละเอียดกว่านี้
 }
 
+const formatNumberPreserve = (num: number | string, shouldFormatDecimal: boolean = true): string => {
+  const numericVal = typeof num === 'string' ? parseFloat(num) : num;
+  if (isNaN(numericVal)) return String(num);
+
+  if (!shouldFormatDecimal) {
+    return String(numericVal);
+  }
+
+  const multiplier = 100000000;
+  const cleanNum = Math.round(numericVal * multiplier) / multiplier;
+  let str = cleanNum.toString();
+  const parts = str.split('.');
+
+  if (parts.length === 1) return str + ".00";
+  if (parts[1].length === 1) return str + "0";
+  return str;
+};
+
+const EXCLUDED_DECIMAL_FIELDS = [
+  'rawMaterials.shelfLife',
+  'shelfLife',
+  'leadTime',
+  'amount',
+  'palletCount',
+  'lotNo',
+  'submissionId',
+  'id',
+  'step'
+];
+
+const processTemplateData = (data: any, parentKey: string = ''): any => {
+  if (Array.isArray(data)) {
+    return data.map(item => processTemplateData(item, parentKey));
+  }
+  if (data !== null && typeof data === 'object') {
+    return Object.fromEntries(
+      Object.entries(data).map(([key, val]) => {
+        const currentPath = parentKey ? `${parentKey}.${key}` : key;
+
+        if (typeof val === 'number') {
+          // เช็คว่าอยู่ในรายการยกเว้นไหม
+          const isExcluded = EXCLUDED_DECIMAL_FIELDS.some(excluded =>
+            currentPath.includes(excluded) || key === excluded
+          );
+          // แปลงค่า (ถ้าไม่ยกเว้น ก็เติม .00)
+          return [key, formatNumberPreserve(val, !isExcluded)];
+        }
+
+        return [key, processTemplateData(val, currentPath)];
+      })
+    );
+  }
+  return data;
+};
+
 
 const ReportPrintDispatcher: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -42,6 +97,7 @@ const ReportPrintDispatcher: React.FC = () => {
   const [submissionData, setSubmissionData] = useState<SubmissionPrintData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const processedSubmission = processTemplateData(submissionData);
 
   useEffect(() => {
     document.title = `Loading Report ${id}...`; // << เพิ่มบรรทัดนี้
@@ -61,7 +117,18 @@ const ReportPrintDispatcher: React.FC = () => {
       try {
         const data = await getSubmissionById(id);
         console.log(`[PrintDispatcher] Data fetched successfully for ID: ${id}`, data);
-        setSubmissionData(data);
+        if (data && data.submission) {
+          // แยกส่วน submission ออกมาแปลง
+          const processedSubmission = processTemplateData(data.submission);
+
+          // ประกอบร่างกลับเข้าไป (รักษา structure เดิมไว้)
+          setSubmissionData({
+            ...data,
+            submission: processedSubmission
+          });
+        } else {
+          setSubmissionData(data); // fallback เผื่อไม่มี submission field
+        }
         document.title = `Report - ${data.submission.form_type} (${data.submission.lot_no})`;
       } catch (err: any) {
         console.error(`[PrintDispatcher] Error fetching submission ${id}:`, err);
