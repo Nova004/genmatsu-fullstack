@@ -24,7 +24,7 @@ const EmployeeInputRow: React.FC<EmployeeInputRowProps> = ({ groupName, index, r
       setIsLoading(true);
       try {
         // 1. ใช้ axios.get และ URL ที่สั้นลง (เพราะมี Proxy)
-        const response = await axios.get(`/api/users/${employeeId}`);
+        const response = await axios.get(`/genmatsu/api/users/${employeeId}`);
 
         // 2. ถ้าเจอข้อมูล ข้อมูลจะอยู่ใน response.data
         const userData = response.data;

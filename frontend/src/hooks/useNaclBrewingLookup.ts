@@ -45,7 +45,7 @@ const useNaclBrewingLookup = (
             try {
                 // 🔽 4. อัปเดต URL เพื่อรวม Chemicals_Type เข้าไปด้วย
                 // ใช้ 'null' เป็น placeholder ใน URL เพื่อระบุว่าไม่ได้ส่งค่ามา
-                const url = `/api/nacl/lookup/${encodedWaterContent}/${encodedNaclType}/${chemicalsTypeParam}`;
+                const url = `/genmatsu/api/nacl/lookup/${encodedWaterContent}/${encodedNaclType}/${chemicalsTypeParam}`;
 
                 const response = await apiClient.get(url);
 

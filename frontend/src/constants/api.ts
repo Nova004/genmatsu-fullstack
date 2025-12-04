@@ -3,7 +3,7 @@
  * Centralized location for all API endpoints
  */
 
-const API_BASE = '/api';
+const API_BASE = '/genmatsu/api';
 
 export const API_ENDPOINTS = {
   // Submissions

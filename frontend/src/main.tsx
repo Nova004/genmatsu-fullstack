@@ -11,8 +11,8 @@ import { AuthProvider } from './context/AuthContext'; // <--- Import เข้�
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render( // <--- นำไปเเสดงที่ไหน Root 
  
-    <Router>
-      <AuthProvider> {/* <--- นำมาครอบ App */}
+    <Router basename="/genmatsu">
+      <AuthProvider> 
         <App />
       </AuthProvider>
     </Router>,

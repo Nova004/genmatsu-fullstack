@@ -19,7 +19,7 @@ const DropdownUser = () => {
       const fetchUserPhoto = async () => {
         try {
           // 1. ใช้ axios.get และ URL ที่สั้นลง
-          const response = await axios.get(`/api/auth/user/${user.id}/photo`);
+          const response = await axios.get(`/genmatsu/api/auth/user/${user.id}/photo`);
 
           // 2. ตรวจสอบว่ามีข้อมูลภาพ (imageData) ส่งกลับมาหรือไม่
           if (response.data && response.data.imageData) {

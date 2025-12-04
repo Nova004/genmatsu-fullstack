@@ -17,7 +17,9 @@ exports.createSubmission = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating submission:", error.message);
-    res.status(500).send({ message: "เกิดข้อผิดพลาดที่ Server", error: error.message });
+    res
+      .status(500)
+      .send({ message: "เกิดข้อผิดพลาดที่ Server", error: error.message });
   }
 };
 
@@ -28,7 +30,9 @@ exports.getAllSubmissions = async (req, res) => {
     res.status(200).send(submissions);
   } catch (err) {
     console.error("!!! ERROR in getAllSubmissions:", err);
-    res.status(500).send({ message: "Failed to retrieve submissions.", error: err.message });
+    res
+      .status(500)
+      .send({ message: "Failed to retrieve submissions.", error: err.message });
   }
 };
 
@@ -39,7 +43,7 @@ exports.getSubmissionById = async (req, res) => {
     res.status(200).send(data);
   } catch (err) {
     if (err.message === "Submission not found.") {
-        return res.status(404).send({ message: "Submission not found." });
+      return res.status(404).send({ message: "Submission not found." });
     }
     res.status(500).send({
       message: "Failed to retrieve submission details.",
@@ -53,18 +57,24 @@ exports.deleteSubmission = async (req, res) => {
   try {
     const isDeleted = await submissionService.deleteSubmission(id);
     if (!isDeleted) {
-      return res.status(404).send({ message: `Submission with ID ${id} not found.` });
+      return res
+        .status(404)
+        .send({ message: `Submission with ID ${id} not found.` });
     }
-    res.status(200).send({ message: `Submission ID ${id} has been deleted successfully.` });
+    res
+      .status(200)
+      .send({ message: `Submission ID ${id} has been deleted successfully.` });
   } catch (err) {
-    res.status(500).send({ message: "Failed to delete submission.", error: err.message });
+    res
+      .status(500)
+      .send({ message: "Failed to delete submission.", error: err.message });
   }
 };
 
 exports.updateSubmission = async (req, res) => {
   const { id } = req.params;
   const { lot_no, form_data } = req.body;
-  
+
   if (!lot_no || !form_data) {
     return res.status(400).send({ message: "กรุณากรอกข้อมูลให้ครบถ้วน" });
   }
@@ -74,17 +84,20 @@ exports.updateSubmission = async (req, res) => {
     res.status(200).send({ message: "อัปเดตข้อมูลสำเร็จ" });
   } catch (error) {
     console.error("SQL error", error);
-    res.status(500).send({ message: "เกิดข้อผิดพลาดในการอัปเดตข้อมูล", error: error.message });
+    res.status(500).send({
+      message: "เกิดข้อผิดพลาดในการอัปเดตข้อมูล",
+      error: error.message,
+    });
   }
 };
 
 exports.generatePdf = async (req, res) => {
   const { id } = req.params;
-  const frontendPrintUrl = `http://localhost:5173/reports/print/${id}`;
+  const frontendPrintUrl = `http://192.168.1.72:81/genmatsu/reports/print/${id}`;
 
   try {
     const pdfBuffer = await pdfService.generatePdf(id, frontendPrintUrl);
-    
+
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `inline; filename=report-${id}.pdf`);
     res.send(pdfBuffer);
@@ -94,7 +107,9 @@ exports.generatePdf = async (req, res) => {
         message: `Failed to generate PDF: Submission ID ${id} not found.`,
       });
     }
-    res.status(500).send({ message: "Failed to generate PDF", error: error.message });
+    res
+      .status(500)
+      .send({ message: "Failed to generate PDF", error: error.message });
   }
 };
 
@@ -107,6 +122,8 @@ exports.resubmitSubmission = async (req, res) => {
     res.status(200).json({ message: "Resubmitted successfully." });
   } catch (error) {
     console.error("Error resubmitting submission:", error);
-    res.status(500).json({ message: "Failed to resubmit", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to resubmit", error: error.message });
   }
 };

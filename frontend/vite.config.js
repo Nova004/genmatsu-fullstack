@@ -6,6 +6,7 @@ import react from '@vitejs/plugin-react';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  base: '/genmatsu/',
   server: {
     // 👇 การตั้งค่า Proxy อยู่ตรงนี้
     proxy: {

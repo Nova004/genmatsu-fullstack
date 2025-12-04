@@ -19,7 +19,7 @@ const NaClMaster = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/nacl');
+      const response = await axios.get('/genmatsu/api/nacl');
       setData(response.data);
     } catch (error) {
       console.error('Failed to fetch NaCl data:', error);
@@ -47,11 +47,11 @@ const NaClMaster = () => {
     try {
       if (recordData.NaCl_id) {
         // Update
-        await axios.put(`/api/nacl/${recordData.NaCl_id}`, recordData);
+        await axios.put(`/genmatsu/api/nacl/${recordData.NaCl_id}`, recordData);
         fireToast('success', 'Record updated successfully!');
       } else {
         // Create
-        await axios.post('/api/nacl', recordData);
+        await axios.post('/genmatsu/api/nacl', recordData);
         fireToast('success', 'Record created successfully!');
       }
       fetchData(); // Refresh data
@@ -66,7 +66,7 @@ const NaClMaster = () => {
   const handleDelete = async (id: number) => {
     if (window.confirm('Are you sure you want to delete this record?')) {
       try {
-        await axios.delete(`/api/nacl/${id}`);
+        await axios.delete(`/genmatsu/api/nacl/${id}`);
         fireToast('success', 'Record deleted successfully!');
         fetchData(); // Refresh data
       } catch (error) {

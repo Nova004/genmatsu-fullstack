@@ -92,7 +92,7 @@ const ReportHistory_GEN_A: React.FC = () => {
   const handlePrint = (id: number) => {
     // เราจะยิงไปที่ API ของ Backend โดยตรง
     // Proxy ใน vite.config.js จะจัดการเปลี่ยนเส้นทางให้เราเอง
-    window.open(`/api/submissions/print/${id}`, '_blank');
+    window.open(`/genmatsu/api/submissions/print/${id}`, '_blank');
   };
   // --- 3.3. DATE FILTERING EFFECT ---
   // `useEffect` hook นี้จะทำงานทุกครั้งที่ `dateRange` มีการเปลี่ยนแปลง

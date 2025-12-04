@@ -17,7 +17,7 @@ const SignIn: React.FC = () => {
     e.preventDefault();
     try {
       // 1. ยิง API ไปยัง Backend (ส่วนนี้ถูกต้องแล้ว)
-      const response = await axios.post('/api/auth/login', {
+      const response = await axios.post('/genmatsu/api/auth/login', {
         userId: userId,
         password: password,
       });

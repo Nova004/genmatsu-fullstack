@@ -30,7 +30,7 @@ const UserMaster: React.FC = () => {
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
-      const response = await apiClient.get('/api/users/all-with-gen-manu');
+      const response = await apiClient.get('/genmatsu/api/users/all-with-gen-manu');
       setUsers(response.data);
     } catch (error) {
       console.error("Failed to fetch users", error);
@@ -58,7 +58,7 @@ const UserMaster: React.FC = () => {
   const handleSaveUser = async (userId: string, newEmployeeNo: string, newLevel: number) => {
     try {
       // 1. ใช้ apiService.put และ API Endpoint "ใหม่"
-      await apiClient.put(`/api/users/gen-manu-data`, {
+      await apiClient.put(`/genmatsu/api/users/gen-manu-data`, {
         // 2. ส่ง Body ตามที่ Backend (updateUserGenManuData) รอรับ
         agtMemberId: userId,
         genManuMemNo: newEmployeeNo,

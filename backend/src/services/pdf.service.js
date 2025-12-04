@@ -75,7 +75,7 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
     console.log(`[PDF Gen] 3. Setting up request interception...`);
     await page.setRequestInterception(true);
 
-    const expectedApiUrl = `/api/submissions/${submissionId}`;
+    const expectedApiUrl = `/genmatsu/api/submissions/${submissionId}`;
 
     page.on("request", (request) => {
       const url = request.url();

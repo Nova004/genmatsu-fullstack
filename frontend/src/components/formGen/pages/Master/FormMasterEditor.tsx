@@ -88,7 +88,7 @@ const FormMasterEditor: React.FC = () => {
       setIsLoadingTemplates(true);
       try {
         // 1. ใช้ axios.get และ URL ที่สั้นลง
-        const response = await axios.get('/api/master/templates');
+        const response = await axios.get('/genmatsu/api/master/templates');
         // 2. ข้อมูล templates จะอยู่ใน response.data โดยตรง
         setGroupedTemplates(response.data);
       } catch (error) {
@@ -132,7 +132,7 @@ const FormMasterEditor: React.FC = () => {
     setIsItemsLoading(true);
     try {
       // 1. ใช้ axios.get และ URL ที่สั้นลง
-      const response = await axios.get(`/api/master/template/${templateName}/latest`);
+      const response = await axios.get(`/genmatsu/api/master/template/${templateName}/latest`);
 
       // 2. ข้อมูล items จะอยู่ใน response.data.items โดยตรง
       const items = response.data?.items || [];
@@ -186,7 +186,7 @@ const FormMasterEditor: React.FC = () => {
     setIsSaving(true);
     try {
       // 1. ใช้ axios.post และส่งข้อมูลเข้าไปได้เลย
-      await axios.post('/api/master/template/update', {
+      await axios.post('/genmatsu/api/master/template/update', {
         templateName: selectedTemplate,
         items: templateItems,
         userId: user.id
