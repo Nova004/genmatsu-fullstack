@@ -93,7 +93,7 @@ exports.updateSubmission = async (req, res) => {
 
 exports.generatePdf = async (req, res) => {
   const { id } = req.params;
-
+  
   const baseUrl = process.env.FRONTEND_URL || "http://localhost:5173/genmatsu";
 
   const frontendPrintUrl = `${baseUrl}/reports/print/${id}`;
@@ -128,27 +128,5 @@ exports.resubmitSubmission = async (req, res) => {
     res
       .status(500)
       .json({ message: "Failed to resubmit", error: error.message });
-  }
-};
-
-exports.getMyPendingTasks = async (req, res) => {
-  try {
-    // รับค่า level มาจาก Query String (เช่น ?level=1)
-    const { level } = req.query;
-
-    if (!level) {
-      return res.status(400).json({ message: "User Level is required" });
-    }
-
-    // เรียก Service ที่เราทำไว้ก่อนหน้านี้
-    const tasks = await submissionService.getMyPendingTasks(parseInt(level));
-
-    // ส่งข้อมูลกลับไปให้ Frontend
-    res.status(200).send(tasks);
-  } catch (error) {
-    console.error("Error fetching pending tasks:", error);
-    res
-      .status(500)
-      .send({ message: "Failed to fetch pending tasks", error: error.message });
   }
 };

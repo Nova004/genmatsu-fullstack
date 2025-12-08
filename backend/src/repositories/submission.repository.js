@@ -14,7 +14,11 @@ exports.getUserApprovalLevel = async (pool, submittedBy) => {
   return result.recordset[0] ? result.recordset[0].LV_Approvals : null;
 };
 
-exports.createApprovalFlowSteps = async (transaction, submissionId, flowSteps) => {
+exports.createApprovalFlowSteps = async (
+  transaction,
+  submissionId,
+  flowSteps
+) => {
   const request = new sql.Request(transaction);
   const values = flowSteps
     .map(
@@ -31,7 +35,8 @@ exports.createApprovalFlowSteps = async (transaction, submissionId, flowSteps) =
 
 exports.getSubmissionWithDetails = async (pool, submissionId) => {
   const request = new sql.Request(pool);
-  const result = await request.input("submissionId", sql.Int, submissionId).query(`
+  const result = await request.input("submissionId", sql.Int, submissionId)
+    .query(`
       SELECT 
           fs.submission_id, fs.version_set_id, fs.form_type, fs.lot_no,
           fs.submitted_by, fs.submitted_at, fsd.form_data_json,
@@ -47,7 +52,8 @@ exports.getSubmissionWithDetails = async (pool, submissionId) => {
 
 exports.getVersionSetItems = async (pool, versionSetId) => {
   const request = new sql.Request(pool);
-  const result = await request.input("versionSetId", sql.Int, versionSetId).query(`
+  const result = await request.input("versionSetId", sql.Int, versionSetId)
+    .query(`
       SELECT 
           fmt.template_id, fmt.template_name, fmt.template_category, fmt.version,
           fmi.item_id, fmi.display_order, fmi.config_json
@@ -118,7 +124,11 @@ exports.createNewVersionSet = async (transaction, category) => {
   return newSetResult.recordset[0].version_set_id;
 };
 
-exports.addItemsToVersionSet = async (transaction, versionSetId, templateIds) => {
+exports.addItemsToVersionSet = async (
+  transaction,
+  versionSetId,
+  templateIds
+) => {
   for (const templateId of templateIds) {
     const request = new sql.Request(transaction);
     await request
@@ -145,27 +155,84 @@ exports.createSubmissionRecord = async (transaction, data) => {
   return result.recordset[0].submission_id;
 };
 
-exports.createSubmissionData = async (transaction, submissionId, formData) => {
+exports.createSubmissionData = async (
+  transaction,
+  submissionId,
+  formData,
+  keyMetrics
+) => {
   const request = new sql.Request(transaction);
+
   await request
     .input("submissionId", sql.Int, submissionId)
     .input("formDataJson", sql.NVarChar(sql.MAX), JSON.stringify(formData))
-    .query(`
-        INSERT INTO Form_Submission_Data (submission_id, form_data_json) 
-        VALUES (@submissionId, @formDataJson)
+    // [New Columns]
+    .input("inputKg", sql.Decimal(10, 2), keyMetrics.inputKg || null)
+    .input("outputKg", sql.Decimal(10, 2), keyMetrics.outputKg || null)
+    .input("yieldPercent", sql.Decimal(5, 2), keyMetrics.yieldPercent || null)
+    .input("totalQty", sql.Int, keyMetrics.totalQty || null)
+    .input("productionDate", sql.Date, keyMetrics.productionDate || null)
+    .input(
+      "palletData",
+      sql.NVarChar(sql.MAX),
+      JSON.stringify(keyMetrics.palletData || [])
+    ).query(`
+        INSERT INTO Form_Submission_Data 
+        (
+            submission_id, 
+            form_data_json, 
+            input_kg, 
+            output_kg, 
+            yield_percent, 
+            total_qty, 
+            production_date,
+            pallet_data
+        ) 
+        VALUES 
+        (
+            @submissionId, 
+            @formDataJson, 
+            @inputKg, 
+            @outputKg, 
+            @yieldPercent, 
+            @totalQty, 
+            @productionDate,
+            @palletData
+        )
       `);
 };
 
 exports.getAllSubmissions = async (pool, category) => {
   let baseQuery = `
             SELECT 
-                fs.submission_id, fs.form_type, fs.lot_no, fs.submitted_at, fs.status,
+                -- ข้อมูลหัวเอกสาร (เหมือนเดิม)
+                fs.submission_id, 
+                fs.form_type, 
+                fs.lot_no, 
+                fs.submitted_at, 
+                fs.status,
                 fs.submitted_by,
-                fvs.category
+                fvs.category,
+
+                -- [ใหม่] ดึงข้อมูลตัวเลขและวันที่ผลิตมาจากตารางเนื้อหา
+                fsd.input_kg,
+                fsd.output_kg,
+                fsd.yield_percent,
+                fsd.total_qty,
+                fsd.production_date,
+                (
+                    SELECT TOP 1 required_level 
+                    FROM Gen_Approval_Flow 
+                    WHERE submission_id = fs.submission_id AND status = 'Pending' 
+                    ORDER BY sequence ASC
+                ) AS pending_level
+
             FROM 
                 Form_Submissions AS fs
             LEFT JOIN 
                 Form_Version_Sets AS fvs ON fs.version_set_id = fvs.version_set_id
+            LEFT JOIN
+                Form_Submission_Data AS fsd ON fs.submission_id = fsd.submission_id
         `;
 
   const request = pool.request();
@@ -181,15 +248,60 @@ exports.getAllSubmissions = async (pool, category) => {
   return result.recordset;
 };
 
+exports.getPendingSubmissionsByLevel = async (pool, userLevel) => {
+  try {
+    const result = await pool.request().input("userLevel", sql.Int, userLevel)
+      .query(`
+        SELECT 
+          s.submission_id, -- ⚠️ แก้ s.id เป็น s.submission_id ให้ตรงกับตารางจริง (ถ้าตารางคุณใช้ submission_id)
+          s.lot_no,
+          s.submitted_by,
+          u.agt_member_nameEN AS submitted_by_name, -- ⚠️ แก้ u.username เป็น u.agt_member_nameEN ตาม query บนๆ
+          s.submitted_at AS created_at, -- ⚠️ แก้ s.created_at เป็น s.submitted_at
+          s.status,
+          (
+            SELECT TOP 1 required_level 
+            FROM Gen_Approval_Flow 
+            WHERE submission_id = s.submission_id AND status = 'Pending' 
+            ORDER BY sequence ASC
+          ) AS pending_level
+        FROM Form_Submissions s
+        LEFT JOIN agt_member u ON s.submitted_by COLLATE Thai_CI_AS = u.agt_member_id
+        WHERE s.status = 'Pending' 
+          -- Logic กรอง Level (เช็คจาก Subquery ด้านบน หรือ Join Gen_Approval_Flow เพิ่ม)
+          AND (
+            SELECT TOP 1 required_level 
+            FROM Gen_Approval_Flow 
+            WHERE submission_id = s.submission_id AND status = 'Pending' 
+            ORDER BY sequence ASC
+          ) = @userLevel
+        ORDER BY s.submitted_at DESC
+      `);
+
+    return result.recordset;
+  } catch (error) {
+    console.error("Error fetching pending submissions:", error);
+    throw error;
+  }
+};
+
 exports.deleteSubmissionRelatedData = async (transaction, submissionId) => {
   const request = new sql.Request(transaction);
   request.input("submissionId", sql.Int, submissionId);
 
-  await request.query("DELETE FROM Gen_Approval_Flow WHERE submission_id = @submissionId");
-  await request.query("DELETE FROM Gen_Approved_log WHERE submission_id = @submissionId");
-  await request.query("DELETE FROM Form_Submission_Data WHERE submission_id = @submissionId");
-  const result = await request.query("DELETE FROM Form_Submissions WHERE submission_id = @submissionId");
-  
+  await request.query(
+    "DELETE FROM Gen_Approval_Flow WHERE submission_id = @submissionId"
+  );
+  await request.query(
+    "DELETE FROM Gen_Approved_log WHERE submission_id = @submissionId"
+  );
+  await request.query(
+    "DELETE FROM Form_Submission_Data WHERE submission_id = @submissionId"
+  );
+  const result = await request.query(
+    "DELETE FROM Form_Submissions WHERE submission_id = @submissionId"
+  );
+
   return result.rowsAffected[0] > 0;
 };
 
@@ -205,29 +317,87 @@ exports.updateSubmissionRecord = async (transaction, submissionId, lotNo) => {
       `);
 };
 
-exports.updateSubmissionData = async (transaction, submissionId, formData) => {
+exports.updateSubmissionData = async (
+  transaction,
+  submissionId,
+  formData,
+  keyMetrics
+) => {
   const request = new sql.Request(transaction);
+
   await request
     .input("submission_id", sql.Int, submissionId)
-    .input("form_data_json", sql.NVarChar, JSON.stringify(formData))
-    .query(`
+    .input("form_data_json", sql.NVarChar(sql.MAX), JSON.stringify(formData))
+    // [New Columns]
+    .input("inputKg", sql.Decimal(10, 2), keyMetrics.inputKg || null)
+    .input("outputKg", sql.Decimal(10, 2), keyMetrics.outputKg || null)
+    .input("yieldPercent", sql.Decimal(5, 2), keyMetrics.yieldPercent || null)
+    .input("totalQty", sql.Int, keyMetrics.totalQty || null)
+    .input("productionDate", sql.Date, keyMetrics.productionDate || null)
+    .input(
+      "palletData",
+      sql.NVarChar(sql.MAX),
+      JSON.stringify(keyMetrics.palletData || [])
+    ).query(`
         UPDATE Form_Submission_Data
-        SET form_data_json = @form_data_json
+        SET 
+            form_data_json = @form_data_json,
+            input_kg = @inputKg,
+            output_kg = @outputKg,
+            yield_percent = @yieldPercent,
+            total_qty = @totalQty,
+            production_date = @productionDate,
+            pallet_data = @palletData
         WHERE submission_id = @submission_id;
       `);
 };
 
-exports.resubmitSubmissionData = async (transaction, submissionId, formDataJson) => {
+exports.resubmitSubmissionData = async (
+  transaction,
+  submissionId,
+  formDataJson,
+  keyMetrics
+) => {
   const request = new sql.Request(transaction);
-  request.input("submissionId", sql.Int, submissionId);
-  request.input("formDataJson", sql.NVarChar, JSON.stringify(formDataJson));
 
+  // Prepare Inputs
+  request.input("submissionId", sql.Int, submissionId);
+  request.input(
+    "formDataJson",
+    sql.NVarChar(sql.MAX),
+    JSON.stringify(formDataJson)
+  );
+  // [New Columns]
+  request.input("inputKg", sql.Decimal(10, 2), keyMetrics.inputKg || null);
+  request.input("outputKg", sql.Decimal(10, 2), keyMetrics.outputKg || null);
+  request.input(
+    "yieldPercent",
+    sql.Decimal(5, 2),
+    keyMetrics.yieldPercent || null
+  );
+  request.input("totalQty", sql.Int, keyMetrics.totalQty || null);
+  request.input("productionDate", sql.Date, keyMetrics.productionDate || null);
+  request.input(
+    "palletData",
+    sql.NVarChar(sql.MAX),
+    JSON.stringify(keyMetrics.palletData || [])
+  );
+
+  // 3.1 Update Data Content (เนื้อหา)
   await request.query(`
           UPDATE Form_Submission_Data 
-          SET form_data_json = @formDataJson 
+          SET 
+            form_data_json = @formDataJson,
+            input_kg = @inputKg,
+            output_kg = @outputKg,
+            yield_percent = @yieldPercent,
+            total_qty = @totalQty,
+            production_date = @productionDate,
+            pallet_data = @palletData
           WHERE submission_id = @submissionId
       `);
 
+  // 3.2 Update Submission Header (สถานะเอกสาร)
   await request.query(`
           UPDATE Form_Submissions 
           SET 
@@ -238,6 +408,7 @@ exports.resubmitSubmissionData = async (transaction, submissionId, formDataJson)
               AND status = 'Rejected'
       `);
 
+  // 3.3 Reset Approval Flow (รีเซ็ตสถานะผู้อนุมัติ)
   await request.query(`
           UPDATE Gen_Approval_Flow 
           SET 
@@ -249,6 +420,7 @@ exports.resubmitSubmissionData = async (transaction, submissionId, formDataJson)
               AND (status = 'Rejected' OR status = 'Pending')
       `);
 
+  // 3.4 Clear Logs (ลบประวัติการ Reject)
   await request.query(`
           DELETE FROM AGT_SMART_SY.dbo.Gen_Approved_log
           WHERE 

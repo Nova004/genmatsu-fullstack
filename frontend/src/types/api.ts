@@ -18,6 +18,11 @@ export interface Submission {
     category: 'GEN_A' | 'GEN_B';
     version_set_id: number;
     form_data_json: Record<string, any>; // Complex nested structure
+    input_kg?: number;
+    output_kg?: number;
+    yield_percent?: number;
+    total_qty?: number;
+    production_date?: string; // <--- ต้องเพิ่มบรรทัดนี้
   };
   blueprints: any;
 }
@@ -83,7 +88,7 @@ export interface ApprovalFlowStep {
   approved_by: string | null;
   approved_at: string | null;
   comment: string | null;
-  
+
   // ✅ [เพิ่มใหม่] ฟิลด์เหล่านี้มาจากการ JOIN ใน Backend เพื่อใช้แสดงผล
   approver_name?: string;      // ชื่อผู้อนุมัติ (เช่น "John Doe")
   approver_user_id?: string;   // ID ของผู้อนุมัติ

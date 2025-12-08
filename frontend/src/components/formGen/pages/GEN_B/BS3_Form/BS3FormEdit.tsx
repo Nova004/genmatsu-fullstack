@@ -32,10 +32,10 @@ const BS3_VALIDATION_SCHEMA = {
     },
     2: {
         fields: [
-            // 'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
-            // 'rc417Weighting.row1.weight',
-            // 'rc417Weighting.row2.weight',
-            //  'bs3Calculations.naclWaterSpecGrav',
+             'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
+             'rc417Weighting.row1.weight',
+             'rc417Weighting.row2.weight',
+             'bs3Calculations.naclWaterSpecGrav',
         ],
         message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
     },

@@ -343,12 +343,12 @@ const FormStep2: React.FC<FormStep2Props> = ({
               </tr>
               <tr>
                 <td className={tdLeftClass}>Moisture Gen BZ3-B (STD mean.)</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bz3Calculations.stdMeanMoisture', { valueAsNumber: true })} value="39.5" readOnly disabled /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bz3Calculations.stdMeanMoisture', { valueAsNumber: true })} value="39.50" readOnly disabled /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass} colSpan={4}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>NaCl water =</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bz3Calculations.naclWater', { valueAsNumber: true })} value="15" readOnly disabled /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bz3Calculations.naclWater', { valueAsNumber: true })} value="15.00" readOnly disabled /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass}>NaCl Water Specific gravity</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('bz3Calculations.naclWaterSpecGrav', { valueAsNumber: true, required: 'กรุณากรอก NaCl Water Specific gravity' })} />
                   {errors.bz3Calculations?.naclWaterSpecGrav &&

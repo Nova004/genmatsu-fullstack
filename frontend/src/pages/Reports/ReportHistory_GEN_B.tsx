@@ -9,8 +9,10 @@ import { Link, useLocation } from 'react-router-dom';
 import { getAllSubmissions, deleteSubmission } from '../../services/submissionService';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import { fireToast } from '../../hooks/fireToast';
+import { getStatusColorClass } from '../../utils/statusHelpers'; // 👈 เพิ่มบรรทัดนี้
 import Swal from 'sweetalert2';
 import 'sweetalert2/src/sweetalert2.scss';
+import { useAuth } from "../../context/AuthContext";
 import {
   useReactTable,
   getCoreRowModel,
@@ -32,6 +34,7 @@ interface SubmissionData {
   submitted_at: string;
   status: string;
   form_type: string;
+  pending_level?: number;
   submitted_by_name: string; // 👈 เพิ่มชื่อเต็ม
   category: string;          // 👈 เพิ่ม category
 }
@@ -57,6 +60,7 @@ const ReportHistory_GEN_B: React.FC = () => {
     startDate: null,
     endDate: null
   });
+  const { user } = useAuth();
 
   // --- 3.2. DATB FETCHING EFFECT ---
   // `useEffect` hook นี้จะทำงานเพียงครั้งเดียวเมื่อคอมโพเนนต์ถูกสร้างขึ้น
@@ -74,7 +78,8 @@ const ReportHistory_GEN_B: React.FC = () => {
           submitted_at: item.created_at || item.submitted_at, // API อาจส่งมาเป็น created_at
           status: item.status,
           form_type: item.form_type,
-          // เช็คว่า API ส่งมาเป็น Object user หรือส่งมาเป็นชื่อเลย
+          production_date: item.production_date,
+          pending_level: item.pending_level,
           submitted_by_name: item.user?.username || item.submitted_by || 'Unknown',
           category: item.category || 'GEN_B'
         }));
@@ -100,13 +105,13 @@ const ReportHistory_GEN_B: React.FC = () => {
   // เพื่ออัปเดต state `columnFilters` สำหรับการกรองข้อมูลตามวันที่
   useEffect(() => {
     const dateFilter = {
-      id: 'submitted_at', // ระบุว่าจะกรองที่คอลัมน์ 'submitted_at'
+      id: 'production_date', // ระบุว่าจะกรองที่คอลัมน์ 'submitted_at'
       value: dateRange,     // ใช้ค่าจาก state `dateRange` เป็นเงื่อนไข
     };
 
     // อัปเดต state การกรองทั้งหมด โดยลบ filter วันที่อันเก่าออก (ถ้ามี) แล้วเพิ่มอันใหม่เข้าไป
     setColumnFilters(prev => [
-      ...prev.filter(f => f.id !== 'submitted_at'),
+      ...prev.filter(f => f.id !== 'production_date'),
       dateFilter,
     ]);
 
@@ -143,69 +148,124 @@ const ReportHistory_GEN_B: React.FC = () => {
         header: 'ผู้บันทึก',
       },
       {
-        accessorKey: 'submitted_at',
-        header: 'วันที่บันทึก',
-        cell: info => formatDbTimestamp(info.getValue<string>()),
-        // --- ส่วนสำคัญ: กำหนดฟังก์ชันสำหรับกรองข้อมูลในคอลัมน์นี้โดยเฉพาะ ---
-        filterFn: (row, columnId, filterValue) => {
-          if (!filterValue.startDate) return true; // ถ้ายังไม่เลือกวันเริ่มต้น ให้แสดงทั้งหมด
+        accessorKey: 'production_date', // ตรวจสอบให้แน่ใจว่าตรงกับ Key ที่ API ส่งมา
+        header: 'วันที่ผลิต', // เปลี่ยนชื่อหัวตารางให้สื่อความหมาย
 
-          const rowDate = new Date(row.getValue(columnId));
+        // [จุดที่ 1] แก้ไขส่วนแสดงผล (Cell) ให้เหลือแค่วันที่
+        cell: info => {
+          const val = info.getValue<string>();
+          if (!val) return "-";
+
+          const dateObj = new Date(val);
+          // ตรวจสอบความถูกต้องของวันที่ (กัน Error)
+          if (isNaN(dateObj.getTime())) return "-";
+
+          // ใช้ toLocaleDateString เพื่อแสดงรูปแบบ "วัน/เดือน/ปี" (เช่น 20/11/2568)
+          return dateObj.toLocaleDateString('th-TH', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+          });
+        },
+
+        // [จุดที่ 2] แก้ไขฟังก์ชันกรอง (Filter) ให้ปลอดภัยขึ้น (กัน App พังถ้า filterValue เป็น null)
+        filterFn: (row, columnId, filterValue) => {
+          // เช็คค่า filterValue ก่อน เพื่อป้องกัน Error: Cannot read properties of undefined
+          if (!filterValue || !filterValue.startDate) return true;
+
+          const rowValue = row.getValue(columnId);
+          if (!rowValue) return false; // ถ้าไม่มีข้อมูลวันที่ในแถวนั้น ให้ซ่อนไป
+
+          const rowDate = new Date(rowValue as string);
           const startDate = new Date(filterValue.startDate);
           const endDate = new Date(filterValue.endDate || filterValue.startDate);
 
-          // ตั้งค่าเวลาเพื่อให้การเปรียบเทียบครอบคลุมทั้งวัน
+          // ปรับเวลาให้ครอบคลุมทั้งวัน (00:00 - 23:59) เพื่อให้เปรียบเทียบได้ถูกต้อง
           startDate.setHours(0, 0, 0, 0);
           endDate.setHours(23, 59, 59, 999);
 
-          // คืนค่า true (แสดงแถว) หากวันที่ของแถวอยู่ในช่วงที่เลือก
           return rowDate >= startDate && rowDate <= endDate;
         },
       },
       {
         accessorKey: 'status',
         header: 'สถานะ',
-        // ปรับแต่งการแสดงผลของ cell นี้ ให้มีสีสันตามสถานะ
-        cell: info => (
-          <p className="inline-flex rounded-full bg-success bg-opacity-10 py-1 px-3 text-sm font-medium text-success">
-            {info.getValue<string>()}
-          </p>
-        ),
+        cell: info => {
+          const status = info.getValue<string>();
+          // เรียกใช้ฟังก์ชันจากไฟล์กลาง ได้ Class สีกลับมาทันที
+          const colorClass = getStatusColorClass(status);
+
+          return (
+            <p className={`inline-flex rounded-full bg-opacity-10 py-1 px-3 text-sm font-medium ${colorClass}`}>
+              {status}
+            </p>
+          );
+        },
       },
       {
         id: 'actions', // คอลัมน์นี้ไม่มีข้อมูลโดยตรงจาก data จึงต้องตั้ง id เอง
         header: 'Actions',
         // สร้างปุ่ม View และ Delete สำหรับแต่ละแถว
-        cell: ({ row }) => (
-          <div className="flex items-center space-x-3.5">
-            {/* ปุ่ม View: ลิงก์ไปยังหน้ารายละเอียดของรายงาน */}
-            <Link to={`/reports/view/${row.original.submission_id}`} className="hover:text-primary">
-              <svg className="fill-current" width="18" height="18" viewBox="0 0 18 18"><path d="M8.99981 14.8219C3.43106 14.8219 0.674805 9.50624 0.562305 9.28124C0.47793 9.11249 0.47793 8.88749 0.562305 8.71874C0.674805 8.49374 3.43106 3.17812 8.99981 3.17812C14.5686 3.17812 17.3248 8.49374 17.4373 8.71874C17.5217 8.88749 17.5217 9.11249 17.4373 9.28124C17.3248 9.50624 14.5686 14.8219 8.99981 14.8219ZM1.85606 8.99999C2.4748 10.0406 4.89356 13.5 8.99981 13.5C13.1061 13.5 15.5248 10.0406 16.1436 8.99999C15.5248 7.95937 13.1061 4.5 8.99981 4.5C4.89356 4.5 2.4748 7.95937 1.85606 8.99999Z" /><path d="M9 11.25C7.75734 11.25 6.75 10.2427 6.75 9C6.75 7.75734 7.75734 6.75 9 6.75C10.2427 6.75 11.25 7.75734 11.25 9C11.25 10.2427 10.2427 11.25 9 11.25ZM9 8.25C8.58579 8.25 8.25 8.58579 8.25 9C8.25 9.41421 8.58579 9.75 9 9.75C9.41421 9.75 9.75 9.41421 9.75 9C9.75 8.58579 9.41421 8.25 9 8.25Z" /></svg>
-            </Link>
-            <Link
-              to={`/reports/edit/${row.original.submission_id}`}
-              className="hover:text-yellow-500"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-              </svg>
-            </Link>
-            {/* ปุ่ม Delete: เรียกใช้ฟังก์ชัน handleDelete */}
-            <button onClick={() => handleDelete(row.original.submission_id, row.original.lot_no)} className="hover:text-danger">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-            </button>
-            <button
-              onClick={() => handlePrint(row.original.submission_id)}
-              className="text-blue-500 hover:text-blue-700"
-            >
-              Print
-            </button>
-          </div>
-        ),
+        cell: ({ row }) => {
+          const submission = row.original;
+
+          // --- [Logic แจ้งเตือนงานด่วน] ---
+          // เช็คว่า 1. สถานะเป็น Pending และ 2. Level ที่รออยู่ ตรงกับ Level ของฉัน
+          // (user ต้องถูกดึงมาจาก useAuth() ด้านบน component แล้ว)
+          const isMyTurn = submission.status === 'Pending' && submission.pending_level === user?.LV_Approvals;
+
+          return (
+            <div className="flex items-center space-x-3.5">
+              {/* ปุ่ม View: ลิงก์ไปยังหน้ารายละเอียดของรายงาน */}
+              <Link
+                to={`/reports/view/${submission.submission_id}`}
+                className="relative hover:text-primary" // [สำคัญ] ต้องมี relative เพื่อให้จุดแดง (absolute) อ้างอิงตำแหน่งได้
+                title={isMyTurn ? "ถึงตาคุณอนุมัติแล้ว!" : "ดูรายละเอียด"}
+              >
+                {/* SVG ไอคอนรูปตา (ของคุณเดิม) */}
+                <svg className="fill-current" width="18" height="18" viewBox="0 0 18 18">
+                  <path d="M8.99981 14.8219C3.43106 14.8219 0.674805 9.50624 0.562305 9.28124C0.47793 9.11249 0.47793 8.88749 0.562305 8.71874C0.674805 8.49374 3.43106 3.17812 8.99981 3.17812C14.5686 3.17812 17.3248 8.49374 17.4373 8.71874C17.5217 8.88749 17.5217 9.11249 17.4373 9.28124C17.3248 9.50624 14.5686 14.8219 8.99981 14.8219ZM1.85606 8.99999C2.4748 10.0406 4.89356 13.5 8.99981 13.5C13.1061 13.5 15.5248 10.0406 16.1436 8.99999C15.5248 7.95937 13.1061 4.5 8.99981 4.5C4.89356 4.5 2.4748 7.95937 1.85606 8.99999Z" />
+                  <path d="M9 11.25C7.75734 11.25 6.75 10.2427 6.75 9C6.75 7.75734 7.75734 6.75 9 6.75C10.2427 6.75 11.25 7.75734 11.25 9C11.25 10.2427 10.2427 11.25 9 11.25ZM9 8.25C8.58579 8.25 8.25 8.58579 8.25 9C8.25 9.41421 8.58579 9.75 9 9.75C9.41421 9.75 9.75 9.41421 9.75 9C9.75 8.58579 9.41421 8.25 9 8.25Z" />
+                </svg>
+
+                {/* [ใหม่] จุดแดงแจ้งเตือน (แสดงเฉพาะเมื่อ isMyTurn = true) */}
+                {isMyTurn && (
+                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                  </span>
+                )}
+              </Link>
+
+              {/* ปุ่ม Edit */}
+              <Link
+                to={`/reports/edit/${submission.submission_id}`}
+                className="hover:text-yellow-500"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </Link>
+
+              {/* ปุ่ม Delete: เรียกใช้ฟังก์ชัน handleDelete */}
+              <button onClick={() => handleDelete(submission.submission_id, submission.lot_no)} className="hover:text-danger">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+              </button>
+
+              {/* ปุ่ม Print */}
+              <button
+                onClick={() => handlePrint(submission.submission_id)}
+                className="text-blue-500 hover:text-blue-700"
+              >
+                Print
+              </button>
+            </div>
+          );
+        },
       },
     ],
-    []
+    [highlightedId, deletingRowId, user]
   );
 
 

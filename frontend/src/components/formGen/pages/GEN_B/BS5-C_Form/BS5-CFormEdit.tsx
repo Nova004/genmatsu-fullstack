@@ -31,7 +31,9 @@ const BS5_C_VALIDATION_SCHEMA = {
         message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, Lot No. และตรวจสอบสภาพบรรจุภัณฑ์ให้ครบถ้วน',
     },
      2: {
-        fields: ['rawMaterials'],
+        fields: [
+             'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
+        ],
         scope: 'rawMaterials',
         message: 'กรุณาตรวจสอบข้อมูลวัตถุดิบให้ถูกต้อง', 
     },

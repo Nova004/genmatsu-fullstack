@@ -98,6 +98,7 @@ export const useProductionForm = ({ formType, netWeightOfYieldSTD, category }: U
     const submissionPayload = {
       formType,
       lotNo: data.basicData.lotNo,
+      
       templateIds,
       formData: {
         ...data,

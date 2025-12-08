@@ -32,11 +32,11 @@ const BZ3_VALIDATION_SCHEMA = {
     },
     2: {
         fields: [
-            //  'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
-            // 'rc417Weighting.row1.weight',
-            //  'rc417Weighting.row2.weight',
-            // 'bz3Calculations.naclWaterSpecGrav',
-            //  'bz3Calculations.temperature',
+            'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
+            'rc417Weighting.row1.weight',
+            'rc417Weighting.row2.weight',
+            'bz3Calculations.naclWaterSpecGrav',
+            'bz3Calculations.temperature',
         ],
         message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
     },
@@ -86,7 +86,7 @@ const BZ3FormEdit: React.FC<BZ3FormEditProps> = ({ initialData, onSubmit, onResu
         }
     };
 
-    
+
 
     // --- ฟังก์ชันสำหรับจัดการปุ่ม Next และ Back ---
     const { step, handleNext, handleBack, handleSubmit_form } = useMultiStepForm({
@@ -146,7 +146,7 @@ const BZ3FormEdit: React.FC<BZ3FormEditProps> = ({ initialData, onSubmit, onResu
                         {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
                     </button>
 
-                      {status === 'Rejected' && (
+                    {status === 'Rejected' && (
                         <button
                             type="button" // 👈 ต้องเป็น "button"
                             onClick={handleSubmit(onResubmit)}

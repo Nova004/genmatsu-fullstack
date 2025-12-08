@@ -65,7 +65,19 @@ export const deleteSubmission = async (id: number): Promise<DeleteSubmissionResp
   }
 };
 
-
+export const getMyPendingTasks = async (userLevel: number): Promise<any[]> => {
+  try {
+    // ใช้ API_ENDPOINTS.SUBMISSIONS (base url) แล้วต่อด้วย path /pending-tasks
+    const response = await apiClient.get<any[]>(
+      `${API_ENDPOINTS.SUBMISSIONS}/pending-tasks?level=${userLevel}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching pending tasks:", error);
+    // ส่งค่าว่างกลับไปเพื่อป้องกัน Frontend พัง
+    return [];
+  }
+};
 
 /**
  * อัปเดตข้อมูล Submission ที่มีอยู่
@@ -100,6 +112,7 @@ export const generatePdfById = async (id: string): Promise<Blob> => {
     throw new Error(error.response?.data?.message || `Failed to generate PDF for submission ${id}`);
   }
 };
+
 
 export const resubmitSubmission = async (
   id: number,

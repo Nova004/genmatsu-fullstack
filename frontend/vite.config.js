@@ -8,11 +8,13 @@ export default defineConfig({
   plugins: [react()],
   base: '/genmatsu/',
   server: {
-    // 👇 การตั้งค่า Proxy อยู่ตรงนี้
+    port: 5173,
+    open: '/genmatsu/', // เปิดมาให้เด้งเข้าหน้านี้เลย
     proxy: {
-      '/api': {
-        target: 'http://localhost:4000', // <<== เป้าหมายคือ Backend Server
+      '/genmatsu/api': {
+        target: 'http://localhost:4000', // Backend เครื่องเรา
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/genmatsu\/api/, '/api'), // ตัด path ทิ้งให้เหลือแค่ /api
       },
     },
   },

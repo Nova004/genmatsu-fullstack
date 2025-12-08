@@ -8,6 +8,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { getAllSubmissions, deleteSubmission } from '../../services/submissionService';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
+import { getStatusColorClass } from '../../utils/statusHelpers'; // 👈 เพิ่มบรรทัดนี้
 import { fireToast } from '../../hooks/fireToast';
 import Swal from 'sweetalert2';
 import 'sweetalert2/src/sweetalert2.scss';
@@ -73,7 +74,7 @@ const ReportHistory_GEN_A: React.FC = () => {
           submitted_at: item.created_at || item.submitted_at, // API อาจส่งมาเป็น created_at
           status: item.status,
           form_type: item.form_type,
-          // เช็คว่า API ส่งมาเป็น Object user หรือส่งมาเป็นชื่อเลย
+          production_date: item.production_date,
           submitted_by_name: item.user?.username || item.submitted_by || 'Unknown',
           category: item.category || 'GEN_A'
         }));
@@ -99,13 +100,13 @@ const ReportHistory_GEN_A: React.FC = () => {
   // เพื่ออัปเดต state `columnFilters` สำหรับการกรองข้อมูลตามวันที่
   useEffect(() => {
     const dateFilter = {
-      id: 'submitted_at', // ระบุว่าจะกรองที่คอลัมน์ 'submitted_at'
+      id: 'production_date', // ระบุว่าจะกรองที่คอลัมน์ 'production_date'
       value: dateRange,     // ใช้ค่าจาก state `dateRange` เป็นเงื่อนไข
     };
 
     // อัปเดต state การกรองทั้งหมด โดยลบ filter วันที่อันเก่าออก (ถ้ามี) แล้วเพิ่มอันใหม่เข้าไป
     setColumnFilters(prev => [
-      ...prev.filter(f => f.id !== 'submitted_at'),
+      ...prev.filter(f => f.id !== 'production_date'),
       dateFilter,
     ]);
 
@@ -142,34 +143,59 @@ const ReportHistory_GEN_A: React.FC = () => {
         header: 'ผู้บันทึก',
       },
       {
-        accessorKey: 'submitted_at',
-        header: 'วันที่บันทึก',
-        cell: info => formatDbTimestamp(info.getValue<string>()),
-        // --- ส่วนสำคัญ: กำหนดฟังก์ชันสำหรับกรองข้อมูลในคอลัมน์นี้โดยเฉพาะ ---
-        filterFn: (row, columnId, filterValue) => {
-          if (!filterValue.startDate) return true; // ถ้ายังไม่เลือกวันเริ่มต้น ให้แสดงทั้งหมด
+        accessorKey: 'production_date', // ตรวจสอบให้แน่ใจว่าตรงกับ Key ที่ API ส่งมา
+        header: 'วันที่ผลิต', // เปลี่ยนชื่อหัวตารางให้สื่อความหมาย
 
-          const rowDate = new Date(row.getValue(columnId));
+        // [จุดที่ 1] แก้ไขส่วนแสดงผล (Cell) ให้เหลือแค่วันที่
+        cell: info => {
+          const val = info.getValue<string>();
+          if (!val) return "-";
+
+          const dateObj = new Date(val);
+          // ตรวจสอบความถูกต้องของวันที่ (กัน Error)
+          if (isNaN(dateObj.getTime())) return "-";
+
+          // ใช้ toLocaleDateString เพื่อแสดงรูปแบบ "วัน/เดือน/ปี" (เช่น 20/11/2568)
+          return dateObj.toLocaleDateString('th-TH', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+          });
+        },
+
+        // [จุดที่ 2] แก้ไขฟังก์ชันกรอง (Filter) ให้ปลอดภัยขึ้น (กัน App พังถ้า filterValue เป็น null)
+        filterFn: (row, columnId, filterValue) => {
+          // เช็คค่า filterValue ก่อน เพื่อป้องกัน Error: Cannot read properties of undefined
+          if (!filterValue || !filterValue.startDate) return true;
+
+          const rowValue = row.getValue(columnId);
+          if (!rowValue) return false; // ถ้าไม่มีข้อมูลวันที่ในแถวนั้น ให้ซ่อนไป
+
+          const rowDate = new Date(rowValue as string);
           const startDate = new Date(filterValue.startDate);
           const endDate = new Date(filterValue.endDate || filterValue.startDate);
 
-          // ตั้งค่าเวลาเพื่อให้การเปรียบเทียบครอบคลุมทั้งวัน
+          // ปรับเวลาให้ครอบคลุมทั้งวัน (00:00 - 23:59) เพื่อให้เปรียบเทียบได้ถูกต้อง
           startDate.setHours(0, 0, 0, 0);
           endDate.setHours(23, 59, 59, 999);
 
-          // คืนค่า true (แสดงแถว) หากวันที่ของแถวอยู่ในช่วงที่เลือก
           return rowDate >= startDate && rowDate <= endDate;
         },
       },
       {
         accessorKey: 'status',
         header: 'สถานะ',
-        // ปรับแต่งการแสดงผลของ cell นี้ ให้มีสีสันตามสถานะ
-        cell: info => (
-          <p className="inline-flex rounded-full bg-success bg-opacity-10 py-1 px-3 text-sm font-medium text-success">
-            {info.getValue<string>()}
-          </p>
-        ),
+        cell: info => {
+          const status = info.getValue<string>();
+          // เรียกใช้ฟังก์ชันจากไฟล์กลาง ได้ Class สีกลับมาทันที
+          const colorClass = getStatusColorClass(status);
+
+          return (
+            <p className={`inline-flex rounded-full bg-opacity-10 py-1 px-3 text-sm font-medium ${colorClass}`}>
+              {status}
+            </p>
+          );
+        },
       },
       {
         id: 'actions', // คอลัมน์นี้ไม่มีข้อมูลโดยตรงจาก data จึงต้องตั้ง id เอง

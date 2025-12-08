@@ -1,10 +1,46 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import ClickOutside from '../ClickOutside';
+import { getMyPendingTasks } from '../../services/submissionService';
+import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+
 
 const DropdownNotification = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifying, setNotifying] = useState(true);
+
+  const { user } = useAuth();
+  const location = useLocation(); // ใช้ Hook นี้เพื่อจับการเปลี่ยนหน้า
+  const [notificationList, setNotificationList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (!user) return;
+      // ถ้า User ไม่มี Level หรือไม่ใช่ผู้อนุมัติ ก็ไม่ต้องยิง API เลย
+      if (user.LV_Approvals === undefined || user.LV_Approvals === null) return;
+
+      try {
+        const myTasks = await getMyPendingTasks(user.LV_Approvals);
+        setNotificationList(myTasks);
+        setNotifying(myTasks.length > 0);
+      } catch (error) {
+        console.error("Failed to fetch notifications", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // 1. ✅ เอาคอมเมนต์ออก: เรียกทันทีเมื่อโหลด หรือเปลี่ยนหน้า
+    fetchNotifications();
+
+    // 2. ✅ เอาคอมเมนต์ออก: ตั้งเวลาให้เรียกซ้ำทุกๆ 30 วินาที (ตอนนี้ Backend รับไหวแล้ว)
+    const interval = setInterval(fetchNotifications, 30000);
+
+    // เคลียร์ interval ทิ้งเมื่อ component ถูกทำลาย
+    return () => clearInterval(interval);
+
+  }, [user, location]);
 
   return (
     <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">
@@ -17,12 +53,12 @@ const DropdownNotification = () => {
           to="#"
           className="relative flex h-8.5 w-8.5 items-center justify-center rounded-full border-[0.5px] border-stroke bg-gray hover:text-primary dark:border-strokedark dark:bg-meta-4 dark:text-white"
         >
+          {/* --- จุดแดงแจ้งเตือน (Pulse Effect) --- */}
           <span
-            className={`absolute -top-0.5 right-0 z-1 h-2 w-2 rounded-full bg-meta-1 ${
-              notifying === false ? 'hidden' : 'inline'
-            }`}
+            className={`absolute -top-0.5 right-0 z-1 h-2 w-2 rounded-full bg-danger ${notificationList.length === 0 ? 'hidden' : 'inline'
+              }`}
           >
-            <span className="absolute -z-1 inline-flex h-full w-full animate-ping rounded-full bg-meta-1 opacity-75"></span>
+            <span className="absolute -z-1 inline-flex h-full w-full animate-ping rounded-full bg-danger opacity-75"></span>
           </span>
 
           <svg
@@ -44,76 +80,63 @@ const DropdownNotification = () => {
           <div
             className={`absolute -right-27 mt-2.5 flex h-90 w-75 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark sm:right-0 sm:w-80`}
           >
-            <div className="px-4.5 py-3">
-              <h5 className="text-sm font-medium text-bodydark2">
-                Notification
+            <div className="px-4.5 py-3 bg-gray-50 dark:bg-meta-4 border-b border-stroke dark:border-strokedark">
+              <h5 className="text-sm font-semibold text-bodydark2 flex justify-between items-center">
+                งานรออนุมัติ
+                {notificationList.length > 0 && (
+                  <span className="bg-danger text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    {notificationList.length}
+                  </span>
+                )}
               </h5>
             </div>
 
             <ul className="flex h-auto flex-col overflow-y-auto">
-              <li>
-                <Link
-                  className="flex flex-col gap-2.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
-                  to="#"
-                >
-                  <p className="text-sm">
-                    <span className="text-black dark:text-white">
-                      Edit your information in a swipe
-                    </span>{' '}
-                    Sint occaecat cupidatat non proident, sunt in culpa qui
-                    officia deserunt mollit anim.
-                  </p>
+              {loading ? (
+                <li className="px-4.5 py-3 animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                </li>
+              ) : notificationList.length === 0 ? (
+                <li className="flex flex-col items-center justify-center py-8 text-center px-4">
+                  <div className="bg-gray-100 dark:bg-meta-4 p-3 rounded-full mb-3">
+                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                  </div>
+                  <p className="text-sm font-medium text-black dark:text-white">ไม่มีงานค้าง</p>
+                  <p className="text-xs text-body">คุณอนุมัติครบทุกงานแล้ว</p>
+                </li>
+              ) : (
+                notificationList.map((item, index) => (
+                  <li key={index}>
+                    <Link
+                      className="flex gap-4 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4 transition-colors duration-200"
+                      to={`/reports/view/${item.submission_id}`}
+                      onClick={() => setDropdownOpen(false)}
+                    >
+                      <div className="h-10 w-10 flex-shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                        </svg>
+                      </div>
 
-                  <p className="text-xs">12 May, 2025</p>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="flex flex-col gap-2.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
-                  to="#"
-                >
-                  <p className="text-sm">
-                    <span className="text-black dark:text-white">
-                      It is a long established fact
-                    </span>{' '}
-                    that a reader will be distracted by the readable.
-                  </p>
+                      <div className="flex flex-col gap-1 w-full">
+                        <div className="flex justify-between items-start">
+                          <p className="text-sm font-semibold text-black dark:text-white truncate w-32">
+                            Lot: {item.lot_no}
+                          </p>
+                          <span className="text-[10px] text-body">
+                            {new Date(item.created_at || item.submitted_at).toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' })}
+                          </span>
+                        </div>
 
-                  <p className="text-xs">24 Feb, 2025</p>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="flex flex-col gap-2.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
-                  to="#"
-                >
-                  <p className="text-sm">
-                    <span className="text-black dark:text-white">
-                      There are many variations
-                    </span>{' '}
-                    of passages of Lorem Ipsum available, but the majority have
-                    suffered
-                  </p>
-
-                  <p className="text-xs">04 Jan, 2025</p>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="flex flex-col gap-2.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
-                  to="#"
-                >
-                  <p className="text-sm">
-                    <span className="text-black dark:text-white">
-                      There are many variations
-                    </span>{' '}
-                    of passages of Lorem Ipsum available, but the majority have
-                    suffered
-                  </p>
-
-                  <p className="text-xs">01 Dec, 2024</p>
-                </Link>
-              </li>
+                        <p className="text-xs text-body truncate">
+                          รออนุมัติ • โดย {item.submitted_by_name || item.submitted_by || 'User'}
+                        </p>
+                      </div>
+                    </Link>
+                  </li>
+                ))
+              )}
             </ul>
           </div>
         )}

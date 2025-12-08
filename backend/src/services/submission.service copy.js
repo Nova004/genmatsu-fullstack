@@ -1,7 +1,8 @@
-const { sql, poolConnect } = require("../db"); // ✅ 1. เรียกใช้ poolConnect จากไฟล์กลาง
+const sql = require("mssql");
+const dbConfig = require("../config/db.config");
 const submissionRepo = require("../repositories/submission.repository");
 
-// Helper function to create approval flow (Logic เดิมครบถ้วน)
+// Helper function to create approval flow
 async function createApprovalFlow(pool, submissionId, submittedBy) {
   let transaction;
   try {
@@ -61,7 +62,7 @@ async function createApprovalFlow(pool, submissionId, submittedBy) {
 }
 
 exports.getSubmissionDataForPdf = async (submissionId) => {
-  const pool = await poolConnect; // ✅ 2. ใช้ Pool กลาง
+  const pool = await sql.connect(dbConfig);
 
   try {
     console.log(
@@ -117,14 +118,14 @@ exports.getSubmissionDataForPdf = async (submissionId) => {
       blueprints: blueprints,
     };
   } finally {
-    // ✅ 3. ลบ pool.close() ออก ห้ามปิด connection
+    pool.close();
   }
 };
 
 exports.createSubmission = async (data) => {
   const { formType, lotNo, templateIds, formData, submittedBy } = data;
 
-  const pool = await poolConnect; // ✅ ใช้ Pool กลาง
+  const pool = await sql.connect(dbConfig);
   const transaction = new sql.Transaction(pool);
 
   try {
@@ -187,7 +188,6 @@ exports.createSubmission = async (data) => {
     await transaction.commit();
 
     // Create Approval Flow (Separate transaction/logic)
-    // ส่ง pool กลางเข้าไป
     await createApprovalFlow(pool, submissionId, submittedBy);
 
     return submissionId;
@@ -197,16 +197,16 @@ exports.createSubmission = async (data) => {
     }
     throw error;
   } finally {
-    // ✅ ลบ pool.close() ออก
+    if (pool) pool.close();
   }
 };
 
 exports.getAllSubmissions = async (category) => {
-  const pool = await poolConnect; // ✅ ใช้ Pool กลาง
+  const pool = await sql.connect(dbConfig);
   try {
     return await submissionRepo.getAllSubmissions(pool, category);
   } finally {
-    // ✅ ลบ pool.close() ออก
+    pool.close();
   }
 };
 
@@ -215,7 +215,7 @@ exports.getSubmissionById = async (id) => {
 };
 
 exports.deleteSubmission = async (id) => {
-  const pool = await poolConnect; // ✅ ใช้ Pool กลาง
+  const pool = await sql.connect(dbConfig);
   const transaction = new sql.Transaction(pool);
 
   try {
@@ -239,12 +239,12 @@ exports.deleteSubmission = async (id) => {
     }
     throw err;
   } finally {
-    // ✅ ลบ pool.close() ออก
+    if (pool) pool.close();
   }
 };
 
 exports.updateSubmission = async (id, lot_no, form_data) => {
-  const pool = await poolConnect; // ✅ ใช้ Pool กลาง
+  const pool = await sql.connect(dbConfig);
   const transaction = new sql.Transaction(pool);
 
   try {
@@ -257,6 +257,7 @@ exports.updateSubmission = async (id, lot_no, form_data) => {
     await submissionRepo.updateSubmissionRecord(transaction, id, lot_no);
 
     // [จุดที่ 2] ส่ง keyMetrics ไปอัปเดตตารางเนื้อหา (Form_Submission_Data) ด้วย
+    // *อย่าลืมไปแก้ไฟล์ submission.repository.js ให้รับค่าตัวที่ 4 นี้ด้วยนะครับ*
     await submissionRepo.updateSubmissionData(
       transaction,
       id,
@@ -271,18 +272,12 @@ exports.updateSubmission = async (id, lot_no, form_data) => {
     }
     throw err;
   } finally {
-    // ✅ ลบ pool.close() ออก
+    if (pool) pool.close();
   }
 };
 
-exports.getMyPendingTasks = async (userLevel) => {
-  const pool = await poolConnect;
-  // เรียกใช้ Repository ตัวใหม่ที่สร้างตะกี้
-  return await submissionRepo.getPendingSubmissionsByLevel(pool, userLevel);
-};
-
 exports.resubmitSubmission = async (id, formDataJson) => {
-  const pool = await poolConnect; // ✅ ใช้ Pool กลาง
+  const pool = await sql.connect(dbConfig);
   const transaction = new sql.Transaction(pool);
 
   try {
@@ -304,10 +299,9 @@ exports.resubmitSubmission = async (id, formDataJson) => {
     }
     throw error;
   } finally {
-    // ✅ ลบ pool.close() ออก
+    if (pool) pool.close();
   }
 };
-
 // [ฟังก์ชันช่วย] ค้นหาค่าจาก Path (เหมือนเดิม)
 const getNestedValue = (obj, path) => {
   return path

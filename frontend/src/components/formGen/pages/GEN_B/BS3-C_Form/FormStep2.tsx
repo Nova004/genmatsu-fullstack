@@ -396,7 +396,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               {/* --- ส่วนที่ 2: การคำนวณสำหรับ BS3-C --- */}
               <tr>
                 <td className={tdLeftClass}>RC-417: Water Content</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={inputClass} {...register('bs3Calculations.rc417WaterContent', { valueAsNumber: true })} /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" step="0.01" className={inputClass} {...register('bs3Calculations.rc417WaterContent', { valueAsNumber: true })} /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass}> <span className="text-xs"> Weight of RC-417 + Mg(OH)<sub>2</sub> <br /> + Activated Carbon P-200U </span> </td>
                 <td className={tdLeftClass}><input type="text" className={disabledInputClass} readOnly {...register('bs3Calculations.totalWeightOfMaterials')} /></td>
                 <td className={tdLeftClass}>KG</td>
@@ -404,12 +404,12 @@ const FormStep2: React.FC<FormStep2Props> = ({
               </tr>
               <tr>
                 <td className={tdLeftClass}>Moisture Gen BS3-C (STD mean.)</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bs3Calculations.stdMeanMoisture', { valueAsNumber: true })} value="45.25" readOnly disabled /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" step="0.01" className={disabledInputClass} {...register('bs3Calculations.stdMeanMoisture', { valueAsNumber: true })} value="45.25" readOnly disabled /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass} colSpan={4}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>NaCl water =</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bs3Calculations.naclWater', { valueAsNumber: true })} value="4" readOnly disabled /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" step="0.01" className={disabledInputClass} {...register('bs3Calculations.naclWater', { valueAsNumber: true })} value="4.00" readOnly disabled /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass}>NaCl Water Specific gravity</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('bs3Calculations.naclWaterSpecGrav', { valueAsNumber: true, required: 'กรุณากรอก  NaCl Water Specific gravity' })} />
                   {errors.bs3Calculations?.naclWaterSpecGrav &&
@@ -419,7 +419,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
                   }
                 </td>
                 <td className={tdLeftClass}>Temperature</td>
-                <td className={tdLeftClass}><input type="number" step="0.1" className={inputClass} {...register('bs3Calculations.temperature', { valueAsNumber: true })} /></td>
+                <td className={tdLeftClass}><input type="number" step="0.01" className={inputClass} {...register('bs3Calculations.temperature', { valueAsNumber: true })} /></td>
                 <td className={tdLeftClass}>C°</td>
               </tr>
               <tr>
@@ -431,12 +431,12 @@ const FormStep2: React.FC<FormStep2Props> = ({
               </tr>
               <tr>
                 <td className={tdLeftClass}>Total NaCl water=</td>
-                <td className={tdLeftClass}><input type="number" step="0.1" className={disabledInputClass} readOnly {...register('bs3Calculations.totalNaclWater', { valueAsNumber: true })} /></td>
+                <td className={tdLeftClass}><input type="number" step="0.01" className={disabledInputClass} readOnly {...register('bs3Calculations.totalNaclWater', { valueAsNumber: true })} /></td>
                 <td className={tdLeftClass}>Kg./B</td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Total weight = NCR Genmatsu =</td>
-                <td className={tdLeftClass}><input type="number" step="0.1" className={disabledInputClass} readOnly {...register('bs3Calculations.totalWeightWithNcr', { valueAsNumber: true })} /></td>
+                <td className={tdLeftClass}><input type="number" step="0.01" className={disabledInputClass} readOnly {...register('bs3Calculations.totalWeightWithNcr', { valueAsNumber: true })} /></td>
                 <td className={tdLeftClass}>Kg. </td>
               </tr>
 

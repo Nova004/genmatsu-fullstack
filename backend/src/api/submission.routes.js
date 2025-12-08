@@ -10,8 +10,12 @@ router.post("/", validate(submissionSchemas.createSubmission), submissionControl
 // 🎯 Route ใหม่: สำหรับ "ดึงรายการทั้งหมด" 🎯
 router.get("/", submissionController.getAllSubmissions);
 
+
 // 🎯 Route ใหม่: สำหรับ "ดึงรายการเดียว" 🎯
-router.get("/:id", submissionController.getSubmissionById);
+router.get("/pending-tasks", submissionController.getMyPendingTasks); 
+
+// 2. เอาเส้นทางที่เป็นตัวแปร (Dynamic Route) ไว้ทีหลัง
+router.get("/:id", submissionController.getSubmissionById); // <--------------------------------------------------------
 
 // 🎯 Route ใหม่: สำหรับ "การลบ" 🎯
 router.delete("/:id", submissionController.deleteSubmission);

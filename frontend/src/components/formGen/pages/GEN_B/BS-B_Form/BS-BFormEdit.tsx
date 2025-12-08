@@ -32,12 +32,12 @@ const BS_B_VALIDATION_SCHEMA = {
     },
     2: {
         fields: [
-            //'rawMaterials', 
-            // 'cg1cWeighting.row1.cg1c',
-            // 'cg1cWeighting.row2.cg1c',
-            //  'calculations.nacl15SpecGrav',
-            //  'calculations.cg1cWaterContent',
-            //  'calculations.temperature'
+            'rawMaterials', 
+             'cg1cWeighting.row1.cg1c',
+             'cg1cWeighting.row2.cg1c',
+              'calculations.nacl15SpecGrav',
+              'calculations.cg1cWaterContent',
+              'calculations.temperature'
         ],
         message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
     },
