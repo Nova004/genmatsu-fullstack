@@ -122,8 +122,8 @@ exports.getSubmissionDataForPdf = async (submissionId) => {
 };
 
 exports.createSubmission = async (data) => {
-  const { formType, lotNo, templateIds, formData, submittedBy } = data;
-
+  const { formType, lotNo, templateIds, formData, submittedBy } = data; // 👈 บรรทัดเดิม
+  const cleanedFormData = cleanSubmissionData(formData);
   const pool = await poolConnect; // ✅ ใช้ Pool กลาง
   const transaction = new sql.Transaction(pool);
 
@@ -174,13 +174,13 @@ exports.createSubmission = async (data) => {
     );
 
     // 4. Insert Form Data
-    const keyMetrics = extractKeyMetrics(formData);
+    const keyMetrics = extractKeyMetrics(cleanedFormData);
 
     // 4. Insert Form Data (ส่ง keyMetrics ไปด้วย)
     await submissionRepo.createSubmissionData(
       transaction,
       submissionId,
-      formData,
+      cleanedFormData, // 👈 ✅ แก้เป็น cleanedFormData (ตัวที่ล้างแล้ว)
       keyMetrics
     );
 
@@ -249,9 +249,9 @@ exports.updateSubmission = async (id, lot_no, form_data) => {
 
   try {
     await transaction.begin();
-
+    const cleanedFormData = cleanSubmissionData(form_data);
     // [จุดที่ 1] ดึงค่า Key Metrics ออกมาจาก form_data ที่ส่งมาแก้ไข
-    const keyMetrics = extractKeyMetrics(form_data);
+    const keyMetrics = extractKeyMetrics(cleanedFormData);
 
     // อัปเดตตารางหัว (Form_Submissions)
     await submissionRepo.updateSubmissionRecord(transaction, id, lot_no);
@@ -260,7 +260,7 @@ exports.updateSubmission = async (id, lot_no, form_data) => {
     await submissionRepo.updateSubmissionData(
       transaction,
       id,
-      form_data,
+      cleanedFormData,
       keyMetrics
     );
 
@@ -288,12 +288,15 @@ exports.resubmitSubmission = async (id, formDataJson) => {
   try {
     await transaction.begin();
 
-    const keyMetrics = extractKeyMetrics(formDataJson);
+    const cleanedFormData = cleanSubmissionData(formDataJson);
+
+    // ⚠️ แก้จุดนี้: ใช้ cleanedFormData
+    const keyMetrics = extractKeyMetrics(cleanedFormData);
 
     await submissionRepo.resubmitSubmissionData(
       transaction,
       id,
-      formDataJson,
+      cleanedFormData,
       keyMetrics
     );
 
@@ -307,6 +310,81 @@ exports.resubmitSubmission = async (id, formDataJson) => {
     // ✅ ลบ pool.close() ออก
   }
 };
+
+function cleanSubmissionData(data) {
+  if (!data) return data;
+
+  // Clone ข้อมูลเพื่อความปลอดภัย
+  const cleaned = JSON.parse(JSON.stringify(data));
+
+  // ฟังก์ชันช่วยเช็คว่าเป็น "ค่าว่าง" หรือไม่
+  const isEmpty = (value) => {
+    if (value === null || value === undefined) return true;
+    if (typeof value === "string" && value.trim() === "") return true;
+    if (
+      typeof value === "object" &&
+      !Array.isArray(value) &&
+      Object.keys(value).length === 0
+    )
+      return true; // Object ว่าง {}
+    return false;
+  };
+
+  // 1. กรอง Array หลักๆ (เฉพาะอันที่ User ยอมให้ลบแถวได้)
+  if (Array.isArray(cleaned.mcOperators)) {
+    cleaned.mcOperators = cleaned.mcOperators.filter(
+      (item) => item.id && item.id.toString().trim() !== ""
+    );
+  }
+
+  if (Array.isArray(cleaned.assistants)) {
+    cleaned.assistants = cleaned.assistants.filter(
+      (item) => item.id && item.id.toString().trim() !== ""
+    );
+  }
+
+  if (Array.isArray(cleaned.palletInfo)) {
+    cleaned.palletInfo = cleaned.palletInfo.filter(
+      (item) => item.no && item.no.toString().trim() !== ""
+    );
+  }
+
+  // 2. ฟังก์ชันวนลูปทำความสะอาด (Recursive)
+  const deepClean = (obj) => {
+    if (Array.isArray(obj)) {
+      // ⚠️ ปกติ: ล้างไส้ใน แล้วกรองตัวว่างทิ้ง (Filter)
+      return obj
+        .map((item) => deepClean(item))
+        .filter((item) => !isEmpty(item));
+    } else if (typeof obj === "object" && obj !== null) {
+      Object.keys(obj).forEach((key) => {
+        const val = obj[key];
+
+        // Trim String ถ้ามี
+        if (typeof val === "string") {
+          obj[key] = val.trim();
+        }
+
+        // ⭐ จุดแก้สำคัญ: ถ้าเป็น operationResults ห้าม Filter แถวทิ้ง!
+        if (key === "operationResults" && Array.isArray(obj[key])) {
+          // เข้าไป clean ไส้ในเฉยๆ (Map) แต่ไม่ Filter
+          obj[key] = obj[key].map((item) => deepClean(item));
+        } else {
+          // กรณีอื่นๆ (เช่น rawMaterials) ให้ clean ตามปกติ
+          obj[key] = deepClean(obj[key]);
+
+          // ถ้า clean แล้วว่าง ให้ลบ Key ทิ้ง
+          if (isEmpty(obj[key])) {
+            delete obj[key];
+          }
+        }
+      });
+    }
+    return obj;
+  };
+
+  return deepClean(cleaned);
+}
 
 // [ฟังก์ชันช่วย] ค้นหาค่าจาก Path (เหมือนเดิม)
 const getNestedValue = (obj, path) => {
