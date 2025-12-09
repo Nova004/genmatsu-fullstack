@@ -84,7 +84,7 @@ const BNFormViewer: React.FC<BNFormViewerProps> = ({ formData, blueprints, isRea
 
   const { trigger, formState: { errors } } = methods;
 
-  const { step, handleNext, handleBack } = useMultiStepForm({
+  const { step, setStep, handleNext, handleBack } = useMultiStepForm({
     totalSteps: 4,
     trigger,
     errors,
@@ -100,7 +100,11 @@ const BNFormViewer: React.FC<BNFormViewerProps> = ({ formData, blueprints, isRea
       <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
 
         {/* แสดง Component ProgressBar */}
-        <ProgressBar currentStep={step} totalSteps={totalSteps} />
+        <ProgressBar
+          currentStep={step}
+          totalSteps={4}
+          onStepClick={(stepNumber) => setStep(stepNumber)}
+        />
 
         {/* ส่วนที่แสดงเนื้อหาของแต่ละ Step */}
         <div className="my-6">
@@ -111,7 +115,7 @@ const BNFormViewer: React.FC<BNFormViewerProps> = ({ formData, blueprints, isRea
           {/* ถ้า `step` เท่ากับ 3 ก็ทำเหมือน Step 2 */}
           {step === 3 && <SharedFormStep3 {...formStepProps} staticBlueprint={blueprints['BN_Step3_Operations']} templateName="BN_Step3_Operations" />}
           {/* ถ้า `step` เท่ากับ 4 ให้แสดง <FormStep4> */}
-          {step === 4 && <SharedFormStep4 {...formStepProps} totalWeightFieldName="calculations.finalTotalWeight"  formType = "BN" />}
+          {step === 4 && <SharedFormStep4 {...formStepProps} totalWeightFieldName="calculations.finalTotalWeight" formType="BN" />}
         </div>
 
         {/* ส่วนของปุ่ม Navigation ด้านล่าง */}

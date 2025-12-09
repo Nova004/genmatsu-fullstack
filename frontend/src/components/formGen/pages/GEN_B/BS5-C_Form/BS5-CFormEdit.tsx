@@ -30,12 +30,12 @@ const BS5_C_VALIDATION_SCHEMA = {
         scope: 'basicData',
         message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, Lot No. และตรวจสอบสภาพบรรจุภัณฑ์ให้ครบถ้วน',
     },
-     2: {
+    2: {
         fields: [
-             'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
+            'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
         ],
         scope: 'rawMaterials',
-        message: 'กรุณาตรวจสอบข้อมูลวัตถุดิบให้ถูกต้อง', 
+        message: 'กรุณาตรวจสอบข้อมูลวัตถุดิบให้ถูกต้อง',
     },
     3: {
         fields: ['conditions', 'operationResults', 'operationRemark'],
@@ -82,10 +82,10 @@ const BS5_CFormEdit: React.FC<BS5_CFormEditProps> = ({ initialData, onSubmit, on
         }
     };
 
-    
+
 
     // --- ฟังก์ชันสำหรับจัดการปุ่ม Next และ Back ---
-    const { step, handleNext, handleBack, handleSubmit_form } = useMultiStepForm({
+    const { step, setStep, handleNext, handleBack, handleSubmit_form } = useMultiStepForm({
         totalSteps: 4,
         trigger,
         errors,
@@ -106,7 +106,11 @@ const BS5_CFormEdit: React.FC<BS5_CFormEditProps> = ({ initialData, onSubmit, on
                     inputClass={inputClass}
                 />
 
-                <ProgressBar currentStep={step} totalSteps={totalSteps} />
+                <ProgressBar
+                    currentStep={step}
+                    totalSteps={4}
+                    onStepClick={(stepNumber) => setStep(stepNumber)}
+                />
 
                 <div className="my-6">
                     {/* ในโหมด Edit เราไม่จำเป็นต้องใช้ onTemplateLoaded 
@@ -140,14 +144,25 @@ const BS5_CFormEdit: React.FC<BS5_CFormEditProps> = ({ initialData, onSubmit, on
                         {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
                     </button>
 
-                      {status === 'Rejected' && (
+                    {(status === 'Rejected' || status === 'Drafted') && (
                         <button
-                            type="button" // 👈 ต้องเป็น "button"
-                            onClick={handleSubmit(onResubmit)}
+                            type="button"
+                            onClick={handleSubmit(onResubmit)} // ใช้ฟังก์ชันส่งอนุมัติ
                             disabled={isSubmitting}
-                            className={`rounded-md bg-indigo-600 px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
+                            className={`rounded-md px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''
+                                } ${
+                                // เปลี่ยนสีปุ่มตามสถานะได้ด้วยเพื่อความชัดเจน
+                                status === 'Rejected'
+                                    ? 'bg-indigo-600' // สีม่วง (Resubmit)
+                                    : 'bg-green-600'  // สีเขียว (Submit ครั้งแรก)
+                                }`}
                         >
-                            {isSubmitting ? 'กำลังบันทึก...' : 'บันทึก และ ส่งอนุมัติใหม่ (Resubmit)'}
+                            {isSubmitting
+                                ? 'กำลังบันทึก...'
+                                : status === 'Rejected'
+                                    ? 'บันทึก และ ส่งอนุมัติใหม่ (Resubmit)'
+                                    : 'บันทึก และ ส่งอนุมัติ (Submit)'
+                            }
                         </button>
                     )}
 

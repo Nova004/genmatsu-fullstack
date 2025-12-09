@@ -1,10 +1,11 @@
 import React from 'react';
 import MenuCard from '../../components/MenuCard';
-import { FaRegUser, FaCogs,FaHome,FaWpforms,FaEyeDropper } from 'react-icons/fa';
+import { FaRegUser, FaCogs, FaHome, FaWpforms, FaEyeDropper } from 'react-icons/fa';
 import ButtonLink from '../../components/button/button_back';
-
+import { useLevelGuard } from '../../hooks/useLevelGuard';
 
 const ECommerce: React.FC = () => {
+  useLevelGuard(3);
   return (
     <>
       <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-3 2xl:gap-7.5">

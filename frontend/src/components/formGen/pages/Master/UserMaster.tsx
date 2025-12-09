@@ -5,7 +5,8 @@ import Breadcrumb from '../../../Breadcrumbs/Breadcrumb';
 import EditUserModal from './EditUserModal';
 import axios from 'axios';
 import { fireToast } from '../../../../hooks/fireToast';
-import  apiClient  from '../../../../services/apiService';
+import apiClient from '../../../../services/apiService';
+import { useLevelGuard } from '../../../../hooks/useLevelGuard';
 
 interface AgtMember {
   agt_member_id: string;
@@ -23,6 +24,7 @@ const UserMaster: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<AgtMember | null>(null);
+  useLevelGuard(3);
 
   // --- 1. เพิ่ม State สำหรับการค้นหา (Search Term) ---
   const [searchTerm, setSearchTerm] = useState('');

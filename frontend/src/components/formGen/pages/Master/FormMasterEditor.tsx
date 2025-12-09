@@ -8,6 +8,7 @@ import EditItemModal from './EditItemModal';
 import axios from 'axios';
 import { fireToast } from '../../../../hooks/fireToast';
 import { useAuth } from '../../../../context/AuthContext';
+import { useLevelGuard } from '../../../../hooks/useLevelGuard';
 
 interface TemplateInfo {
   template_id: number;
@@ -34,6 +35,7 @@ const FormMasterEditor: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [editingItem, setEditingItem] = useState<IMasterFormItem | null>(null);
   const { user } = useAuth();
+  useLevelGuard(3);
 
   if (!user || !user.id) {
     fireToast('error', 'Authentication error. Cannot find user ID.');
@@ -350,7 +352,7 @@ const FormMasterEditor: React.FC = () => {
                                   {index + 1}.
                                 </div>
 
-                             
+
                                 <div className="flex-1 text-black dark:text-white">
                                   {getItemPreviewText(item.config_json)}
                                 </div>

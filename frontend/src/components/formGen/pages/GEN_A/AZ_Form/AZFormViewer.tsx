@@ -86,7 +86,7 @@ const AZFormViewer: React.FC<AZFormViewerProps> = ({ formData, blueprints, isRea
 
   const { trigger, formState: { errors } } = formMethods;
 
-  const { step, handleNext, handleBack } = useMultiStepForm({
+  const { step, setStep, handleNext, handleBack } = useMultiStepForm({
     totalSteps: 4,
     trigger,
     errors,
@@ -102,7 +102,11 @@ const AZFormViewer: React.FC<AZFormViewerProps> = ({ formData, blueprints, isRea
       <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
 
         {/* แสดง Component ProgressBar */}
-        <ProgressBar currentStep={step} totalSteps={totalSteps} />
+        <ProgressBar
+          currentStep={step}
+          totalSteps={4}
+          onStepClick={(stepNumber) => setStep(stepNumber)}
+        />
 
         {/* ส่วนที่แสดงเนื้อหาของแต่ละ Step */}
         <div className="my-6">

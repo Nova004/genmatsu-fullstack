@@ -51,11 +51,11 @@ function AS2_Form() {
         totalSteps: 4,
         trigger,
         errors,
-        validationSchema: AS2_VALIDATION_SCHEMA, // 👈 ใช้ Schema ใหม่
+        validationSchema: AS2_VALIDATION_SCHEMA as any
     });
 
 
-    
+
     const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
 
     return (

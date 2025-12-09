@@ -4,6 +4,7 @@ import axios from 'axios';
 import Breadcrumb from '../../../../components/Breadcrumbs/Breadcrumb';
 import EditNaClModal from './EditNaClModal';
 import { fireToast } from '../../../../hooks/fireToast';
+import { useLevelGuard } from '../../../../hooks/useLevelGuard';
 
 const NaClMaster = () => {
   const [data, setData] = useState<any[]>([]);
@@ -15,6 +16,7 @@ const NaClMaster = () => {
   const [typeFilter, setTypeFilter] = useState('');
   const [percentFilter, setPercentFilter] = useState(''); // สำหรับ NaCl %
   const [chemicalTypeFilter, setChemicalTypeFilter] = useState(''); // สำหรับ Chemicals Type
+  useLevelGuard(3);
 
   const fetchData = async () => {
     try {

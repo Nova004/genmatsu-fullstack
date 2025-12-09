@@ -1,15 +1,109 @@
-import { useState } from 'react';
+// frontend/src/components/Header/DropdownMessage.tsx
+
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ClickOutside from '../ClickOutside';
+import { getMyMessages } from '../../services/submissionService';
+import { useAuth } from '../../context/AuthContext';
 
-import UserOne from '../../images/user/user-01.png';
-import UserTwo from '../../images/user/user-02.png';
-import UserThree from '../../images/user/user-03.png';
-import UserFour from '../../images/user/user-04.png';
+// รูป Default กรณีไม่มีรูปโปรไฟล์
+import UserDefault from '../../images/user/user-01.png';
+interface Message {
+  submission_id: number;
+  User_approver_id: string; // หรือ number ตาม DB
+  commenter_name: string;
+  action: string;
+  comment: string;
+  action_date: string;
+  lot_no: string;
+}
 
 const DropdownMessage = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifying, setNotifying] = useState(true);
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  const { user } = useAuth();
+
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (!user) return;
+      try {
+        const data = await getMyMessages(user.id);
+        setMessages(data);
+        setNotifying(data.length > 0);
+      } catch (error) {
+        console.error('Error loading messages', error);
+      }
+    };
+
+    fetchMessages(); // โหลดครั้งแรก
+
+    // 1. ตั้งเวลาเช็คปกติ (เผื่อมีงานใหม่เข้ามาเอง)
+    const interval = setInterval(fetchMessages, 60000);
+
+    // 2. ✅ เพิ่มตัวดักฟัง Event ( Listener )
+    // เมื่อไหร่ก็ตามที่มีคนตะโกนว่า 'REFRESH_NOTIFICATIONS' ให้ทำงาน fetchMessages ทันที
+    const handleRefresh = () => fetchMessages();
+    window.addEventListener('REFRESH_NOTIFICATIONS', handleRefresh);
+
+    return () => {
+      clearInterval(interval);
+      // 3. ✅ อย่าลืมลบ Listener ออกเมื่อ Component ถูกทำลาย
+      window.removeEventListener('REFRESH_NOTIFICATIONS', handleRefresh);
+    };
+  }, [user]);
+  
+  // ฟังก์ชันช่วยเลือกไอคอนตามสถานะ Action
+  const getActionIcon = (action: string) => {
+    const lowerAction = action?.toLowerCase() || '';
+
+    if (lowerAction.includes('approve')) {
+      // ไอคอนติ๊กถูกสีเขียว (Approved)
+      return (
+        <div className="flex items-center gap-1 text-success bg-success/10 px-2 py-0.5 rounded-full">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className="w-4 h-4"
+          >
+            <path
+              fillRule="evenodd"
+              d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <span className="text-[10px] font-medium">Approved</span>
+        </div>
+      );
+    } else if (lowerAction.includes('reject')) {
+      // ไอคอนกากบาทสีแดง (Rejected)
+      return (
+        <div className="flex items-center gap-1 text-danger bg-danger/10 px-2 py-0.5 rounded-full">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className="w-4 h-4"
+          >
+            <path
+              fillRule="evenodd"
+              d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <span className="text-[13px] font-medium">Rejected</span>
+        </div>
+      );
+    }
+    // Default กรณีอื่นๆ
+    return (
+      <span className="text-[15px] px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">
+        {action}
+      </span>
+    );
+  };
 
   return (
     <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">
@@ -23,144 +117,125 @@ const DropdownMessage = () => {
           to="#"
         >
           <span
-            className={`absolute -top-0.5 -right-0.5 z-1 h-2 w-2 rounded-full bg-meta-1 ${
-              notifying === false ? 'hidden' : 'inline'
-            }`}
+            className={`absolute -top-0.5 -right-0.5 z-1 h-2 w-2 rounded-full bg-meta-1 ${notifying === false || messages.length === 0 ? 'hidden' : 'inline'
+              }`}
           >
             <span className="absolute -z-1 inline-flex h-full w-full animate-ping rounded-full bg-meta-1 opacity-75"></span>
           </span>
 
+          {/* New Icon: Chat Text Bubble */}
           <svg
-            className="fill-current duration-300 ease-in-out"
-            width="18"
-            height="18"
-            viewBox="0 0 18 18"
+            className="duration-300 ease-in-out"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
             fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <path
-              d="M10.9688 1.57495H7.03135C3.43135 1.57495 0.506348 4.41558 0.506348 7.90308C0.506348 11.3906 2.75635 13.8375 8.26885 16.3125C8.40947 16.3687 8.52197 16.3968 8.6626 16.3968C8.85947 16.3968 9.02822 16.3406 9.19697 16.2281C9.47822 16.0593 9.64697 15.75 9.64697 15.4125V14.2031H10.9688C14.5688 14.2031 17.522 11.3625 17.522 7.87495C17.522 4.38745 14.5688 1.57495 10.9688 1.57495ZM10.9688 12.9937H9.3376C8.80322 12.9937 8.35322 13.4437 8.35322 13.9781V15.0187C3.6001 12.825 1.74385 10.8 1.74385 7.9312C1.74385 5.14683 4.10635 2.8687 7.03135 2.8687H10.9688C13.8657 2.8687 16.2563 5.14683 16.2563 7.9312C16.2563 10.7156 13.8657 12.9937 10.9688 12.9937Z"
-              fill=""
-            />
-            <path
-              d="M5.42812 7.28442C5.0625 7.28442 4.78125 7.56567 4.78125 7.9313C4.78125 8.29692 5.0625 8.57817 5.42812 8.57817C5.79375 8.57817 6.075 8.29692 6.075 7.9313C6.075 7.56567 5.79375 7.28442 5.42812 7.28442Z"
-              fill=""
-            />
-            <path
-              d="M9.00015 7.28442C8.63452 7.28442 8.35327 7.56567 8.35327 7.9313C8.35327 8.29692 8.63452 8.57817 9.00015 8.57817C9.33765 8.57817 9.64702 8.29692 9.64702 7.9313C9.64702 7.56567 9.33765 7.28442 9.00015 7.28442Z"
-              fill=""
-            />
-            <path
-              d="M12.5719 7.28442C12.2063 7.28442 11.925 7.56567 11.925 7.9313C11.925 8.29692 12.2063 8.57817 12.5719 8.57817C12.9375 8.57817 13.2188 8.29692 13.2188 7.9313C13.2188 7.56567 12.9094 7.28442 12.5719 7.28442Z"
-              fill=""
-            />
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
           </svg>
         </Link>
 
-        {/* <!-- Dropdown Start --> */}
         {dropdownOpen && (
-          <div
-            className={`absolute -right-16 mt-2.5 flex h-90 w-75 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark sm:right-0 sm:w-80`}
-          >
+          <div className="absolute -right-16 mt-2.5 flex h-90 w-75 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark sm:right-0 sm:w-96">
             <div className="px-4.5 py-3">
-              <h5 className="text-sm font-medium text-bodydark2">Messages</h5>
+              <h5 className="text-sm font-medium text-bodydark2">
+                Messages / Comments
+              </h5>
             </div>
 
-            <ul className="flex h-auto flex-col overflow-y-auto">
-              <li>
-                <Link
-                  className="flex gap-4.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
-                  to="/messages"
-                >
-                  <div className="h-12.5 w-12.5 rounded-full">
-                    <img src={UserTwo} alt="User" />
-                  </div>
+            <ul className="flex h-auto flex-col overflow-y-auto custom-scrollbar">
+              {messages.length === 0 ? (
+                <li className="px-4.5 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-10 h-10 mx-auto mb-2 opacity-40"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"
+                    />
+                  </svg>
+                  ยังไม่มีข้อความหรือคอมเมนต์ใหม่
+                </li>
+              ) : (
+                messages.map((msg, index) => (
+                  <li key={index}>
+                    <Link
+                      className="flex gap-4 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4 transition-colors"
+                      to={`/reports/edit/${msg.submission_id}`}
+                      onClick={() => setDropdownOpen(false)}
+                    >
+                      {/* ส่วนรูปโปรไฟล์ */}
+                      <div className="h-11 w-11 min-w-11 rounded-full overflow-hidden border border-stroke dark:border-strokedark">
+                        <img
+                          src={`/genmatsu/api/auth/user/${msg.User_approver_id}/photo`}
+                          onError={(e) => {
+                            // เช็คก่อนว่ารูปปัจจุบันใช่ Default หรือยัง เพื่อกัน Loop
+                            if (e.currentTarget.src !== UserDefault) {
+                              e.currentTarget.src = UserDefault;
+                            }
+                          }}
+                          alt="User"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
 
-                  <div>
-                    <h6 className="text-sm font-medium text-black dark:text-white">
-                      Mariya Desoja
-                    </h6>
-                    <p className="text-sm">I like your confidence 💪</p>
-                    <p className="text-xs">2min ago</p>
-                  </div>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="flex gap-4.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
-                  to="/messages"
-                >
-                  <div className="h-12.5 w-12.5 rounded-full">
-                    <img src={UserOne} alt="User" />
-                  </div>
+                      {/* ส่วนเนื้อหา */}
+                      <div className="w-full">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <h6 className="text-sm font-semibold text-black dark:text-white truncate pr-2">
+                            {msg.commenter_name || 'Unknown Approver'}
+                          </h6>
+                          {/* เรียกใช้ฟังก์ชันแสดงไอคอน */}
+                          <div className="shrink-0">
+                            {getActionIcon(msg.action)}
+                          </div>
+                        </div>
 
-                  <div>
-                    <h6 className="text-sm font-medium text-black dark:text-white">
-                      Robert Jhon
-                    </h6>
-                    <p className="text-sm">Can you share your offer?</p>
-                    <p className="text-xs">10min ago</p>
-                  </div>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="flex gap-4.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
-                  to="/messages"
-                >
-                  <div className="h-12.5 w-12.5 rounded-full">
-                    <img src={UserThree} alt="User" />
-                  </div>
+                        <p className="text-sm text-black/80 dark:text-white/80 line-clamp-2 mb-1.5 font-medium">
+                          "{msg.comment}"
+                        </p>
 
-                  <div>
-                    <h6 className="text-sm font-medium text-black dark:text-white">
-                      Henry Dholi
-                    </h6>
-                    <p className="text-sm">I cam across your profile and...</p>
-                    <p className="text-xs">1day ago</p>
-                  </div>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="flex gap-4.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
-                  to="/messages"
-                >
-                  <div className="h-12.5 w-12.5 rounded-full">
-                    <img src={UserFour} alt="User" />
-                  </div>
-
-                  <div>
-                    <h6 className="text-sm font-medium text-black dark:text-white">
-                      Cody Fisher
-                    </h6>
-                    <p className="text-sm">I’m waiting for you response!</p>
-                    <p className="text-xs">5days ago</p>
-                  </div>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="flex gap-4.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
-                  to="/messages"
-                >
-                  <div className="h-12.5 w-12.5 rounded-full">
-                    <img src={UserTwo} alt="User" />
-                  </div>
-
-                  <div>
-                    <h6 className="text-sm font-medium text-black dark:text-white">
-                      Mariya Desoja
-                    </h6>
-                    <p className="text-sm">I like your confidence 💪</p>
-                    <p className="text-xs">2min ago</p>
-                  </div>
-                </Link>
-              </li>
+                        <div className="flex items-center text-xs text-body dark:text-bodydark">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            className="w-3 h-3 mr-1"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          {new Date(msg.action_date).toLocaleDateString('th-TH', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}{' '}
+                          • Lot: {msg.lot_no}
+                        </div>
+                      </div>
+                    </Link>
+                  </li>
+                ))
+              )}
             </ul>
           </div>
         )}
-        {/* <!-- Dropdown End --> */}
       </li>
     </ClickOutside>
   );

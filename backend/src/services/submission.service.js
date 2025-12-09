@@ -244,19 +244,19 @@ exports.deleteSubmission = async (id) => {
 };
 
 exports.updateSubmission = async (id, lot_no, form_data) => {
-  const pool = await poolConnect; // ✅ ใช้ Pool กลาง
+  const pool = await poolConnect;
   const transaction = new sql.Transaction(pool);
 
   try {
+    console.log(`🔥 [DEBUG] updateSubmission called for ID: ${id}`);
+
     await transaction.begin();
+
     const cleanedFormData = cleanSubmissionData(form_data);
-    // [จุดที่ 1] ดึงค่า Key Metrics ออกมาจาก form_data ที่ส่งมาแก้ไข
     const keyMetrics = extractKeyMetrics(cleanedFormData);
 
-    // อัปเดตตารางหัว (Form_Submissions)
+    // 1. อัปเดตข้อมูลปกติ
     await submissionRepo.updateSubmissionRecord(transaction, id, lot_no);
-
-    // [จุดที่ 2] ส่ง keyMetrics ไปอัปเดตตารางเนื้อหา (Form_Submission_Data) ด้วย
     await submissionRepo.updateSubmissionData(
       transaction,
       id,
@@ -264,14 +264,15 @@ exports.updateSubmission = async (id, lot_no, form_data) => {
       keyMetrics
     );
 
+
     await transaction.commit();
+    console.log("✅ [DEBUG] Update & Reset Transaction Committed!");
   } catch (err) {
     if (transaction && transaction.state === "begun") {
       await transaction.rollback();
     }
+    console.error("❌ [DEBUG] Error:", err);
     throw err;
-  } finally {
-    // ✅ ลบ pool.close() ออก
   }
 };
 
@@ -309,6 +310,11 @@ exports.resubmitSubmission = async (id, formDataJson) => {
   } finally {
     // ✅ ลบ pool.close() ออก
   }
+};
+
+exports.getMyMessages = async (userId) => {
+  const pool = await poolConnect;
+  return await submissionRepo.getRecentCommentsForUser(pool, userId);
 };
 
 function cleanSubmissionData(data) {

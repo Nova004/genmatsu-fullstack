@@ -129,3 +129,15 @@ export const resubmitSubmission = async (
     throw error;
   }
 };
+
+export const getMyMessages = async (userId: string) => {
+  try {
+    const response = await apiClient.get<any[]>(
+      `${API_ENDPOINTS.SUBMISSIONS}/my-messages?userId=${userId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    return [];
+  }
+};

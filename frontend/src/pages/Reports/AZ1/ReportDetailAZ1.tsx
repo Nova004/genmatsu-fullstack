@@ -4,6 +4,7 @@ import React from 'react';
 import AZ1FormViewer from '../../../components/formGen/pages/GEN_A/AZ1_Form/AZ1FormViewer';
 import ApprovalFlowDisplay from "../../../components/formGen/components/forms/ApprovalFlowDisplay";
 
+
 interface ReportDetailAZ1Props {
   submission: any;
   blueprints: any;

@@ -31,7 +31,7 @@ const BS3_B_VALIDATION_SCHEMA = {
   },
   2: {
     fields: [
-    
+
     ],
     message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
   },
@@ -87,7 +87,7 @@ const BS3_BFormViewer: React.FC<BS3_BFormViewerProps> = ({ formData, blueprints,
 
   const { trigger, formState: { errors } } = formMethods;
 
-  const { step, handleNext, handleBack } = useMultiStepForm({
+  const { step, setStep, handleNext, handleBack } = useMultiStepForm({
     totalSteps: 4,
     trigger,
     errors,
@@ -103,8 +103,11 @@ const BS3_BFormViewer: React.FC<BS3_BFormViewerProps> = ({ formData, blueprints,
       <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
 
         {/* แสดง Component ProgressBar */}
-        <ProgressBar currentStep={step} totalSteps={totalSteps} />
-
+        <ProgressBar
+          currentStep={step}
+          totalSteps={4}
+          onStepClick={(stepNumber) => setStep(stepNumber)}
+        />
         {/* ส่วนที่แสดงเนื้อหาของแต่ละ Step */}
         <div className="my-6">
           {/* ใช้ Conditional Rendering: ถ้า `step` เท่ากับ 1 ให้แสดง <FormStep1> */}

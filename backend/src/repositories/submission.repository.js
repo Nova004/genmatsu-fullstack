@@ -38,13 +38,18 @@ exports.getSubmissionWithDetails = async (pool, submissionId) => {
   const result = await request.input("submissionId", sql.Int, submissionId)
     .query(`
       SELECT 
-          fs.submission_id, fs.version_set_id, fs.form_type, fs.lot_no,
-          fs.submitted_by, fs.submitted_at, fsd.form_data_json,
+          fs.submission_id, 
+          fs.version_set_id, 
+          fs.form_type, 
+          fs.lot_no,
+          fs.submitted_by, 
+          fs.submitted_at, 
+          fs.status, 
+          fsd.form_data_json,
           u.agt_member_nameEN AS submitted_by_name
       FROM Form_Submissions fs
       JOIN Form_Submission_Data fsd ON fs.submission_id = fsd.submission_id
-      LEFT JOIN
-          agt_member u ON fs.submitted_by COLLATE Thai_CI_AS = u.agt_member_id
+      LEFT JOIN agt_member u ON fs.submitted_by COLLATE Thai_CI_AS = u.agt_member_id
       WHERE fs.submission_id = @submissionId
     `);
   return result.recordset[0];
@@ -402,10 +407,10 @@ exports.resubmitSubmissionData = async (
           UPDATE Form_Submissions 
           SET 
               submitted_at = GETDATE(),
-              status = 'Drafted'
+              status = 'Pending'
           WHERE 
               submission_id = @submissionId
-              AND status = 'Rejected'
+              AND (status = 'Rejected' OR status = 'Drafted') -- ✅ แก้ตรงนี้ครับ
       `);
 
   // 3.3 Reset Approval Flow (รีเซ็ตสถานะผู้อนุมัติ)
@@ -417,14 +422,72 @@ exports.resubmitSubmissionData = async (
               updated_at = NULL 
           WHERE 
               submission_id = @submissionId
-              AND (status = 'Rejected' OR status = 'Pending')
+              AND (status = 'Rejected' OR status = 'Pending' OR status = 'Drafted') -- ✅ เพิ่ม Drafted
       `);
 
-  // 3.4 Clear Logs (ลบประวัติการ Reject)
+  // 3.4 Clear Logs (ลบประวัติการ Reject เดิมออก)
   await request.query(`
           DELETE FROM AGT_SMART_SY.dbo.Gen_Approved_log
           WHERE 
               submission_id = @submissionId
               AND action = 'Rejected' 
       `);
+};
+
+exports.getRecentCommentsForUser = async (pool, userId) => {
+  try {
+    const result = await pool.request().input("userId", sql.NVarChar, userId)
+      .query(`
+        SELECT TOP 10
+          l.log_id,
+          l.submission_id,
+          l.comment,
+          l.action, 
+          l.created_at AS action_date,
+          s.lot_no,
+          u.agt_member_nameEN AS commenter_name,
+          l.User_approver_id -- ✅ 1. เพิ่มบรรทัดนี้ (เพื่อเอา ID ไปดึงรูป)
+        FROM AGT_SMART_SY.dbo.Gen_Approved_log l
+        JOIN Form_Submissions s ON l.submission_id = s.submission_id
+        LEFT JOIN AGT_SMART_SY.dbo.agt_member u 
+          ON l.User_approver_id COLLATE Thai_CI_AS = u.agt_member_id COLLATE Thai_CI_AS 
+        WHERE s.submitted_by COLLATE Thai_CI_AS = @userId 
+          AND l.comment IS NOT NULL 
+          AND l.comment != '' 
+          AND l.User_approver_id COLLATE Thai_CI_AS != @userId 
+        ORDER BY l.created_at DESC
+      `);
+
+    return result.recordset;
+  } catch (error) {
+    console.error("Error fetching comments:", error);
+    throw error;
+  }
+};
+
+exports.resetRejectionStatus = async (transaction, submissionId) => {
+  const request = new sql.Request(transaction);
+  request.input("submissionId", sql.Int, submissionId);
+
+  // 1. เปลี่ยนสถานะเอกสารหลัก (Form_Submissions) จาก Rejected -> Pending
+  await request.query(`
+    UPDATE Form_Submissions
+    SET status = 'Pending', submitted_at = GETDATE()
+    WHERE submission_id = @submissionId AND status = 'Rejected'
+  `);
+
+  // 2. รีเซ็ต Flow การอนุมัติ (ให้กลับมารออนุมัติใหม่ทั้งหมด)
+  // เฉพาะถ้าเอกสารหลักเป็น Pending (ซึ่งเราเพิ่งอัปเดตไปข้างบน) หรือ Rejected
+  await request.query(`
+    UPDATE Gen_Approval_Flow
+    SET status = 'Pending', approver_user_id = NULL, updated_at = NULL
+    WHERE submission_id = @submissionId
+      AND EXISTS (SELECT 1 FROM Form_Submissions WHERE submission_id = @submissionId AND status = 'Pending')
+  `);
+
+  // 3. ลบประวัติการ Reject (Log) เพื่อให้คอมเมนต์สีแดงหายไป
+  await request.query(`
+    DELETE FROM AGT_SMART_SY.dbo.Gen_Approved_log
+    WHERE submission_id = @submissionId AND action = 'Rejected'
+  `);
 };

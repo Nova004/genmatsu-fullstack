@@ -5,7 +5,7 @@
 // นำเข้าไลบรารีและคอมโพเนนต์ที่จำเป็นทั้งหมด
 // =============================================================================
 import React, { useEffect, useState, useMemo } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom'; // เพิ่ม useNavigate
 import { getAllSubmissions, deleteSubmission } from '../../services/submissionService';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import { fireToast } from '../../hooks/fireToast';
@@ -13,6 +13,7 @@ import { getStatusColorClass } from '../../utils/statusHelpers'; // 👈 เพ�
 import Swal from 'sweetalert2';
 import 'sweetalert2/src/sweetalert2.scss';
 import { useAuth } from "../../context/AuthContext";
+import { Tooltip } from '../../components/Tooltip';
 import {
   useReactTable,
   getCoreRowModel,
@@ -60,6 +61,7 @@ const ReportHistory_GEN_B: React.FC = () => {
     startDate: null,
     endDate: null
   });
+  const navigate = useNavigate();
   const { user } = useAuth();
 
   // --- 3.2. DATB FETCHING EFFECT ---
@@ -209,57 +211,111 @@ const ReportHistory_GEN_B: React.FC = () => {
         cell: ({ row }) => {
           const submission = row.original;
 
-          // --- [Logic แจ้งเตือนงานด่วน] ---
-          // เช็คว่า 1. สถานะเป็น Pending และ 2. Level ที่รออยู่ ตรงกับ Level ของฉัน
-          // (user ต้องถูกดึงมาจาก useAuth() ด้านบน component แล้ว)
-          const isMyTurn = submission.status === 'Pending' && submission.pending_level === user?.LV_Approvals;
 
           return (
             <div className="flex items-center space-x-3.5">
-              {/* ปุ่ม View: ลิงก์ไปยังหน้ารายละเอียดของรายงาน */}
-              <Link
-                to={`/reports/view/${submission.submission_id}`}
-                className="relative hover:text-primary" // [สำคัญ] ต้องมี relative เพื่อให้จุดแดง (absolute) อ้างอิงตำแหน่งได้
-                title={isMyTurn ? "ถึงตาคุณอนุมัติแล้ว!" : "ดูรายละเอียด"}
-              >
-                {/* SVG ไอคอนรูปตา (ของคุณเดิม) */}
-                <svg className="fill-current" width="18" height="18" viewBox="0 0 18 18">
-                  <path d="M8.99981 14.8219C3.43106 14.8219 0.674805 9.50624 0.562305 9.28124C0.47793 9.11249 0.47793 8.88749 0.562305 8.71874C0.674805 8.49374 3.43106 3.17812 8.99981 3.17812C14.5686 3.17812 17.3248 8.49374 17.4373 8.71874C17.5217 8.88749 17.5217 9.11249 17.4373 9.28124C17.3248 9.50624 14.5686 14.8219 8.99981 14.8219ZM1.85606 8.99999C2.4748 10.0406 4.89356 13.5 8.99981 13.5C13.1061 13.5 15.5248 10.0406 16.1436 8.99999C15.5248 7.95937 13.1061 4.5 8.99981 4.5C4.89356 4.5 2.4748 7.95937 1.85606 8.99999Z" />
-                  <path d="M9 11.25C7.75734 11.25 6.75 10.2427 6.75 9C6.75 7.75734 7.75734 6.75 9 6.75C10.2427 6.75 11.25 7.75734 11.25 9C11.25 10.2427 10.2427 11.25 9 11.25ZM9 8.25C8.58579 8.25 8.25 8.58579 8.25 9C8.25 9.41421 8.58579 9.75 9 9.75C9.41421 9.75 9.75 9.41421 9.75 9C9.75 8.58579 9.41421 8.25 9 8.25Z" />
-                </svg>
+              {/* ปุ่ม View */}
+              {(() => {
+                // Logic แจ้งเตือน (เหมือนเดิม)
+                const isMyTurn = submission.status === 'Pending' && submission.pending_level === user?.LV_Approvals;
+                // ข้อความ Tooltip (เปลี่ยนตามสถานะ)
+                const viewTooltipText = isMyTurn ? "ถึงตาคุณอนุมัติแล้ว!" : "ดูรายละเอียด";
 
-                {/* [ใหม่] จุดแดงแจ้งเตือน (แสดงเฉพาะเมื่อ isMyTurn = true) */}
-                {isMyTurn && (
-                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                  </span>
+                return (
+                  // 🟡 เรียกใช้ Component Tooltip
+                  <Tooltip message={viewTooltipText}>
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/reports/view/${submission.submission_id}`)}
+                      className="relative hover:text-primary" // ต้องมี relative เพื่อให้จุดแดงอ้างอิงตำแหน่งได้
+                    >
+                      {/* SVG ไอคอนรูปตา */}
+                      <svg className="fill-current" width="18" height="18" viewBox="0 0 18 18">
+                        <path d="M8.99981 14.8219C3.43106 14.8219 0.674805 9.50624 0.562305 9.28124C0.47793 9.11249 0.47793 8.88749 0.562305 8.71874C0.674805 8.49374 3.43106 3.17812 8.99981 3.17812C14.5686 3.17812 17.3248 8.49374 17.4373 8.71874C17.5217 8.88749 17.5217 9.11249 17.4373 9.28124C17.3248 9.50624 14.5686 14.8219 8.99981 14.8219ZM1.85606 8.99999C2.4748 10.0406 4.89356 13.5 8.99981 13.5C13.1061 13.5 15.5248 10.0406 16.1436 8.99999C15.5248 7.95937 13.1061 4.5 8.99981 4.5C4.89356 4.5 2.4748 7.95937 1.85606 8.99999Z" />
+                        <path d="M9 11.25C7.75734 11.25 6.75 10.2427 6.75 9C6.75 7.75734 7.75734 6.75 9 6.75C10.2427 6.75 11.25 7.75734 11.25 9C11.25 10.2427 10.2427 11.25 9 11.25ZM9 8.25C8.58579 8.25 8.25 8.58579 8.25 9C8.25 9.41421 8.58579 9.75 9 9.75C9.41421 9.75 9.75 9.41421 9.75 8.58579 9.41421 8.25 9 8.25Z" />
+                      </svg>
+
+                      {/* จุดแดงแจ้งเตือน (Logic เดิม) */}
+                      {isMyTurn && (
+                        <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                        </span>
+                      )}
+                    </button>
+                  </Tooltip>
+                );
+              })()}
+
+              {/* ปุ่ม Edit (เรียกใช้ Component Tooltip) */}
+              {(() => {
+                const isNeedsEdit = submission.status === 'Rejected' && (user?.id == submission.submitted_by_name);
+                const canEdit = (
+                  (user?.id == submission.submitted_by_name) ||
+                  (user?.LV_Approvals === 3)
+                ) && (submission.status !== "Approved");
+
+                const tooltipText = isNeedsEdit ? "งานถูกตีกลับ กรุณาแก้ไข" : "แก้ไขข้อมูล";
+
+                return canEdit && (
+                  // 🟡 เรียกใช้ Component ตรงนี้ (ส่งข้อความผ่าน prop message)
+                  <Tooltip message={tooltipText}>
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/reports/edit/${submission.submission_id}`)}
+                      // ลบ class 'group' ออกได้เลย เพราะ Component จัดการให้แล้ว
+                      className="relative hover:text-yellow-500 cursor-pointer"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                      </svg>
+
+                      {/* จุดแดงแจ้งเตือน (Red Dot) ยังคงอยู่ที่เดิมข้างในปุ่ม */}
+                      {isNeedsEdit && (
+                        <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                        </span>
+                      )}
+                    </button>
+                  </Tooltip>
+                );
+              })()}
+              {/* ปุ่ม Delete */}
+              {(
+                (user?.id == submission.submitted_by_name) ||  // เป็นเจ้าของงาน
+                (user?.LV_Approvals === 3)                // หรือเป็นผู้ดูแลระดับ 3
+              )
+                &&
+                (submission.status !== "Approved") &&       // และ ต้องยังไม่ Approved
+                (
+                  // 🟡 เพิ่ม Tooltip ครอบปุ่ม Delete
+                  <Tooltip message="ลบรายการนี้">
+                    <button
+                      onClick={() => handleDelete(submission.submission_id, submission.lot_no)}
+                      className="hover:text-danger"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                    </button>
+                  </Tooltip>
                 )}
-              </Link>
-
-              {/* ปุ่ม Edit */}
-              <Link
-                to={`/reports/edit/${submission.submission_id}`}
-                className="hover:text-yellow-500"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                </svg>
-              </Link>
-
-              {/* ปุ่ม Delete: เรียกใช้ฟังก์ชัน handleDelete */}
-              <button onClick={() => handleDelete(submission.submission_id, submission.lot_no)} className="hover:text-danger">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-              </button>
 
               {/* ปุ่ม Print */}
-              <button
-                onClick={() => handlePrint(submission.submission_id)}
-                className="text-blue-500 hover:text-blue-700"
-              >
-                Print
-              </button>
+              {/* 🟡 เพิ่ม Tooltip ครอบปุ่ม Print */}
+              <Tooltip message="พิมพ์รายงาน">
+                <button
+                  onClick={() => handlePrint(submission.submission_id)}
+                  className="hover:text-blue-500"
+                // ลบ title="พิมพ์รายงาน" อันเก่าทิ้งได้เลยครับ เพราะใช้ Tooltip แล้ว
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                    <rect x="6" y="14" width="12" height="8"></rect>
+                  </svg>
+                </button>
+              </Tooltip>
             </div>
           );
         },

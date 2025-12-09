@@ -152,3 +152,17 @@ exports.getMyPendingTasks = async (req, res) => {
       .send({ message: "Failed to fetch pending tasks", error: error.message });
   }
 };
+
+exports.getMyMessages = async (req, res) => {
+  try {
+    const { userId } = req.query; // รับ userId มา
+    if (!userId) return res.status(400).json({ message: "User ID required" });
+
+    const messages = await submissionService.getMyMessages(userId);
+    res.status(200).send(messages);
+  } catch (error) {
+    res
+      .status(500)
+      .send({ message: "Failed to fetch messages", error: error.message });
+  }
+};

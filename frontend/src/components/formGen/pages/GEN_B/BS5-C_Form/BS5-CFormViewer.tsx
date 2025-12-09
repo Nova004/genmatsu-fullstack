@@ -1,7 +1,7 @@
 
 
 // Import Library ที่จำเป็นจาก React และ React Hook Form
-import React, {useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { IManufacturingReportForm } from '../../types';
 
@@ -29,11 +29,11 @@ const BS5_C_VALIDATION_SCHEMA = {
     scope: 'basicData',
     message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, และ Lot No. ให้ครบถ้วน',
   },
-   2: {
-         fields: [
-        ],
-        message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
-    },
+  2: {
+    fields: [
+    ],
+    message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
+  },
   3: {
     fields: ['conditions', 'operationResults', 'operationRemark'],
     message: 'กรุณาตรวจสอบข้อมูลเงื่อนไขและผลการปฏิบัติงานให้ถูกต้อง',
@@ -46,7 +46,7 @@ const BS5_CFormViewer: React.FC<BS5_CFormViewerProps> = ({ formData, blueprints,
   const totalSteps = 4;
   const navigate = useNavigate();
 
-  
+
   const methods = useForm<IManufacturingReportForm>({  // ใช้ useForm เพื่อจัดการฟอร์ม
     defaultValues: formData,
     mode: 'onChange',      // 👈 เพิ่มโหมดการทำงาน
@@ -80,9 +80,9 @@ const BS5_CFormViewer: React.FC<BS5_CFormViewerProps> = ({ formData, blueprints,
     onTemplateLoaded: () => { },       // สร้างฟังก์ชันเปล่าๆ สำหรับ Prop นี้ เพราะในโหมด Viewer เราไม่ต้องการโหลด Template ใหม่
   };
 
-  const { trigger,  formState: { errors } } =  methods;
+  const { trigger, formState: { errors } } = methods;
 
-  const { step, handleNext, handleBack } = useMultiStepForm({
+  const { step, setStep, handleNext, handleBack } = useMultiStepForm({
     totalSteps: 4,
     trigger,
     errors,
@@ -98,7 +98,11 @@ const BS5_CFormViewer: React.FC<BS5_CFormViewerProps> = ({ formData, blueprints,
       <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
 
         {/* แสดง Component ProgressBar */}
-        <ProgressBar currentStep={step} totalSteps={totalSteps} />
+        <ProgressBar
+          currentStep={step}
+          totalSteps={4}
+          onStepClick={(stepNumber) => setStep(stepNumber)}
+        />
 
         {/* ส่วนที่แสดงเนื้อหาของแต่ละ Step */}
         <div className="my-6">

@@ -32,12 +32,11 @@ const BN_VALIDATION_SCHEMA = {
     },
     2: {
         fields: [
-            //'rawMaterials', 
-            // 'cg1cWeighting.row1.cg1c',
-            // 'cg1cWeighting.row2.cg1c',
-            //  'calculations.nacl15SpecGrav',
-            //  'calculations.cg1cWaterContent',
-            //  'calculations.temperature'
+            'rawMaterials', // ยังคงเช็ค rawMaterials ทั้งหมดเหมือนเดิม
+            'cg1cWeighting.row1.cg1c',
+            'calculations.nacl15SpecGrav',
+            'calculations.cg1cWaterContent',
+            'calculations.temperature'
         ],
         message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
     },
@@ -86,10 +85,10 @@ const BNFormEdit: React.FC<BNFormEditProps> = ({ initialData, onSubmit, onResubm
         }
     };
 
-   
+
 
     // --- ฟังก์ชันสำหรับจัดการปุ่ม Next และ Back ---
-    const { step, handleNext, handleBack, handleSubmit_form } = useMultiStepForm({
+    const { step, setStep, handleNext, handleBack, handleSubmit_form } = useMultiStepForm({
         totalSteps: 4,
         trigger,
         errors,
@@ -111,7 +110,11 @@ const BNFormEdit: React.FC<BNFormEditProps> = ({ initialData, onSubmit, onResubm
                     inputClass={inputClass}
                 />
 
-                <ProgressBar currentStep={step} totalSteps={totalSteps} />
+                <ProgressBar
+                    currentStep={step}
+                    totalSteps={4}
+                    onStepClick={(stepNumber) => setStep(stepNumber)}
+                />
 
                 <div className="my-6">
                     {/* ในโหมด Edit เราไม่จำเป็นต้องใช้ onTemplateLoaded 
@@ -121,7 +124,7 @@ const BNFormEdit: React.FC<BNFormEditProps> = ({ initialData, onSubmit, onResubm
                     {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="CG-1C" errors={errors} />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={() => { }} />}
                     {step === 3 && <SharedFormStep3 register={register} errors={errors} trigger={trigger} control={control} getValues={getValues} onTemplateLoaded={() => { }} templateName="BN_Step3_Operations" />}
-                    {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="calculations.finalTotalWeight" formType = "BN"/>}
+                    {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="calculations.finalTotalWeight" formType="BN" />}
                 </div>
 
                 <div className="flex justify-center gap-4 rounded-sm border border-stroke p-4 dark:border-strokedark">
@@ -145,14 +148,25 @@ const BNFormEdit: React.FC<BNFormEditProps> = ({ initialData, onSubmit, onResubm
                         {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
                     </button>
 
-                     {status === 'Rejected' && (
+                    {(status === 'Rejected' || status === 'Drafted') && (
                         <button
-                            type="button" // 👈 ต้องเป็น "button"
-                            onClick={handleSubmit(onResubmit)}
+                            type="button"
+                            onClick={handleSubmit(onResubmit)} // ใช้ฟังก์ชันส่งอนุมัติ
                             disabled={isSubmitting}
-                            className={`rounded-md bg-indigo-600 px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
+                            className={`rounded-md px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''
+                                } ${
+                                // เปลี่ยนสีปุ่มตามสถานะได้ด้วยเพื่อความชัดเจน
+                                status === 'Rejected'
+                                    ? 'bg-indigo-600' // สีม่วง (Resubmit)
+                                    : 'bg-green-600'  // สีเขียว (Submit ครั้งแรก)
+                                }`}
                         >
-                            {isSubmitting ? 'กำลังบันทึก...' : 'บันทึก และ ส่งอนุมัติใหม่ (Resubmit)'}
+                            {isSubmitting
+                                ? 'กำลังบันทึก...'
+                                : status === 'Rejected'
+                                    ? 'บันทึก และ ส่งอนุมัติใหม่ (Resubmit)'
+                                    : 'บันทึก และ ส่งอนุมัติ (Submit)'
+                            }
                         </button>
                     )}
                 </div>
