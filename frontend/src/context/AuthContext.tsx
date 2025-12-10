@@ -6,6 +6,12 @@ interface User {
   nameEN: string;
   id: string;
   LV_Approvals : number ;
+  email: string;
+  position: string;
+  section: string;
+  shift: string;
+  statusJob: string;
+  Gen_Manu_mem_No: string;
 }
 
 interface AuthContextType {

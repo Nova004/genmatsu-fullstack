@@ -5,7 +5,7 @@
 // นำเข้าไลบรารีและคอมโพเนนต์ที่จำเป็นทั้งหมด
 // =============================================================================
 import React, { useEffect, useState, useMemo } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom'; // เพิ่ม useNavigate
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'; // เพิ่ม useNavigate
 import { getAllSubmissions, deleteSubmission } from '../../services/submissionService';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import { getStatusColorClass } from '../../utils/statusHelpers'; // 👈 เพิ่มบรรทัดนี้
@@ -60,8 +60,18 @@ const ReportHistory_GEN_A: React.FC = () => {
     startDate: null,
     endDate: null
   });
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  useEffect(() => {
+    const searchFromUrl = searchParams.get('search'); // ดึงคำหลัง ?search=...
+
+    if (searchFromUrl) {
+      setGlobalFilter(searchFromUrl); // ยัดใส่ช่องค้นหาของตาราง
+    }
+  }, [searchParams]); // ทำงานทุกครั้งที่ URL เปลี่ยน
+
   // --- 3.2. DATA FETCHING EFFECT ---
   // `useEffect` hook นี้จะทำงานเพียงครั้งเดียวเมื่อคอมโพเนนต์ถูกสร้างขึ้น
   // เพื่อดึงข้อมูลประวัติการบันทึกทั้งหมดจาก API
@@ -243,11 +253,10 @@ const ReportHistory_GEN_A: React.FC = () => {
                       className="relative hover:text-primary" // ต้องมี relative เพื่อให้จุดแดงอ้างอิงตำแหน่งได้
                     >
                       {/* SVG ไอคอนรูปตา */}
-                      <svg className="fill-current" width="18" height="18" viewBox="0 0 18 18">
-                        <path d="M8.99981 14.8219C3.43106 14.8219 0.674805 9.50624 0.562305 9.28124C0.47793 9.11249 0.47793 8.88749 0.562305 8.71874C0.674805 8.49374 3.43106 3.17812 8.99981 3.17812C14.5686 3.17812 17.3248 8.49374 17.4373 8.71874C17.5217 8.88749 17.5217 9.11249 17.4373 9.28124C17.3248 9.50624 14.5686 14.8219 8.99981 14.8219ZM1.85606 8.99999C2.4748 10.0406 4.89356 13.5 8.99981 13.5C13.1061 13.5 15.5248 10.0406 16.1436 8.99999C15.5248 7.95937 13.1061 4.5 8.99981 4.5C4.89356 4.5 2.4748 7.95937 1.85606 8.99999Z" />
-                        <path d="M9 11.25C7.75734 11.25 6.75 10.2427 6.75 9C6.75 7.75734 7.75734 6.75 9 6.75C10.2427 6.75 11.25 7.75734 11.25 9C11.25 10.2427 10.2427 11.25 9 11.25ZM9 8.25C8.58579 8.25 8.25 8.58579 8.25 9C8.25 9.41421 8.58579 9.75 9 9.75C9.41421 9.75 9.75 9.41421 9.75 8.58579 9.41421 8.25 9 8.25Z" />
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
                       </svg>
-
                       {/* จุดแดงแจ้งเตือน (Logic เดิม) */}
                       {isMyTurn && (
                         <span className="absolute -top-1 -right-1 flex h-3 w-3">

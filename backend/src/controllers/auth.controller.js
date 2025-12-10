@@ -22,25 +22,37 @@ const login = async (req, res) => {
     const result = await pool
       .request()
       .input("agt_member_id", sql.NVarChar, userId).query(`
-        SELECT 
-            a.agt_member_id, 
-            a.agt_member_password, 
-            a.agt_member_nameTH, 
-            a.agt_member_nameEN, 
-            a.agt_member_email, 
-            a.agt_member_position, 
-            a.agt_member_section, 
-            a.agt_member_shift, 
-            a.agt_status_job,
-            m.LV_Approvals 
-        FROM 
-            AGT_SMART_SY.dbo.agt_member AS a
-        LEFT JOIN 
-            AGT_SMART_SY.dbo.Gen_Manu_Member AS m 
-            ON a.agt_member_id COLLATE DATABASE_DEFAULT = m.Gen_Manu_mem_Memid COLLATE DATABASE_DEFAULT
-        WHERE 
-            a.agt_member_id COLLATE DATABASE_DEFAULT = @agt_member_id COLLATE DATABASE_DEFAULT
-      `);
+      SELECT 
+          a.agt_member_id, 
+          a.agt_member_password, 
+          a.agt_member_nameTH, 
+          a.agt_member_nameEN, 
+          a.agt_member_email, 
+          p.agt_position_name AS agt_member_position, 
+          s.name_fullsection AS agt_member_section, 
+          a.agt_member_shift, 
+          a.agt_status_job,
+          m.LV_Approvals,
+          m.Gen_Manu_mem_No
+      FROM 
+          AGT_SMART_SY.dbo.agt_member AS a
+      -- Join เดิม (LV_Approvals)
+      LEFT JOIN 
+          AGT_SMART_SY.dbo.Gen_Manu_Member AS m 
+          ON a.agt_member_id COLLATE DATABASE_DEFAULT = m.Gen_Manu_mem_Memid COLLATE DATABASE_DEFAULT
+      
+      -- Join ใหม่ (เอาชื่อตำแหน่ง)
+      LEFT JOIN 
+          AGT_SMART_SY.dbo.agt_position AS p 
+          ON a.agt_member_position COLLATE DATABASE_DEFAULT = p.agt_position_id COLLATE DATABASE_DEFAULT
+
+      LEFT JOIN 
+          AGT_SMART_SY.dbo.agt_section AS s 
+          ON a.agt_member_section COLLATE DATABASE_DEFAULT = s.id_section COLLATE DATABASE_DEFAULT
+          
+      WHERE 
+          a.agt_member_id COLLATE DATABASE_DEFAULT = @agt_member_id COLLATE DATABASE_DEFAULT
+    `);
 
     if (result.recordset.length === 0) {
       return res
@@ -64,7 +76,12 @@ const login = async (req, res) => {
         email: user.agt_member_email,
         nameTH: user.agt_member_nameTH,
         nameEN: user.agt_member_nameEN,
+        position: user.agt_member_position,
+        section: user.agt_member_section,
         LV_Approvals: user.LV_Approvals,
+        shift: user.agt_member_shift,
+        statusJob: user.agt_status_job,
+        Gen_Manu_mem_No: user.Gen_Manu_mem_No,
       },
     };
 
