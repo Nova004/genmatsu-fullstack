@@ -5,6 +5,8 @@ import { useParams } from 'react-router-dom';
 import { getSubmissionById } from '../../services/submissionService';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import Loader from '../../common/Loader';
+import { formatNumberPreserve ,isNumeric } from '../../utils/utils';
+import { EXCLUDED_DECIMAL_FIELDS} from './EXCLUDED_DECIMAL_FIELDS';
 
 import ReportEditBZ from './BZ/ReportEditBZ';
 import ReportEditBS_B from './BS-B/ReportEditBS-B';
@@ -30,36 +32,6 @@ interface SubmissionPayload {
     templates: any;
 }
 
-const formatNumberPreserve = (num: number | string, shouldFormatDecimal: boolean = true): string => {
-    const numericVal = typeof num === 'string' ? parseFloat(num) : num;
-    if (isNaN(numericVal)) return String(num);
-
-    if (!shouldFormatDecimal) {
-        return String(numericVal);
-    }
-
-    const multiplier = 100000000;
-    const cleanNum = Math.round(numericVal * multiplier) / multiplier;
-    let str = cleanNum.toString();
-    const parts = str.split('.');
-
-    if (parts.length === 1) return str + ".00";
-    if (parts[1].length === 1) return str + "0";
-    return str;
-};
-
-// 2. รายชื่อ Field ที่ยกเว้น
-const EXCLUDED_DECIMAL_FIELDS = [
-    'rawMaterials.shelfLife',
-    'shelfLife',
-    'leadTime',
-    'amount',
-    'palletCount',
-    'lotNo',
-    'submissionId',
-    'id',
-    'step'
-];
 
 const processTemplateData = (data: any, parentKey: string = ''): any => {
     if (Array.isArray(data)) {
@@ -70,16 +42,22 @@ const processTemplateData = (data: any, parentKey: string = ''): any => {
             Object.entries(data).map(([key, val]) => {
                 const currentPath = parentKey ? `${parentKey}.${key}` : key;
 
-                if (typeof val === 'number') {
-                    // ✅ 1. เช็คว่า Field นี้ต้องยกเว้นทศนิยมไหม?
-                    const isExcluded = EXCLUDED_DECIMAL_FIELDS.some(excluded =>
-                        currentPath.includes(excluded) || key === excluded
-                    );
+                // 🟡 1. เปลี่ยนเงื่อนไข: เช็ค isNumeric แทน typeof === 'number'
+                if (isNumeric(val)) {
+                    // 🟡 2. แก้ไข Logic Exclude: เปลี่ยนจาก includes เป็นการเช็คที่แม่นยำขึ้น
+                    const isExcluded = EXCLUDED_DECIMAL_FIELDS.some(excluded => {
+                        // เช็คว่าตรงกันเป๊ะๆ หรือ ลงท้ายด้วยคำนั้น (เช่น .id)
+                        return currentPath === excluded ||
+                            currentPath.endsWith(`.${excluded}`) ||
+                            key === excluded;
+                    });
 
-                    // ✅ 2. แปลงค่าตัวเลขให้เป็น String ที่มี Format ถูกต้อง
-                    // ถ้า isExcluded = true (เช่น shelfLife) -> shouldFormatDecimal = false -> ได้ "18"
-                    // ถ้า isExcluded = false (เช่น weight) -> shouldFormatDecimal = true -> ได้ "25.00"
-                    return [key, formatNumberPreserve(val, !isExcluded)];
+                    // ถ้าเป็น String ตัวเลข (เช่น "01") และเป็น Field ยกเว้น -> คืนค่าเดิม ไม่ต้องแปลงเป็น int
+                    if (isExcluded && typeof val === 'string') {
+                        return [key, val];
+                    }
+
+                    return [key, formatNumberPreserve(val)];
                 }
 
                 return [key, processTemplateData(val, currentPath)];
@@ -89,22 +67,6 @@ const processTemplateData = (data: any, parentKey: string = ''): any => {
     return data;
 };
 
-const formatDecimalsDeep = (data: any): any => {
-    if (Array.isArray(data)) {
-        return data.map(formatDecimalsDeep);
-    }
-    if (data !== null && typeof data === 'object') {
-        return Object.fromEntries(
-            Object.entries(data).map(([key, val]) => {
-                if (typeof val === 'number') {
-                    return [key, formatNumberPreserve(val)];
-                }
-                return [key, formatDecimalsDeep(val)];
-            })
-        );
-    }
-    return data;
-};
 
 const ReportEditDispatcher: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -124,7 +86,7 @@ const ReportEditDispatcher: React.FC = () => {
 
                 const formattedSubmission = {
                     ...data.submission,
-                    form_data_json: formatDecimalsDeep(data.submission.form_data_json)
+                    form_data_json: processTemplateData(data.submission.form_data_json)
                 };
 
                 setSubmissionData({

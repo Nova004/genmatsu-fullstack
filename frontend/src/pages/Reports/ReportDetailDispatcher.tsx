@@ -4,6 +4,8 @@ import { useParams } from 'react-router-dom';
 import { getSubmissionById, generatePdfById } from '../../services/submissionService';
 import { fireToast } from '../../hooks/fireToast';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
+import { formatNumberPreserve ,isNumeric } from '../../utils/utils';
+import { EXCLUDED_DECIMAL_FIELDS} from './EXCLUDED_DECIMAL_FIELDS';
 
 
 // -- Import Component แบบปกติ --
@@ -25,37 +27,11 @@ import ReportDetailAX9_B from './AX9-B/ReportDetailAX9-B';
 import ReportDetailAX2_B from './AX2-B/ReportDetailAX2-B';
 import ReportDetailAZ from './AZ/ReportDetailAZ';
 
-const formatNumberPreserve = (num: number | string, shouldFormatDecimal: boolean = true): string => {
-  const numericVal = typeof num === 'string' ? parseFloat(num) : num;
-  if (isNaN(numericVal)) return String(num);
 
-  if (!shouldFormatDecimal) {
-    return String(numericVal);
-  }
 
-  const multiplier = 100000000;
-  const cleanNum = Math.round(numericVal * multiplier) / multiplier;
-  let str = cleanNum.toString();
-  const parts = str.split('.');
 
-  if (parts.length === 1) return str + ".00";
-  if (parts[1].length === 1) return str + "0";
-  return str;
-};
 
-// ✅ 2. เพิ่มรายชื่อ Field ที่ยกเว้นทศนิยม
-const EXCLUDED_DECIMAL_FIELDS = [
-  'rawMaterials.shelfLife',
-  'shelfLife',
-  'leadTime',
-  'amount',
-  'palletCount',
-  'lotNo',
-  'submissionId',
-  'id',
-  'step'
-];
-
+// ฟังก์ชันแปลงข้อมูลทั้งก้อน (Recursive) โดยมีการยกเว้นบางฟิลด์
 const processTemplateData = (data: any, parentKey: string = ''): any => {
   if (Array.isArray(data)) {
     return data.map(item => processTemplateData(item, parentKey));
@@ -65,13 +41,22 @@ const processTemplateData = (data: any, parentKey: string = ''): any => {
       Object.entries(data).map(([key, val]) => {
         const currentPath = parentKey ? `${parentKey}.${key}` : key;
 
-        if (typeof val === 'number') {
-          // เช็คเงื่อนไขยกเว้น
-          const isExcluded = EXCLUDED_DECIMAL_FIELDS.some(excluded =>
-            currentPath.includes(excluded) || key === excluded
-          );
-          // แปลงค่า (ถ้าไม่ยกเว้น ก็เติม .00)
-          return [key, formatNumberPreserve(val, !isExcluded)];
+        // 🟡 1. เปลี่ยนเงื่อนไข: เช็ค isNumeric แทน typeof === 'number'
+        if (isNumeric(val)) {
+          // 🟡 2. แก้ไข Logic Exclude: เปลี่ยนจาก includes เป็นการเช็คที่แม่นยำขึ้น
+          const isExcluded = EXCLUDED_DECIMAL_FIELDS.some(excluded => {
+            // เช็คว่าตรงกันเป๊ะๆ หรือ ลงท้ายด้วยคำนั้น (เช่น .id)
+            return currentPath === excluded ||
+              currentPath.endsWith(`.${excluded}`) ||
+              key === excluded;
+          });
+
+          // ถ้าเป็น String ตัวเลข (เช่น "01") และเป็น Field ยกเว้น -> คืนค่าเดิม ไม่ต้องแปลงเป็น int
+          if (isExcluded && typeof val === 'string') {
+            return [key, val];
+          }
+
+          return [key, formatNumberPreserve(val)];
         }
 
         return [key, processTemplateData(val, currentPath)];
@@ -80,6 +65,7 @@ const processTemplateData = (data: any, parentKey: string = ''): any => {
   }
   return data;
 };
+
 
 const ReportDetailDispatcher: React.FC = () => {
   const { id } = useParams<{ id: string }>();

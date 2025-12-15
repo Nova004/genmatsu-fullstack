@@ -48,7 +48,16 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
           </div>
           <div className="flex items-center">
             <label className="w-1/3 text-black dark:text-white">Machine Name</label>
-            <input type="text" className={inputClass} {...register('basicData.machineName', { required: true })} />
+            <select
+              className={inputClass}
+              {...register('basicData.machineName', { required: true })}
+              defaultValue="" // 👈 (ทางเลือก) ปกติ react-hook-form จะจัดการให้ แต่ใส่ไว้กันเหนียวได้ครับ
+            >
+              <option value="" disabled hidden>เลือกเครื่องจักร</option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
+            </select>
           </div>
           <div className="flex items-center">
             <label className="w-1/3 text-black dark:text-white">Lot no.</label>

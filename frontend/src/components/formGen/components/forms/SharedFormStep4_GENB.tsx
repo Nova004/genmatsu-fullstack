@@ -5,6 +5,7 @@ import { UseFormRegister, UseFormWatch, UseFormSetValue } from 'react-hook-form'
 import { IManufacturingReportForm } from '../../pages/types';
 import PalletTable from './PalletTable';
 import PackingResultTable from './PackingResultTable_GENB';
+import { formatNumberPreserve } from '../../../../utils/utils';
 
 // 1. สร้าง Type สำหรับชื่อฟิลด์ที่เราจะรับเข้ามา
 type TotalWeightFieldName =
@@ -87,12 +88,16 @@ const useStep4Calculations = (
       console.warn("Condition: Skip Yield % calculation because Product or Final Weight is 0 or invalid. Setting Yield % to null.");
       setValue('packingResults.yieldPercent', null);
     } else {
-      const yieldPercent = (numProduct / numFinalWeight) * 100;
+      const rawYield = (numProduct / numFinalWeight) * 100;
 
-      console.log(`Calculation: (${numProduct} / ${numFinalWeight}) * 100 = ${yieldPercent}`);
-      console.log(`Rounding: Applied toFixed(2) -> Result: ${yieldPercent.toFixed(2)}`);
+      console.log(`Calculation: (${numProduct} / ${numFinalWeight}) * 100 = ${rawYield}`);
+      console.log(`Rounding: Applied toFixed(2) -> Result: ${rawYield.toFixed(2)}`);
 
-      setValue('packingResults.yieldPercent', Number(yieldPercent.toFixed(2)));
+      const yield2Decimal = Math.floor(rawYield * 100) / 100;
+      const formattedYield = formatNumberPreserve(yield2Decimal);
+
+      console.log(`Formatted Result: ${formattedYield}`);
+      setValue('packingResults.yieldPercent', formattedYield as any);
     }
   }, [finalTotalWeight, calculatedProduct, setValue]);
 

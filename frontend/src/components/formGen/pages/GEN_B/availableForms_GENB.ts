@@ -1,3 +1,5 @@
+
+// location: frontend/src/components/formGen/pages/GEN_B/availableForms_GENB.ts
 export const availableForms = [
     { value: 'BZ', label: 'BZ', path: '/forms/bz-form' },
     { value: 'BS-B', label: 'BS-B', path: '/forms/bs-b-form' },
@@ -11,8 +13,6 @@ export const availableForms = [
     { value: 'BS3-C', label: 'BS3-C', path: '/forms/bs3-c-form' },
     { value: 'BZ5-C', label: 'BZ5-C', path: '/forms/bz5-c-form' },
     { value: 'BS5-C', label: 'BS5-C', path: '/forms/bs5-c-form' },
-
-
 
 ];
 

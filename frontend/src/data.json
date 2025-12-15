@@ -1,78 +1,44 @@
 {
   "basicData": {
-    "date": "2025-10-03",
-    "machineName": "C",
-    "lotNo": "5277 C5",
+    "date": "2025-11-19",
+    "machineName": "B",
+    "lotNo": "5324B4",
     "mcOperatorRole": "M/C operator"
   },
   "mcOperators": [
-    { "id": "201052", "name": "Mr.Catchai  Thaijaroen", "number": "2" },
-    { "id": "201973", "name": "Mr.Gaeittisak Phitack", "number": "3" },
+    { "id": "201634", "name": "Mr.Tinnakon  Thuengkhamphu", "number": "2" },
+    { "id": "-", "name": "-", "number": "-" },
     { "id": "-", "name": "-", "number": "-" }
   ],
   "assistants": [
-    { "id": "201797", "name": "Mr.Natthawut  Keawpraiwan", "number": "7" },
-    { "id": "201949", "name": "Mr.Natthawat  Yodrak", "number": "9" },
-    { "id": "202061", "name": "Mr.Chitsanupong Dachthuyawat", "number": "11" },
-    { "id": "-", "name": "-", "number": "-" }
+    { "id": "201886", "name": "Mr.Amnat  Tonthong", "number": "9" },
+    { "id": "202126", "name": "Mr.Anon Phimchaiyaphumi", "number": "13" }
   ],
-  "conditions": [{ "status": "OK" }, { "status": "OK" }, { "status": "OK" }],
+  "conditions": [{ "status": "OK" }, { "status": "OK" }],
   "values": [],
-  "rawMaterials": {
-    "netWeightOfYieldSTD": "800.00",
-    "diaEarth": "800.00",
-    "sodiumChloride": 616,
-    "activatedcarbon": "20.00",
-    "gypsumplaster": "25.00",
-    "magnesiumHydroxide": "20.00",
-    "remainedGenmatsu": { "lot": "-", "actual": "0.00" },
-    "shelfLife": "0",
-    "ncrGenmatsu": { "lot": "-", "actual": "0.00" }
+  "checklist": {
+    "coolingValve": "Mr.Tinnakon  Thuengkhamphu (2)",
+    "butterflyValve": "Mr.Tinnakon  Thuengkhamphu (2)"
   },
-  "cg1cWeighting": {
-    "row1": { "bagWeight": "0.00", "cg1c": 400, "bagNo": "-", "net": "400.00" },
-    "row2": { "bagWeight": "0.00", "cg1c": 400, "bagNo": "-", "net": "400.00" },
-    "total": "800.00"
-  },
-  "rc417Weighting": {
-    "row1": { "bagWeight": "0.00" },
-    "row2": { "bagWeight": "0.00" }
-  },
+  "rawMaterials": { "netWeightOfYieldSTD": 0 },
+  "cg1cWeighting": { "row1": { "bagWeight": 0 }, "row2": { "bagWeight": 0 } },
+  "rc417Weighting": { "row1": { "bagWeight": 0 }, "row2": { "bagWeight": 0 } },
   "operationResults": [
-    { "startTime": "22:51" },
-    { "startTime": "22:52", "finishTime": "22:53" },
     {},
-    { "startTime": "22:54" },
-    { "finishTime": "22:55" },
-    { "finishTime": "22:56" },
-    { "finishTime": "23:01" },
-    { "finishTime": "23:02" },
-    { "finishTime": "23:03" },
-    { "startTime": "23:04", "finishTime": "23:05" },
-    { "humidity": 38 },
-    { "startTime": "23:06", "finishTime": "23:07" }
+    {},
+    { "subItems": [] },
+    { "subItems": [] },
+    { "subItems": [] },
+    { "subItems": [] },
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {}
   ],
-  "palletInfo": [
-    { "no": "1", "qty": "1", "canNo": "1" },
-    { "no": "11", "qty": "1", "canNo": "1" },
-    { "no": "1", "qty": "1", "canNo": "1" }
-  ],
-  "lot_no": "5277 C5",
-  "calculations": {
-    "nacl15SpecGrav": 1,
-    "cg1cWaterContent": 1,
-    "temperature": 25,
-    "naclBrewingTable": 616,
-    "naclWaterCalc": 616,
-    "waterCalc": 591.36,
-    "saltCalc": 24.64,
-    "finalTotalWeight": 1481
-  },
-  "packingResults": {
-    "yieldPercent": 89.13,
-    "diameter": 20,
-    "quantityOfProduct": { "cans": 110, "calculated": 1320 },
-    "meshPass40": 40,
-    "remain": 8
-  }
+  "palletInfo": []
 }

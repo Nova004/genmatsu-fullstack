@@ -122,9 +122,9 @@ exports.getSubmissionDataForPdf = async (submissionId) => {
 };
 
 exports.createSubmission = async (data) => {
-  const { formType, lotNo, templateIds, formData, submittedBy } = data; // 👈 บรรทัดเดิม
+  const { formType, lotNo, templateIds, formData, submittedBy } = data;
   const cleanedFormData = cleanSubmissionData(formData);
-  const pool = await poolConnect; // ✅ ใช้ Pool กลาง
+  const pool = await poolConnect;
   const transaction = new sql.Transaction(pool);
 
   try {
@@ -162,7 +162,13 @@ exports.createSubmission = async (data) => {
       );
     }
 
+    // ดึง Key Metrics
+    const keyMetrics = extractKeyMetrics(cleanedFormData);
+
     // 3. Insert Submission
+    // 🟡 แก้ไข: บังคับ status เป็น 'Drafted' เสมอ (ตามที่คุณต้องการ)
+    const initialStatus = "Drafted";
+
     const submissionId = await submissionRepo.createSubmissionRecord(
       transaction,
       {
@@ -170,25 +176,23 @@ exports.createSubmission = async (data) => {
         formType,
         lotNo,
         submittedBy,
+        productionLine: keyMetrics.productionLine,
+        status: initialStatus, // ส่งค่า 'Drafted' ไปบันทึก
       }
     );
 
     // 4. Insert Form Data
-    const keyMetrics = extractKeyMetrics(cleanedFormData);
-
-    // 4. Insert Form Data (ส่ง keyMetrics ไปด้วย)
     await submissionRepo.createSubmissionData(
       transaction,
       submissionId,
-      cleanedFormData, // 👈 ✅ แก้เป็น cleanedFormData (ตัวที่ล้างแล้ว)
+      cleanedFormData,
       keyMetrics
     );
 
     await transaction.commit();
 
-    // Create Approval Flow (Separate transaction/logic)
-    // ส่ง pool กลางเข้าไป
-    await createApprovalFlow(pool, submissionId, submittedBy);
+    // 🟡 ไม่ต้องสร้าง Approval Flow เพราะเป็น Draft
+    // (Flow จะถูกสร้างตอนกดส่งงาน Resubmit แทน)
 
     return submissionId;
   } catch (error) {
@@ -196,8 +200,6 @@ exports.createSubmission = async (data) => {
       await transaction.rollback();
     }
     throw error;
-  } finally {
-    // ✅ ลบ pool.close() ออก
   }
 };
 
@@ -256,14 +258,18 @@ exports.updateSubmission = async (id, lot_no, form_data) => {
     const keyMetrics = extractKeyMetrics(cleanedFormData);
 
     // 1. อัปเดตข้อมูลปกติ
-    await submissionRepo.updateSubmissionRecord(transaction, id, lot_no);
+    await submissionRepo.updateSubmissionRecord(
+      transaction,
+      id,
+      lot_no,
+      keyMetrics.productionLine
+    );
     await submissionRepo.updateSubmissionData(
       transaction,
       id,
       cleanedFormData,
       keyMetrics
     );
-
 
     await transaction.commit();
     console.log("✅ [DEBUG] Update & Reset Transaction Committed!");
@@ -282,33 +288,138 @@ exports.getMyPendingTasks = async (userLevel) => {
   return await submissionRepo.getPendingSubmissionsByLevel(pool, userLevel);
 };
 
+exports.resubmitSubmissionData = async (
+  transaction,
+  submissionId,
+  formDataJson,
+  keyMetrics,
+  status
+) => {
+  const request = new sql.Request(transaction);
+
+  // Prepare Inputs
+  request.input("submissionId", sql.Int, submissionId);
+  request.input(
+    "formDataJson",
+    sql.NVarChar(sql.MAX),
+    JSON.stringify(formDataJson)
+  );
+
+  // Metrics Inputs
+  request.input("inputKg", sql.Decimal(10, 2), keyMetrics.inputKg || null);
+  request.input("outputKg", sql.Decimal(10, 2), keyMetrics.outputKg || null);
+  request.input(
+    "yieldPercent",
+    sql.Decimal(5, 2),
+    keyMetrics.yieldPercent || null
+  );
+  request.input("totalQty", sql.Int, keyMetrics.totalQty || null);
+  request.input("productionDate", sql.Date, keyMetrics.productionDate || null);
+  request.input(
+    "palletData",
+    sql.NVarChar(sql.MAX),
+    JSON.stringify(keyMetrics.palletData || [])
+  );
+
+  // Status & Production Line Inputs
+  request.input("status", sql.NVarChar, status || "Pending");
+  request.input(
+    "productionLine",
+    sql.NVarChar,
+    keyMetrics.productionLine || null
+  );
+
+  // 3.1 Update Data Content (เนื้อหา)
+  await request.query(`
+          UPDATE Form_Submission_Data 
+          SET 
+            form_data_json = @formDataJson,
+            input_kg = @inputKg,
+            output_kg = @outputKg,
+            yield_percent = @yieldPercent,
+            total_qty = @totalQty,
+            production_date = @productionDate,
+            pallet_data = @palletData
+          WHERE submission_id = @submissionId
+      `);
+
+  // 3.2 Update Submission Header (สถานะเอกสาร + Line ผลิต)
+  await request.query(`
+          UPDATE Form_Submissions 
+          SET 
+              submitted_at = GETDATE(),
+              status = @status,
+              production_line = @productionLine
+          WHERE 
+              submission_id = @submissionId
+              AND (status = 'Rejected' OR status = 'Drafted')
+      `);
+
+  // 🟡 3.3 ล้าง Flow เก่าทิ้งทั้งหมด (แก้จาก UPDATE เป็น DELETE)
+  // เหตุผล:
+  // 1. ถ้ามาจาก Draft จะได้ไม่มีปัญหา (เพราะไม่มีให้ลบ ก็ไม่ Error)
+  // 2. ถ้ามาจาก Rejected ก็ลบของเก่าทิ้ง เพื่อรอสร้างใหม่ใน Service
+  // 3. ถ้าเป็น LV3 (Approved) ก็ลบทิ้งไปเลย จบงานสวยๆ
+  await request.query(`
+      DELETE FROM Gen_Approval_Flow 
+      WHERE submission_id = @submissionId
+  `);
+
+  // 3.4 Clear Logs (ลบประวัติการ Reject เดิมออก)
+  await request.query(`
+          DELETE FROM AGT_SMART_SY.dbo.Gen_Approved_log
+          WHERE 
+              submission_id = @submissionId
+              AND action = 'Rejected' 
+      `);
+};
+
+// backend/src/services/submission.service.js
+
 exports.resubmitSubmission = async (id, formDataJson) => {
-  const pool = await poolConnect; // ✅ ใช้ Pool กลาง
+  const pool = await poolConnect;
   const transaction = new sql.Transaction(pool);
 
   try {
+    // 1. หาเจ้าของงานเพื่อเช็ค Level
+    const submission = await submissionRepo.getSubmissionWithDetails(pool, id);
+    if (!submission) throw new Error("Submission not found");
+
+    const submittedBy = submission.submitted_by;
+    const userLevel = await submissionRepo.getUserApprovalLevel(
+      pool,
+      submittedBy
+    );
+
+    // 2. คำนวณสถานะใหม่ (LV3 -> Approved, อื่นๆ -> Pending)
+    const newStatus = userLevel >= 3 ? "Approved" : "Pending";
+
     await transaction.begin();
 
+    // เรียก Helper Function ในไฟล์เดียวกัน
     const cleanedFormData = cleanSubmissionData(formDataJson);
-
-    // ⚠️ แก้จุดนี้: ใช้ cleanedFormData
     const keyMetrics = extractKeyMetrics(cleanedFormData);
 
+    // 3. อัปเดตข้อมูล (ส่ง Status ใหม่ และ keyMetrics ที่มี productionLine ไปด้วย)
     await submissionRepo.resubmitSubmissionData(
       transaction,
       id,
       cleanedFormData,
-      keyMetrics
+      keyMetrics,
+      newStatus
     );
 
     await transaction.commit();
+
+    // 4. สร้าง Flow อนุมัติใหม่ (เฉพาะถ้าสถานะเป็น Pending)
+    if (newStatus === "Pending") {
+      await createApprovalFlow(pool, id, submittedBy);
+    }
   } catch (error) {
     if (transaction && transaction.state === "begun") {
       await transaction.rollback();
     }
     throw error;
-  } finally {
-    // ✅ ลบ pool.close() ออก
   }
 };
 
@@ -410,6 +521,7 @@ function extractKeyMetrics(formData) {
   let totalQty = 0;
   let productionDate = null;
   let palletData = []; // [ใหม่] เตรียม Array ว่างไว้
+  let productionLine = null;
 
   if (!formData)
     return {
@@ -419,6 +531,7 @@ function extractKeyMetrics(formData) {
       totalQty,
       productionDate,
       palletData,
+      productionLine,
     };
 
   // -----------------------------------------------------------
@@ -456,9 +569,19 @@ function extractKeyMetrics(formData) {
   ];
   const datePaths = ["basicData.date"];
   const rawPallets = formData.palletInfo || [];
+  const linePaths = ["basicData.machineName"];
   // -----------------------------------------------------------
   // 3. วนลูปหาค่า
   // -----------------------------------------------------------
+
+  // หา Production Line
+  for (const path of linePaths) {
+    const val = getNestedValue(formData, path);
+    if (val !== null && val !== undefined && val !== "") {
+      productionLine = val.toString(); // แปลงเป็น String ให้ชัวร์
+      break;
+    }
+  }
 
   // หา Input (Kg)
   for (const path of inputPaths) {
@@ -528,5 +651,7 @@ function extractKeyMetrics(formData) {
     totalQty,
     productionDate,
     palletData, // 👈 อย่าลืมตัวนี้ครับ!
+    productionLine,
+    productionLine,
   };
 }

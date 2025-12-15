@@ -2,7 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getSubmissionById } from '../../services/submissionService';
-
+import { formatNumberPreserve ,isNumeric } from '../../utils/utils';
+import { EXCLUDED_DECIMAL_FIELDS} from './EXCLUDED_DECIMAL_FIELDS';
 // --- ⬇️ (สำคัญ) Import Component "สำหรับพิมพ์" ทั้งหมดที่คุณมี ⬇️ ---
 // (คุณต้องสร้างไฟล์เหล่านี้ขึ้นมา โดยมี Layout สำหรับ A4)
 import PrintableReportAS2 from './AS2/PrintableReportAS2';
@@ -35,35 +36,8 @@ interface SubmissionPrintData {
   blueprints: any; // ควรสร้าง Type ที่ละเอียดกว่านี้
 }
 
-const formatNumberPreserve = (num: number | string, shouldFormatDecimal: boolean = true): string => {
-  const numericVal = typeof num === 'string' ? parseFloat(num) : num;
-  if (isNaN(numericVal)) return String(num);
 
-  if (!shouldFormatDecimal) {
-    return String(numericVal);
-  }
 
-  const multiplier = 100000000;
-  const cleanNum = Math.round(numericVal * multiplier) / multiplier;
-  let str = cleanNum.toString();
-  const parts = str.split('.');
-
-  if (parts.length === 1) return str + ".00";
-  if (parts[1].length === 1) return str + "0";
-  return str;
-};
-
-const EXCLUDED_DECIMAL_FIELDS = [
-  'rawMaterials.shelfLife',
-  'shelfLife',
-  'leadTime',
-  'amount',
-  'palletCount',
-  'lotNo',
-  'submissionId',
-  'id',
-  'step'
-];
 
 const processTemplateData = (data: any, parentKey: string = ''): any => {
   if (Array.isArray(data)) {
@@ -74,13 +48,22 @@ const processTemplateData = (data: any, parentKey: string = ''): any => {
       Object.entries(data).map(([key, val]) => {
         const currentPath = parentKey ? `${parentKey}.${key}` : key;
 
-        if (typeof val === 'number') {
-          // เช็คว่าอยู่ในรายการยกเว้นไหม
-          const isExcluded = EXCLUDED_DECIMAL_FIELDS.some(excluded =>
-            currentPath.includes(excluded) || key === excluded
-          );
-          // แปลงค่า (ถ้าไม่ยกเว้น ก็เติม .00)
-          return [key, formatNumberPreserve(val, !isExcluded)];
+        if (isNumeric(val)) {
+          // เช็คว่าอยู่ในรายการยกเว้นหรือไม่
+          const isExcluded = EXCLUDED_DECIMAL_FIELDS.some(excluded => {
+            return currentPath === excluded ||
+              currentPath.endsWith(`.${excluded}`) ||
+              key === excluded;
+          });
+
+          // 🟡 แก้ไข Logic: ถ้า Excluded ให้คืนค่าเดิมเลย (ไม่ว่าจะเป็น number หรือ string)
+          // ไม่ต้องส่งไป formatNumberPreserve ให้เสียของ
+          if (isExcluded) {
+            return [key, val];
+          }
+
+          // ✅ ถ้าไม่ใช่ข้อยกเว้น ค่อยส่งไปจัด Format
+          return [key, formatNumberPreserve(val)];
         }
 
         return [key, processTemplateData(val, currentPath)];
@@ -91,13 +74,14 @@ const processTemplateData = (data: any, parentKey: string = ''): any => {
 };
 
 
+
 const ReportPrintDispatcher: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   // ⭐️ ใช้ Type ที่สร้างขึ้น (ถ้ามี)
   const [submissionData, setSubmissionData] = useState<SubmissionPrintData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const processedSubmission = processTemplateData(submissionData);
+
 
   useEffect(() => {
     document.title = `Loading Report ${id}...`; // << เพิ่มบรรทัดนี้
@@ -141,6 +125,8 @@ const ReportPrintDispatcher: React.FC = () => {
 
     fetchDetails();
   }, [id]); // ทำงานใหม่เมื่อ id เปลี่ยน
+
+
 
   // --- ฟังก์ชันเลือก Component ลูกสำหรับพิมพ์ ---
   const renderPrintableForm = () => {

@@ -5,19 +5,24 @@ import { UseFormRegister, UseFormWatch, UseFormSetValue } from 'react-hook-form'
 import { IManufacturingReportForm } from '../../pages/types';
 import PalletTable from './PalletTable';
 import PackingResultTable from './PackingResultTable_GENA';
+import { formatNumberPreserve } from '../../../../utils/utils';
 
 // 1. สร้าง Type สำหรับชื่อฟิลด์ที่เราจะรับเข้ามา
 type TotalWeightFieldName =
   | 'calculations.finalTotalWeight'
   | 'bz3Calculations.totalWeightWithNcr'
-  | 'bs3Calculations.totalWeightWithNcr';
-
+  | 'bs3Calculations.totalWeightWithNcr'
+  | 'bz5cCalculations.totalWeightWithNcr'
+  | 'bs5cCalculations.totalWeightWithNcr'
+  | 'calculations.finalTotalWeightFixed';
+// 2. แก้ไข Interface ให้รับ prop ใหม่
 // 2. แก้ไข Interface ให้รับ prop ใหม่
 interface SharedFormStep4Props {
   register: UseFormRegister<IManufacturingReportForm>;
   watch: UseFormWatch<IManufacturingReportForm>;
   setValue: UseFormSetValue<IManufacturingReportForm>;
   totalWeightFieldName: TotalWeightFieldName; // Prop สำหรับรับชื่อฟิลด์
+  formType?: string;
 }
 
 // Custom Hook สำหรับคำนวณ (ปรับให้รับชื่อฟิลด์เข้ามา)
@@ -37,6 +42,7 @@ const useStep4Calculations = (
     const cans = Number(quantityOfProductCans) || 0;
     const tank = Number(weighttank) || 0;
     const calculated = cans * 150 + tank;
+
     setValue('packingResults.quantityOfProduct.calculated', calculated > 0 ? calculated : null);
   }, [quantityOfProductCans, weighttank, setValue]);
 
@@ -48,8 +54,17 @@ const useStep4Calculations = (
     if (numProduct === 0 || numFinalWeight === 0) {
       setValue('packingResults.yieldPercent', null);
     } else {
-      const yieldPercent = (numProduct / numFinalWeight) * 100;
-      setValue('packingResults.yieldPercent', Number(yieldPercent.toFixed(2)));
+      // 1. คำนวณค่าดิบ
+      const rawYield = (numProduct / numFinalWeight) * 100;
+
+      // 2. ตัดทศนิยมส่วนเกินทิ้งเหลือ 2 ตำแหน่ง (ใช้ Math.floor เพื่อไม่ให้ปัดเศษมั่ว)
+      const yield2Decimal = Math.floor(rawYield * 100) / 100;
+
+      // 3. ส่งเข้าฟังก์ชันเพื่อเติม .00 (เช่น 99.2 -> "99.20")
+      const formattedYield = formatNumberPreserve(yield2Decimal);
+
+      // 4. ส่งค่าเป็น String กลับไป (ใส่ as any เพื่อปิด error type)
+      setValue('packingResults.yieldPercent', formattedYield as any);
     }
   }, [finalTotalWeight, calculatedProduct, setValue]);
 };
@@ -71,7 +86,7 @@ const SharedFormStep4: React.FC<SharedFormStep4Props> = ({ register, watch, setV
 
   return (
     <div>
-      <div className="border-b-2 border-stroke py-2 text-center bg-black dark:border-strokedark" id= "">
+      <div className="border-b-2 border-stroke py-2 text-center bg-black dark:border-strokedark" id="">
         <h4 className="font-medium text-white text-lg">Packing Result (กระบวนการบรรจุ Genmatsu)</h4>
       </div>
       <div className="rounded-b-sm border border-t-0 border-stroke p-5 dark:border-strokedark">
@@ -99,11 +114,11 @@ const SharedFormStep4: React.FC<SharedFormStep4Props> = ({ register, watch, setV
         </div>
       </div>
       <PalletTable
-          title="Pallet (พาเลท)"
-          numberOfRows={6}
-          register={register}
-          fieldName="palletInfo"
-        />
+        title="Pallet (พาเลท)"
+        numberOfRows={6}
+        register={register}
+        fieldName="palletInfo"
+      />
     </div>
   );
 };

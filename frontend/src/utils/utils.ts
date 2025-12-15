@@ -6,7 +6,19 @@ export const toDecimal = (e: React.FocusEvent<HTMLInputElement>) => {
   }
 };
 
-// ฟังก์ชันจัดรูปแบบตัวเลขเดี่ยวๆ (พระเอกของเรา)
+
+
+// ฟังก์ชันช่วยเช็คว่าเป็นตัวเลข (number หรือ string ที่แปลงเป็น number ได้)
+export const isNumeric = (val: any): val is string | number => {
+  if (typeof val === 'number') return true;
+  if (typeof val === 'string' && val.trim() !== '' && !isNaN(Number(val))) return true;
+  return false;
+};
+
+
+
+
+// ฟังก์ชันจัดรูปแบบตัวเลขเดี่ยวๆ
 export const formatNumberPreserve = (num: number | string | null | undefined): string => {
   if (num === null || num === undefined || num === '') return '';
   

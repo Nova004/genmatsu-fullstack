@@ -341,8 +341,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass} colSpan={5}></td>
               </tr>
               <tr>
+                <td className={tdLeftClass}>15% NacCl Water Calculaion for finding water content </td>
+                <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('rawMaterials.sodiumChloride')} /></td>
+                <td className={tdLeftClass} colSpan={5}></td>
+              </tr>
+              <tr>
                 <td className={tdLeftClass}>15% NacCl Water Calculaion for finding water content</td>
-                <td className={tdCenterClass}>(3*6)/4 =</td>
+                <td className={tdCenterClass}>⑦ X ⑤=</td>
                 <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.naclWaterCalc')} /></td>
                 <td className={tdLeftClass} colSpan={7}></td>
               </tr>

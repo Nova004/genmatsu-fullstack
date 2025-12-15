@@ -219,13 +219,11 @@ const DropdownMessage = () => {
                               clipRule="evenodd"
                             />
                           </svg>
-                          {new Date(msg.action_date).toLocaleDateString('th-TH', {
+                            {new Date(msg.action_date).toLocaleDateString('en-US', {
                             day: '2-digit',
                             month: '2-digit',
                             year: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}{' '}
+                            })}{' '}
                           • Lot: {msg.lot_no}
                         </div>
                       </div>

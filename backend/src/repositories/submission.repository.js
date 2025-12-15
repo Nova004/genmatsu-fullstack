@@ -146,16 +146,24 @@ exports.addItemsToVersionSet = async (
 };
 
 exports.createSubmissionRecord = async (transaction, data) => {
-  const { versionSetId, formType, lotNo, submittedBy } = data;
+  // 🟡 รับ status เข้ามา
+  const { versionSetId, formType, lotNo, submittedBy, productionLine, status } =
+    data;
+
   const request = new sql.Request(transaction);
   const result = await request
     .input("versionSetId", sql.Int, versionSetId)
     .input("formType", sql.NVarChar, formType)
     .input("lotNo", sql.NVarChar, lotNo)
-    .input("submittedBy", sql.NVarChar, submittedBy).query(`
-        INSERT INTO Form_Submissions (version_set_id, form_type, lot_no, submitted_by) 
+    .input("submittedBy", sql.NVarChar, submittedBy)
+    .input("productionLine", sql.NVarChar, productionLine || null)
+    .input("status", sql.NVarChar, status || "Pending") // 🟡 เพิ่ม Input นี้ (Default Pending)
+    .query(`
+        INSERT INTO Form_Submissions 
+          (version_set_id, form_type, lot_no, submitted_by, production_line, status) -- เพิ่ม status
         OUTPUT INSERTED.submission_id 
-        VALUES (@versionSetId, @formType, @lotNo, @submittedBy)
+        VALUES 
+          (@versionSetId, @formType, @lotNo, @submittedBy, @productionLine, @status) -- เพิ่ม @status
       `);
   return result.recordset[0].submission_id;
 };
@@ -310,13 +318,20 @@ exports.deleteSubmissionRelatedData = async (transaction, submissionId) => {
   return result.rowsAffected[0] > 0;
 };
 
-exports.updateSubmissionRecord = async (transaction, submissionId, lotNo) => {
+exports.updateSubmissionRecord = async (
+  transaction,
+  submissionId,
+  lotNo,
+  productionLine
+) => {
   const request = new sql.Request(transaction);
   await request
     .input("submission_id", sql.Int, submissionId)
+    .input("production_line", sql.NVarChar, productionLine || null)
     .input("lot_no", sql.NVarChar, lotNo).query(`
         UPDATE Form_Submissions
         SET lot_no = @lot_no,
+        production_line = @production_line,
             submitted_at = GETDATE()
         WHERE submission_id = @submission_id;
       `);
@@ -361,7 +376,8 @@ exports.resubmitSubmissionData = async (
   transaction,
   submissionId,
   formDataJson,
-  keyMetrics
+  keyMetrics,
+  status
 ) => {
   const request = new sql.Request(transaction);
 
@@ -372,7 +388,8 @@ exports.resubmitSubmissionData = async (
     sql.NVarChar(sql.MAX),
     JSON.stringify(formDataJson)
   );
-  // [New Columns]
+
+  // Metrics Inputs
   request.input("inputKg", sql.Decimal(10, 2), keyMetrics.inputKg || null);
   request.input("outputKg", sql.Decimal(10, 2), keyMetrics.outputKg || null);
   request.input(
@@ -386,6 +403,14 @@ exports.resubmitSubmissionData = async (
     "palletData",
     sql.NVarChar(sql.MAX),
     JSON.stringify(keyMetrics.palletData || [])
+  );
+
+  // Status & Production Line Inputs
+  request.input("status", sql.NVarChar, status || "Pending");
+  request.input(
+    "productionLine",
+    sql.NVarChar,
+    keyMetrics.productionLine || null
   );
 
   // 3.1 Update Data Content (เนื้อหา)
@@ -402,28 +427,27 @@ exports.resubmitSubmissionData = async (
           WHERE submission_id = @submissionId
       `);
 
-  // 3.2 Update Submission Header (สถานะเอกสาร)
+  // 3.2 Update Submission Header (สถานะเอกสาร + Line ผลิต)
   await request.query(`
           UPDATE Form_Submissions 
           SET 
               submitted_at = GETDATE(),
-              status = 'Pending'
+              status = @status,
+              production_line = @productionLine
           WHERE 
               submission_id = @submissionId
-              AND (status = 'Rejected' OR status = 'Drafted') -- ✅ แก้ตรงนี้ครับ
+              AND (status = 'Rejected' OR status = 'Drafted')
       `);
 
-  // 3.3 Reset Approval Flow (รีเซ็ตสถานะผู้อนุมัติ)
+  // 🟡 3.3 ล้าง Flow เก่าทิ้งทั้งหมด (แก้จาก UPDATE เป็น DELETE)
+  // เหตุผล:
+  // 1. ถ้ามาจาก Draft จะได้ไม่มีปัญหา (เพราะไม่มีให้ลบ ก็ไม่ Error)
+  // 2. ถ้ามาจาก Rejected ก็ลบของเก่าทิ้ง เพื่อรอสร้างใหม่ใน Service
+  // 3. ถ้าเป็น LV3 (Approved) ก็ลบทิ้งไปเลย จบงานสวยๆ
   await request.query(`
-          UPDATE Gen_Approval_Flow 
-          SET 
-              status = 'Pending', 
-              approver_user_id = NULL, 
-              updated_at = NULL 
-          WHERE 
-              submission_id = @submissionId
-              AND (status = 'Rejected' OR status = 'Pending' OR status = 'Drafted') -- ✅ เพิ่ม Drafted
-      `);
+      DELETE FROM Gen_Approval_Flow 
+      WHERE submission_id = @submissionId
+  `);
 
   // 3.4 Clear Logs (ลบประวัติการ Reject เดิมออก)
   await request.query(`
