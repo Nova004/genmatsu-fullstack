@@ -94,7 +94,9 @@ const useStep4Calculations = (
       console.log(`Rounding: Applied toFixed(2) -> Result: ${rawYield.toFixed(2)}`);
 
       const yield2Decimal = Math.floor(rawYield * 100) / 100;
-      const formattedYield = formatNumberPreserve(yield2Decimal);
+
+      //const formattedYield = formatNumberPreserve(yield2Decimal); ไม่ปัดเศษ
+      const formattedYield = Number(yield2Decimal.toFixed(2));
 
       console.log(`Formatted Result: ${formattedYield}`);
       setValue('packingResults.yieldPercent', formattedYield as any);

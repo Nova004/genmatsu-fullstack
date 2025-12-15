@@ -6,6 +6,7 @@ import { IManufacturingReportForm } from '../../pages/types';
 import PalletTable from './PalletTable';
 import PackingResultTable from './PackingResultTable_GENA';
 import { formatNumberPreserve } from '../../../../utils/utils';
+import { isNumberArray } from '@tanstack/react-table';
 
 // 1. สร้าง Type สำหรับชื่อฟิลด์ที่เราจะรับเข้ามา
 type TotalWeightFieldName =
@@ -61,7 +62,8 @@ const useStep4Calculations = (
       const yield2Decimal = Math.floor(rawYield * 100) / 100;
 
       // 3. ส่งเข้าฟังก์ชันเพื่อเติม .00 (เช่น 99.2 -> "99.20")
-      const formattedYield = formatNumberPreserve(yield2Decimal);
+      // const formattedYield = formatNumberPreserve(yield2Decimal); ไม่ปัดเศษ
+      const formattedYield = Number(yield2Decimal.toFixed(2));
 
       // 4. ส่งค่าเป็น String กลับไป (ใส่ as any เพื่อปิด error type)
       setValue('packingResults.yieldPercent', formattedYield as any);
