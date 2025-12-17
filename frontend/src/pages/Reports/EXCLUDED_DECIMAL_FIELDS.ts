@@ -10,6 +10,7 @@ export const EXCLUDED_DECIMAL_FIELDS = [
     'id',
     'step',
     'sequence',
+    'date',
     'number',
     'tempPoint3',
     'tempPoint2', 

@@ -7,8 +7,12 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
 
   try {
     // 1. Fetch data
-    console.log(`[PDF Gen] 1. Fetching data for ID: ${submissionId} BEFORE launching browser.`);
-    const dataToInject = await submissionService.getSubmissionDataForPdf(submissionId);
+    console.log(
+      `[PDF Gen] 1. Fetching data for ID: ${submissionId} BEFORE launching browser.`
+    );
+    const dataToInject = await submissionService.getSubmissionDataForPdf(
+      submissionId
+    );
     console.log(`[PDF Gen] 1. Data fetched successfully.`);
 
     const reportName = dataToInject.submission.form_type || "Production Report";
@@ -22,16 +26,16 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
 
     // 2. Launch Browser
     console.log(`[PDF Gen] 2. Launching browser...`);
-    
+
     // Try to use system Chrome first (more stable on Windows)
     const chromePaths = [
-      'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-      'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-      process.env.LOCALAPPDATA + '\\Google\\Chrome\\Application\\chrome.exe'
+      "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+      process.env.LOCALAPPDATA + "\\Google\\Chrome\\Application\\chrome.exe",
     ];
-    
+
     let executablePath = null;
-    const fs = require('fs');
+    const fs = require("fs");
     for (const path of chromePaths) {
       if (fs.existsSync(path)) {
         executablePath = path;
@@ -39,27 +43,28 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
         break;
       }
     }
-    
+
     const launchOptions = {
       headless: true,
       args: [
-        "--no-sandbox", 
+        "--lang=en-GB", // 👈 เพิ่มบรรทัดนี้เข้าไปครับ (สำคัญ!)
+        "--no-sandbox",
         "--disable-setuid-sandbox",
         "--disable-dev-shm-usage",
         "--disable-accelerated-2d-canvas",
         "--disable-gpu",
         "--no-first-run",
         "--no-zygote",
-        "--single-process"
+        "--single-process",
       ],
       ignoreHTTPSErrors: true,
-      dumpio: false
+      dumpio: false,
     };
-    
+
     if (executablePath) {
       launchOptions.executablePath = executablePath;
     }
-    
+
     browser = await puppeteer.launch(launchOptions);
 
     page = await browser.newPage();
@@ -139,20 +144,30 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
     await browser.close();
     console.log("[PDF Gen] 7. Browser closed. Sending PDF.");
     return pdfBuffer;
-
   } catch (error) {
-    console.error(`[PDF Gen] Error generating PDF for ID ${submissionId}:`, error);
+    console.error(
+      `[PDF Gen] Error generating PDF for ID ${submissionId}:`,
+      error
+    );
     console.error(`[PDF Gen] Error name: ${error.name}`);
     console.error(`[PDF Gen] Error message: ${error.message}`);
     console.error(`[PDF Gen] Error stack:`, error.stack);
 
     if (error.name === "TimeoutError" && page) {
-      console.error("[PUPPETEER-TIMEOUT] Timeout occurred while generating PDF");
+      console.error(
+        "[PUPPETEER-TIMEOUT] Timeout occurred while generating PDF"
+      );
       try {
         const html = await page.content();
-        console.error("[PUPPETEER-TIMEOUT-HTML] Page HTML on timeout:", html.substring(0, 500));
+        console.error(
+          "[PUPPETEER-TIMEOUT-HTML] Page HTML on timeout:",
+          html.substring(0, 500)
+        );
       } catch (e) {
-        console.error("[PUPPETEER-TIMEOUT-HTML] Could not get page content:", e.message);
+        console.error(
+          "[PUPPETEER-TIMEOUT-HTML] Could not get page content:",
+          e.message
+        );
       }
     }
 
