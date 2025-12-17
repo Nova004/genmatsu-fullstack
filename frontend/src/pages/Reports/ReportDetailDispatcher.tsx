@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { getSubmissionById, generatePdfById } from '../../services/submissionService';
 import { fireToast } from '../../hooks/fireToast';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
-import { formatNumberPreserve ,isNumeric } from '../../utils/utils';
+import { formatNumberRound ,isNumeric } from '../../utils/utils';
 import { EXCLUDED_DECIMAL_FIELDS} from './EXCLUDED_DECIMAL_FIELDS';
 
 
@@ -56,7 +56,7 @@ const processTemplateData = (data: any, parentKey: string = ''): any => {
             return [key, val];
           }
 
-          return [key, formatNumberPreserve(val)];
+          return [key, formatNumberRound(val)];
         }
 
         return [key, processTemplateData(val, currentPath)];

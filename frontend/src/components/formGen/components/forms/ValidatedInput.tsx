@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { UseFormRegister, FieldErrors, Path } from 'react-hook-form';
 import { IManufacturingReportForm, IStep2ConfigJson } from '../../pages/types';
 
+
 interface ValidatedInputProps {
   config: IStep2ConfigJson;
   inputIndex?: number;

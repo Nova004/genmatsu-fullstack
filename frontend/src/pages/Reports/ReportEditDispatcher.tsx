@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 import { getSubmissionById } from '../../services/submissionService';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import Loader from '../../common/Loader';
-import { formatNumberPreserve ,isNumeric } from '../../utils/utils';
+import { formatNumberRound ,isNumeric } from '../../utils/utils';
 import { EXCLUDED_DECIMAL_FIELDS} from './EXCLUDED_DECIMAL_FIELDS';
 
 import ReportEditBZ from './BZ/ReportEditBZ';
@@ -57,7 +57,7 @@ const processTemplateData = (data: any, parentKey: string = ''): any => {
                         return [key, val];
                     }
 
-                    return [key, formatNumberPreserve(val)];
+                    return [key, formatNumberRound(val)];
                 }
 
                 return [key, processTemplateData(val, currentPath)];

@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import { UseFormRegister, UseFormWatch, UseFormSetValue } from 'react-hook-form';
 import { IManufacturingReportForm } from '../../pages/types';
-import { toDecimal } from '../../../../utils/utils'
+
 
 // 1. เพิ่ม cansMultiplier เข้าไปใน Props
 interface PackingResultTableProps {
@@ -24,16 +24,7 @@ const PackingResultTable: React.FC<PackingResultTableProps> = ({ register, watch
   // --- Logic การคำนวณ ---
   const quantityOfCans = watch('packingResults.quantityOfProduct.cans');
 
-  useEffect(() => {
-    if (quantityOfCans === null || quantityOfCans === undefined) {
-      setValue('packingResults.quantityOfProduct.calculated', null);
-      return;
-    }
 
-    const calculatedValue = Number(quantityOfCans) * cansMultiplier;
-    setValue('packingResults.quantityOfProduct.calculated', calculatedValue);
-
-  }, [quantityOfCans, setValue, cansMultiplier]); // เพิ่ม cansMultiplier ใน dependency array
 
 
   return (
@@ -47,7 +38,7 @@ const PackingResultTable: React.FC<PackingResultTableProps> = ({ register, watch
             <td className={tdCenterClass}>Cans x {cansMultiplier} KG + </td>
             <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={inputClass} {...register('packingResults.weighttank.tank')} /><span className="ml-2">KG</span></div></td>
             <td className={tdCenterClass}>=</td>
-            <td className={tdCenterClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('packingResults.quantityOfProduct.calculated')} /><span className="ml-2">KG</span></div></td>
+            <td className={tdCenterClass}><div className="flex items-center"><input type="text" className={disabledInputClass} readOnly disabled {...register('packingResults.quantityOfProduct.calculated')} /><span className="ml-2">KG</span></div></td>
           </tr>
           <tr>
             <td className={tdLeftClass} colSpan={2}>Remain</td>

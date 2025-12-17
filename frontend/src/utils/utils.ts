@@ -19,28 +19,20 @@ export const isNumeric = (val: any): val is string | number => {
 
 
 // ฟังก์ชันจัดรูปแบบตัวเลขเดี่ยวๆ
-export const formatNumberPreserve = (num: number | string | null | undefined): string => {
+export const formatNumberRound = (num: number | string | null | undefined): string => {
+  // 1. เช็คค่าว่างเหมือนเดิม
   if (num === null || num === undefined || num === '') return '';
-  
+
   const numericVal = typeof num === 'string' ? parseFloat(num) : num;
   if (isNaN(numericVal)) return String(num);
 
-  // 1. แก้ทศนิยมเพี้ยน (เช่น 3.100000004 -> 3.1)
-  const multiplier = 100000000;
-  const cleanNum = Math.round(numericVal * multiplier) / multiplier;
+  // 2. คำนวณการปัดเศษ (Math.round)
+  // Trick: บวก Number.EPSILON เข้าไปเล็กน้อยเพื่อแก้บั๊ก 1.005 ของ JS ที่บางทีปัดผิด
+  const rounded = Math.round((numericVal + Number.EPSILON) * 100) / 100;
 
-  let str = cleanNum.toString();
-  const parts = str.split('.');
-
-  // 2. เติม 0 ตามเงื่อนไข
-  if (parts.length === 1) {
-    return str + ".00"; // จำนวนเต็ม -> 5.00
-  } else if (parts[1].length === 1) {
-    return str + "0";   // ทศนิยม 1 ตำแหน่ง -> 0.40
-  }
-  
-  // ทศนิยมครบแล้ว หรือเกิน 2 ตำแหน่ง -> คืนค่าเดิม
-  return str;
+  // 3. แปลงเป็น String และบังคับทศนิยม 2 ตำแหน่ง
+  // ตรงนี้แหละที่จะทำให้ 90.4 กลายเป็น "90.40" หรือ 90 กลายเป็น "90.00"
+  return rounded.toFixed(2);
 };
 
 // ฟังก์ชันแปลงข้อมูลทั้งก้อน (Recursive)
@@ -56,7 +48,7 @@ export const formatFormData = (data: any): any => {
     return newData;
   } else if (typeof data === 'number') {
     // 🔥 เจอตัวเลข! จับแปลงร่าง
-    return formatNumberPreserve(data);
+    return formatNumberRound(data);
   }
   return data;
 };

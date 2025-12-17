@@ -5,7 +5,7 @@ import { UseFormRegister, UseFormWatch, UseFormSetValue } from 'react-hook-form'
 import { IManufacturingReportForm } from '../../pages/types';
 import PalletTable from './PalletTable';
 import PackingResultTable from './PackingResultTable_GENB';
-import { formatNumberPreserve } from '../../../../utils/utils';
+import { formatNumberRound } from '../../../../utils/utils';
 
 // 1. สร้าง Type สำหรับชื่อฟิลด์ที่เราจะรับเข้ามา
 type TotalWeightFieldName =
@@ -69,11 +69,18 @@ const useStep4Calculations = (
 
     // 🔽 LOGGING: แสดงผลลัพธ์
     console.log(`Calculation: ${cans} * ${actualMultiplier} = ${calculated}`);
-    console.log("Output (Calculated Product):", calculated > 0 ? calculated : null);
 
-    setValue('packingResults.quantityOfProduct.calculated', calculated > 0 ? calculated : null);
-  }, [quantityOfProductCans, setValue, actualMultiplier]); // 5. เพิ่ม actualMultiplier ใน dependencies
+    // 🔴 แก้ไขตรงนี้: ใช้ formatNumberRound แปลงเป็น String
+    if (calculated > 0) {
+      const formatted = formatNumberRound(calculated);
+      console.log("Output (Formatted):", formatted);
+      setValue('packingResults.quantityOfProduct.calculated', formatted as any);
+    } else {
+      console.log("Output: null");
+      setValue('packingResults.quantityOfProduct.calculated', null);
+    }
 
+  }, [quantityOfProductCans, setValue, actualMultiplier]);
   useEffect(() => {
     // ... (Logic เดิม, ถูกต้อง) ...
     console.log("--- 2. Yield % Calculation ---");
@@ -88,17 +95,16 @@ const useStep4Calculations = (
       console.warn("Condition: Skip Yield % calculation because Product or Final Weight is 0 or invalid. Setting Yield % to null.");
       setValue('packingResults.yieldPercent', null);
     } else {
+      // 1. คำนวณค่าดิบ (อาจจะมีทศนิยมยาวเหยียด เช่น 10.55666...)
       const rawYield = (numProduct / numFinalWeight) * 100;
 
+      // 2. ส่งค่าดิบเข้าฟังก์ชัน formatNumberRound ได้เลย!
+      // ฟังก์ชันจะจัดการปัดเศษ (Round) และตัดให้เหลือ 2 ตำแหน่งให้เอง
+      const formattedYield = formatNumberRound(rawYield);
+
       console.log(`Calculation: (${numProduct} / ${numFinalWeight}) * 100 = ${rawYield}`);
-      console.log(`Rounding: Applied toFixed(2) -> Result: ${rawYield.toFixed(2)}`);
+      console.log(`Formatted Result: ${formattedYield}`); // จะได้ "10.56" ถ้า input เป็น 10.556
 
-      const yield2Decimal = Math.floor(rawYield * 100) / 100;
-
-      //const formattedYield = formatNumberPreserve(yield2Decimal); ไม่ปัดเศษ
-      const formattedYield = Number(yield2Decimal.toFixed(2));
-
-      console.log(`Formatted Result: ${formattedYield}`);
       setValue('packingResults.yieldPercent', formattedYield as any);
     }
   }, [finalTotalWeight, calculatedProduct, setValue]);
@@ -145,7 +151,16 @@ const SharedFormStep4: React.FC<SharedFormStep4Props> = ({ register, watch, setV
                   <span className="font-medium text-primary">{finalTotalWeightForDisplay || '-'}</span> )
                 </td>
                 <td className={tdCenterClass}>x 100%</td>
-                <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('packingResults.yieldPercent')} /></td>
+                <td className={tdLeftClass}>
+                  {/* 🔴 แก้ไขตรงนี้: เปลี่ยน type="number" เป็น type="text" */}
+                  <input
+                    type="text"
+                    className={disabledInputClass}
+                    readOnly
+                    disabled
+                    {...register('packingResults.yieldPercent')}
+                  />
+                </td>
               </tr>
             </tbody>
           </table>

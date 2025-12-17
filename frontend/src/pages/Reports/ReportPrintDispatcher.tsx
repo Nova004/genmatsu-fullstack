@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getSubmissionById } from '../../services/submissionService';
-import { formatNumberPreserve ,isNumeric } from '../../utils/utils';
+import { formatNumberRound ,isNumeric } from '../../utils/utils';
 import { EXCLUDED_DECIMAL_FIELDS} from './EXCLUDED_DECIMAL_FIELDS';
 // --- ⬇️ (สำคัญ) Import Component "สำหรับพิมพ์" ทั้งหมดที่คุณมี ⬇️ ---
 // (คุณต้องสร้างไฟล์เหล่านี้ขึ้นมา โดยมี Layout สำหรับ A4)
@@ -57,13 +57,13 @@ const processTemplateData = (data: any, parentKey: string = ''): any => {
           });
 
           // 🟡 แก้ไข Logic: ถ้า Excluded ให้คืนค่าเดิมเลย (ไม่ว่าจะเป็น number หรือ string)
-          // ไม่ต้องส่งไป formatNumberPreserve ให้เสียของ
+          // ไม่ต้องส่งไป formatNumberRound ให้เสียของ
           if (isExcluded) {
             return [key, val];
           }
 
           // ✅ ถ้าไม่ใช่ข้อยกเว้น ค่อยส่งไปจัด Format
-          return [key, formatNumberPreserve(val)];
+          return [key, formatNumberRound(val)];
         }
 
         return [key, processTemplateData(val, currentPath)];

@@ -5,8 +5,7 @@ import { UseFormRegister, UseFormWatch, UseFormSetValue } from 'react-hook-form'
 import { IManufacturingReportForm } from '../../pages/types';
 import PalletTable from './PalletTable';
 import PackingResultTable from './PackingResultTable_GENA';
-import { formatNumberPreserve } from '../../../../utils/utils';
-import { isNumberArray } from '@tanstack/react-table';
+import { formatNumberRound } from '../../../../utils/utils';
 
 // 1. สร้าง Type สำหรับชื่อฟิลด์ที่เราจะรับเข้ามา
 type TotalWeightFieldName =
@@ -42,9 +41,17 @@ const useStep4Calculations = (
   useEffect(() => {
     const cans = Number(quantityOfProductCans) || 0;
     const tank = Number(weighttank) || 0;
+
+    // คำนวณค่าดิบ
     const calculated = cans * 150 + tank;
 
-    setValue('packingResults.quantityOfProduct.calculated', calculated > 0 ? calculated : null);
+    // 🔴 แก้ไข: ใช้ formatNumberRound แปลงเป็น String เพื่อให้มี .00
+    if (calculated > 0) {
+      const formatted = formatNumberRound(calculated);
+      setValue('packingResults.quantityOfProduct.calculated', formatted as any);
+    } else {
+      setValue('packingResults.quantityOfProduct.calculated', null);
+    }
   }, [quantityOfProductCans, weighttank, setValue]);
 
   // คำนวณ Yield % (เหมือนเดิม)
@@ -58,14 +65,10 @@ const useStep4Calculations = (
       // 1. คำนวณค่าดิบ
       const rawYield = (numProduct / numFinalWeight) * 100;
 
-      // 2. ตัดทศนิยมส่วนเกินทิ้งเหลือ 2 ตำแหน่ง (ใช้ Math.floor เพื่อไม่ให้ปัดเศษมั่ว)
-      const yield2Decimal = Math.floor(rawYield * 100) / 100;
+      // 2. ส่งค่า rawYield ดิบๆ เข้าไปเลย ให้ฟังก์ชันจัดการปัดเศษเอง
+      const formattedYield = formatNumberRound(rawYield);
 
-      // 3. ส่งเข้าฟังก์ชันเพื่อเติม .00 (เช่น 99.2 -> "99.20")
-      // const formattedYield = formatNumberPreserve(yield2Decimal); ไม่ปัดเศษ
-      const formattedYield = Number(yield2Decimal.toFixed(2));
-
-      // 4. ส่งค่าเป็น String กลับไป (ใส่ as any เพื่อปิด error type)
+      // 3. ส่งค่าเป็น String กลับไป
       setValue('packingResults.yieldPercent', formattedYield as any);
     }
   }, [finalTotalWeight, calculatedProduct, setValue]);
@@ -109,7 +112,16 @@ const SharedFormStep4: React.FC<SharedFormStep4Props> = ({ register, watch, setV
                   <span className="font-medium text-primary">{finalTotalWeightForDisplay || '-'}</span> )
                 </td>
                 <td className={tdCenterClass}>x 100%</td>
-                <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('packingResults.yieldPercent')} /></td>
+                <td className={tdLeftClass}>
+                  {/* 🔴 แก้ type="number" เป็น type="text" */}
+                  <input
+                    type="text"
+                    className={disabledInputClass}
+                    readOnly
+                    disabled
+                    {...register('packingResults.yieldPercent')}
+                  />
+                </td>
               </tr>
             </tbody>
           </table>

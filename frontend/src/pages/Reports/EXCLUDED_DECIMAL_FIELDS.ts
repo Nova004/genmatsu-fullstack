@@ -11,6 +11,9 @@ export const EXCLUDED_DECIMAL_FIELDS = [
     'step',
     'sequence',
     'number',
+    'nacl15SpecGrav',
+    'calculations.nacl15SpecGrav',
     'no',
     'qty'
+
 ];

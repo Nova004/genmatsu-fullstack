@@ -72,7 +72,7 @@ const BNFormPrint: React.FC<BNFormPrintProps> = ({ formData, blueprints, isReadO
           {/* --- Section 1 (Header) --- */}
           <div className="form-section p-1 md:p-1 border-b border-stroke dark:border-strokedark">
             {/* ผมเดาว่า Component Step 1 ของ BN น่าจะชื่อประมาณนี้นะครับ */}
-            <SharedFormStep1 {...formStepProps} packagingWarningItemName="RC-417" />
+            <SharedFormStep1 {...formStepProps} packagingWarningItemName="Zeolite" />
           </div>
 
           {/* --- Section 2 (Raw Materials) --- */}

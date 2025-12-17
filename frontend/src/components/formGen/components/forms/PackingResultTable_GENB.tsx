@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { UseFormRegister, UseFormWatch, UseFormSetValue } from 'react-hook-form';
 import { IManufacturingReportForm } from '../../pages/types';
+import { formatNumberRound } from '../../../../utils/utils';
 
 // 1. เพิ่ม cansMultiplier เข้าไปใน Props
 interface PackingResultTableProps {
@@ -40,8 +41,11 @@ const PackingResultTable: React.FC<PackingResultTableProps> = ({ register, watch
     }
 
     // 4. ใช้ actualMultiplier ที่คำนวณแล้วในการคำนวณ
-    const calculatedValue = Number(quantityOfCans) * actualMultiplier;
-    setValue('packingResults.quantityOfProduct.calculated', calculatedValue);
+    const calculatedValue = quantityOfCans * actualMultiplier;
+
+    const calculatedValueFinal = formatNumberRound(calculatedValue);
+
+    setValue('packingResults.quantityOfProduct.calculated', calculatedValueFinal as any);
 
   }, [quantityOfCans, setValue, actualMultiplier]); // 5. ใช้ actualMultiplier ใน Dependency array
 
@@ -61,7 +65,7 @@ const PackingResultTable: React.FC<PackingResultTableProps> = ({ register, watch
             <td className={tdCenterClass}><input type="number" className={inputClass} {...register('packingResults.quantityOfProduct.cans', { valueAsNumber: true })} /></td>
             {/* 3. แสดงผลค่าตัวคูณแบบ Dynamic */}
             <td className={tdCenterClass}>Cans x {actualMultiplier}</td>
-            <td className={tdCenterClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('packingResults.quantityOfProduct.calculated')} /></td>
+            <td className={tdCenterClass}><input type="text" className={disabledInputClass} readOnly disabled {...register('packingResults.quantityOfProduct.calculated')} /></td>
             <td className={tdCenterClass}>(10)</td>
           </tr>
           <tr>

@@ -7,7 +7,7 @@ import { useTemplateLoader } from '../../../../../hooks/useTemplateLoader';
 import { useWeightingCalculation, WeightingCalculationConfig } from '../../../../../hooks/useWeightCalculations';
 import RawMaterialTableRows from '../../../components/forms/RawMaterialTableRows';
 import useNaclBrewingLookup from '../../../../../hooks/useNaclBrewingLookup';
-
+import { formatNumberRound } from '../../../../../utils/utils';
 // =================================================================
 // ╔═══════════════════════════════════════════════════════════════╗
 // ║                     CUSTOM HOOKS (ส่วนจัดการ Logic)            
@@ -98,11 +98,11 @@ export const useExcelFormulaCalculations = (
     // =================================================================
     // === 1. คำนวณ Sodium Chloride ===
     // =================================================================
-    let sodiumChlorideResult: number | null = null;
+    let sodiumChlorideResult: string | number | null = null;
     if (numNaclBrewingTable > 0 && numTotalWeight > 0 && numNaclSpecGrav > 0) {
       // สูตร: (Q18 * Y20) / (Y18 * Q19)
       const rawResult = (numTotalWeight * numNaclBrewingTable) / (stdYield * numNaclSpecGrav);
-      sodiumChlorideResult = Number(rawResult.toFixed(2));
+      sodiumChlorideResult = formatNumberRound(rawResult);
 
       console.log('--- 1. Sodium Chloride ---');
       console.log(`Raw: (${numTotalWeight} * ${numNaclBrewingTable}) / (${stdYield} * ${numNaclSpecGrav}) = ${rawResult}`);
@@ -111,54 +111,59 @@ export const useExcelFormulaCalculations = (
     } else {
       console.log('--- 1. Sodium Chloride --- (Skip: Input is zero)');
     }
-    setValue('rawMaterials.sodiumChloride', sodiumChlorideResult, { shouldValidate: true });
+    setValue('rawMaterials.sodiumChloride', sodiumChlorideResult as any, { shouldValidate: true });
 
 
     // =================================================================
     // === 2. คำนวณ naclWaterCalc (W23) ===
     // =================================================================
-    let naclWaterCalcResult: number | null = null;
+    let naclWaterCalcResult: string | number | null = null;
     if (numNaclBrewingTable > 0 && numTotalWeight > 0) {
       // สูตร: (Q18 * Y20) / Y18
       const rawResult = (numTotalWeight * numNaclBrewingTable) / stdYield;
 
       _rawNaclWaterCalcResult = rawResult;
-      naclWaterCalcResult = Number(rawResult.toFixed(2));
+
+
+      // ✅ ของใหม่: ส่งค่า String ที่ format แล้วไปเลย
+      naclWaterCalcResult = formatNumberRound(rawResult);
 
       console.log('--- 2. naclWaterCalc (W23) ---');
       console.log(`Raw: (${numTotalWeight} * ${numNaclBrewingTable}) / ${stdYield} = ${rawResult}`);
       console.log(`➡️ Raw Value Stored for next steps: ${_rawNaclWaterCalcResult}`);
-      console.log(`✅ Result (Rounded to 2): ${naclWaterCalcResult}`);
+      console.log(`✅ Result (Formatted String): ${naclWaterCalcResult}`); // จะได้ "479.70"
       console.log('--------------------------------');
     } else {
       _rawNaclWaterCalcResult = null;
       console.log('--- 2. naclWaterCalc (W23) --- (Skip: Input is zero)');
     }
-    setValue('calculations.naclWaterCalc', naclWaterCalcResult);
+
+    // cast as any เพื่อเลี่ยง error ถ้า Interface กำหนด field นี้เป็น number
+    setValue('calculations.naclWaterCalc', naclWaterCalcResult as any);
 
 
     // =================================================================
     // === 3. & 4. คำนวณ waterCalc (น้ำ) และ saltCalc (เกลือ) ===
     // =================================================================
-    let waterCalcResult: number | null = null;
-    let saltCalcResult: number | null = null;
+    let waterCalcResult: string | number | null = null;
+    let saltCalcResult: string | number | null = null;
 
     console.log('--- 3. & 4. Water/Salt Calculation ---');
     if (_rawNaclWaterCalcResult !== null) {
       // น้ำ (0.85)
       const rawWaterResult = _rawNaclWaterCalcResult * 0.85;
-      waterCalcResult = Number(rawWaterResult.toFixed(2));
+      waterCalcResult = formatNumberRound(rawWaterResult);
       console.log(`💧 Water Calc (Raw * 0.85): ${_rawNaclWaterCalcResult} * 0.85 = ${rawWaterResult} -> ${waterCalcResult}`);
 
       // เกลือ (0.15)
       const rawSaltResult = _rawNaclWaterCalcResult * 0.15;
-      saltCalcResult = Number(rawSaltResult.toFixed(2));
+      saltCalcResult = formatNumberRound(rawSaltResult);
       console.log(`🧂 Salt Calc (Raw * 0.15): ${_rawNaclWaterCalcResult} * 0.15 = ${rawSaltResult} -> ${saltCalcResult}`);
     } else {
       console.log(`(Skip: naclWaterCalc Raw is null)`);
     }
-    setValue('calculations.waterCalc', waterCalcResult);
-    setValue('calculations.saltCalc', saltCalcResult);
+    setValue('calculations.waterCalc', waterCalcResult as any);
+    setValue('calculations.saltCalc', saltCalcResult as any);
     console.log('------------------------------------------');
 
 
@@ -175,7 +180,7 @@ export const useExcelFormulaCalculations = (
       + numctual
       + numGypsumPlaster;
 
-    const finalTotalWeight = total > 0 ? Number(total.toFixed(3)) : null;
+    const finalTotalWeight = total > 0 ? formatNumberRound(total) : null;
 
     console.log('--- 5. Final Total Weight ---');
     console.log(`Sum: ${numTotalWeight} + ${naclWater} (Raw NaclWater) + ${numMagnesiumHydroxide} + ${numNcrGenmatsu} + ${numActivatedCarbon} + ${numGypsumPlaster}`);
@@ -183,7 +188,7 @@ export const useExcelFormulaCalculations = (
     console.log(`✅ Final Result (Rounded to 3): ${finalTotalWeight}`);
     console.log('-------------------------------');
 
-    setValue('calculations.finalTotalWeight', finalTotalWeight);
+    setValue('calculations.finalTotalWeight', finalTotalWeight as any);
 
     console.groupEnd(); // สิ้นสุด group log
   }, [
@@ -347,14 +352,14 @@ const FormStep2: React.FC<FormStep2Props> = ({
                   }
                 </td>
                 <td className={tdLeftClass}>Temperature (˚C)</td>
-                <td className={tdLeftClass}><input type="number" step="0.1" className={inputClass} {...register('calculations.temperature', { valueAsNumber: true })} /></td>
+                <td className={tdLeftClass}><input type="number" step="0.01" className={inputClass} {...register('calculations.temperature', { valueAsNumber: true })} /></td>
                 <td className={tdLeftClass} colSpan={3}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>NaCl brewing table ( BN NaCl 4 % Water )</td>
                 <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.naclBrewingTable')}
                   value={rawNaclBrewingTableValue !== null && rawNaclBrewingTableValue !== undefined
-                    ? Number(rawNaclBrewingTableValue).toFixed(4)
+                    ? formatNumberRound(rawNaclBrewingTableValue)
                     : ''} />
                 </td>
                 <td className={tdLeftClass} colSpan={4}></td>
@@ -362,23 +367,23 @@ const FormStep2: React.FC<FormStep2Props> = ({
               <tr>
                 <td className={tdLeftClass}>4% NacCl Water Calculaion for finding water content</td>
                 <td className={tdCenterClass}>(3*6)/4 =</td>
-                <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.naclWaterCalc')} /></td>
+                <td className={tdLeftClass}><input type="number" step="0.01" className={disabledInputClass} readOnly disabled {...register('calculations.naclWaterCalc')} /></td>
                 <td className={tdLeftClass} colSpan={3}></td>
               </tr>
               <tr>
-                <td className={tdLeftClass}>Water (8) * 0.85</td>
+                <td className={tdLeftClass}>Water (8) * 0.96</td>
                 <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.waterCalc')} /></td>
                 <td className={tdLeftClass} colSpan={4}></td>
               </tr>
               <tr>
-                <td className={tdLeftClass}>Salt (8) * 0.15</td>
+                <td className={tdLeftClass}>Salt (8) * 0.40</td>
                 <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.saltCalc')} /></td>
                 <td className={tdLeftClass} colSpan={4}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Total weight :</td>
                 <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.finalTotalWeight')} /></td>
-                <td className={tdLeftClass} colSpan={4} style={{ fontSize: 'small' }}>* Diatomaceous Earth (CG-1C) + (8) + Magnesium Hydroxide + Remained Genmatsu + NCR Genmatsu</td>
+                <td className={tdLeftClass} colSpan={4} style={{ fontSize: 'small' }}>* Diatomaceous Earth (Zeolite) + (8) + Magnesium Hydroxide + Remained Genmatsu + NCR Genmatsu</td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Remark (หมายเหตุ) :</td>
