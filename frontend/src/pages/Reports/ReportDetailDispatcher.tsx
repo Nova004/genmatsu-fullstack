@@ -4,8 +4,8 @@ import { useParams } from 'react-router-dom';
 import { getSubmissionById, generatePdfById } from '../../services/submissionService';
 import { fireToast } from '../../hooks/fireToast';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
-import { formatNumberRound ,isNumeric } from '../../utils/utils';
-import { EXCLUDED_DECIMAL_FIELDS} from './EXCLUDED_DECIMAL_FIELDS';
+import { formatNumberRound, isNumeric } from '../../utils/utils';
+import { EXCLUDED_DECIMAL_FIELDS } from './EXCLUDED_DECIMAL_FIELDS';
 
 
 // -- Import Component แบบปกติ --
@@ -51,8 +51,7 @@ const processTemplateData = (data: any, parentKey: string = ''): any => {
               key === excluded;
           });
 
-          // ถ้าเป็น String ตัวเลข (เช่น "01") และเป็น Field ยกเว้น -> คืนค่าเดิม ไม่ต้องแปลงเป็น int
-          if (isExcluded && typeof val === 'string') {
+          if (isExcluded) {
             return [key, val];
           }
 

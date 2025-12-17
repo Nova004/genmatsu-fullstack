@@ -7,6 +7,7 @@ import apiClient from '../../../../../services/apiService';
 import { useTemplateLoader } from '../../../../../hooks/useTemplateLoader';
 import { useWeightingCalculation, WeightingCalculationConfig } from '../../../../../hooks/useWeightCalculations';
 import RawMaterialTableRows from '../../../components/forms/RawMaterialTableRows';
+import { formatNumberRound } from '../../../../../utils/utils';
 
 // =================================================================
 // ╔═══════════════════════════════════════════════════════════════╗
@@ -51,7 +52,7 @@ export const useExcelFormulaCalculations = (
       (Number(ncrGenmatsu) || 0);
 
     // --- 3. อัปเดตค่าไปยัง finalTotalWeight ---
-    setValue('calculations.finalTotalWeight', Number(total.toFixed(2)));
+    setValue('calculations.finalTotalWeight', formatNumberRound(total));
 
   }, [
     // --- 4. 🚀 เพิ่ม "สายลับ" ทั้งหมดที่ต้องคอยจับตาดู ---
@@ -81,8 +82,8 @@ interface FormStep2Props {
 
 const AZ1WeightingConfig: WeightingCalculationConfig = {
   rows: [
-    { grossWeightPath: 'cg1cWeighting.row1.cg1c', netWeightPath: 'cg1cWeighting.row1.net', tare: 2 },
-    { grossWeightPath: 'cg1cWeighting.row2.cg1c', netWeightPath: 'cg1cWeighting.row2.net', tare: 2 },
+    { grossWeightPath: 'cg1cWeighting.row1.cg1c', netWeightPath: 'cg1cWeighting.row1.net',  bagWeightPath: 'cg1cWeighting.row1.bagWeight' },
+    { grossWeightPath: 'cg1cWeighting.row2.cg1c', netWeightPath: 'cg1cWeighting.row2.net',  bagWeightPath: 'cg1cWeighting.row2.bagWeight'},
   ],
   totalPath: 'cg1cWeighting.total',
   destinationPath: 'rawMaterials.diaEarth',
@@ -152,38 +153,42 @@ const FormStep2: React.FC<FormStep2Props> = ({
           <table className="w-full table-auto">
             <tbody>
               <tr>
-                <td className={tdLeftClass}>Iron Powder  HGN 82.29.01 :Weight</td>
+                <td className={tdLeftClass}>Iron Powder  HGN 82.29.04 :Weight</td>
                 <td className={tdLeftClass}><input type="number" className={inputClass} {...register('cg1cWeighting.row1.cg1c', { valueAsNumber: true, required: 'กรุณากรอก  Iron Powder' })} />
-                {errors.cg1cWeighting?.row1?.cg1c &&
-                  <p className="text-sm text-danger mt-1">
-                    {errors.cg1cWeighting.row1.cg1c.message}
-                  </p>
-                }
+                  {errors.cg1cWeighting?.row1?.cg1c &&
+                    <p className="text-sm text-danger mt-1">
+                      {errors.cg1cWeighting.row1.cg1c.message}
+                    </p>
+                  }
                 </td>
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('cg1cWeighting.row1.bagNo')} /></td>
+                 <td className={tdLeftClass}>BagWeight</td>
+                <td className={tdLeftClass}><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row1.bagWeight')} /></td>
                 <td className={tdLeftClass}>Net weight (KG) :</td>
                 <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('cg1cWeighting.row1.net')} /></td>
               </tr>
               <tr>
-                <td className={tdLeftClass}>Iron Powder  HGN 82.29.01 :Weight</td>
+                <td className={tdLeftClass}>Iron Powder  HGN 82.29.04 :Weight</td>
                 <td className={tdLeftClass}><input type="number" className={inputClass} {...register('cg1cWeighting.row2.cg1c', { valueAsNumber: true, required: 'กรุณากรอก  Iron Powder' })} />
-                {errors.cg1cWeighting?.row2?.cg1c &&
-                  <p className="text-sm text-danger mt-1">
-                    {errors.cg1cWeighting.row2.cg1c.message}
-                  </p>
-                }
+                  {errors.cg1cWeighting?.row2?.cg1c &&
+                    <p className="text-sm text-danger mt-1">
+                      {errors.cg1cWeighting.row2.cg1c.message}
+                    </p>
+                  }
                 </td>
-                
+
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('cg1cWeighting.row2.bagNo')} /></td>
+                 <td className={tdLeftClass}>BagWeight</td>
+                <td className={tdLeftClass}><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row2.bagWeight')} /></td>
                 <td className={tdLeftClass}>Net weight (KG) :</td>
                 <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('cg1cWeighting.row2.net')} /></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Total weight :</td>
                 <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.finalTotalWeight')} /></td>
-                <td className={tdLeftClass} colSpan={4} style={{ fontSize: 'small' }}>Total weight (Kg.) = Iron Powder HGN 82.29.01+Calcium chloride+Carbon A+Perlite+Remained Genmatsu (+NCR Genmatsu )</td>
+                <td className={tdLeftClass} colSpan={4} style={{ fontSize: 'small' }}>Total weight (Kg.) = Iron Powder HGN 82.29.04 + Sodium Chloride + Carbon A3  + Remained Genmatsu</td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Remark (หมายเหตุ) :</td>

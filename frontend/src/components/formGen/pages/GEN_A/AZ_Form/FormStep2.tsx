@@ -7,6 +7,7 @@ import apiClient from '../../../../../services/apiService';
 import { useTemplateLoader } from '../../../../../hooks/useTemplateLoader';
 import { useWeightingCalculation, WeightingCalculationConfig } from '../../../../../hooks/useWeightCalculations';
 import RawMaterialTableRows from '../../../components/forms/RawMaterialTableRows';
+import { formatNumberRound } from '../../../../../utils/utils';
 
 // =================================================================
 // ╔═══════════════════════════════════════════════════════════════╗
@@ -51,7 +52,7 @@ export const useExcelFormulaCalculations = (
       (Number(AZRGenmatsu) || 0);
 
     // --- 3. อัปเดตค่าไปยัง finalTotalWeight ---
-    setValue('calculations.finalTotalWeight', Number(total.toFixed(2)));
+    setValue('calculations.finalTotalWeight', formatNumberRound(total));
 
   }, [
     // --- 4. 🚀 เพิ่ม "สายลับ" ทั้งหมดที่ต้องคอยจับตาดู ---
