@@ -17,10 +17,6 @@ interface SharedFormStep1Props {
   packagingWarningItemName: string;
 }
 
-const formatDateSimple = (dateString: any) => {
-  if (!dateString) return "";
-  return dateString.split('-').reverse().join('/'); 
-};
 
 const checklistItems = [
   { id: 'butterflyValve' as const, label: 'Butterfly valve', condition: 'Turn off' },

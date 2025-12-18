@@ -66,7 +66,7 @@ const PackingResultTable: React.FC<PackingResultTableProps> = ({ register, watch
             {/* 3. แสดงผลค่าตัวคูณแบบ Dynamic */}
             <td className={tdCenterClass}>Cans x {actualMultiplier}</td>
             <td className={tdCenterClass}><input type="text" className={disabledInputClass} readOnly disabled {...register('packingResults.quantityOfProduct.calculated')} /></td>
-            <td className={tdCenterClass}>(10)</td>
+            <td className={tdCenterClass}>KG</td>
           </tr>
           <tr>
             <td className={tdLeftClass} colSpan={2}>40 mesh Pass</td>
