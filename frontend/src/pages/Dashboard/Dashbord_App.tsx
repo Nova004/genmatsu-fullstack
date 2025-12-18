@@ -23,7 +23,7 @@ const ECommerce: React.FC = () => {
         >
           <FaFileAlt size={22} className="text-success" />
         </MenuCard>
-        {(user?.LV_Approvals === 3) && (
+        {((user?.LV_Approvals ?? 0) >= 2) && (
           <MenuCard
             title="Master (Admin)"
             description="จัดการข้อมูลหลังบ้านสำหรับแอดมิน"

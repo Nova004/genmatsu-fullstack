@@ -5,7 +5,7 @@ import ButtonLink from '../../components/button/button_back';
 import { useLevelGuard } from '../../hooks/useLevelGuard';
 
 const ECommerce: React.FC = () => {
-  useLevelGuard(3);
+  useLevelGuard(2);
   return (
     <>
       <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-3 2xl:gap-7.5">

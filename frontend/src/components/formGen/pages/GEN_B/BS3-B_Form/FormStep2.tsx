@@ -15,7 +15,6 @@ import { formatNumberRound } from '../../../../../utils/utils';
 // ╚═══════════════════════════════════════════════════════════════╝
 // =================================================================
 
-
 export const useBS3_BCalculations = (
   watch: UseFormWatch<IManufacturingReportForm>,
   setValue: UseFormSetValue<IManufacturingReportForm>
@@ -32,18 +31,14 @@ export const useBS3_BCalculations = (
   const naclWater = watch('bs3Calculations.naclWater');
   const naclWaterSpecGrav = watch('bs3Calculations.naclWaterSpecGrav');
 
-
   const actual = watch('rawMaterials.remainedGenmatsu.actual');
-
 
   // --- "ดักฟัง" ค่าที่ถูกคำนวณจากขั้นตอนก่อนหน้า ---
   const totalWeightOfMaterials = watch('bs3Calculations.totalWeightOfMaterials');
 
-
-
   useEffect(() => {
     // --- 1. เริ่มต้น ---
-    console.clear(); // ล้าง log เก่าทุกครั้งที่คำนวณใหม่
+    console.clear();
     console.log("🚀 --- [START] เริ่มการคำนวณ BS3-B --- 🚀");
 
     // --- 2. เตรียมข้อมูล (แปลงค่า Input เป็นตัวเลข) ---
@@ -52,7 +47,6 @@ export const useBS3_BCalculations = (
 
     const numMagnesiumHydroxide = Number(magnesiumHydroxide) || 0;
     const numActivatedCarbon = Number(activatedCarbon) || 0;
-    // ❗️ GypsumPlaster ถูกใช้ แต่ไม่ได้อยู่ใน dependency array (ดู "ข้อควรระวัง" ด้านล่าง)
     const numGypsumPlaster = Number(GypsumPlaster) || 0;
     const numNcrGenmatsu = Number(ncrGenmatsu) || 0;
 
@@ -64,10 +58,9 @@ export const useBS3_BCalculations = (
       ncrGenmatsu: numNcrGenmatsu
     });
 
-
     // --- 3. เริ่มกระบวนการคำนวณตามลำดับ ---
-    const numStdMeanMoisture = Number(stdMeanMoisture) || 45.25; // 👈 ถ้าไม่มีค่า, ให้ใช้ 45.25
-    const numNaclWater = Number(naclWater) || 4; // 👈 ถ้าไม่มีค่า, ให้ใช้ 4
+    const numStdMeanMoisture = Number(stdMeanMoisture) || 45.25;
+    const numNaclWater = Number(naclWater) || 4;
     setValue('bs3Calculations.stdMeanMoisture', numStdMeanMoisture);
     setValue('bs3Calculations.naclWater', numNaclWater);
 
@@ -76,7 +69,6 @@ export const useBS3_BCalculations = (
     const calculatedTotalMaterials = numRc417Total + numMagnesiumHydroxide + numActivatedCarbon + numGypsumPlaster;
     if (calculatedTotalMaterials === 0) {
       console.log("[A_GUARD] ❌ calculatedTotalMaterials เป็น 0, หยุดคำนวณและ Set ค่าเป็น null");
-      // (Set เฉพาะค่าที่ยังไม่ Set)
       setValue('bs3Calculations.totalWeightOfMaterials', null);
       setValue('bs3Calculations.totalNaclWater', null);
       setValue('bs3Calculations.naclWater4', null);
@@ -91,7 +83,7 @@ export const useBS3_BCalculations = (
     console.log("[A2] ผลลัพธ์ดิบ (calculatedTotalMaterials):", calculatedTotalMaterials);
     const finalTotalMaterials = calculatedTotalMaterials > 0 ? calculatedTotalMaterials : null;
     console.log("[A3] 🚀 setValue('bs3Calculations.totalWeightOfMaterials'):", finalTotalMaterials);
-    setValue('bs3Calculations.totalWeightOfMaterials', finalTotalMaterials as string | null);
+    setValue('bs3Calculations.totalWeightOfMaterials', formatNumberRound(finalTotalMaterials) as any);
     console.groupEnd();
 
     // ----- ขั้นตอน B: คำนวณ "4% NaCl Water" (ค่าเริ่มต้น) -----
@@ -103,16 +95,12 @@ export const useBS3_BCalculations = (
       console.log("[B2] ✅ ผ่านเงื่อนไข (rc417WaterContent มีค่า)");
       const Q21_decimal = (Number(rc417WaterContent) / 100) || 0;
       const Q20 = numRc417Total;
-      const AD21 = calculatedTotalMaterials; // (จากขั้นตอน A)
-      const Q22_decimal = (numStdMeanMoisture / 100) || 0; // 👈 (ใช้ตัวแปรนี้)
-      const O23_decimal = (numNaclWater / 100) || 0;     // 👈 (ใช้ตัวแปรนี้)
+      const AD21 = calculatedTotalMaterials;
+      const Q22_decimal = (numStdMeanMoisture / 100) || 0;
+      const O23_decimal = (numNaclWater / 100) || 0;
 
       console.log("[B3] ตัวแปรที่ใช้คำนวณ:", {
-        Q21_decimal: Q21_decimal, // (rc417WaterContent / 100)
-        Q20: Q20,                 // (numRc417Total)
-        AD21: AD21,               // (calculatedTotalMaterials จาก A)
-        Q22_decimal: Q22_decimal, // (stdMeanMoisture / 100)
-        O23_decimal: O23_decimal  // (naclWater / 100)
+        Q21_decimal, Q20, AD21, Q22_decimal, O23_decimal
       });
 
       const denominator = 1 - O23_decimal - Q22_decimal;
@@ -132,7 +120,6 @@ export const useBS3_BCalculations = (
       console.log("[B2] ❌ ไม่ผ่านเงื่อนไข (rc417WaterContent ไม่มีค่า)");
     }
     console.groupEnd();
-
 
     // ----- ขั้นตอน C: คำนวณค่ากลาง (Intermediate Value) -----
     console.group("--- ขั้นตอน C: Intermediate Water (rawIntermediateWater / AD24) ---");
@@ -159,28 +146,23 @@ export const useBS3_BCalculations = (
 
     // ----- ขั้นตอน D: คำนวณ "Total NaCl water" -----
     console.group("--- ขั้นตอน D: Total NaCl water (totalNaclWaterResult / AD25) ---");
-    let totalNaclWaterResult: number | null = null;
+    let totalNaclWaterResult: string | number | null = null;
     console.log("[D1] Input (rc417WaterContent):", rc417WaterContent);
 
     if (rawInitialNaclWater15 !== null && rawIntermediateWater !== null) {
-      const T24_raw_final = rawInitialNaclWater15; // (ไม่ต้อง || 0)
-      const AD24_raw_final = rawIntermediateWater; // (ไม่ต้อง || 0)
+      const T24_raw_final = rawInitialNaclWater15;
+      const AD24_raw_final = rawIntermediateWater;
       const rawResult = T24_raw_final + AD24_raw_final;
-      totalNaclWaterResult = Number(rawResult.toFixed(2));
+      totalNaclWaterResult = formatNumberRound(rawResult);
     }
-    setValue('bs3Calculations.totalNaclWater', totalNaclWaterResult);
+    setValue('bs3Calculations.totalNaclWater', totalNaclWaterResult as any);
     console.groupEnd();
-
 
     // ----- ขั้นตอน E: คำนวณค่าสุดท้ายของ "4% NaCl Water" และค่าที่เหลือ -----
     console.group("--- ขั้นตอน E: Final 4% NaCl Water & L/min ---");
+    console.log("[E1] ค่า Input ที่ดึงมา:", { totalNaclWaterResult, naclWaterSpecGrav });
 
-    console.log("[E1] ค่า Input ที่ดึงมา:", {
-      totalNaclWaterResult_จากขั้นตอนD: totalNaclWaterResult,
-      naclWaterSpecGrav_จากWatch: naclWaterSpecGrav
-    });
-
-    let finalNaclWater4Result: string| number | null = null;
+    let finalNaclWater4Result: number | null = null; // เก็บเป็น Number เพื่อคำนวณต่อ
 
     // --- (การคำนวณ W23) ---
     const W23 = Number(naclWaterSpecGrav) || 0;
@@ -189,39 +171,39 @@ export const useBS3_BCalculations = (
     // --- (ตรวจสอบเงื่อนไข) ---
     if (naclWaterSpecGrav && W23 !== 0) {
       console.log("[E3] ✅ ผ่านเงื่อนไข (W23 !== 0)");
-
-      const totalNaclForFinal = totalNaclWaterResult || 0;
+      const totalNaclForFinal = Number(totalNaclWaterResult) || 0; // แปลง String เป็น Number ก่อน
       console.log("[E4] แปลง Total NaCl (จาก D) เป็นตัวเลข:", totalNaclForFinal);
 
-      // --- (การคำนวณหลัก) ---
       const rawResult = totalNaclForFinal / W23;
       console.log(`[E5] คำนวณสูตรดิบ (${totalNaclForFinal} / ${W23}):`, rawResult);
 
-      finalNaclWater4Result = rawResult;
-      console.log("[E6] ปัดเศษผลลัพธ์ (toFixed(0)):", finalNaclWater4Result);
-
+      finalNaclWater4Result = rawResult; // เก็บค่าดิบที่เป็น Number ไว้ใช้
+      console.log("[E6] ผลลัพธ์ดิบ:", finalNaclWater4Result);
     } else {
       console.log("[E3] ❌ ไม่ผ่านเงื่อนไข (W23 เป็น 0 หรือ null)");
     }
 
-    // --- (การ Set ค่า ครั้งที่ 1 และ 2) ---
-    console.log("[E7] 🚀 setValue('bs3Calculations.naclWater4'):", finalNaclWater4Result);
-    setValue('bs3Calculations.naclWater4', Number(finalNaclWater4Result?.toFixed(0)) as any);
+    // --- (การ Set ค่า: ปัดเศษจำนวนเต็ม) ---
+    // ใช้ logic เช็ค !== null เพื่อป้องกัน NaN
+    const intNaclWater4 = finalNaclWater4Result !== null ? Number(finalNaclWater4Result.toFixed(0)) : null;
 
-    console.log("[E8] 🚀 setValue('rawMaterials.sodiumChloride'):", finalNaclWater4Result);
-    setValue('rawMaterials.sodiumChloride', Number(finalNaclWater4Result?.toFixed(0)) as any , { shouldValidate: true });
+    console.log("[E7] 🚀 setValue('bs3Calculations.naclWater4'):", intNaclWater4);
+    setValue('bs3Calculations.naclWater4', intNaclWater4 as any);
+
+    console.log("[E8] 🚀 setValue('rawMaterials.sodiumChloride'):", intNaclWater4);
+    setValue('rawMaterials.sodiumChloride', intNaclWater4 as any, { shouldValidate: true });
 
     // --- (การคำนวณ L/min Rate) ---
-    const lminRateInput = Number(finalNaclWater4Result) || 0;
+    const lminRateInput = Number(intNaclWater4) || 0;
     console.log("[E9] ค่า Input สำหรับ L/min Rate (จาก E6):", lminRateInput);
 
     const lminRate = lminRateInput / 20;
     console.log(`[E10] คำนวณ L/min Rate (${lminRateInput} / 20):`, lminRate);
 
-    // --- (การ Set ค่า ครั้งที่ 3) ---
-    const finalLminRate = lminRate > 0 ? lminRate : null;
-    console.log("[E11] 🚀 setValue('bs3Calculations.lminRate' (ปัดเศษ หรือ null)):", finalLminRate);
-    setValue('bs3Calculations.lminRate', Number(finalLminRate?.toFixed(0)) as any );
+    // --- (การ Set ค่า L/min) ---
+    const finalLminRate = lminRate > 0 ? Number(lminRate.toFixed(0)) : null;
+    console.log("[E11] 🚀 setValue('bs3Calculations.lminRate'):", finalLminRate);
+    setValue('bs3Calculations.lminRate', finalLminRate as any);
 
     console.groupEnd();
 
@@ -232,16 +214,14 @@ export const useBS3_BCalculations = (
 
     if (totalNaclWaterResult !== null) {
       console.log("[F2] ✅ ผ่านเงื่อนไข (Input จาก D ไม่ใช่ null)");
-      const AD21_final = calculatedTotalMaterials; // (จาก A)
-      const AD25_final = totalNaclWaterResult; // (จาก D)
-      const U14_final = numNcrGenmatsu; // (จาก Step 2)
-      console.log("[F3] ตัวแปรที่ใช้คำนวณ:", {
-        AD21_final: AD21_final,
-        AD25_final: AD25_final,
-        U14_final: U14_final
-      });
+      const AD21_final = calculatedTotalMaterials; // Number
+      // ⚠️ แก้ไขจุดสำคัญ: ต้องแปลง totalNaclWaterResult (String) เป็น Number ก่อนบวก
+      const AD25_final = Number(totalNaclWaterResult); // Number
+      const U14_final = numNcrGenmatsu; // Number
 
-      const rawResult = AD21_final + AD25_final + U14_final ;
+      console.log("[F3] ตัวแปรที่ใช้คำนวณ:", { AD21_final, AD25_final, U14_final });
+
+      const rawResult = AD21_final + AD25_final + U14_final;
       console.log(`[F4] คำนวณ: ${AD21_final} + ${AD25_final} + ${U14_final} =`, rawResult);
 
       totalWeightWithNcrResult = formatNumberRound(rawResult);
@@ -259,7 +239,7 @@ export const useBS3_BCalculations = (
     rc417Total,
     magnesiumHydroxide,
     activatedCarbon,
-    GypsumPlaster, // ❗️ (เพิ่มตัวนี้เข้าไป)
+    GypsumPlaster,
     ncrGenmatsu,
     rc417WaterContent,
     stdMeanMoisture,
@@ -269,7 +249,6 @@ export const useBS3_BCalculations = (
     setValue
   ]);
 };
-
 
 // =================================================================
 // ╔═══════════════════════════════════════════════════════════════╗
@@ -287,8 +266,8 @@ interface FormStep2Props {
 
 const bs3WeightingConfig: WeightingCalculationConfig = {
   rows: [
-    { grossWeightPath: 'rc417Weighting.row1.weight', netWeightPath: 'rc417Weighting.row1.net',  bagWeightPath: 'cg1cWeighting.row1.bagWeight' },
-    { grossWeightPath: 'rc417Weighting.row2.weight', netWeightPath: 'rc417Weighting.row2.net',  bagWeightPath: 'cg1cWeighting.row2.bagWeight' },
+    { grossWeightPath: 'rc417Weighting.row1.weight', netWeightPath: 'rc417Weighting.row1.net', bagWeightPath: 'cg1cWeighting.row1.bagWeight' },
+    { grossWeightPath: 'rc417Weighting.row2.weight', netWeightPath: 'rc417Weighting.row2.net', bagWeightPath: 'cg1cWeighting.row2.bagWeight' },
   ],
   totalPath: 'rc417Weighting.total',
   destinationPath: 'rawMaterials.diaEarth',
@@ -363,7 +342,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 </td>
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('rc417Weighting.row1.bagNo')} /></td>
-                <td className={tdLeftClass}>BagWeight</td>
+                <td className={tdLeftClass}>Bag Weight</td>
                 <td className={tdLeftClass}><div className="flex items-center"><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row1.bagWeight')} /><span className="ml-2">KG</span></div></td>
                 <td className={tdLeftClass}>Net Weight</td>
                 <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row1.net')} /><span className="ml-2">KG</span></div></td>
@@ -379,7 +358,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 </td>
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('rc417Weighting.row2.bagNo')} /></td>
-                <td className={tdLeftClass}>BagWeight</td>
+                <td className={tdLeftClass}>Bag Weight</td>
                 <td className={tdLeftClass}><div className="flex items-center"><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row2.bagWeight')} /><span className="ml-2">KG</span></div></td>
                 <td className={tdLeftClass}>Net Weight</td>
                 <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row2.net')} /><span className="ml-2">KG</span></div></td>
@@ -391,13 +370,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>Net Weight of Yield</td>
                 <td className={tdLeftClass}><input type="text" className={disabledInputClass} readOnly value="800" /></td>
                 <td className={tdLeftClass}>KG</td>
-               <td className={tdLeftClass} colSpan={7}></td>
+                <td className={tdLeftClass} colSpan={7}></td>
               </tr>
 
               {/* --- ส่วนที่ 2: การคำนวณสำหรับ BS3-B --- */}
               <tr>
                 <td className={tdLeftClass}>RC-417: Water Content</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" step="0.001"  className={inputClass} {...register('bs3Calculations.rc417WaterContent', { valueAsNumber: true })} /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" step="0.001" className={inputClass} {...register('bs3Calculations.rc417WaterContent', { valueAsNumber: true })} /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass}> <span className="text-xs"> Weight of RC-417 + Mg(OH)<sub>2</sub> <br /> + Activated Carbon P-200U </span> </td>
                 <td className={tdLeftClass}><input type="text" className={disabledInputClass} readOnly {...register('bs3Calculations.totalWeightOfMaterials')} /></td>
                 <td className={tdLeftClass}>KG</td>
@@ -422,7 +401,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>Temperature</td>
                 <td className={tdLeftClass}><input type="number" step="0.1" className={inputClass} {...register('bs3Calculations.temperature', { valueAsNumber: true })} /></td>
                 <td className={tdLeftClass}>C°</td>
-                 <td className={tdLeftClass} colSpan={7}></td>
+                <td className={tdLeftClass} colSpan={7}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>4% NaCl Water</td>
@@ -430,13 +409,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>(L/B)/20 min. =</td>
                 <td className={tdLeftClass}><input type="text" step="0.001" className={disabledInputClass} readOnly {...register('bs3Calculations.lminRate')} /></td>
                 <td className={tdLeftClass}>'L/min </td>
-                 <td className={tdLeftClass} colSpan={7}></td>
+                <td className={tdLeftClass} colSpan={7}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Total NaCl water=</td>
                 <td className={tdLeftClass}><input type="number" step="0.1" className={disabledInputClass} readOnly {...register('bs3Calculations.totalNaclWater', { valueAsNumber: true })} /></td>
                 <td className={tdLeftClass}>Kg./B</td>
-                 <td className={tdLeftClass} colSpan={7}></td>
+                <td className={tdLeftClass} colSpan={7}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Total weight = NCR Genmatsu =</td>

@@ -134,7 +134,7 @@ const Profile = () => {
                 )}
 
                 {/* 3. Master Admin Badge */}
-                {(user?.LV_Approvals ?? 0) === 3 && (
+                {(user?.LV_Approvals ?? 0) >= 2 && (
                   <span className="inline-flex items-center gap-1 rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-700/10 dark:bg-purple-900/20 dark:text-purple-400">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
                       <path fillRule="evenodd" d="M10.362 1.093a.75.75 0 00-.724 0L2.529 5.018a.75.75 0 00-.468.693v5.333a7.518 7.518 0 002.933 6.035l4.312 2.738a.75.75 0 00.788 0l4.312-2.738a7.518 7.518 0 002.933-6.035V5.71a.75.75 0 00-.468-.693l-7.109-3.925zM10 2.438l6.391 3.529v5.077c0 2.229-1.328 4.256-3.376 5.166L10 17.568l-3.015-1.358C4.969 15.299 3.64 13.273 3.64 11.044V5.967L10 2.438z" clipRule="evenodd" />

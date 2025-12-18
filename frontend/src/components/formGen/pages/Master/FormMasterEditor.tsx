@@ -35,7 +35,7 @@ const FormMasterEditor: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [editingItem, setEditingItem] = useState<IMasterFormItem | null>(null);
   const { user } = useAuth();
-  useLevelGuard(3);
+  useLevelGuard(2);
 
   if (!user || !user.id) {
     fireToast('error', 'Authentication error. Cannot find user ID.');

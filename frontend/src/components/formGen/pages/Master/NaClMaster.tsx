@@ -16,7 +16,7 @@ const NaClMaster = () => {
   const [typeFilter, setTypeFilter] = useState('');
   const [percentFilter, setPercentFilter] = useState(''); // สำหรับ NaCl %
   const [chemicalTypeFilter, setChemicalTypeFilter] = useState(''); // สำหรับ Chemicals Type
-  useLevelGuard(3);
+  useLevelGuard(2);
 
   const fetchData = async () => {
     try {

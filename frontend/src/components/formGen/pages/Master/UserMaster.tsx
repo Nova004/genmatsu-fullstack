@@ -24,7 +24,7 @@ const UserMaster: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<AgtMember | null>(null);
-  useLevelGuard(3);
+  useLevelGuard(2);
 
   // --- 1. เพิ่ม State สำหรับการค้นหา (Search Term) ---
   const [searchTerm, setSearchTerm] = useState('');

@@ -16,6 +16,7 @@ export const EXCLUDED_DECIMAL_FIELDS = [
     'tempPoint2', 
     'tempPoint1', 
     'naclWaterSpecGrav',
+    'canNo',
     'temperature',
     'temp',
     'nacl15SpecGrav',

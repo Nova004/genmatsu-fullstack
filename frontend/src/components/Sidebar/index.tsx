@@ -206,7 +206,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           </li>
 
                           {/* 🟡 3. ซ่อนส่วน Master Data ถ้าไม่ใช่ LV 3 */}
-                          {(user?.LV_Approvals ?? 0) === 3 && (
+                          {(user?.LV_Approvals ?? 0) >= 2 && (
                             <>
                               <li className="mb-1 text-xs font-semibold text-gray-500 uppercase px-4 pt-2 mt-2">
                                 Master Data
