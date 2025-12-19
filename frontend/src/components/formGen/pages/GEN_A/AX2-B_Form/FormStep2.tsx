@@ -234,7 +234,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               <tr>
                 <td className={tdLeftClass}>Total weight :</td>
                 <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.finalTotalWeight')} /></td>
-                <td className={tdLeftClass} colSpan={4} style={{ fontSize: 'small' }}>* Diatomaceous Earth (CG-1C) + (8) + Magnesium Hydroxide + Remained Genmatsu + NCR Genmatsu</td>
+                <td className={tdLeftClass} colSpan={4} style={{ fontSize: 'small' }}>*Total weight (Kg.) = Iron Powder JIP-303A-60+Calcium chloride+Carbon A3+Perlite+Iron Oxide MTY-80+Remained Genmatsu (+NCR Genmatsu)</td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Remark (หมายเหตุ) :</td>
