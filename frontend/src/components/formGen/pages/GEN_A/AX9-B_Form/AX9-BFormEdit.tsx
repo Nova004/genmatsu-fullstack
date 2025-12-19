@@ -31,6 +31,9 @@ const AX9_B_VALIDATION_SCHEMA = {
     },
     2: {
         fields: [
+            'rawMaterials',
+            'cg1cWeighting.row1.cg1c',
+            'cg1cWeighting.row2.cg1c',
         ],
         message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
     },
@@ -107,7 +110,7 @@ const AX9_BFormEdit: React.FC<AX9_BFormEditProps> = ({ initialData, onSubmit, on
                     inputClass={inputClass}
                 />
 
-                 <ProgressBar
+                <ProgressBar
                     currentStep={step}
                     totalSteps={4}
                     onStepClick={(stepNumber) => setStep(stepNumber)}

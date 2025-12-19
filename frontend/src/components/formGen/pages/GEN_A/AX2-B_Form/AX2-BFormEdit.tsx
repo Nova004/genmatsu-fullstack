@@ -30,6 +30,9 @@ const AX2_B_VALIDATION_SCHEMA = {
     },
     2: {
         fields: [
+            'rawMaterials',
+            'cg1cWeighting.row1.cg1c',
+            'cg1cWeighting.row2.cg1c',
         ],
         message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
     },
@@ -38,7 +41,6 @@ const AX2_B_VALIDATION_SCHEMA = {
         message: 'กรุณาตรวจสอบข้อมูลเงื่อนไขและผลการปฏิบัติงานให้ถูกต้อง',
     },
 };
-
 
 const AX2_BFormEdit: React.FC<AX2_BFormEditProps> = ({ initialData, onSubmit, onResubmit, submissionId, status }) => {
 

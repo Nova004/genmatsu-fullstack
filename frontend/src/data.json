@@ -73,10 +73,10 @@
         "lot": "",
         "actual": "20.00"
       },
-      "shelfLife": "1",
+      "shelfLife": "90",
       "ncrGenmatsu": {
         "lot": "",
-        "actual": "1.00"
+        "actual": "150.00"
       },
       "rowater": "60.00"
     },
@@ -105,72 +105,72 @@
     },
     "operationResults": [
       {
-        "startTime": "11:11"
+        "startTime": "22:01"
       },
       {},
       {
         "subItems": [
           null,
           {
-            "startTime": "11:14",
-            "finishTime": "11:15"
+            "startTime": "22:04",
+            "finishTime": "22:05"
           }
         ],
-        "startTime": "11:12",
-        "finishTime": "11:13"
+        "startTime": "22:02",
+        "finishTime": "22:03"
       },
       {
         "subItems": [
           {
-            "startTime": "11:16",
-            "finishTime": "11:17"
+            "startTime": "22:06",
+            "finishTime": "22:07"
           }
         ]
       },
       {
         "subItems": [
           {
-            "startTime": "11:18",
-            "finishTime": "11:19"
+            "startTime": "22:08",
+            "finishTime": "22:09"
           }
         ]
       },
       {
-        "tempPoint1": 50,
-        "tempPoint2": 50,
-        "tempPoint3": 50
+        "tempPoint1": 1,
+        "tempPoint2": 1,
+        "tempPoint3": -1
       },
       {
         "subItems": [
           {
-            "startTime": "11:20",
-            "finishTime": "11:21"
+            "startTime": "22:10",
+            "finishTime": "22:11"
           }
         ]
       },
       {},
       {},
       {
-        "startTime": "11:22"
+        "startTime": "22:12"
       },
       {
-        "finishTime": "11:23"
+        "finishTime": "22:13"
       },
       {
-        "startTime": "11:24",
-        "finishTime": "11:25"
+        "startTime": "22:14",
+        "finishTime": "22:15"
       },
       {
         "humidity": 2.7
       },
       {
-        "tempPoint1": 50,
-        "tempPoint2": 50,
-        "tempPoint3": 50
+        "tempPoint1": 11,
+        "tempPoint2": 1,
+        "tempPoint3": 1
       },
       {
-        "startTime": "11:26",
-        "finishTime": "11:27"
+        "startTime": "22:16",
+        "finishTime": "22:17"
       }
     ],
     "palletInfo": [
@@ -207,7 +207,7 @@
     ],
     "lot_no": "5320A1",
     "calculations": {
-      "finalTotalWeight": "2137.00"
+      "finalTotalWeight": "2286.00"
     },
     "qouRemark": "",
     "operationRemark": "",
