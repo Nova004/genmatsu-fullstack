@@ -6,6 +6,7 @@ import { IManufacturingReportForm, IStep2ConfigJson } from '../../types';
 import { useTemplateLoader } from '../../../../../hooks/useTemplateLoader';
 import { useWeightingCalculation, WeightingCalculationConfig } from '../../../../../hooks/useWeightCalculations';
 import RawMaterialTableRows from '../../../components/forms/RawMaterialTableRows';
+import { formatNumberRound } from '../../../../../utils/utils';
 
 // =================================================================
 // ╔═══════════════════════════════════════════════════════════════╗
@@ -66,8 +67,8 @@ export const useBZ3_BCalculations = (
       return; // 👈 หยุดการทำงานของ useEffect ทันที
     }
 
-    setValue('bz3Calculations.totalWeightOfMaterials', calculatedTotalMaterials > 0 ? calculatedTotalMaterials.toFixed(2) : null);
-    console.log(`✅ SET: bz3Calculations.totalWeightOfMaterials = ${calculatedTotalMaterials.toFixed(2)}`);
+    setValue('bz3Calculations.totalWeightOfMaterials', calculatedTotalMaterials > 0 ? formatNumberRound(calculatedTotalMaterials) : null);
+    console.log(`✅ SET: bz3Calculations.totalWeightOfMaterials = ${calculatedTotalMaterials}`);
 
 
     // ----- ขั้นตอน B: คำนวณ "15% NaCl Water" (ค่าเริ่มต้น/T24) -----
@@ -124,13 +125,13 @@ export const useBZ3_BCalculations = (
       const rawResult = T24_raw_final + AD24_raw_final; // ผลรวมของ NaCl + Water
 
       // 🔴 ใช้ค่าดิบ rawResult ในการคำนวณต่อเนื่อง (แม้ว่าที่นี่จะไม่มีต่อเนื่อง แต่เป็นหลักการที่ดี)
-      totalNaclWaterResult = Number(rawResult.toFixed(2));
+      totalNaclWaterResult = rawResult;
 
       console.log('--- D. Total NaCl Water (T24 + AD24) ---');
       console.log(`Formula: ${T24_raw_final} (T24 Raw) + ${AD24_raw_final} (AD24 Raw)`);
       console.log(`Raw Sum: ${rawResult}`);
       console.log(`✅ SET: bz3Calculations.totalNaclWater = ${totalNaclWaterResult}`);
-      setValue('bz3Calculations.totalNaclWater', totalNaclWaterResult);
+      setValue('bz3Calculations.totalNaclWater', formatNumberRound(totalNaclWaterResult) as any);
 
     } else {
       setValue('bz3Calculations.totalNaclWater', null);
@@ -143,7 +144,7 @@ export const useBZ3_BCalculations = (
         const totalNaclForFinal = totalNaclWaterResult; // ใช้ค่าที่เพิ่งคำนวณเสร็จ (Total NaCl Water)
         // สูตร: (Total NaCl Water) / Specific Gravity
         const rawResult = totalNaclForFinal / numNaclWaterSpecGrav;
-        finalNaclWater15Result = Number(rawResult.toFixed(1));
+        finalNaclWater15Result = rawResult;
       } else if (numNaclWaterSpecGrav === 0) {
         // ถ้า Spec Grav เป็น 0 ให้ผลลัพธ์เป็น null
         finalNaclWater15Result = null;
@@ -155,8 +156,8 @@ export const useBZ3_BCalculations = (
       console.log(`✅ SET: bz3Calculations.naclWater15 = ${finalNaclWater15Result}`);
 
       // ตั้งค่า Sodium Chloride และ L/min Rate
-      setValue('bz3Calculations.naclWater15', finalNaclWater15Result);
-      setValue('rawMaterials.sodiumChloride', finalNaclWater15Result, { shouldValidate: true });
+      setValue('bz3Calculations.naclWater15', formatNumberRound(finalNaclWater15Result) as any);
+      setValue('rawMaterials.sodiumChloride', formatNumberRound(finalNaclWater15Result) as any, { shouldValidate: true });
 
       // คำนวณ "(L/B)/20 min." (L/min Rate)
       const lminRate = (finalNaclWater15Result || 0) / 20;
@@ -178,14 +179,14 @@ export const useBZ3_BCalculations = (
       const U14_final = numNcrGenmatsu;
       // สูตร: AD21 + AD25 + U14
       const rawResult = AD21_final + AD25_final + U14_final;
-      totalWeightWithNcrResult = Number(rawResult.toFixed(2));
+      totalWeightWithNcrResult = rawResult;
 
       console.log('--- F. Total Weight with NCR ---');
       console.log(`Sum: ${AD21_final} (Total Materials) + ${AD25_final} (Total NaCl Water) + ${U14_final} (NCR Genmatsu)`);
       console.log(`Raw Result: ${rawResult}`);
       console.log(`✅ SET: bz3Calculations.totalWeightWithNcr = ${totalWeightWithNcrResult}`);
 
-      setValue('bz3Calculations.totalWeightWithNcr', totalWeightWithNcrResult);
+      setValue('bz3Calculations.totalWeightWithNcr', formatNumberRound(totalWeightWithNcrResult)as any);
 
     } else {
       console.log('--- F. Total Weight with NCR --- (Skip: Total NaCl Water is null)');
@@ -293,7 +294,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               {/* --- ส่วนที่ 1: การชั่งน้ำหนัก RC-417 --- */}
               <tr>
                 <td className={tdLeftClass}>RC-417 : Weight</td>
-                <td className={tdLeftClass}><input type="number" step="0.001" className={inputClass} {...register('rc417Weighting.row1.weight', { valueAsNumber: true, required: 'กรุณากรอก RC-417 : Weight' })} /></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" step="0.001" className={inputClass} {...register('rc417Weighting.row1.weight', { valueAsNumber: true, required: 'กรุณากรอก RC-417 : Weight' })} /><span className="ml-2">KG</span></div></td>
                 {errors.rc417Weighting?.row1?.weight &&
                   <p className="text-sm text-danger mt-1">
                     {errors.rc417Weighting.row1.weight.message}
@@ -302,13 +303,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('rc417Weighting.row1.bagNo')} /></td>
                 <td className={tdLeftClass}>Bag Weight</td>
-                <td className={tdLeftClass}><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row1.bagWeight')} /></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row1.bagWeight')} /><span className="ml-2">KG</span></div></td>
                 <td className={tdLeftClass}>Net Weight</td>
-                <td className={tdLeftClass}><input type="number" step="0.001" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row1.net')} /></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" step="0.001" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row1.net')} /><span className="ml-2">KG</span></div></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>RC-417 : Weight</td>
-                <td className={tdLeftClass}><input type="number" className={inputClass} {...register('rc417Weighting.row2.weight', { valueAsNumber: true, required: 'กรุณากรอก RC-417 : Weight' })} />
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={inputClass} {...register('rc417Weighting.row2.weight', { valueAsNumber: true, required: 'กรุณากรอก RC-417 : Weight' })} /><span className="ml-2">KG</span></div>
                   {errors.rc417Weighting?.row2?.weight &&
                     <p className="text-sm text-danger mt-1">
                       {errors.rc417Weighting.row2.weight.message}
@@ -318,13 +319,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('rc417Weighting.row2.bagNo')} /></td>
                 <td className={tdLeftClass}>Bag Weight</td>
-                <td className={tdLeftClass}><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row2.bagWeight')} /></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row2.bagWeight')} /><span className="ml-2">KG</span></div></td>
                 <td className={tdLeftClass}>Net Weight</td>
-                <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row2.net')} /></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row2.net')} /><span className="ml-2">KG</span></div></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>RC-417 :Total Weight</td>
-                <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.total')} /></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.total')} /><span className="ml-2">KG</span></div></td>
 
                 <td className={tdLeftClass}>Net Weight of Yield</td>
                 <td className={tdLeftClass}><input type="text" className={disabledInputClass} readOnly value="800" /></td>
@@ -336,7 +337,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               <tr>
                 <td className={tdLeftClass}>RC-417: Water Content ( Moisture )</td>
                 <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" step="0.01" min="0" className={inputClass} {...register('bz3Calculations.rc417WaterContent', { valueAsNumber: true })} /><span className="ml-2">%</span></div> </td>
-                <td className={tdLeftClass}> <span className="text-xs"> Weight of RC-417 + Mg(OH)<sub>2</sub> <br /> + Activated Carbon P-200U </span> </td>
+                <td className={tdLeftClass}> <span className="text-xs">Weight of RC-417 + Mg(OH)2 +Activated Carbon A3  = </span> </td>
                 <td className={tdLeftClass}><input type="text" className={disabledInputClass} readOnly {...register('bz3Calculations.totalWeightOfMaterials')} /></td>
                 <td className={tdLeftClass}>KG</td>
                 <td className={tdLeftClass}></td>

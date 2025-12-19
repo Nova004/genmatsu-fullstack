@@ -1,44 +1,227 @@
 {
-  "basicData": {
-    "date": "2025-11-19",
-    "machineName": "B",
-    "lotNo": "5324B4",
-    "mcOperatorRole": "M/C operator"
-  },
-  "mcOperators": [
-    { "id": "201634", "name": "Mr.Tinnakon  Thuengkhamphu", "number": "2" },
-    { "id": "-", "name": "-", "number": "-" },
-    { "id": "-", "name": "-", "number": "-" }
-  ],
-  "assistants": [
-    { "id": "201886", "name": "Mr.Amnat  Tonthong", "number": "9" },
-    { "id": "202126", "name": "Mr.Anon Phimchaiyaphumi", "number": "13" }
-  ],
-  "conditions": [{ "status": "OK" }, { "status": "OK" }],
-  "values": [],
-  "checklist": {
-    "coolingValve": "Mr.Tinnakon  Thuengkhamphu (2)",
-    "butterflyValve": "Mr.Tinnakon  Thuengkhamphu (2)"
-  },
-  "rawMaterials": { "netWeightOfYieldSTD": 0 },
-  "cg1cWeighting": { "row1": { "bagWeight": 0 }, "row2": { "bagWeight": 0 } },
-  "rc417Weighting": { "row1": { "bagWeight": 0 }, "row2": { "bagWeight": 0 } },
-  "operationResults": [
-    {},
-    {},
-    { "subItems": [] },
-    { "subItems": [] },
-    { "subItems": [] },
-    { "subItems": [] },
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {},
-    {}
-  ],
-  "palletInfo": []
+  "lot_no": "5320A1",
+  "form_data": {
+    "basicData": {
+      "date": "2025-11-15",
+      "machineName": "B",
+      "lotNo": "5320A1",
+      "mcOperatorRole": "M/C operator"
+    },
+    "mcOperators": [
+      {
+        "id": "201052",
+        "name": "Mr.Catchai  Thaijaroen",
+        "number": "2"
+      },
+      {
+        "id": "-",
+        "name": "-",
+        "number": "-"
+      },
+      {
+        "id": "-",
+        "name": "-",
+        "number": "-"
+      }
+    ],
+    "assistants": [
+      {
+        "id": "201949",
+        "name": "Mr.Natthawat  Yodrak",
+        "number": "9"
+      },
+      {
+        "id": "202095",
+        "name": "Mr.Korawich Jaimon",
+        "number": "14"
+      },
+      {
+        "id": "-",
+        "name": "-",
+        "number": "-"
+      },
+      {
+        "id": "-",
+        "name": "-",
+        "number": "-"
+      }
+    ],
+    "conditions": [
+      {
+        "status": "OK",
+        "remark": ""
+      },
+      {
+        "status": "OK",
+        "remark": ""
+      }
+    ],
+    "values": [],
+    "checklist": {
+      "coolingValve": "Mr.Catchai  Thaijaroen (2)",
+      "butterflyValve": "Mr.Catchai  Thaijaroen (2)"
+    },
+    "rawMaterials": {
+      "netWeightOfYieldSTD": "0.00",
+      "diaEarth": "2000.00",
+      "calciumchloride": "8.00",
+      "sg": "1.075",
+      "magnesiumHydroxide": "48.00",
+      "IronOxideMTY80": "40.00",
+      "activated": "20.00",
+      "remainedGenmatsu": {
+        "lot": "",
+        "actual": "20.00"
+      },
+      "shelfLife": "1",
+      "ncrGenmatsu": {
+        "lot": "",
+        "actual": "1.00"
+      },
+      "rowater": "60.00"
+    },
+    "cg1cWeighting": {
+      "row1": {
+        "bagWeight": "0.00",
+        "cg1c": 1000,
+        "bagNo": "",
+        "net": "1000.00"
+      },
+      "row2": {
+        "bagWeight": "0.00",
+        "cg1c": 1000,
+        "bagNo": "",
+        "net": "1000.00"
+      },
+      "total": "2000.00"
+    },
+    "rc417Weighting": {
+      "row1": {
+        "bagWeight": "0.00"
+      },
+      "row2": {
+        "bagWeight": "0.00"
+      }
+    },
+    "operationResults": [
+      {
+        "startTime": "11:11"
+      },
+      {},
+      {
+        "subItems": [
+          null,
+          {
+            "startTime": "11:14",
+            "finishTime": "11:15"
+          }
+        ],
+        "startTime": "11:12",
+        "finishTime": "11:13"
+      },
+      {
+        "subItems": [
+          {
+            "startTime": "11:16",
+            "finishTime": "11:17"
+          }
+        ]
+      },
+      {
+        "subItems": [
+          {
+            "startTime": "11:18",
+            "finishTime": "11:19"
+          }
+        ]
+      },
+      {
+        "tempPoint1": 50,
+        "tempPoint2": 50,
+        "tempPoint3": 50
+      },
+      {
+        "subItems": [
+          {
+            "startTime": "11:20",
+            "finishTime": "11:21"
+          }
+        ]
+      },
+      {},
+      {},
+      {
+        "startTime": "11:22"
+      },
+      {
+        "finishTime": "11:23"
+      },
+      {
+        "startTime": "11:24",
+        "finishTime": "11:25"
+      },
+      {
+        "humidity": 2.7
+      },
+      {
+        "tempPoint1": 50,
+        "tempPoint2": 50,
+        "tempPoint3": 50
+      },
+      {
+        "startTime": "11:26",
+        "finishTime": "11:27"
+      }
+    ],
+    "palletInfo": [
+      {
+        "no": "",
+        "qty": "",
+        "canNo": ""
+      },
+      {
+        "no": "",
+        "qty": "",
+        "canNo": ""
+      },
+      {
+        "no": "",
+        "qty": "",
+        "canNo": ""
+      },
+      {
+        "no": "",
+        "qty": "",
+        "canNo": ""
+      },
+      {
+        "no": "",
+        "qty": "",
+        "canNo": ""
+      },
+      {
+        "no": "",
+        "qty": "",
+        "canNo": ""
+      }
+    ],
+    "lot_no": "5320A1",
+    "calculations": {
+      "finalTotalWeight": "2137.00"
+    },
+    "qouRemark": "",
+    "operationRemark": "",
+    "packingResults": {
+      "yieldPercent": null,
+      "quantityOfProduct": {
+        "cans": null,
+        "calculated": null
+      },
+      "weighttank": {
+        "tank": ""
+      },
+      "remain": null,
+      "meshPass40": null
+    }
+  }
 }

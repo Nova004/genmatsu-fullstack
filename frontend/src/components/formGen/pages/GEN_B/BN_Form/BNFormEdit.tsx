@@ -121,7 +121,7 @@ const BNFormEdit: React.FC<BNFormEditProps> = ({ initialData, onSubmit, onResubm
                       เพราะเราจะแสดงผลข้อมูลตามที่ได้รับมาผ่าน initialData
                       แต่ยังคงส่ง props ที่จำเป็นอื่นๆ ให้กับ Step Components
                     */}
-                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="Zeolite" errors={errors} />}
+                    {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="Zeolite (Z)" errors={errors} />}
                     {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={() => { }} />}
                     {step === 3 && <SharedFormStep3 register={register} errors={errors} trigger={trigger} control={control} getValues={getValues} onTemplateLoaded={() => { }} templateName="BN_Step3_Operations" />}
                     {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="calculations.finalTotalWeight" formType="BN" />}

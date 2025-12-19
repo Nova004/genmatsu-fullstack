@@ -7,7 +7,7 @@ import apiClient from '../../../../../services/apiService';
 import { useTemplateLoader } from '../../../../../hooks/useTemplateLoader';
 import { useWeightingCalculation, WeightingCalculationConfig } from '../../../../../hooks/useWeightCalculations';
 import RawMaterialTableRows from '../../../components/forms/RawMaterialTableRows';
-
+import { formatNumberRound } from '../../../../../utils/utils';
 // =================================================================
 // ╔═══════════════════════════════════════════════════════════════╗
 // ║                     CUSTOM HOOKS (ส่วนจัดการ Logic)            
@@ -42,17 +42,17 @@ export const useExcelFormulaCalculations = (
   useEffect(() => {
     // --- 2. แปลงค่าทั้งหมดเป็นตัวเลขและคำนวณผลรวม ---
     const total =
-      (Number(net) || 0) +
-      (Number(calciumchloride) || 0) +
-      (Number(activatedcarbon) || 0) +
-      (Number(magnesiumHydroxide) || 0) +
-      (Number(remainedGenmatsu) || 0) +
-      (Number(ncrGenmatsu) || 0);
+      ((net) || 0) +
+      ((calciumchloride) || 0) +
+      ((activatedcarbon) || 0) +
+      ((magnesiumHydroxide) || 0) +
+      ((remainedGenmatsu) || 0) +
+      ((ncrGenmatsu) || 0);
 
     // --- 3. อัปเดตค่าไปยัง finalTotalWeight ---
     // ✅ แก้ไขตรงนี้: ลบ Number() ออก เพื่อให้ส่งค่าเป็นข้อความ "xxx.00"
     // (ถ้า total เป็น 0 จะได้ "0.00" แต่ถ้าอยากให้เป็นค่าว่างเมื่อเป็น 0 ให้ใช้เงื่อนไข total > 0)
-    setValue('calculations.finalTotalWeight', total > 0 ? total.toFixed(2) : null);
+    setValue('calculations.finalTotalWeight', total > 0 ? formatNumberRound(total) : null);
 
   }, [
     net,
@@ -153,7 +153,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
             <tbody>
               <tr>
                 <td className={tdLeftClass}>Iron Powder  HGN 82.29.01 :Weight</td>
-                <td className={tdLeftClass}><input type="number" className={inputClass} {...register('cg1cWeighting.row1.cg1c', { valueAsNumber: true, required: 'กรุณากรอก  Iron Powder' })} />
+                <td className={tdLeftClass}> <div className="flex items-center"><input type="number" className={inputClass} {...register('cg1cWeighting.row1.cg1c', { valueAsNumber: true, required: 'กรุณากรอก  Iron Powder' })} /><span className="ml-2">KG</span></div>
                   {errors.cg1cWeighting?.row1?.cg1c &&
                     <p className="text-sm text-danger mt-1">
                       {errors.cg1cWeighting.row1.cg1c.message}
@@ -163,13 +163,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('cg1cWeighting.row1.bagNo')} /></td>
                 <td className={tdLeftClass}>Bag Weight</td>
-                <td className={tdLeftClass}><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row1.bagWeight')} /></td>
+                <td className={tdLeftClass}> <div className="flex items-center"><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row1.bagWeight')} /><span className="ml-2">KG</span></div></td>
                 <td className={tdLeftClass}>Net weight (KG) :</td>
-                <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('cg1cWeighting.row1.net')} /></td>
+                <td className={tdLeftClass}> <div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('cg1cWeighting.row1.net')} /><span className="ml-2">KG</span></div></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Iron Powder  HGN 82.29.01 :Weight</td>
-                <td className={tdLeftClass}><input type="number" className={inputClass} {...register('cg1cWeighting.row2.cg1c', { valueAsNumber: true, required: 'กรุณากรอก  Iron Powder' })} />
+                <td className={tdLeftClass}> <div className="flex items-center"><input type="number" className={inputClass} {...register('cg1cWeighting.row2.cg1c', { valueAsNumber: true, required: 'กรุณากรอก  Iron Powder' })} /><span className="ml-2">KG</span></div>
                   {errors.cg1cWeighting?.row2?.cg1c &&
                     <p className="text-sm text-danger mt-1">
                       {errors.cg1cWeighting.row2.cg1c.message}
@@ -180,13 +180,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('cg1cWeighting.row2.bagNo')} /></td>
                 <td className={tdLeftClass}>Bag Weight</td>
-                <td className={tdLeftClass}><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row2.bagWeight')} /></td>
+                <td className={tdLeftClass}> <div className="flex items-center"><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row2.bagWeight')} /><span className="ml-2">KG</span></div></td>
                 <td className={tdLeftClass}>Net weight (KG) :</td>
-                <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('cg1cWeighting.row2.net')} /></td>
+                <td className={tdLeftClass}> <div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('cg1cWeighting.row2.net')} /><span className="ml-2">KG</span></div></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Total weight :</td>
-                <td className={tdLeftClass}><input type="text" className={disabledInputClass} readOnly disabled {...register('calculations.finalTotalWeight')} /></td>
+                <td className={tdLeftClass}> <div className="flex items-center"><input type="text" className={disabledInputClass} readOnly disabled {...register('calculations.finalTotalWeight')} /><span className="ml-2">KG</span></div></td>
                 <td className={tdLeftClass} colSpan={4} style={{ fontSize: 'small' }}>Total weight (Kg.) = Iron Powder HGN 82.29.01+Calcium chloride+Carbon A+Perlite+Remained Genmatsu (+NCR Genmatsu )</td>
               </tr>
               <tr>

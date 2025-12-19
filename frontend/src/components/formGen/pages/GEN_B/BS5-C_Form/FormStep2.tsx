@@ -6,24 +6,13 @@ import { IManufacturingReportForm, IStep2ConfigJson } from '../../types';
 import { useWeightingCalculation, WeightingCalculationConfig } from '../../../../../hooks/useWeightCalculations';
 import { useTemplateLoader } from '../../../../../hooks/useTemplateLoader';
 import RawMaterialTableRows from '../../../components/forms/RawMaterialTableRows';
+import { formatNumberRound } from '../../../../../utils/utils';
 
 // =================================================================
 // ╔═══════════════════════════════════════════════════════════════╗
 // ║                     CUSTOM HOOKS (ส่วนจัดการ Logic)            
 // ╚═══════════════════════════════════════════════════════════════╝
 // =================================================================
-// (สมมติว่า Type ต่างๆ ถูก import มาแล้ว)
-// ...
-
-// Helper function to round intermediate calculations to prevent floating point errors.
-// Using 8 decimal places is a safe precision.
-// ✨ นี่คือฟังก์ชันใหม่ที่เราจะใช้ปัดเศษครับ ✨
-const roundSafe = (num: number | null): number | null => {
-  if (num === null) return null;
-  // This will turn 3.1557999999999997 into 3.1558
-  const multiplier = 100000000; // 1e8
-  return Math.round(num * multiplier) / multiplier;
-};
 
 
 // ✨ [EDIT 1/4] เปลี่ยนชื่อ Hook เป็น BS5-C
@@ -95,13 +84,13 @@ export const useBS5_CCalculations = (
       console.log(`[BS5-C DEBUG] [P22] Inputs: P20=${P20}, P21_decimal=${P21_decimal}`);
       const rawResult = P20 * P21_decimal;
       console.log(`[BS5-C DEBUG] [P22] Output (True RAW): ${rawResult}`); // 👈 Log ค่าดิบจริงๆ
-      calculatedWaterContentWeight_RAW = roundSafe(rawResult); // ✨ ROUNDED
+      calculatedWaterContentWeight_RAW = rawResult; // ✨ ROUNDED
     }
     console.log(`[BS5-C DEBUG] [P22] Output (Rounded): ${calculatedWaterContentWeight_RAW}`); // 👈 Log ค่าที่ปัดแล้ว
     // ปัดเศษเฉพาะตอนแสดงผล
     setValue(
       'bs5cCalculations.rc417WaterContentweight',
-      calculatedWaterContentWeight_RAW !== null ? Number(calculatedWaterContentWeight_RAW.toFixed(2)) : null
+      calculatedWaterContentWeight_RAW !== null ? formatNumberRound(calculatedWaterContentWeight_RAW) as any : null
     );
     // ----------------------------------------------------------
 
@@ -113,12 +102,12 @@ export const useBS5_CCalculations = (
     console.log(`[BS5-C DEBUG] [A] Inputs: numRc417Total=${numRc417Total}, numMagnesiumHydroxide=${numMagnesiumHydroxide}, numActivatedCarbon=${numActivatedCarbon}, numGypsumPlaster=${numGypsumPlaster}`);
     const rawResult_A = numRc417Total + numMagnesiumHydroxide + numActivatedCarbon + numGypsumPlaster; // ค่าดิบ
     console.log(`[BS5-C DEBUG] [A] Output (True RAW): ${rawResult_A}`); // 👈 Log ค่าดิบจริงๆ
-    const calculatedTotalMaterials_RAW = roundSafe(rawResult_A) || 0; // ✨ ROUNDED
+    const calculatedTotalMaterials_RAW = rawResult_A || 0; // ✨ ROUNDED
     console.log(`[BS5-C DEBUG] [A] Output (Rounded): ${calculatedTotalMaterials_RAW}`); // 👈 Log ค่าที่ปัดแล้ว
     // ปัดเศษเฉพาะตอนแสดงผล
     setValue(
       'bs5cCalculations.totalWeightOfMaterials',
-      calculatedTotalMaterials_RAW > 0 ? calculatedTotalMaterials_RAW.toFixed(2) : null
+      calculatedTotalMaterials_RAW > 0 ? formatNumberRound(calculatedTotalMaterials_RAW) : null
     );
     // ----------------------------------------------------------
 
@@ -167,7 +156,7 @@ export const useBS5_CCalculations = (
 
     const rawResult_B = part1 * part2 * part3;
     console.log(`[BS5-C DEBUG] [B] rawResult_B (True RAW): ${rawResult_B}`); // 👈 Log ค่าดิบจริงๆ
-    rawInitialNaclWater15_RAW = roundSafe(rawResult_B); // ✨ ROUNDED
+    rawInitialNaclWater15_RAW = rawResult_B; // ✨ ROUNDED
 
     console.log(`[BS5-C DEBUG] [B] Output (Rounded): ${rawInitialNaclWater15_RAW}`); // 👈 Log ค่าที่ปัดแล้ว
     // ----------------------------------------------------------
@@ -188,7 +177,7 @@ export const useBS5_CCalculations = (
       if (O23_decimal_for_intermediate !== 0) {
         const rawResult_C = (T24_raw / O23_decimal_for_intermediate) * (1 - O23_decimal_for_intermediate); // เก็บค่าดิบ
         console.log(`[BS5-C DEBUG] [C] Output (True RAW): ${rawResult_C}`); // 👈 Log ค่าดิบจริงๆ
-        rawIntermediateWater_RAW = roundSafe(rawResult_C); // ✨ ROUNDED
+        rawIntermediateWater_RAW = rawResult_C; // ✨ ROUNDED
       } else {
         console.log('[BS5-C DEBUG] [C] Skipped (O23_decimal_for_intermediate is 0).');
       }
@@ -211,7 +200,7 @@ export const useBS5_CCalculations = (
       console.log(`[BS5-C DEBUG] [D] Inputs: T24_raw_final (from B rounded)=${T24_raw_final}, AD24_raw_final (from C rounded)=${AD24_raw_final}`);
       const rawResult_D = T24_raw_final + AD24_raw_final;
       console.log(`[BS5-C DEBUG] [D] Output (True RAW): ${rawResult_D}`); // 👈 Log ค่าดิบจริงๆ
-      totalNaclWaterResult_RAW = roundSafe(rawResult_D); // ✨ ROUNDED
+      totalNaclWaterResult_RAW = rawResult_D; // ✨ ROUNDED
     } else {
       console.log('[BS5-C DEBUG] [D] Skipped (rc417WaterContent is falsy).');
     }
@@ -219,7 +208,7 @@ export const useBS5_CCalculations = (
     // ปัดเศษเฉพาะตอนแสดงผล
     setValue(
       'bs5cCalculations.totalNaclWater',
-      totalNaclWaterResult_RAW !== null ? Number(totalNaclWaterResult_RAW.toFixed(2)) : null
+      totalNaclWaterResult_RAW !== null ? formatNumberRound(totalNaclWaterResult_RAW) as any : null
     );
     // ----------------------------------------------------------
 
@@ -236,7 +225,7 @@ export const useBS5_CCalculations = (
       console.log(`[BS5-C DEBUG] [E-1] Input: totalNaclForFinal (from D rounded)=${totalNaclForFinal}`);
       const rawResult_E1 = totalNaclForFinal / W23;
       console.log(`[BS5-C DEBUG] [E-1] Output (True RAW L): ${rawResult_E1}`); // 👈 Log ค่าดิบจริงๆ
-      finalNaclWater4Result_RAW = roundSafe(rawResult_E1); // ✨ ROUNDED
+      finalNaclWater4Result_RAW = rawResult_E1; // ✨ ROUNDED
     } else {
       console.log('[BS5-C DEBUG] [E-1] Skipped (W23 is 0 or missing).');
     }
@@ -256,7 +245,7 @@ export const useBS5_CCalculations = (
     // คำนวณ "(L/B)/20 min."
     const rawResult_LMin = (finalNaclWater4Result_RAW || 0) / 20; // ใช้ค่าดิบที่ปัดแล้วจาก [E-1]
     console.log(`[BS5-C DEBUG] [E-1] Output (L/min True RAW): ${rawResult_LMin}`); // 👈 Log ค่าดิบจริงๆ
-    const lminRate_RAW = roundSafe(rawResult_LMin) || 0; // ✨ ROUNDED
+    const lminRate_RAW = rawResult_LMin || 0; // ✨ ROUNDED
     console.log(`[BS5-C DEBUG] [E-1] Output (L/min Rounded): ${lminRate_RAW}`); // 👈 Log ค่าที่ปัดแล้ว
     // ปัดเศษเฉพาะตอนแสดงผล (ใช้ Math.round() แก้ Type Error)
     setValue(
@@ -273,7 +262,7 @@ export const useBS5_CCalculations = (
       console.log(`[BS5-C DEBUG] [E-2] Inputs: AD21 (from A rounded)=${AD21_final}, AD25 (from D rounded)=${AD25_final}, U14 (NCR)=${U14_final}`);
       const rawResult_E2 = AD21_final + AD25_final + U14_final;
       console.log(`[BS5-C DEBUG] [E-2] Output (True RAW): ${rawResult_E2}`); // 👈 Log ค่าดิบจริงๆ
-      totalWeightWithNcrResult_RAW = roundSafe(rawResult_E2); // ✨ ROUNDED
+      totalWeightWithNcrResult_RAW = rawResult_E2; // ✨ ROUNDED
     } else {
       console.log('[BS5-C DEBUG] [E-2] Skipped (totalNaclWaterResult_RAW is null).');
     }
@@ -281,7 +270,7 @@ export const useBS5_CCalculations = (
     // ปัดเศษเฉพาะตอนแสดงผล
     setValue(
       'bs5cCalculations.totalWeightWithNcr',
-      totalWeightWithNcrResult_RAW !== null ? Number(totalWeightWithNcrResult_RAW.toFixed(2)) : null
+      totalWeightWithNcrResult_RAW !== null ? formatNumberRound(totalWeightWithNcrResult_RAW) as any : null
     );
     console.log('[BS5-C DEBUG] --- ALL CALCULATIONS FINISHED ---');
 
@@ -391,7 +380,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               {/* --- ส่วนที่ 1: การชั่งน้ำหนัก CDZ-1 --- */}
               <tr>
                 <td className={tdLeftClass}>CDZ-1 : Weight</td>
-                <td className={tdLeftClass}><input type="number" className={inputClass} {...register('rc417Weighting.row1.weight', { valueAsNumber: true, required: 'กรุณากรอก  CDZ-1 : Weight' })} />
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={inputClass} {...register('rc417Weighting.row1.weight', { valueAsNumber: true, required: 'กรุณากรอก  CDZ-1 : Weight' })} /><span className="ml-2">KG</span></div>
                   {errors.rc417Weighting?.row1?.weight &&
                     <p className="text-sm text-danger mt-1">
                       {errors.rc417Weighting.row1.weight.message}
@@ -401,13 +390,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('rc417Weighting.row1.bagNo')} /></td>
                 <td className={tdLeftClass}>Bag Weight</td>
-                <td className={tdLeftClass}><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row1.bagWeight')} /></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row1.bagWeight')} /><span className="ml-2">KG</span></div></td>
                 <td className={tdLeftClass}>Net Weight</td>
-                <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row1.net')} /></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row1.net')} /><span className="ml-2">KG</span></div></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>CDZ-1 : Weight</td>
-                <td className={tdLeftClass}><input type="number" className={inputClass} {...register('rc417Weighting.row2.weight', { valueAsNumber: true, required: 'กรุณากรอก CDZ-1 : Weight' })} />
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={inputClass} {...register('rc417Weighting.row2.weight', { valueAsNumber: true, required: 'กรุณากรอก CDZ-1 : Weight' })} /><span className="ml-2">KG</span></div>
                   {errors.rc417Weighting?.row2?.weight &&
                     <p className="text-sm text-danger mt-1">
                       {errors.rc417Weighting.row2.weight.message}
@@ -417,13 +406,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('rc417Weighting.row2.bagNo')} /></td>
                 <td className={tdLeftClass}>Bag Weight</td>
-                <td className={tdLeftClass}><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row2.bagWeight')} /></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row2.bagWeight')} /><span className="ml-2">KG</span></div></td>
                 <td className={tdLeftClass}>Net Weight</td>
-                <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row2.net')} /></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row2.net')} /><span className="ml-2">KG</span></div></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>CDZ-1 :Total Weight</td>
-                <td className={tdLeftClass}><input type="text" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.total')} /></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="text" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.total')} /><span className="ml-2">KG</span></div></td>
                 <td className={tdLeftClass}>Net Weight of Yield</td>
                 <td className={tdLeftClass}><div className="flex items-center"><input type="text" className={disabledInputClass} readOnly value="1000" /><span className="ml-2">KG</span></div> </td>
                 <td className={tdLeftClass}>CDZ-1 of AD</td>
@@ -441,7 +430,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               <tr>
                 <td className={tdLeftClass}>CDZ-1: Water Content (Moisture)</td>
                 <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" step="0.01" min="0" className={inputClass} {...register('bs5cCalculations.rc417WaterContentMoisture', { valueAsNumber: true })} /><span className="ml-2">%</span></div> </td>
-                <td className={tdLeftClass}> <span className="text-xs"> Weight of CDZ-1 + Mg(OH)<sub>2</sub> <br /> + Carbon </span> </td>
+                <td className={tdLeftClass}> <span className="text-xs">Weight of CDZ-1 + Carbon + Gypsum + Mg(OH)2 </span> </td>
                 <td className={tdLeftClass}><div className="flex items-center"><input type="text" className={disabledInputClass} readOnly {...register('bs5cCalculations.totalWeightOfMaterials')} /><span className="ml-2">KG</span></div> </td>
                 <td className={tdLeftClass} colSpan={4}></td>
               </tr>

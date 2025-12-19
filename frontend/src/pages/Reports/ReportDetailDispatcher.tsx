@@ -31,38 +31,38 @@ import ReportDetailAZ from './AZ/ReportDetailAZ';
 
 
 
-// ฟังก์ชันแปลงข้อมูลทั้งก้อน (Recursive) โดยมีการยกเว้นบางฟิลด์
 const processTemplateData = (data: any, parentKey: string = ''): any => {
-  if (Array.isArray(data)) {
-    return data.map(item => processTemplateData(item, parentKey));
-  }
-  if (data !== null && typeof data === 'object') {
-    return Object.fromEntries(
-      Object.entries(data).map(([key, val]) => {
-        const currentPath = parentKey ? `${parentKey}.${key}` : key;
+    if (Array.isArray(data)) {
+        return data.map(item => processTemplateData(item, parentKey));
+    }
+    if (data !== null && typeof data === 'object') {
+        return Object.fromEntries(
+            Object.entries(data).map(([key, val]) => {
+                const currentPath = parentKey ? `${parentKey}.${key}` : key;
 
-        // 🟡 1. เปลี่ยนเงื่อนไข: เช็ค isNumeric แทน typeof === 'number'
-        if (isNumeric(val)) {
-          // 🟡 2. แก้ไข Logic Exclude: เปลี่ยนจาก includes เป็นการเช็คที่แม่นยำขึ้น
-          const isExcluded = EXCLUDED_DECIMAL_FIELDS.some(excluded => {
-            // เช็คว่าตรงกันเป๊ะๆ หรือ ลงท้ายด้วยคำนั้น (เช่น .id)
-            return currentPath === excluded ||
-              currentPath.endsWith(`.${excluded}`) ||
-              key === excluded;
-          });
+                if (isNumeric(val)) {
+                    // 1. เช็คว่าเป็น Field ที่ต้องยกเว้นหรือไม่
+                    const isExcluded = EXCLUDED_DECIMAL_FIELDS.some(excluded => {
+                        return currentPath === excluded ||
+                            currentPath.endsWith(`.${excluded}`) ||
+                            key === excluded;
+                    });
 
-          if (isExcluded) {
-            return [key, val];
-          }
+                    // 🚩 2. แก้ไขตรงนี้: ลบ typeof val === 'string' ออก
+                    // "ถ้าอยู่ในลิสต์ยกเว้น ให้คืนค่าเดิมทันที (ไม่ว่าจะเป็น int, float หรือ string)"
+                    if (isExcluded) { 
+                        return [key, val];
+                    }
 
-          return [key, formatNumberRound(val)];
-        }
+                    // ถ้าไม่ใช่ตัวยกเว้น ค่อยจับปัดเศษ
+                    return [key, formatNumberRound(val)];
+                }
 
-        return [key, processTemplateData(val, currentPath)];
-      })
-    );
-  }
-  return data;
+                return [key, processTemplateData(val, currentPath)];
+            })
+        );
+    }
+    return data;
 };
 
 

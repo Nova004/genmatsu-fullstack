@@ -7,7 +7,7 @@ import { useTemplateLoader } from '../../../../../hooks/useTemplateLoader';
 import { useWeightingCalculation, WeightingCalculationConfig } from '../../../../../hooks/useWeightCalculations';
 import RawMaterialTableRows from '../../../components/forms/RawMaterialTableRows';
 import useNaclBrewingLookup from '../../../../../hooks/useNaclBrewingLookup';
-
+import { formatNumberRound } from '../../../../../utils/utils';
 // =================================================================
 // ╔═══════════════════════════════════════════════════════════════╗
 // ║                     CUSTOM HOOKS (ส่วนจัดการ Logic)            
@@ -62,9 +62,9 @@ export const useExcelFormulaCalculations = (
       // สูตร: (Q18 * Y20) / (Y18 * Q19)
       const rawResult = (numTotalWeight * numNaclBrewingTable) / (stdYield * numNaclSpecGrav);
       // ✅ ปัดเศษเฉพาะผลลัพธ์สุดท้ายนี้เพื่อแสดงผล
-      sodiumChlorideResult = Number(rawResult.toFixed(2));
+      sodiumChlorideResult = rawResult;
     }
-    setValue('rawMaterials.sodiumChloride', sodiumChlorideResult, { shouldValidate: true });
+    setValue('rawMaterials.sodiumChloride', formatNumberRound(sodiumChlorideResult) as any, { shouldValidate: true });
 
 
     // =================================================================
@@ -78,9 +78,9 @@ export const useExcelFormulaCalculations = (
       _rawNaclWaterCalcResult = rawResult;
 
       // ✅ ปัดเศษเฉพาะผลลัพธ์ที่จะ setVaule (สำหรับการแสดงผล)
-      naclWaterCalcResult = Number(rawResult.toFixed(2));
+      naclWaterCalcResult = rawResult;
     }
-    setValue('calculations.naclWaterCalc', naclWaterCalcResult);
+    setValue('calculations.naclWaterCalc', formatNumberRound(naclWaterCalcResult)as any);
 
 
     // =================================================================
@@ -89,11 +89,11 @@ export const useExcelFormulaCalculations = (
     let waterCalcResult: number | null = null;
     // ➡️ ใช้ค่าดิบ (_rawNaclWaterCalcResult) ในการคำนวณ
     if (_rawNaclWaterCalcResult !== null) {
-      const rawResult = _rawNaclWaterCalcResult * 0.85;
+      const rawResult = _rawNaclWaterCalcResult * 0.96;
       // ✅ ปัดเศษเฉพาะผลลัพธ์สุดท้ายนี้เพื่อแสดงผล
-      waterCalcResult = Number(rawResult.toFixed(2));
+      waterCalcResult = rawResult;
     }
-    setValue('calculations.waterCalc', waterCalcResult);
+    setValue('calculations.waterCalc', formatNumberRound(waterCalcResult) as any);
 
 
     // =================================================================
@@ -102,11 +102,11 @@ export const useExcelFormulaCalculations = (
     let saltCalcResult: number | null = null;
     // ➡️ ใช้ค่าดิบ (_rawNaclWaterCalcResult) ในการคำนวณ
     if (_rawNaclWaterCalcResult !== null) {
-      const rawResult = _rawNaclWaterCalcResult * 0.15;
+      const rawResult = _rawNaclWaterCalcResult * 0.04;
       // ✅ ปัดเศษเฉพาะผลลัพธ์สุดท้ายนี้เพื่อแสดงผล
-      saltCalcResult = Number(rawResult.toFixed(2));
+      saltCalcResult = rawResult;
     }
-    setValue('calculations.saltCalc', saltCalcResult);
+    setValue('calculations.saltCalc', formatNumberRound(saltCalcResult) as any);
 
 
     // =================================================================
@@ -118,9 +118,9 @@ export const useExcelFormulaCalculations = (
       const naclWater = _rawNaclWaterCalcResult || 0;
       const total = numTotalWeight + naclWater + numMagnesiumHydroxide + numNcrGenmatsu + numActivatedCarbon + numGypsumPlaster;
       // ✅ ปัดเศษเฉพาะผลลัพธ์สุดท้ายนี้เพื่อแสดงผล
-      finalTotalWeight = Number(total.toFixed(3));
+      finalTotalWeight = total;
     }
-    setValue('calculations.finalTotalWeight', finalTotalWeight);
+    setValue('calculations.finalTotalWeight', formatNumberRound(finalTotalWeight) as any);
 
   }, [
     naclBrewingTable,
@@ -220,8 +220,8 @@ const FormStep2: React.FC<FormStep2Props> = ({
           <table className="w-full table-auto">
             <tbody>
               <tr>
-                <td className={tdLeftClass}>CG-1C Weight (KG) :</td>
-                <td className={tdLeftClass}>  <input type="number" className={inputClass} {...register('cg1cWeighting.row1.cg1c', { valueAsNumber: true, required: 'กรุณากรอก CG-1C Weight ROW 1' })} />
+                <td className={tdLeftClass}>CG-1C Weight</td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={inputClass} {...register('cg1cWeighting.row1.cg1c', { valueAsNumber: true, required: 'กรุณากรอก CG-1C Weight ROW 1' })} /><span className="ml-2">KG</span></div>
                   {errors.cg1cWeighting?.row1?.cg1c &&
                     <p className="text-sm text-danger mt-1">
                       {errors.cg1cWeighting.row1.cg1c.message}
@@ -231,13 +231,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row1.bagNo')} /></td>
                 <td className={tdLeftClass}>BagWeight</td>
-                <td className={tdLeftClass}><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row1.bagWeight')} /></td>
-                <td className={tdLeftClass}>Net weight (KG) :</td>
-                <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('cg1cWeighting.row1.net')} /></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row1.bagWeight')} /><span className="ml-2">KG</span></div></td>
+                <td className={tdLeftClass}>Net weight</td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('cg1cWeighting.row1.net')} /><span className="ml-2">KG</span></div></td>
               </tr>
               <tr>
-                <td className={tdLeftClass}>CG-1C Weight (KG) :</td>
-                <td className={tdLeftClass}>  <input type="number" step="any" className={inputClass} {...register('cg1cWeighting.row2.cg1c', { valueAsNumber: true, required: 'กรุณากรอก CG-1C Weight ROW 2' })} />
+                <td className={tdLeftClass}>CG-1C Weight</td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" step="any" className={inputClass} {...register('cg1cWeighting.row2.cg1c', { valueAsNumber: true, required: 'กรุณากรอก CG-1C Weight ROW 2' })} /><span className="ml-2">KG</span></div>
                   {errors.cg1cWeighting?.row2?.cg1c &&
                     <p className="text-sm text-danger mt-1">
                       {errors.cg1cWeighting.row2.cg1c.message}
@@ -248,71 +248,71 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('cg1cWeighting.row2.bagNo')} /></td>
                 <td className={tdLeftClass}>BagWeight</td>
-                <td className={tdLeftClass}><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row2.bagWeight')} /></td>
-                <td className={tdLeftClass}>Net weight (KG) :</td>
-                <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('cg1cWeighting.row2.net')} /></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row2.bagWeight')} /><span className="ml-2">KG</span></div></td>
+                <td className={tdLeftClass}>Net weight</td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('cg1cWeighting.row2.net')} /><span className="ml-2">KG</span></div></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Total Weight :</td>
-                <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('cg1cWeighting.total')} /></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('cg1cWeighting.total')} /><span className="ml-2">KG</span></div></td>
                 <td className={tdLeftClass}>Net Weight of Yieid (STD) :</td>
                 <td className={tdLeftClass}><input type="text" className={disabledInputClass} readOnly value="800" /></td>
                 <td className={tdLeftClass}>KG</td>
-                <td className={tdLeftClass}></td>
+                <td className={tdLeftClass} colSpan={6}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>4% NaCl Water Specific gravity</td>
-                <td className={tdLeftClass}><input type="number" step="0.001" className={inputClass} {...register('calculations.nacl15SpecGrav', { valueAsNumber: true, required: 'กรุณากรอก 4% NaCl Water Specific gravity' })} />
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" step="0.001" className={inputClass} {...register('calculations.nacl15SpecGrav', { valueAsNumber: true, required: 'กรุณากรอก 4% NaCl Water Specific gravity' })} /><span className="ml-2">KG</span></div>
                   {errors.calculations?.nacl15SpecGrav &&
                     <p className="text-sm text-danger mt-1">
                       {errors.calculations.nacl15SpecGrav.message}
                     </p>
                   }
                 </td>
-                <td className={tdLeftClass} colSpan={4}></td>
+                <td className={tdLeftClass} colSpan={6}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>CG - 1C Water Content (Moisture)</td>
-                <td className={tdLeftClass}><input type="number" step="0.01" className={inputClass} {...register('calculations.cg1cWaterContent', { valueAsNumber: true, required: 'กรุณากรอก 15% CG - 1C Water Content (Moisture)' })} />
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" step="0.01" className={inputClass} {...register('calculations.cg1cWaterContent', { valueAsNumber: true, required: 'กรุณากรอก 15% CG - 1C Water Content (Moisture)' })} /><span className="ml-2">%</span></div>
                   {errors.calculations?.cg1cWaterContent &&
                     <p className="text-sm text-danger mt-1">
                       {errors.calculations.cg1cWaterContent.message}
                     </p>
                   }
                 </td>
-                <td className={tdLeftClass}>Temperature (˚C)</td>
-                <td className={tdLeftClass}><input type="number" step="0.1" className={inputClass} {...register('calculations.temperature', { valueAsNumber: true })} /></td>
-                <td className={tdLeftClass} colSpan={3}></td>
+                <td className={tdLeftClass}>Temperature</td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" step="0.1" className={inputClass} {...register('calculations.temperature', { valueAsNumber: true })} /><span className="ml-2">(˚C)</span></div></td>
+                <td className={tdLeftClass} colSpan={6}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>NaCl brewing table</td>
-                <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.naclBrewingTable')} /></td>
-                <td className={tdLeftClass} colSpan={4}></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.naclBrewingTable')} /><span className="ml-2">KG</span></div></td>
+                <td className={tdLeftClass} colSpan={6}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>15% NacCl Water Calculaion for finding water content</td>
                 <td className={tdCenterClass}>(3*6)/4 =</td>
-                <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.naclWaterCalc')} /></td>
-                <td className={tdLeftClass} colSpan={3}></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.naclWaterCalc')} /><span className="ml-2">KG</span></div></td>
+                <td className={tdLeftClass} colSpan={6}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Water (8) * 0.85</td>
-                <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.waterCalc')} /></td>
-                <td className={tdLeftClass} colSpan={4}></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.waterCalc')} /><span className="ml-2">KG</span></div></td>
+                <td className={tdLeftClass} colSpan={6}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Salt (8) * 0.15</td>
-                <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.saltCalc')} /></td>
-                <td className={tdLeftClass} colSpan={4}></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.saltCalc')} /><span className="ml-2">KG</span></div></td>
+                <td className={tdLeftClass} colSpan={6}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Total weight :</td>
-                <td className={tdLeftClass}><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.finalTotalWeight')} /></td>
-                <td className={tdLeftClass} colSpan={4} style={{ fontSize: 'small' }}>* Diatomaceous Earth (CG-1C) + (8) + Magnesium Hydroxide + Remained Genmatsu + NCR Genmatsu</td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.finalTotalWeight')} /><span className="ml-2">KG</span></div></td>
+                <td className={tdLeftClass} colSpan={6} style={{ fontSize: 'small' }}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Remark (หมายเหตุ) :</td>
-                <td className={tdLeftClass} colSpan={5}><textarea className={`${inputClass} h-25`} {...register('qouRemark')} /></td>
+                <td className={tdLeftClass} colSpan={6}><textarea className={`${inputClass} h-25`} {...register('qouRemark')} /></td>
               </tr>
             </tbody>
           </table>

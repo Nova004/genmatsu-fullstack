@@ -308,7 +308,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               <tr>
                 <td className={tdLeftClass}>Total weight :</td>
                 <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.finalTotalWeight')} /><span className="ml-2">KG</span></div></td>
-                <td className={tdLeftClass} colSpan={4} style={{ fontSize: 'small' }}>* Diatomaceous Earth (CG-1C) + (8) + Magnesium Hydroxide + Remained Genmatsu + NCR Genmatsu</td>
+                <td className={tdLeftClass} colSpan={4} style={{ fontSize: 'small' }}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>Remark (หมายเหตุ) :</td>
