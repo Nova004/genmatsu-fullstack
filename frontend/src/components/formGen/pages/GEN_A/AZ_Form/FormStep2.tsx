@@ -52,7 +52,7 @@ export const useExcelFormulaCalculations = (
       ((AZRGenmatsu) || 0);
 
     // --- 3. อัปเดตค่าไปยัง finalTotalWeight ---
-    setValue('calculations.finalTotalWeight', total > 0 ? formatNumberRound(total) : null);
+    setValue('calculations.finalTotalWeight',  formatNumberRound(total));
 
   }, [
     // --- 4. 🚀 เพิ่ม "สายลับ" ทั้งหมดที่ต้องคอยจับตาดู ---
@@ -82,8 +82,8 @@ interface FormStep2Props {
 
 const AZWeightingConfig: WeightingCalculationConfig = {
   rows: [
-    { grossWeightPath: 'cg1cWeighting.row1.cg1c', netWeightPath: 'cg1cWeighting.row1.net',  bagWeightPath: 'cg1cWeighting.row1.bagWeight' },
-    { grossWeightPath: 'cg1cWeighting.row2.cg1c', netWeightPath: 'cg1cWeighting.row2.net',  bagWeightPath: 'cg1cWeighting.row2.bagWeight' },
+    { grossWeightPath: 'cg1cWeighting.row1.cg1c', netWeightPath: 'cg1cWeighting.row1.net', bagWeightPath: 'cg1cWeighting.row1.bagWeight' },
+    { grossWeightPath: 'cg1cWeighting.row2.cg1c', netWeightPath: 'cg1cWeighting.row2.net', bagWeightPath: 'cg1cWeighting.row2.bagWeight' },
   ],
   totalPath: 'cg1cWeighting.total',
   destinationPath: 'rawMaterials.diaEarth',
@@ -155,11 +155,11 @@ const FormStep2: React.FC<FormStep2Props> = ({
               <tr>
                 <td className={tdLeftClass}>Iron Powder  HGN 82.29.04 :Weight</td>
                 <td className={tdLeftClass}> <div className="flex items-center"><input type="number" className={inputClass} {...register('cg1cWeighting.row1.cg1c', { valueAsNumber: true, required: 'กรุณากรอก  Iron Powder' })} /><span className="ml-2">KG</span></div>
-                {errors.cg1cWeighting?.row1?.cg1c &&
-                  <p className="text-sm text-danger mt-1">
-                    {errors.cg1cWeighting.row1.cg1c.message}
-                  </p>
-                }
+                  {errors.cg1cWeighting?.row1?.cg1c &&
+                    <p className="text-sm text-danger mt-1">
+                      {errors.cg1cWeighting.row1.cg1c.message}
+                    </p>
+                  }
                 </td>
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('cg1cWeighting.row1.bagNo')} /></td>
@@ -171,13 +171,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
               <tr>
                 <td className={tdLeftClass}>Iron Powder  HGN 82.29.04 :Weight</td>
                 <td className={tdLeftClass}> <div className="flex items-center"><input type="number" className={inputClass} {...register('cg1cWeighting.row2.cg1c', { valueAsNumber: true, required: 'กรุณากรอก  Iron Powder' })} /><span className="ml-2">KG</span></div>
-                {errors.cg1cWeighting?.row2?.cg1c &&
-                  <p className="text-sm text-danger mt-1">
-                    {errors.cg1cWeighting.row2.cg1c.message}
-                  </p>
-                }
+                  {errors.cg1cWeighting?.row2?.cg1c &&
+                    <p className="text-sm text-danger mt-1">
+                      {errors.cg1cWeighting.row2.cg1c.message}
+                    </p>
+                  }
                 </td>
-                
+
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('cg1cWeighting.row2.bagNo')} /></td>
                 <td className={tdLeftClass}>Bag Weight</td>
