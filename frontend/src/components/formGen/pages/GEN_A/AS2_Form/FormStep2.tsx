@@ -42,12 +42,12 @@ export const useExcelFormulaCalculations = (
   useEffect(() => {
     // --- 2. แปลงค่าทั้งหมดเป็นตัวเลขและคำนวณผลรวม ---
     const total =
-      ((net) || 0) +
-      ((calciumchloride) || 0) +
-      ((activatedcarbon) || 0) +
-      ((magnesiumHydroxide) || 0) +
-      ((remainedGenmatsu) || 0) +
-      ((ncrGenmatsu) || 0);
+      (Number(net) || 0) +
+      (Number(calciumchloride) || 0) +
+      (Number(activatedcarbon) || 0) +
+      (Number(magnesiumHydroxide) || 0) +
+      (Number(remainedGenmatsu) || 0) +
+      (Number(ncrGenmatsu) || 0);
 
     // --- 3. อัปเดตค่าไปยัง finalTotalWeight ---
     // ✅ แก้ไขตรงนี้: ลบ Number() ออก เพื่อให้ส่งค่าเป็นข้อความ "xxx.00"

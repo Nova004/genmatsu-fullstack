@@ -44,12 +44,12 @@ export const useExcelFormulaCalculations = (
   useEffect(() => {
     // --- 2. แปลงค่าทั้งหมดเป็นตัวเลขและคำนวณผลรวม ---
     const total =
-      ((net) || 0) +
-      ((calciumchloride) || 0) +
-      ((activatedcarbon) || 0) +
-      ((remainedGenmatsu) || 0) +
-      ((ncrGenmatsu) || 0) +
-      ((AZRGenmatsu) || 0);
+      (Number(net) || 0) +
+      (Number(calciumchloride) || 0) +
+      (Number(activatedcarbon) || 0) +
+      (Number(remainedGenmatsu) || 0) +
+      (Number(ncrGenmatsu) || 0) +
+      (Number(AZRGenmatsu) || 0);
 
     // --- 3. อัปเดตค่าไปยัง finalTotalWeight ---
     setValue('calculations.finalTotalWeight',  formatNumberRound(total));
