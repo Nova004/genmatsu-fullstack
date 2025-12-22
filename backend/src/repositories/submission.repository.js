@@ -185,6 +185,9 @@ exports.createSubmissionData = async (
     .input("yieldPercent", sql.Decimal(5, 2), keyMetrics.yieldPercent || null)
     .input("totalQty", sql.Int, keyMetrics.totalQty || null)
     .input("productionDate", sql.Date, keyMetrics.productionDate || null)
+    .input("stTargetValue", sql.Decimal(10, 2), keyMetrics.stTargetValue || 0)
+    // 💧 1. เพิ่ม Input Moisture ตรงนี้
+    .input("moisture", sql.Decimal(5, 2), keyMetrics.moisture || null)
     .input(
       "palletData",
       sql.NVarChar(sql.MAX),
@@ -199,6 +202,8 @@ exports.createSubmissionData = async (
             yield_percent, 
             total_qty, 
             production_date,
+            st_target_value,
+            moisture, -- 💧 2. เพิ่มชื่อ Column ใน SQL
             pallet_data
         ) 
         VALUES 
@@ -210,6 +215,8 @@ exports.createSubmissionData = async (
             @yieldPercent, 
             @totalQty, 
             @productionDate,
+            @stTargetValue,
+            @moisture, -- 💧 3. เพิ่ม Parameter @moisture
             @palletData
         )
       `);
@@ -354,6 +361,8 @@ exports.updateSubmissionData = async (
     .input("yieldPercent", sql.Decimal(5, 2), keyMetrics.yieldPercent || null)
     .input("totalQty", sql.Int, keyMetrics.totalQty || null)
     .input("productionDate", sql.Date, keyMetrics.productionDate || null)
+    // 💧 5. เพิ่ม Input Moisture ตอนแก้ไข
+    .input("moisture", sql.Decimal(5, 2), keyMetrics.moisture || null)
     .input(
       "palletData",
       sql.NVarChar(sql.MAX),
@@ -367,6 +376,7 @@ exports.updateSubmissionData = async (
             yield_percent = @yieldPercent,
             total_qty = @totalQty,
             production_date = @productionDate,
+            moisture = @moisture, -- 💧 6. เพิ่มการอัปเดต Field Moisture
             pallet_data = @palletData
         WHERE submission_id = @submission_id;
       `);
@@ -399,6 +409,8 @@ exports.resubmitSubmissionData = async (
   );
   request.input("totalQty", sql.Int, keyMetrics.totalQty || null);
   request.input("productionDate", sql.Date, keyMetrics.productionDate || null);
+  // 💧 7. เพิ่ม Input Moisture ตอน Resubmit
+  request.input("moisture", sql.Decimal(5, 2), keyMetrics.moisture || null);
   request.input(
     "palletData",
     sql.NVarChar(sql.MAX),
@@ -423,11 +435,12 @@ exports.resubmitSubmissionData = async (
             yield_percent = @yieldPercent,
             total_qty = @totalQty,
             production_date = @productionDate,
+            moisture = @moisture, -- 💧 8. เพิ่มการอัปเดต Field Moisture
             pallet_data = @palletData
           WHERE submission_id = @submissionId
       `);
 
-  // 3.2 Update Submission Header (สถานะเอกสาร + Line ผลิต)
+  // 3.2 Update Submission Header (เหมือนเดิม)
   await request.query(`
           UPDATE Form_Submissions 
           SET 
@@ -439,22 +452,13 @@ exports.resubmitSubmissionData = async (
               AND (status = 'Rejected' OR status = 'Drafted')
       `);
 
-  // 🟡 3.3 ล้าง Flow เก่าทิ้งทั้งหมด (แก้จาก UPDATE เป็น DELETE)
-  // เหตุผล:
-  // 1. ถ้ามาจาก Draft จะได้ไม่มีปัญหา (เพราะไม่มีให้ลบ ก็ไม่ Error)
-  // 2. ถ้ามาจาก Rejected ก็ลบของเก่าทิ้ง เพื่อรอสร้างใหม่ใน Service
-  // 3. ถ้าเป็น LV3 (Approved) ก็ลบทิ้งไปเลย จบงานสวยๆ
+  // 3.3, 3.4 (ลบ Flow, Log เหมือนเดิม)
   await request.query(`
-      DELETE FROM Gen_Approval_Flow 
-      WHERE submission_id = @submissionId
+      DELETE FROM Gen_Approval_Flow WHERE submission_id = @submissionId
   `);
-
-  // 3.4 Clear Logs (ลบประวัติการ Reject เดิมออก)
   await request.query(`
           DELETE FROM AGT_SMART_SY.dbo.Gen_Approved_log
-          WHERE 
-              submission_id = @submissionId
-              AND action = 'Rejected' 
+          WHERE submission_id = @submissionId AND action = 'Rejected' 
       `);
 };
 

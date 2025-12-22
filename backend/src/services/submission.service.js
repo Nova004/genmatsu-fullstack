@@ -121,6 +121,22 @@ exports.getSubmissionDataForPdf = async (submissionId) => {
   }
 };
 
+exports.updateStPlan = async (id, stTargetValue) => {
+  const { sql, pool } = require("../db"); // หรือเรียกตามวิธีที่ Service อื่นใช้
+
+  // ย้าย SQL มาไว้ที่นี่
+  await pool
+    .request()
+    .input("id", sql.Int, id)
+    .input("stVal", sql.Decimal(10, 2), stTargetValue).query(`
+      UPDATE Form_Submission_Data
+      SET st_target_value = @stVal
+      WHERE submission_id = @id
+    `);
+
+  return true;
+};
+
 exports.createSubmission = async (data) => {
   const { formType, lotNo, templateIds, formData, submittedBy } = data;
   const cleanedFormData = cleanSubmissionData(formData);
@@ -162,8 +178,23 @@ exports.createSubmission = async (data) => {
       );
     }
 
+    const stPlanResult = await transaction
+      .request()
+      .input("f_type", sql.NVarChar, formType)
+      .query(
+        "SELECT target_value FROM Gen_StandardPlan_MT WHERE form_type = @f_type"
+      );
+
+    // ถ้ามีค่า ให้ใช้ค่านั้น ถ้าไม่มีให้เป็น 0
+    const currentStValue =
+      stPlanResult.recordset.length > 0
+        ? stPlanResult.recordset[0].target_value
+        : 0;
+
     // ดึง Key Metrics
     const keyMetrics = extractKeyMetrics(cleanedFormData);
+
+    keyMetrics.stTargetValue = currentStValue;
 
     // 3. Insert Submission
     // 🟡 แก้ไข: บังคับ status เป็น 'Drafted' เสมอ (ตามที่คุณต้องการ)
@@ -188,12 +219,7 @@ exports.createSubmission = async (data) => {
       cleanedFormData,
       keyMetrics
     );
-
     await transaction.commit();
-
-    // 🟡 ไม่ต้องสร้าง Approval Flow เพราะเป็น Draft
-    // (Flow จะถูกสร้างตอนกดส่งงาน Resubmit แทน)
-
     return submissionId;
   } catch (error) {
     if (transaction && transaction.state === "begun") {
@@ -470,15 +496,14 @@ function cleanSubmissionData(data) {
       // วนลูป Clean ลูกหลานก่อน
       const mapped = obj.map((item) => deepClean(item, preserveStructure));
 
-      // 🚩 จุดแก้ไขสำคัญ: ถ้ามีคำสั่งให้รักษารูปแบบ (preserveStructure) 
+      // 🚩 จุดแก้ไขสำคัญ: ถ้ามีคำสั่งให้รักษารูปแบบ (preserveStructure)
       // หรืออยู่ใน operationResults ให้คืนค่ากลับไปเลย ห้าม Filter!
       if (preserveStructure) {
-        return mapped; 
+        return mapped;
       }
 
       // ถ้าไม่ใช่เขตหวงห้าม ก็กรองตัวว่างทิ้งตามปกติ (เพื่อให้ JSON เล็ก)
       return mapped.filter((item) => !isEmpty(item));
-
     } else if (typeof obj === "object" && obj !== null) {
       Object.keys(obj).forEach((key) => {
         const val = obj[key];
@@ -491,7 +516,7 @@ function cleanSubmissionData(data) {
         // เช็คว่าตอนนี้กำลังจะเข้าสู่เขตหวงห้ามหรือไม่?
         // 1. ถ้า Key ปัจจุบันคือ "operationResults" -> ถือว่าเข้าเขตหวงห้าม
         // 2. หรือถ้า Parent ส่งมาว่าหวงห้ามอยู่แล้ว (preserveStructure) -> ก็หวงห้ามต่อไป
-        const isStrictZone = (key === "operationResults") || preserveStructure;
+        const isStrictZone = key === "operationResults" || preserveStructure;
 
         // Recursive ต่อโดยส่งสถานะ isStrictZone ไปด้วย
         obj[key] = deepClean(obj[key], isStrictZone);
@@ -507,7 +532,6 @@ function cleanSubmissionData(data) {
 
   return deepClean(cleaned);
 }
-
 
 // [ฟังก์ชันช่วย] ค้นหาค่าจาก Path (เหมือนเดิม)
 const getNestedValue = (obj, path) => {
@@ -526,8 +550,9 @@ function extractKeyMetrics(formData) {
   let yieldPercent = 0;
   let totalQty = 0;
   let productionDate = null;
-  let palletData = []; // [ใหม่] เตรียม Array ว่างไว้
+  let palletData = [];
   let productionLine = null;
+  let moisture = null; // ✅ มารอรับค่า Moisture
 
   if (!formData)
     return {
@@ -538,13 +563,13 @@ function extractKeyMetrics(formData) {
       productionDate,
       palletData,
       productionLine,
+      moisture,
     };
 
   // -----------------------------------------------------------
   // 2. ระบุเส้นทาง (Paths)
   // -----------------------------------------------------------
 
-  // กลุ่ม: Input (Kg) - ใช้ Logic เดิมของ Total Weight
   const inputPaths = [
     "calculations.finalTotalWeight",
     "bs3Calculations.totalWeightWithNcr",
@@ -556,26 +581,27 @@ function extractKeyMetrics(formData) {
     "rawMaterials.totalNetWeight",
   ];
 
-  // กลุ่ม: Output (Kg) - [ใหม่] ตามที่คุณระบุ
   const outputPaths = [
-    "packingResults.quantityOfProduct.calculated", // ลองหาค่า Calculated ก่อน (น่าจะเป็น Kg)
-    "packingResults.yieldPercent", // ถ้าไม่มี ให้เอา Yield Percent (ตามที่คุณแจ้ง)
+    "packingResults.quantityOfProduct.calculated",
+    "packingResults.yieldPercent",
   ];
 
-  // กลุ่มอื่นๆ (คงเดิม)
   const yieldPaths = [
     "packingResults.yieldPercent",
     "calculations.yield",
-    "operationResults.yieldPercent",
+    "operationResults.yieldPercent", // ✅ เปิดกลับมาตามที่คุณแจ้งว่าใช้ได้
   ];
+
   const qtyPaths = [
     "packingResults.quantityOfProduct.cans",
     "packingResults.quantityOfProduct.calculated",
     "basicData.outputQuantity",
   ];
+
   const datePaths = ["basicData.date"];
   const rawPallets = formData.palletInfo || [];
   const linePaths = ["basicData.machineName"];
+
   // -----------------------------------------------------------
   // 3. วนลูปหาค่า
   // -----------------------------------------------------------
@@ -584,7 +610,7 @@ function extractKeyMetrics(formData) {
   for (const path of linePaths) {
     const val = getNestedValue(formData, path);
     if (val !== null && val !== undefined && val !== "") {
-      productionLine = val.toString(); // แปลงเป็น String ให้ชัวร์
+      productionLine = val.toString();
       break;
     }
   }
@@ -613,7 +639,7 @@ function extractKeyMetrics(formData) {
     }
   }
 
-  // หาค่าอื่นๆ (Yield, Qty, Date) - เหมือนเดิม
+  // หาค่าอื่นๆ (Yield, Qty, Date)
   for (const path of yieldPaths) {
     const val = getNestedValue(formData, path);
     if (val != null && val !== "") {
@@ -642,6 +668,26 @@ function extractKeyMetrics(formData) {
     }
   }
 
+  // ⭐ Logic ใหม่: หา Moisture ใน Array operationResults
+  if (Array.isArray(formData.operationResults)) {
+    for (const item of formData.operationResults) {
+      // เช็คว่ามี key 'humidity' ไหม
+      if (
+        item &&
+        item.humidity !== undefined &&
+        item.humidity !== null &&
+        item.humidity !== ""
+      ) {
+        const parsed = parseFloat(item.humidity);
+        if (!isNaN(parsed)) {
+          moisture = parsed; // ✅ เจอแล้วเก็บเลย
+          break;
+        }
+      }
+    }
+  }
+
+  // หา Pallet Data
   if (Array.isArray(rawPallets)) {
     palletData = rawPallets
       .filter((item) => item.no && item.no.trim() !== "")
@@ -650,14 +696,16 @@ function extractKeyMetrics(formData) {
         qty: item.qty,
       }));
   }
+
   return {
     inputKg,
     outputKg,
     yieldPercent,
     totalQty,
     productionDate,
-    palletData, // 👈 อย่าลืมตัวนี้ครับ!
+    palletData,
     productionLine,
-    productionLine,
+    productionLine, // (ซ้ำนิดหน่อยแต่ไม่ error)
+    moisture, // ✅ ส่งออกไปใช้งาน
   };
 }

@@ -61,7 +61,20 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
           </div>
           <div className="flex items-center">
             <label className="w-1/3 text-black dark:text-white">Lot no.</label>
-            <input type="text" className={inputClass} {...register('basicData.lotNo', { required: true })} />
+            <input
+              type="text"
+              className={inputClass}
+              {...register('basicData.lotNo', {
+                required: true,
+                onChange: (e) => {
+                  // ดึงค่าปัจจุบันมา -> แปลงเป็นพิมพ์ใหญ่ -> ลบทุกอย่างที่ไม่ใช่ A-Z หรือ 0-9 ทิ้ง
+                  const cleanValue = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+                  // ยัดค่าที่คลีนแล้วกลับเข้าไปใน input
+                  e.target.value = cleanValue;
+                }
+              })}
+            />
           </div>
         </div>
         <div className="mb-6 grid grid-cols-1 gap-6 border-b border-black pb-6 dark:border-strokedark lg:grid-cols-6">

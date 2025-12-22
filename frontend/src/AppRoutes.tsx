@@ -27,7 +27,8 @@ const ReportHistory_GEN_A = lazy(() => import('./pages/Reports/ReportHistory_GEN
 const ReportDetailDispatcher = lazy(() => import('./pages/Reports/ReportDetailDispatcher'));
 const ReportEditDispatcher = lazy(() => import('./pages/Reports/ReportEditDispatcher'));
 const ReportPrintDispatcher = lazy(() => import('./pages/Reports/ReportPrintDispatcher'));
-
+const StandardPlanMaster = lazy(() => import('./components/formGen/pages/Master/StandardPlanMaster'));
+const ProductionReportPage = lazy(() => import('./pages/Reports/ProductionReportPage'));
 // Forms
 const BZ_Form = lazy(() => import('./components/formGen/pages/GEN_B/BZ_Form/BZ_index'));
 const BN_Form = lazy(() => import('./components/formGen/pages/GEN_B/BN_Form/BN_index'));
@@ -163,6 +164,26 @@ const AppRoutes = () => {
                             <>
                               <PageTitle title="User Master | Genmatsu" />
                               <UserMaster />
+                            </>
+                          }
+                        />
+
+                        <Route
+                          path="master/standard-plan-master"
+                          element={
+                            <>
+                              <PageTitle title="StandardPlanMaster | Genmatsu" />
+                              <StandardPlanMaster />
+                            </>
+                          }
+                        />
+
+                        <Route
+                          path="reports/daily-production"
+                          element={
+                            <>
+                              <PageTitle title="ProductionReport | Genmatsu" />
+                              <ProductionReportPage />
                             </>
                           }
                         />

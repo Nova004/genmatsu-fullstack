@@ -205,6 +205,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             </NavLink>
                           </li>
 
+                          <li>
+                            <NavLink
+                              to="/reports/daily-production"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-white')
+                              }
+                            >
+                              Data Production Amount
+                            </NavLink>
+                          </li>
+
                           {/* 🟡 3. ซ่อนส่วน Master Data ถ้าไม่ใช่ LV 3 */}
                           {(user?.LV_Approvals ?? 0) >= 2 && (
                             <>
@@ -242,6 +254,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                   }
                                 >
                                   NaCl Master
+                                </NavLink>
+                              </li>
+                              {/* --- ส่วนที่เพิ่มใหม่สำหรับ ST. Plan Master --- */}
+                              <li>
+                                <NavLink
+                                  to="/master/standard-plan-master"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                    (isActive && '!text-white')
+                                  }
+                                >
+                                  ST. Plan Master
                                 </NavLink>
                               </li>
                             </>

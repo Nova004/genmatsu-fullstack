@@ -3,11 +3,11 @@
 import React from 'react';
 import { PalletTableProps } from '../../pages/types';
 
-const PalletTable: React.FC<PalletTableProps> = ({ 
-  register, 
-  title, 
-  numberOfRows, 
-  fieldName 
+const PalletTable: React.FC<PalletTableProps> = ({
+  register,
+  title,
+  numberOfRows,
+  fieldName
 }) => {
   const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-3 py-2 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
   const thClass = "border-b border-stroke px-4 py-3 text-center font-medium text-black dark:border-strokedark dark:text-white";
@@ -30,9 +30,44 @@ const PalletTable: React.FC<PalletTableProps> = ({
           <tbody>
             {[...Array(numberOfRows)].map((_, index) => (
               <tr key={index}>
-                <td className={tdCenterClass}><input type="text" className={inputClass} {...register(`${fieldName}.${index}.no`)} /></td>
-                <td className={tdCenterClass}><input type="text" className={inputClass} {...register(`${fieldName}.${index}.qty`)} /></td>
-                <td className={tdCenterClass}><input type="text" className={inputClass} {...register(`${fieldName}.${index}.canNo`)} /></td>
+                {/* ช่อง No: รับตัวเลขและขีด */}
+                <td className={tdCenterClass}>
+                  <input
+                    type="text"
+                    className={inputClass}
+                    {...register(`${fieldName}.${index}.no`, {
+                      onChange: (e) => {
+                        e.target.value = e.target.value.replace(/[^0-9-]/g, '');
+                      }
+                    })}
+                  />
+                </td>
+
+                {/* ช่อง Qty: รับตัวเลขและขีด */}
+                <td className={tdCenterClass}>
+                  <input
+                    type="text"
+                    className={inputClass}
+                    {...register(`${fieldName}.${index}.qty`, {
+                      onChange: (e) => {
+                        e.target.value = e.target.value.replace(/[^0-9-]/g, '');
+                      }
+                    })}
+                  />
+                </td>
+
+                {/* ช่อง Can No: รับตัวเลขและขีด */}
+                <td className={tdCenterClass}>
+                  <input
+                    type="text"
+                    className={inputClass}
+                    {...register(`${fieldName}.${index}.canNo`, {
+                      onChange: (e) => {
+                        e.target.value = e.target.value.replace(/[^0-9-]/g, '');
+                      }
+                    })}
+                  />
+                </td>
               </tr>
             ))}
           </tbody>

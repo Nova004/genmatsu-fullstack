@@ -23,6 +23,25 @@ exports.createSubmission = async (req, res) => {
   }
 };
 
+// ฟังก์ชันสำหรับอัปเดตเฉพาะค่า ST. Plan (Inline Edit)
+exports.updateStPlan = async (req, res) => {
+  try {
+    const { id } = req.params; // submission_id
+    const { st_target_value } = req.body; // ค่าใหม่
+
+    // เรียกใช้ Service แทนการเขียน SQL เอง
+    await submissionService.updateStPlan(id, st_target_value);
+
+    res.json({ message: "ST. Plan updated successfully" });
+  } catch (error) {
+    console.error("Update ST Plan Error:", error);
+    res.status(500).json({ 
+      message: "Error updating ST. Plan", 
+      error: error.message 
+    });
+  }
+};
+
 exports.getAllSubmissions = async (req, res) => {
   try {
     const { category } = req.query;

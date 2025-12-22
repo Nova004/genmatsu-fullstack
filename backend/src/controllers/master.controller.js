@@ -205,3 +205,66 @@ exports.updateTemplateAsNewVersion = async (req, res) => {
   }
 };
 // (ในอนาคตเราจะสร้างฟังก์ชัน getTemplateById สำหรับดูฟอร์มเก่าที่นี่)
+
+// --- ส่วนของ Standard Plan (ST. Plan) ---
+
+exports.getStandardPlans = async (req, res) => {
+  try {
+    const pool = await poolConnect;
+    // ดึงข้อมูลทั้งหมด เรียงตามชื่อ form_type
+    const result = await pool
+      .request()
+      .query("SELECT * FROM Gen_StandardPlan_MT ORDER BY form_type ASC");
+    res.json(result.recordset);
+  } catch (err) {
+    console.error("Error fetching ST Plans:", err);
+    res.status(500).json({ message: "Error fetching ST Plans" });
+  }
+};
+
+exports.saveStandardPlan = async (req, res) => {
+  try {
+    const { form_type, target_value, updated_by } = req.body;
+    const pool = await poolConnect;
+
+    // ใช้ MERGE (Upsert) คือถ้ามีอยู่แล้วให้ Update ถ้าไม่มีให้ Insert
+    const query = `
+      MERGE Gen_StandardPlan_MT AS target
+      USING (SELECT @form_type AS form_type) AS source
+      ON (target.form_type = source.form_type)
+      WHEN MATCHED THEN
+        UPDATE SET target_value = @target_value, updated_at = GETDATE(), updated_by = @updated_by
+      WHEN NOT MATCHED THEN
+        INSERT (form_type, target_value, updated_at, updated_by)
+        VALUES (@form_type, @target_value, GETDATE(), @updated_by);
+    `;
+
+    await pool
+      .request()
+      .input("form_type", sql.NVarChar, form_type)
+      .input("target_value", sql.Decimal(10, 2), target_value)
+      .input("updated_by", sql.NVarChar, updated_by || "Admin") // ถ้าไม่มีส่งมา ให้เป็น Admin
+      .query(query);
+
+    res.json({ message: "Standard Plan saved successfully" });
+  } catch (err) {
+    console.error("Error saving ST Plan:", err);
+    res.status(500).json({ message: "Error saving ST Plan" });
+  }
+};
+
+exports.deleteStandardPlan = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const pool = await poolConnect;
+    await pool
+      .request()
+      .input("id", sql.Int, id)
+      .query("DELETE FROM Gen_StandardPlan_MT WHERE id = @id");
+
+    res.json({ message: "Deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error deleting" });
+  }
+};
