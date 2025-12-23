@@ -29,6 +29,7 @@ const ReportEditDispatcher = lazy(() => import('./pages/Reports/ReportEditDispat
 const ReportPrintDispatcher = lazy(() => import('./pages/Reports/ReportPrintDispatcher'));
 const StandardPlanMaster = lazy(() => import('./components/formGen/pages/Master/StandardPlanMaster'));
 const ProductionReportPage = lazy(() => import('./pages/Reports/ProductionReportPage'));
+const DailyReportPrint = lazy(() => import('./pages/Reports/DailyReportPrint')); // ✅ Import เข้ามา
 // Forms
 const BZ_Form = lazy(() => import('./components/formGen/pages/GEN_B/BZ_Form/BZ_index'));
 const BN_Form = lazy(() => import('./components/formGen/pages/GEN_B/BN_Form/BN_index'));
@@ -54,6 +55,14 @@ const AppRoutes = () => {
       <Routes>
         {/* Public Routes */}
         <Route path="/reports/print/:id" element={<ReportPrintDispatcher />} />
+        <Route
+          path="/reports/daily/print"
+          element={
+            <Suspense fallback={<Loader />}>
+              <DailyReportPrint />
+            </Suspense>
+          }
+        />
         <Route
           path="/auth/signin"
           element={

@@ -24,7 +24,11 @@ router.put("/:id/st-plan", submissionController.updateStPlan);
 
 // 🎯 Route ใหม่: สำหรับ "การลบ" 🎯
 router.delete("/:id", submissionController.deleteSubmission);
+
 router.get("/reports/daily", reportController.getDailyProductionReport);
+router.get("/reports/summary", reportController.getDailySummary);
+router.post("/reports/summary", reportController.saveDailySummary);
+
 // PUT /api/submissions/:id - สำหรับอัปเดตข้อมูล submission
 router.put(
   "/:id",
@@ -32,7 +36,7 @@ router.put(
   submissionController.updateSubmission
 );
 router.get("/print/:id", submissionController.generatePdf);
-router.get("/:id", submissionController.getSubmissionById);
 router.put("/resubmit/:id", submissionController.resubmitSubmission);
+router.get("/:id", submissionController.getSubmissionById);
 
 module.exports = router;

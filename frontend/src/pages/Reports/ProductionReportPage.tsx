@@ -66,6 +66,7 @@ const ProductionReportPage: React.FC = () => {
   <DailyReportTable
     data={reportData}
     onUpdateStPlan={handleUpdateStPlan} // ส่งฟังก์ชันเข้าไป
+    selectedDate={filterDate}
   />
 
   return (
@@ -113,11 +114,14 @@ const ProductionReportPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Print Button */}
             <div className="w-full md:w-auto ml-auto">
               <button
                 type="button"
-                onClick={() => window.print()}
+                // ✅ แก้ตรงนี้: ให้เปิดหน้าต่างใหม่ไปที่ /reports/daily/print?date=...
+                onClick={() => {
+                  const url = `/genmatsu/reports/daily/print?date=${filterDate}`;
+                  window.open(url, '_blank');
+                }}
                 className="flex items-center gap-2 rounded bg-gray-600 py-2 px-6 font-medium text-white hover:bg-opacity-90"
               >
                 <FaPrint /> Print Report
@@ -135,6 +139,7 @@ const ProductionReportPage: React.FC = () => {
           <DailyReportTable
             data={reportData}
             onUpdateStPlan={handleUpdateStPlan}
+            selectedDate={filterDate}
           />
         )}
       </div>

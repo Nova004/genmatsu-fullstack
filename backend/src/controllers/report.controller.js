@@ -82,3 +82,71 @@ exports.getDailyProductionReport = async (req, res) => {
       .json({ message: "Error fetching report data", error: err.message });
   }
 };
+
+// ✅ เพิ่มส่วนนี้ต่อท้ายไฟล์
+exports.getDailySummary = async (req, res) => {
+  try {
+    const { date } = req.query;
+    const pool = await poolConnect;
+    const result = await pool
+      .request()
+      .input("date", sql.Date, date)
+      .query(
+        `SELECT TOP 1 summary_json FROM GEN_Daily_Report_Summary WHERE report_date = @date`
+      );
+
+    if (result.recordset.length > 0) {
+      let data = result.recordset[0].summary_json;
+      if (typeof data === "string")
+        try {
+          data = JSON.parse(data);
+        } catch (e) {}
+      res.json(data);
+    } else {
+      res.json(null);
+    }
+  } catch (error) {
+    console.error("Error fetching summary:", error);
+    res.status(500).send({ message: "Error fetching summary" });
+  }
+};
+
+exports.saveDailySummary = async (req, res) => {
+  try {
+    const { date, summaryData } = req.body;
+    if (!date) {
+      return res.status(400).send({ message: "Date is required!" });
+    }
+    const pool = await poolConnect;
+    const jsonString = JSON.stringify(summaryData);
+
+    const checkExist = await pool
+      .request()
+      .input("date", sql.Date, date)
+      .query(
+        `SELECT id FROM GEN_Daily_Report_Summary WHERE report_date = @date`
+      );
+
+    if (checkExist.recordset.length > 0) {
+      await pool
+        .request()
+        .input("date", sql.Date, date)
+        .input("jsonString", sql.NVarChar(sql.MAX), jsonString)
+        .query(
+          `UPDATE GEN_Daily_Report_Summary SET summary_json = @jsonString, updated_at = GETDATE() WHERE report_date = @date`
+        );
+    } else {
+      await pool
+        .request()
+        .input("date", sql.Date, date)
+        .input("jsonString", sql.NVarChar(sql.MAX), jsonString)
+        .query(
+          `INSERT INTO GEN_Daily_Report_Summary (report_date, summary_json, updated_at) VALUES (@date, @jsonString, GETDATE())`
+        );
+    }
+    res.json({ message: "Saved successfully" });
+  } catch (error) {
+    console.error("Error saving summary:", error);
+    res.status(500).send({ message: "Error saving summary" });
+  }
+};

@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
-import { FaPen, FaCheck, FaTimes } from 'react-icons/fa';
+// frontend/src/pages/Reports/DailyReportTable.tsx
+
+import React, { useState, useEffect } from 'react';
+import { FaPen, FaCheck, FaTimes, FaSave } from 'react-icons/fa';
+import axios from 'axios'; // ✅ 1. เพิ่ม axios
 
 // --- Interfaces ---
 interface ProductionRecord {
@@ -23,9 +26,10 @@ interface ReportData {
 interface DailyReportTableProps {
   data: ReportData;
   onUpdateStPlan?: (id: number, newValue: number) => void;
+  selectedDate: string;
 }
 
-const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPlan }) => {
+const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPlan, selectedDate }) => {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [tempStValue, setTempStValue] = useState<string>("");
 
@@ -58,6 +62,72 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPla
     lineC: "",
     recycle: ""
   });
+
+  // ✅ 3.1 Fetch Data: โหลดข้อมูลเมื่อวันที่ (selectedDate) เปลี่ยน
+  useEffect(() => {
+    const fetchSummary = async () => {
+      if (!selectedDate) return;
+      try {
+        // ยิงไปที่ Route ที่เราคุยกันไว้ (ผ่าน submission routes)
+        const res = await axios.get(`/genmatsu/api/submissions/reports/summary`, {
+          params: { date: selectedDate }
+        });
+
+        if (res.data) {
+          // ถ้ามีข้อมูลเก่า -> เอามาใส่ State
+          const loaded = res.data;
+          setRemarks(loaded.remarks || { lineA: "", lineB: "", lineC: "", recycle: "" });
+          setRecycleValues(loaded.recycleValues || Array(8).fill({ kg: "", percent: "" }));
+          setRecycleTotalPacking(loaded.recycleTotalPacking || "");
+          setRecycleTotalDiff(loaded.recycleTotalDiff || "");
+          setGenmatsuTypeHeader(loaded.genmatsuTypeHeader || "Genmatsu Type");
+          setRecycleLotHeader(loaded.recycleLotHeader || "-");
+        } else {
+          // ถ้าไม่มีข้อมูล (วันใหม่) -> Reset ค่าเป็นว่าง
+          setRemarks({ lineA: "", lineB: "", lineC: "", recycle: "" });
+          setRecycleValues(Array(8).fill({ kg: "", percent: "" }));
+          setRecycleTotalPacking("");
+          setRecycleTotalDiff("");
+          setGenmatsuTypeHeader("Genmatsu Type");
+          setRecycleLotHeader("-");
+        }
+      } catch (error) {
+        console.error("Error loading daily summary:", error);
+      }
+    };
+
+    fetchSummary();
+  }, [selectedDate]);
+
+  // ✅ 3.2 Save Data: ฟังก์ชันบันทึกข้อมูล
+  const handleSaveSummary = async () => {
+
+    if (!selectedDate) {
+      alert("กรุณาเลือกวันที่ก่อน (Please select a date)");
+      return;
+    }
+
+    try {
+      const summaryData = {
+        remarks,
+        recycleValues,
+        recycleTotalPacking,
+        recycleTotalDiff,
+        genmatsuTypeHeader,
+        recycleLotHeader
+      };
+
+      await axios.post(`/genmatsu/api/submissions/reports/summary`, {
+        date: selectedDate,
+        summaryData
+      });
+
+      alert("Saved Remarks & Recycle Data successfully!");
+    } catch (error) {
+      console.error("Error saving summary:", error);
+      alert("Failed to save summary.");
+    }
+  };
 
   const handleRemarkChange = (line: keyof typeof remarks, value: string) => {
     setRemarks(prev => ({ ...prev, [line]: value }));
@@ -390,6 +460,18 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPla
 
   return (
     <div className="w-full bg-white border border-gray-300 shadow-sm overflow-hidden">
+      {/* ✅ 4. UI: แถบ Header และปุ่ม Save */}
+      <div className="flex justify-between items-center bg-slate-100 p-2 border-b border-gray-300">
+        <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+          Summary Data for: <span className="text-black">{selectedDate || "No date selected"}</span>
+        </div>
+        <button
+          onClick={handleSaveSummary}
+          className="bg-blue-600 text-white px-4 py-1.5 rounded shadow hover:bg-blue-700 text-xs font-bold flex items-center gap-2 transition-all"
+        >
+          <FaSave size={12} /> Save Remarks & Recycle Data
+        </button>
+      </div>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-xs">
           <thead>
