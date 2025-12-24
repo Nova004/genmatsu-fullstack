@@ -177,3 +177,102 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
     throw error;
   }
 };
+
+// ✅ เพิ่มฟังก์ชันนี้ต่อท้ายไฟล์ครับ
+exports.generateDailyReportPdf = async (
+  dailyReportData,
+  date,
+  frontendPrintUrl
+) => {
+  let browser;
+  let page;
+
+  try {
+    console.log(`[PDF Gen] Starting Daily Report PDF for date: ${date}`);
+
+    // 1. Launch Browser (ใช้ config เดียวกับของเดิม)
+    const chromePaths = [
+      "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+      process.env.LOCALAPPDATA + "\\Google\\Chrome\\Application\\chrome.exe",
+    ];
+    let executablePath = null;
+    const fs = require("fs");
+    for (const path of chromePaths) {
+      if (fs.existsSync(path)) {
+        executablePath = path;
+        break;
+      }
+    }
+
+    browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        "--lang=en-GB",
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+      ],
+      executablePath: executablePath || undefined,
+    });
+
+    page = await browser.newPage();
+
+    // 2. Intercept Request: ดักจับการเรียก API จากหน้า Frontend
+    // เพื่อยัดข้อมูลที่เรามีอยู่แล้วลงไป (จะได้ไม่ต้อง query ซ้ำและเร็วกว่า)
+    await page.setRequestInterception(true);
+
+    // URL ที่ Frontend (DailyReportPrint.tsx) จะเรียก
+    // ต้องตรงกับใน axios.get ของไฟล์ frontend เป๊ะๆ
+    const targetApiUrl = `/genmatsu/api/submissions/reports/daily`;
+
+    page.on("request", (request) => {
+      const url = request.url();
+      // ถ้า URL มีคำว่า /reports/daily และมีวันที่ตรงกัน (หรือเช็คแค่ path ก็พอ)
+      if (url.includes(targetApiUrl)) {
+        console.log(`[PDF Gen] Intercepting data for: ${url}`);
+        request.respond({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(dailyReportData), // <--- ยัดข้อมูลที่เราเตรียมไว้ให้เลย
+        });
+      } else {
+        request.continue();
+      }
+    });
+
+    // 3. Navigate ไปยังหน้า Frontend
+    console.log(`[PDF Gen] Navigating to: ${frontendPrintUrl}`);
+    await page.goto(frontendPrintUrl, {
+      waitUntil: "networkidle2",
+      timeout: 60000,
+    });
+
+    // 4. รอจนกว่า React จะ render เสร็จ (เช็คจาก id="pdf-content-ready" ที่เราทำไว้)
+    await page.waitForSelector("#pdf-content-ready", { timeout: 30000 });
+
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      landscape: true,
+      printBackground: true,
+      displayHeaderFooter: false,
+      // ✅ แก้ไข: ปรับ Margin ให้ชิดขอบสุดๆ (แนะนำ 5px - 10px)
+      margin: {
+        top: "0px", // เดิม 50px -> ลดเหลือ 10px
+        right: "0px", // เดิม 10px -> ลดเหลือ 5px
+        bottom: "0px", // เดิม 20px -> ลดเหลือ 10px
+        left: "0px", // เดิม 10px -> ลดเหลือ 5px
+      },
+      // ✅ ปรับ Scale: ถ้าชิดขอบแล้วเนื้อหาดูเล็กไป ลองขยับเป็น 0.75 หรือ 0.8 ดูได้ครับ
+      scale: 0.70,
+    });
+
+    await browser.close();
+    return pdfBuffer;
+  } catch (error) {
+    if (browser) await browser.close();
+    console.error("[PDF Gen] Error:", error);
+    throw error;
+  }
+};

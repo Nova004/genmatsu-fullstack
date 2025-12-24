@@ -1,6 +1,7 @@
+// frontend/src/pages/Reports/ProductionReportPage.tsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { FaSearch, FaPrint } from 'react-icons/fa';
+import { FaSearch, FaFilePdf } from 'react-icons/fa'; // เปลี่ยนไอคอนเป็น PDF ให้สื่อความหมาย
 
 // แก้ Path ให้ตรงกับโครงสร้างใหม่
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
@@ -14,6 +15,7 @@ const ProductionReportPage: React.FC = () => {
   const [lotNoPrefix, setLotNoPrefix] = useState('');
   const [reportData, setReportData] = useState({ lineA: [], lineB: [], lineC: [] });
   const [isLoading, setIsLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false); // เพิ่ม State สำหรับปุ่ม Export
 
   const fetchReport = async () => {
     setIsLoading(true);
@@ -43,31 +45,49 @@ const ProductionReportPage: React.FC = () => {
     fetchReport();
   };
 
-  // เพิ่มใน ProductionReportPage.tsx
-
+  // ฟังก์ชันอัปเดต Plan
   const handleUpdateStPlan = async (id: number, newValue: number) => {
     try {
-      // 1. เรียก API เพื่ออัปเดต (นายต้องไปสร้าง route PUT /api/submissions/:id/st-plan เอาเองนะ)
       await axios.put(`/genmatsu/api/submissions/${id}/st-plan`, {
         st_target_value: newValue
       });
-
-      // 2. ถ้าสำเร็จ ให้โหลดข้อมูล Report ใหม่ทันที
-      fetchReport();
-      alert('Update successful!');
-
+      fetchReport(); // โหลดข้อมูลใหม่
+      // alert('Update successful!'); // อาจจะไม่ต้อง Alert รบกวน User ก็ได้ถ้ามัน Refresh เร็ว
     } catch (error) {
       console.error("Failed to update ST Plan", error);
       alert('Failed to update.');
     }
   };
 
-  // เวลาเรียกใช้ Component Table:
-  <DailyReportTable
-    data={reportData}
-    onUpdateStPlan={handleUpdateStPlan} // ส่งฟังก์ชันเข้าไป
-    selectedDate={filterDate}
-  />
+  // ✅ ฟังก์ชันสำหรับ Export PDF (เรียก Backend)
+  const handleExportPdf = async () => {
+    setIsExporting(true);
+    try {
+      // เรียกไปที่ Route ใหม่ที่เราเพิ่งสร้างใน backend
+      const response = await axios.get(`/genmatsu/api/submissions/reports/daily/pdf`, {
+        params: { date: filterDate },
+        responseType: 'blob', // ‼️ สำคัญมาก: ต้องบอกว่าเป็นไฟล์ (Blob)
+      });
+
+      // สร้าง Link จำลองเพื่อกดดาวน์โหลด
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Daily_Report_${filterDate}.pdf`); // ตั้งชื่อไฟล์
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+    } catch (error) {
+      console.error("Error exporting PDF:", error);
+      alert("เกิดข้อผิดพลาดในการสร้าง PDF");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <>
@@ -114,17 +134,20 @@ const ProductionReportPage: React.FC = () => {
               </div>
             </div>
 
+            {/* ปุ่ม Export PDF */}
             <div className="w-full md:w-auto ml-auto">
               <button
                 type="button"
-                // ✅ แก้ตรงนี้: ให้เปิดหน้าต่างใหม่ไปที่ /reports/daily/print?date=...
-                onClick={() => {
-                  const url = `/genmatsu/reports/daily/print?date=${filterDate}`;
-                  window.open(url, '_blank');
-                }}
-                className="flex items-center gap-2 rounded bg-gray-600 py-2 px-6 font-medium text-white hover:bg-opacity-90"
+                onClick={handleExportPdf}
+                disabled={isExporting} // ป้องกันกดรัวๆ
+                className={`flex items-center gap-2 rounded py-2 px-6 font-medium text-white shadow-md transition
+                  ${isExporting ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'}`}
               >
-                <FaPrint /> Print Report
+                {isExporting ? (
+                  <>Processing...</>
+                ) : (
+                  <><FaFilePdf /> Export PDF</>
+                )}
               </button>
             </div>
           </form>

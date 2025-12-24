@@ -1,19 +1,20 @@
 // backend/src/controllers/report.controller.js
 const { sql, poolConnect } = require("../db");
+const pdfService = require("../services/pdf.service"); // <--- Import Service
+const config = require("../config/env"); // หรือ path ที่เก็บ URL frontend ของคุณ
 
-exports.getDailyProductionReport = async (req, res) => {
-  try {
-    const { date, lotNoPrefix } = req.query;
-    const pool = await poolConnect;
+// --- Helper Function: ดึงข้อมูล (Refactor ออกมาใช้ร่วมกัน) ---
+const fetchDailyReportDataInternal = async (date, lotNoPrefix) => {
+  const pool = await poolConnect;
 
-    // แก้ไข Query: ใช้ชื่อคอลัมน์ให้ตรงกับ Database จริง 100%
-    let query = `
+  // 1. สร้าง Query หลัก (จบที่ WHERE)
+  let query = `
       SELECT 
-        s.submission_id,        -- แก้จาก s.id เป็น s.submission_id
+        s.submission_id,
         s.form_type,
         s.lot_no,
         s.production_line,
-        s.submitted_at,         -- เพิ่มมาเผื่อใช้ debug
+        s.submitted_at,
         d.input_kg,
         d.output_kg,
         d.yield_percent,
@@ -22,67 +23,93 @@ exports.getDailyProductionReport = async (req, res) => {
         d.production_date,
         d.moisture
       FROM Form_Submissions AS s
-      JOIN Form_Submission_Data AS d ON s.submission_id = d.submission_id -- แก้เงื่อนไข JOIN
+      JOIN Form_Submission_Data AS d ON s.submission_id = d.submission_id
       WHERE s.status != 'Rejected'
-    `;
+  `;
 
-    // กรองตามวันที่ผลิต
-    if (date) {
-      query += ` AND CAST(d.production_date AS DATE) = @date`;
-    }
-    // กรองตามเลข Lot (4 ตัวหน้า)
-    if (lotNoPrefix) {
-      query += ` AND s.lot_no LIKE @lotNoPrefix + '%'`;
-    }
+  // 2. ต่อ String เงื่อนไข (AND ...)
+  if (date) query += ` AND CAST(d.production_date AS DATE) = @date`;
+  if (lotNoPrefix) query += ` AND s.lot_no LIKE @lotNoPrefix + '%'`;
 
-    // เรียงลำดับตามวันที่กดส่ง (submitted_at) หรือ id ก็ได้
-    query += ` ORDER BY s.submission_id ASC`;
+  // 3. ใส่ ORDER BY เป็นบรรทัดสุดท้าย (เปลี่ยนตรงนี้เป็น s.lot_no)
+  query += ` ORDER BY s.lot_no ASC`;
 
-    const request = pool.request();
-    if (date) request.input("date", sql.Date, date);
-    if (lotNoPrefix) request.input("lotNoPrefix", sql.NVarChar, lotNoPrefix);
+  const request = pool.request();
+  if (date) request.input("date", sql.Date, date);
+  if (lotNoPrefix) request.input("lotNoPrefix", sql.NVarChar, lotNoPrefix);
 
-    const result = await request.query(query);
-    const rawData = result.recordset;
+  const result = await request.query(query);
+  const rawData = result.recordset;
 
-    const reportData = {
-      lineA: [],
-      lineB: [],
-      lineC: [],
+  // Format Data
+  const reportData = { lineA: [], lineB: [], lineC: [] };
+  rawData.forEach((item) => {
+    const formattedItem = {
+      id: item.submission_id,
+      productName: item.form_type,
+      lotNo: item.lot_no,
+      input: item.input_kg,
+      output: item.output_kg,
+      pallets: item.pallet_data ? JSON.parse(item.pallet_data) : [],
+      stPlan: item.st_target_value,
+      yield: item.yield_percent,
+      moisture: item.moisture,
     };
+    if (item.production_line === "A") reportData.lineA.push(formattedItem);
+    else if (item.production_line === "B") reportData.lineB.push(formattedItem);
+    else if (item.production_line === "C") reportData.lineC.push(formattedItem);
+  });
 
-    rawData.forEach((item) => {
-      const formattedItem = {
-        id: item.submission_id, // ใช้ submission_id เป็น id หลัก
-        productName: item.form_type,
-        lotNo: item.lot_no,
-        input: item.input_kg,
-        output: item.output_kg,
-        pallets: item.pallet_data ? JSON.parse(item.pallet_data) : [],
-        stPlan: item.st_target_value,
-        yield: item.yield_percent,
-        moisture: item.moisture,
-      };
-
-      // จัดกลุ่มตาม production_line
-      if (item.production_line === "A") {
-        reportData.lineA.push(formattedItem);
-      } else if (item.production_line === "B") {
-        reportData.lineB.push(formattedItem);
-      } else if (item.production_line === "C") {
-        reportData.lineC.push(formattedItem);
-      }
-    });
-
-    res.json(reportData);
+  return reportData;
+};
+// --- Controller 1: API สำหรับหน้าเว็บ (ใช้ Helper ข้างบน) ---
+exports.getDailyProductionReport = async (req, res) => {
+  try {
+    const { date, lotNoPrefix } = req.query;
+    const data = await fetchDailyReportDataInternal(date, lotNoPrefix);
+    res.json(data);
   } catch (err) {
     console.error("Error fetching report:", err);
     res
       .status(500)
-      .json({ message: "Error fetching report data", error: err.message });
+      .json({ message: "Error fetching data", error: err.message });
   }
 };
 
+// --- Controller 2: API สำหรับโหลด PDF (New!) ---
+exports.downloadDailyReportPdf = async (req, res) => {
+  try {
+    const { date } = req.query;
+    if (!date) return res.status(400).send("Date is required");
+
+    // 1. ดึงข้อมูลเตรียมไว้ก่อน
+    const reportData = await fetchDailyReportDataInternal(date, null);
+
+    // 2. กำหนด URL ของ Frontend หน้า Print
+    // (ปรับ Port หรือ Domain ตาม Environment ของคุณ)
+    // ควรใส่ไว้ใน .env แต่ถ้า hardcode เทสก่อนก็ใส่ตรงนี้
+    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+    const printUrl = `${FRONTEND_URL}/genmatsu/reports/daily/print?date=${date}`;
+
+    // 3. เรียก Service สร้าง PDF
+    const pdfBuffer = await pdfService.generateDailyReportPdf(
+      reportData,
+      date,
+      printUrl
+    );
+
+    // 4. ส่งไฟล์กลับไป
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename=Daily_Report_${date}.pdf`,
+      "Content-Length": pdfBuffer.length,
+    });
+    res.send(pdfBuffer);
+  } catch (err) {
+    console.error("Error generating PDF:", err);
+    res.status(500).send("Error generating PDF");
+  }
+};
 // ✅ เพิ่มส่วนนี้ต่อท้ายไฟล์
 exports.getDailySummary = async (req, res) => {
   try {

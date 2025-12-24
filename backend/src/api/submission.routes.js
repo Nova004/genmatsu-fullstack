@@ -6,6 +6,7 @@ const reportController = require("../controllers/report.controller");
 const validate = require("../middlewares/validation.middleware");
 const submissionSchemas = require("../validators/submission.validator");
 
+
 router.post(
   "/",
   validate(submissionSchemas.createSubmission),
@@ -27,7 +28,9 @@ router.delete("/:id", submissionController.deleteSubmission);
 
 router.get("/reports/daily", reportController.getDailyProductionReport);
 router.get("/reports/summary", reportController.getDailySummary);
+
 router.post("/reports/summary", reportController.saveDailySummary);
+router.get("/reports/daily/pdf", reportController.downloadDailyReportPdf);
 
 // PUT /api/submissions/:id - สำหรับอัปเดตข้อมูล submission
 router.put(

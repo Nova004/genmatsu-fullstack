@@ -33,7 +33,7 @@ export const useExcelFormulaCalculations = (
   const totalWeight = watch('cg1cWeighting.total');
   const naclSpecGrav = watch('calculations.nacl15SpecGrav');
   const magnesiumHydroxide = watch('rawMaterials.magnesiumHydroxide');
-  const actual = watch('rawMaterials.remainedGenmatsu.actual');
+  const actual = watch('rawMaterials.remainedGenmatsu.actual'); // เพิ่มการดักฟัง actual ของ remainedGenmatsu
   const ncrGenmatsu = watch('rawMaterials.ncrGenmatsu.actual');
   const activatedcarbon = watch('rawMaterials.activatedcarbon');
   const gypsumplaster = watch('rawMaterials.gypsumplaster');
@@ -56,7 +56,7 @@ export const useExcelFormulaCalculations = (
     const numGypsumPlaster = Number(gypsumplaster) || 0;
     const numCg1cWeighting = Number(cg1cWeighting) || 0;
     const numCg2cWeighting = Number(cg2cWeighting) || 0;
-    const numctual = Number(actual) || 0;
+
 
     // Log: Input Values
     console.log('--- Input Values (num prefixed) ---');
@@ -151,14 +151,14 @@ export const useExcelFormulaCalculations = (
     console.log('--- 3. & 4. Water/Salt Calculation ---');
     if (_rawNaclWaterCalcResult !== null) {
       // น้ำ (0.85)
-      const rawWaterResult = _rawNaclWaterCalcResult * 0.85;
+      const rawWaterResult = _rawNaclWaterCalcResult * 0.96;
       waterCalcResult = formatNumberRound(rawWaterResult);
-      console.log(`💧 Water Calc (Raw * 0.85): ${_rawNaclWaterCalcResult} * 0.85 = ${rawWaterResult} -> ${waterCalcResult}`);
+      console.log(`💧 Water Calc (Raw * 0.96): ${_rawNaclWaterCalcResult} * 0.96 = ${rawWaterResult} -> ${waterCalcResult}`);
 
       // เกลือ (0.15)
-      const rawSaltResult = _rawNaclWaterCalcResult * 0.15;
+      const rawSaltResult = _rawNaclWaterCalcResult * 0.04;
       saltCalcResult = formatNumberRound(rawSaltResult);
-      console.log(`🧂 Salt Calc (Raw * 0.15): ${_rawNaclWaterCalcResult} * 0.15 = ${rawSaltResult} -> ${saltCalcResult}`);
+      console.log(`🧂 Salt Calc (Raw * 0.04): ${_rawNaclWaterCalcResult} * 0.04 = ${rawSaltResult} -> ${saltCalcResult}`);
     } else {
       console.log(`(Skip: naclWaterCalc Raw is null)`);
     }
@@ -177,7 +177,6 @@ export const useExcelFormulaCalculations = (
       + numMagnesiumHydroxide
       + numNcrGenmatsu
       + numActivatedCarbon
-      + numctual
       + numGypsumPlaster;
 
     const finalTotalWeight = total > 0 ? formatNumberRound(total) : null;
@@ -375,7 +374,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass} colSpan={6}></td>
               </tr>
               <tr>
-                <td className={tdLeftClass}>Salt (8) * 0.40</td>
+                <td className={tdLeftClass}>Salt (8) * 0.04</td>
                 <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('calculations.saltCalc')} /><span className="ml-2">KG</span></div></td>
                 <td className={tdLeftClass} colSpan={6}></td>
               </tr>
