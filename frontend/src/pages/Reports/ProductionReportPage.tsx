@@ -27,6 +27,20 @@ const ProductionReportPage: React.FC = () => {
           lotNoPrefix: lotNoPrefix
         }
       });
+      if (!res.data.lineZE1A || res.data.lineZE1A.length === 0) {
+        res.data.lineZE1A = [
+          {
+            id: 9001, productName: "ZE-TEST-ITEM-1", lotNo: "Z9901",
+            input: 1200, output: 1180, yield: 98.33, stPlan: 1200,
+            pallets: [{ no: 1, qty: 50 }, { no: 2, qty: 50 }], moisture: 12.5
+          },
+          {
+            id: 9002, productName: "ZE-TEST-ITEM-2", lotNo: "Z9902",
+            input: 800, output: 750, yield: 93.75, stPlan: 800, // Yield ต่ำกว่า 95% จะเป็นสีแดง
+            pallets: [{ no: 3, qty: 40 }], moisture: 11.0
+          }
+        ];
+      }
       setReportData(res.data);
     } catch (error) {
       console.error("Error fetching report:", error);
@@ -142,7 +156,7 @@ const ProductionReportPage: React.FC = () => {
 
             {/* ปุ่มกด */}
             <div className="w-full md:w-auto ml-auto flex gap-2">
-              {/* ปุ่ม 1: Web Preview (สีขาว) */}
+              {/* ปุ่ม 1: Web Preview */}
               <button
                 type="button"
                 onClick={handlePrintPreview}

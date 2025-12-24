@@ -6,6 +6,7 @@ import { useSearchParams } from 'react-router-dom';
 import DailyReportTable from './DailyReportTable';
 import { formatDate } from '../../utils/utils';
 
+
 // --- Interfaces ---
 interface ProductionRecord {
   id: number;
@@ -24,6 +25,7 @@ interface FullReportData {
   lineA: ProductionRecord[];
   lineB: ProductionRecord[];
   lineC: ProductionRecord[];
+  lineZE1A?: ProductionRecord[]; // เพิ่ม Line นี้
   genmatsuType?: string;
   recycleLot?: string;
   recycleValues?: any[];
@@ -37,122 +39,120 @@ const DailyReportPrint: React.FC = () => {
   const lotNo = searchParams.get('lotNo');
 
   const [reportData, setReportData] = useState<FullReportData>({
-    lineA: [], lineB: [], lineC: [],
+    lineA: [], lineB: [], lineC: [], lineZE1A: [],
     genmatsuType: "Genmatsu Type",
     recycleLot: "-",
     recycleValues: [],
-    recycleTotals: {},
-    remarks: { lineA: "", lineB: "", lineC: "", recycle: "" }
+    remarks: {}
   });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  // 1. ตั้งชื่อ Title
+
+
   useEffect(() => {
-    if (date) {
-      document.title = `Daily_Report_${date}${lotNo ? `_${lotNo}` : ''}`;
-    } else {
-      document.title = 'Error_No_Date';
-    }
-  }, [date, lotNo]);
-
-  // 2. ดึงข้อมูล
-  useEffect(() => {
-    const fetchReport = async () => {
-      if (!date) {
-        setIsLoading(false);
-        setError("ไม่พบวันที่ (Date parameter missing)");
-        return;
-      }
-
-      setIsLoading(true);
-      setError(null);
-
+    const fetchData = async () => {
       try {
-        // ดึงข้อมูล
-        const res = await axios.get(`/genmatsu/api/submissions/reports/daily`, {
-          params: {
-            date,
-            lotNoPrefix: lotNo
-          }
+        const res = await axios.get<FullReportData>(`/genmatsu/api/submissions/reports/daily`, {
+          params: { date, lotNoPrefix: lotNo }
         });
-        setReportData(res.data);
-      } catch (err: any) {
-        console.error("Error fetching report for print:", err);
-        setError(err.message || "เกิดข้อผิดพลาดในการโหลดข้อมูล");
-      } finally {
-        setIsLoading(false);
+
+        let data = res.data;
+        if (!res.data.lineZE1A || res.data.lineZE1A.length === 0) {
+          res.data.lineZE1A = [
+            {
+              id: 9001, productName: "ZE-TEST-ITEM-1", lotNo: "Z9901",
+              input: 1200, output: 1180, yield: 98.33, stPlan: 1200,
+              pallets: [{ no: 1, qty: 50 }, { no: 2, qty: 50 }], moisture: 12.5
+            },
+            {
+              id: 9002, productName: "ZE-TEST-ITEM-2", lotNo: "Z9902",
+              input: 800, output: 750, yield: 93.75, stPlan: 800, // Yield ต่ำกว่า 95% จะเป็นสีแดง
+              pallets: [{ no: 3, qty: 40 }], moisture: 11.0
+            }
+          ];
+        }
+
+        setReportData(data);
+
+        // รอสักนิดให้ Render เสร็จแล้วค่อยสั่ง Print (ถ้าต้องการ Auto Print)
+         setTimeout(() => { window.print(); }, 1000);
+
+      } catch (error) {
+        console.error("Error fetching report:", error);
       }
     };
 
-    fetchReport();
+    if (date) {
+      fetchData();
+    }
   }, [date, lotNo]);
 
-  // ✅ 3. สั่ง Print อัตโนมัติเมื่อโหลดเสร็จ (เพิ่มส่วนนี้)
-  useEffect(() => {
-    if (!isLoading && !error && date) {
-      // รอแป๊บนึง (500ms) ให้หน้าเว็บวาดตารางเสร็จก่อนค่อยเด้ง Print
-      const timer = setTimeout(() => {
-        window.print();
-      }, 500);
-
-      return () => clearTimeout(timer);
-    }
-  }, [isLoading, error, date]);
-
-  // --- Render Control ---
-  if (!date) {
-    return <div className="p-4 text-red-500 font-bold">Error: URL ไม่ถูกต้อง (ไม่พบ date)</div>;
-  }
-
-  if (isLoading) {
-    return <div className="flex items-center justify-center h-screen font-bold text-xl">Loading Report Data...</div>;
-  }
-
-  if (error) {
-    return <div className="p-4 text-red-500 font-bold">Error: {error}</div>;
-  }
-
   return (
-    <div id="pdf-content-ready" className="a4-page-container bg-white min-h-screen">
-      <div className="p-4">
-        {/* ส่วนหัวกระดาษ */}
+    <div id="pdf-content-ready" className="bg-white min-h-screen">
+
+      {/* ================= PAGE 1: Genmatsu A, B, C ================= */}
+      <div className="a4-page-container p-4">
+        {/* Header Page 1 */}
         <div className="mb-4">
-          {/* ชื่อหัวเรื่อง (ตรงกลางเหมือนเดิม) */}
           <h1 className="text-2xl font-black text-center text-black uppercase tracking-wide mb-4">
             Data of Genmatsu Production Amount
           </h1>
-
-          {/* จัดวาง Date ชิดซ้าย และ หมายเหตุ ชิดขวา */}
           <div className="flex justify-between items-end border-b-2 border-black pb-2">
-
-            {/* ฝั่งซ้าย: Date & Lot No */}
             <div className="flex items-center gap-4 text-sm font-bold text-black">
               <span>Date: {formatDate(date)}</span>
               {lotNo && (
-                <>
-                  <span>|</span>
-                  <span>Lot No: {lotNo}</span>
-                </>
+                <><span>|</span><span>Lot No: {lotNo}</span></>
               )}
             </div>
-
-            {/* ฝั่งขวา: หมายเหตุ (Text Right) */}
             <div className="flex flex-col items-end gap-0.5 text-xs font-bold text-black text-right">
               <p>*** If has NCR mix or Recycle genmatsu, record in the Remark.</p>
               <p>*** This document should be filed untill morning at next working day of production day</p>
             </div>
-
           </div>
         </div>
-        {/* ตารางข้อมูล */}
+
+        {/* Table Page 1 (Normal Mode) */}
         <DailyReportTable
           data={reportData}
-          selectedDate={date}
+          selectedDate={date || ""}
+          selectedLotNo={lotNo || undefined}
+          mode="normal" // 👈 ระบุโหมดปกติ
+          hideZE1A={true}
         />
       </div>
 
-      {/* CSS สำหรับจัดหน้ากระดาษ A4 Landscape */}
+      {/* ================= PAGE 2: Genmatsu ZE-1A ================= */}
+      {reportData.lineZE1A && reportData.lineZE1A.length > 0 && (
+
+        // ✅ แก้ไขตรงนี้: ลบ <div className="page-break"> ออก
+        // แล้วเอา class "page-break" มาใส่ใน a4-page-container แทนครับ
+        <div className="a4-page-container p-4 page-break">
+
+          {/* Header Page 2 */}
+          <div className="mb-4">
+            <h1 className="text-2xl font-black text-center text-black uppercase tracking-wide mb-4">
+              Data of Genmatsu Production Amount (Page 2)
+            </h1>
+            <div className="flex justify-between items-end border-b-2 border-black pb-2">
+              <div className="flex items-center gap-4 text-sm font-bold text-black">
+                <span>Date: {formatDate(date)}</span>
+                {lotNo && <span>| Lot No: {lotNo}</span>}
+              </div>
+              <div className="text-xs font-bold text-black text-right">
+                <p>*** Genmatsu ZE-1A Section</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Table Page 2 */}
+          <DailyReportTable
+            data={reportData}
+            selectedDate={date || ""}
+            selectedLotNo={lotNo || undefined}
+            mode="ze1a"
+          />
+        </div>
+      )}
+      {/* CSS สำหรับจัดหน้ากระดาษ Print */}
       <style>{`
         @media print {
             @page { 
@@ -166,27 +166,43 @@ const DailyReportPrint: React.FC = () => {
                 print-color-adjust: exact !important;
                 background-color: white !important;
             }
+
+            input, textarea {
+                font-weight: bold !important;
+                color: #000 !important; /* บังคับสีดำสนิท */
+            }
             
-            /* ซ่อน UI แปลกปลอม */
             .print\\:hidden { display: none !important; }
 
-            /* 🔥 ปรับลดขนาดลงอีกเหลือ 94% (จากเดิม 98%) */
+            .page-break {
+                page-break-before: always !important;
+                break-before: page !important;
+                display: block !important;
+                margin-top: 0 !important;
+                border-top: none !important; /* กันเส้นประหลาด */
+            }
+
+            /* Container A4 แนวนอน ย่อส่วนลงนิดนึงกันตกขอบ */
             .a4-page-container {
-                transform: scale(0.94);       /* ย่อลงให้เหลือ 94% */
-                transform-origin: top left;   /* ยึดมุมซ้ายบน */
-                width: 106.5% !important;     /* ขยายความกว้างชดเชย (100 / 0.94 ≈ 106.4) */
-                margin: 0 !important;         
+                transform: scale(0.94);
+                transform-origin: top left;
+                width: 106.5% !important;
+                margin: 0 !important;
                 box-shadow: none !important;
+                /* สำคัญ: ต้องกำหนดความสูงให้เต็มหน้า เพื่อให้ Page Break ทำงานถูกจุด */
+                min-height: 100vh; 
+                position: relative;
             }
         }
         
-        /* หน้าจอปกติ */
+        /* หน้าจอปกติ (Preview) */
         .a4-page-container {
             width: 297mm;
             min-height: 210mm;
-            margin: auto;
+            margin: 20px auto; /* เว้นระยะห่างระหว่างหน้าเวลาดูบนจอ */
             background: white;
-            padding: 10px; 
+            padding: 15px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* ใส่เงาให้ดูเป็นกระดาษ */
         }
       `}</style>
     </div>

@@ -1,13 +1,13 @@
 // backend/src/controllers/report.controller.js
 const { sql, poolConnect } = require("../db");
-const pdfService = require("../services/pdf.service"); // <--- Import Service
-const config = require("../config/env"); // หรือ path ที่เก็บ URL frontend ของคุณ
+const pdfService = require("../services/pdf.service");
+const config = require("../config/env");
 
-// --- Helper Function: ดึงข้อมูล (Refactor ออกมาใช้ร่วมกัน) ---
+// --- Helper Function: ดึงข้อมูล (แก้ให้ส่ง Raw Data ออกไปเลย) ---
 const fetchDailyReportDataInternal = async (date, lotNoPrefix) => {
   const pool = await poolConnect;
 
-  // 1. สร้าง Query หลัก (จบที่ WHERE)
+  // 1. สร้าง Query หลัก
   let query = `
       SELECT 
         s.submission_id,
@@ -27,11 +27,11 @@ const fetchDailyReportDataInternal = async (date, lotNoPrefix) => {
       WHERE s.status != 'Rejected'
   `;
 
-  // 2. ต่อ String เงื่อนไข (AND ...)
+  // 2. เงื่อนไข
   if (date) query += ` AND CAST(d.production_date AS DATE) = @date`;
   if (lotNoPrefix) query += ` AND s.lot_no LIKE @lotNoPrefix + '%'`;
 
-  // 3. ใส่ ORDER BY เป็นบรรทัดสุดท้าย (เปลี่ยนตรงนี้เป็น s.lot_no)
+  // 3. Order By
   query += ` ORDER BY s.lot_no ASC`;
 
   const request = pool.request();
@@ -39,35 +39,64 @@ const fetchDailyReportDataInternal = async (date, lotNoPrefix) => {
   if (lotNoPrefix) request.input("lotNoPrefix", sql.NVarChar, lotNoPrefix);
 
   const result = await request.query(query);
-  const rawData = result.recordset;
 
-  // Format Data
-  const reportData = { lineA: [], lineB: [], lineC: [] };
-  rawData.forEach((item) => {
-    const formattedItem = {
-      id: item.submission_id,
-      productName: item.form_type,
-      lotNo: item.lot_no,
-      input: item.input_kg,
-      output: item.output_kg,
-      pallets: item.pallet_data ? JSON.parse(item.pallet_data) : [],
-      stPlan: item.st_target_value,
-      yield: item.yield_percent,
-      moisture: item.moisture,
-    };
-    if (item.production_line === "A") reportData.lineA.push(formattedItem);
-    else if (item.production_line === "B") reportData.lineB.push(formattedItem);
-    else if (item.production_line === "C") reportData.lineC.push(formattedItem);
-  });
-
-  return reportData;
+  // ✅ แก้ตรงนี้: ส่ง recordset (Array) กลับไปเลย ไม่ต้องจัดกลุ่มที่นี่
+  return result.recordset;
 };
-// --- Controller 1: API สำหรับหน้าเว็บ (ใช้ Helper ข้างบน) ---
+
+// --- Controller 1: API สำหรับหน้าเว็บ ---
 exports.getDailyProductionReport = async (req, res) => {
   try {
     const { date, lotNoPrefix } = req.query;
-    const data = await fetchDailyReportDataInternal(date, lotNoPrefix);
-    res.json(data);
+
+    // 1. ดึงข้อมูลดิบ (ตอนนี้จะได้ Array แล้ว)
+    const rawData = await fetchDailyReportDataInternal(date, lotNoPrefix);
+
+    // 2. เตรียม Object รอรับข้อมูล (รวม ZE-1A)
+    const reportData = {
+      lineA: [],
+      lineB: [],
+      lineC: [],
+      lineD: [], // ✅ รองรับ ZE-1A
+    };
+
+    // 3. วนลูปจัดกลุ่มข้อมูลเองที่นี่
+    if (rawData && rawData.length > 0) {
+      rawData.forEach((item) => {
+        const formattedItem = {
+          id: item.submission_id,
+          productName: item.form_type,
+          lotNo: item.lot_no,
+          input: item.input_kg,
+          output: item.output_kg,
+          pallets: item.pallet_data ? JSON.parse(item.pallet_data) : [],
+          stPlan: item.st_target_value,
+          yield: item.yield_percent,
+          moisture: item.moisture,
+          production_date: item.production_date,
+        };
+
+        const lineName = item.production_line || "";
+
+        // ✅ Logic แยก Line (รวม ZE-1A)
+        if (lineName.includes("Line A") || lineName === "A") {
+          reportData.lineA.push(formattedItem);
+        } else if (lineName.includes("Line B") || lineName === "B") {
+          reportData.lineB.push(formattedItem);
+        } else if (lineName.includes("Line C") || lineName === "C") {
+          reportData.lineC.push(formattedItem);
+        } else if (
+          lineName.includes("ZE-1A") ||
+          lineName === "ZE-1A" ||
+          lineName === "D" ||
+          lineName.includes("Line D") // ✅ เพิ่มดักไว้เผื่ออนาคตได้ครับ
+        ) {
+          reportData.lineZE1A.push(formattedItem); // ยังคง push ใส่กล่องชื่อเดิม เพื่อส่งให้ Frontend
+        }
+      });
+    }
+
+    res.status(200).json(reportData);
   } catch (err) {
     console.error("Error fetching report:", err);
     res
@@ -76,56 +105,28 @@ exports.getDailyProductionReport = async (req, res) => {
   }
 };
 
-// --- Controller 2: API สำหรับโหลด PDF (New!) ---
-exports.downloadDailyReportPdf = async (req, res) => {
-  try {
-    const { date, lotNoPrefix } = req.query;
-    if (!date) return res.status(400).send("Date is required");
-
-    // 1. ดึงข้อมูลเตรียมไว้ก่อน
-    const reportData = await fetchDailyReportDataInternal(date, null);
-
-    // 2. กำหนด URL ของ Frontend หน้า Print
-    // (ปรับ Port หรือ Domain ตาม Environment ของคุณ)
-    // ควรใส่ไว้ใน .env แต่ถ้า hardcode เทสก่อนก็ใส่ตรงนี้
-    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
-    const printUrl = `${FRONTEND_URL}/genmatsu/reports/daily/print?date=${date}`;
-
-    // 3. เรียก Service สร้าง PDF
-    const pdfBuffer = await pdfService.generateDailyReportPdf(
-      date,
-      lotNoPrefix
-    );
-    // 4. ส่งไฟล์กลับไป
-    res.set({
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename=Daily_Report_${date}.pdf`,
-      "Content-Length": pdfBuffer.length,
-    });
-    res.send(pdfBuffer);
-  } catch (err) {
-    console.error("Error generating PDF:", err);
-    res.status(500).send("Error generating PDF");
-  }
-};
-// ✅ เพิ่มส่วนนี้ต่อท้ายไฟล์
+// --- Controller 2: API Summary (เหมือนเดิม) ---
 exports.getDailySummary = async (req, res) => {
   try {
     const { date } = req.query;
+    if (!date) return res.status(400).send({ message: "Date is required" });
+
     const pool = await poolConnect;
     const result = await pool
       .request()
       .input("date", sql.Date, date)
       .query(
-        `SELECT TOP 1 summary_json FROM GEN_Daily_Report_Summary WHERE report_date = @date`
+        `SELECT summary_json FROM GEN_Daily_Report_Summary WHERE report_date = @date`
       );
 
     if (result.recordset.length > 0) {
+      // แปลง JSON string กลับเป็น Object
       let data = result.recordset[0].summary_json;
-      if (typeof data === "string")
+      if (typeof data === "string") {
         try {
           data = JSON.parse(data);
         } catch (e) {}
+      }
       res.json(data);
     } else {
       res.json(null);
@@ -136,12 +137,12 @@ exports.getDailySummary = async (req, res) => {
   }
 };
 
+// --- Controller 3: API Save Summary (เหมือนเดิม) ---
 exports.saveDailySummary = async (req, res) => {
   try {
     const { date, summaryData } = req.body;
-    if (!date) {
-      return res.status(400).send({ message: "Date is required!" });
-    }
+    if (!date) return res.status(400).send({ message: "Date is required!" });
+
     const pool = await poolConnect;
     const jsonString = JSON.stringify(summaryData);
 
@@ -173,5 +174,29 @@ exports.saveDailySummary = async (req, res) => {
   } catch (error) {
     console.error("Error saving summary:", error);
     res.status(500).send({ message: "Error saving summary" });
+  }
+};
+
+// --- Controller 4: API Download PDF (เหมือนเดิม) ---
+exports.downloadDailyReportPdf = async (req, res) => {
+  try {
+    const { date, lotNoPrefix } = req.query;
+    if (!date) return res.status(400).send({ message: "Date is required" });
+
+    // สร้าง PDF buffer
+    const pdfBuffer = await pdfService.generateDailyReportPdf(
+      date,
+      lotNoPrefix
+    );
+
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename=Daily_Report_${date}.pdf`,
+      "Content-Length": pdfBuffer.length,
+    });
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    res.status(500).send({ message: "Error generating PDF" });
   }
 };

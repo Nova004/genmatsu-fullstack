@@ -1,3 +1,8 @@
+
+// frontend/src/pages/Reports/EXCLUDED_DECIMAL_FIELDS.ts
+
+// รายการฟิลด์ที่ไม่ต้องการให้แสดงทศนิยม
+
 export const EXCLUDED_DECIMAL_FIELDS = [
     'rawMaterials.shelfLife',
     'shelfLife',
