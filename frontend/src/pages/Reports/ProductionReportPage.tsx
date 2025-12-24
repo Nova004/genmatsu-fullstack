@@ -1,30 +1,30 @@
 // frontend/src/pages/Reports/ProductionReportPage.tsx
+
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { FaSearch, FaFilePdf } from 'react-icons/fa'; // เปลี่ยนไอคอนเป็น PDF ให้สื่อความหมาย
+import { FaSearch, FaPrint, FaFilePdf } from 'react-icons/fa'; // เพิ่ม Icon PDF
 
-// แก้ Path ให้ตรงกับโครงสร้างใหม่
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import DailyReportTable from './DailyReportTable';
 
 const ProductionReportPage: React.FC = () => {
-  // Default วันที่ปัจจุบัน
   const today = new Date().toISOString().split('T')[0];
 
   const [filterDate, setFilterDate] = useState(today);
   const [lotNoPrefix, setLotNoPrefix] = useState('');
   const [reportData, setReportData] = useState({ lineA: [], lineB: [], lineC: [] });
   const [isLoading, setIsLoading] = useState(false);
-  const [isExporting, setIsExporting] = useState(false); // เพิ่ม State สำหรับปุ่ม Export
+
+  // State สำหรับปุ่ม Download PDF
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const fetchReport = async () => {
     setIsLoading(true);
     try {
-      // เรียก API
       const res = await axios.get(`/genmatsu/api/submissions/reports/daily`, {
         params: {
           date: filterDate,
-          lotNoPrefix: lotNoPrefix // ส่งไปถ้ามีค่า
+          lotNoPrefix: lotNoPrefix
         }
       });
       setReportData(res.data);
@@ -35,7 +35,6 @@ const ProductionReportPage: React.FC = () => {
     }
   };
 
-  // โหลดข้อมูลทันทีเมื่อเปลี่ยนวันที่
   useEffect(() => {
     fetchReport();
   }, [filterDate]);
@@ -45,35 +44,43 @@ const ProductionReportPage: React.FC = () => {
     fetchReport();
   };
 
-  // ฟังก์ชันอัปเดต Plan
   const handleUpdateStPlan = async (id: number, newValue: number) => {
     try {
       await axios.put(`/genmatsu/api/submissions/${id}/st-plan`, {
         st_target_value: newValue
       });
-      fetchReport(); // โหลดข้อมูลใหม่
-      // alert('Update successful!'); // อาจจะไม่ต้อง Alert รบกวน User ก็ได้ถ้ามัน Refresh เร็ว
+      fetchReport();
     } catch (error) {
       console.error("Failed to update ST Plan", error);
       alert('Failed to update.');
     }
   };
 
-  // ✅ ฟังก์ชันสำหรับ Export PDF (เรียก Backend)
-  const handleExportPdf = async () => {
-    setIsExporting(true);
+  // ✅ 1. ฟังก์ชัน Web Preview (ที่คุณแก้จนใช้ได้แล้ว)
+  const handlePrintPreview = () => {
+    // URL นี้ถูกต้องแล้วตามที่คุณทดสอบผ่าน
+    const url = `/genmatsu/reports/daily/print?date=${filterDate}&lotNo=${lotNoPrefix}`;
+    window.open(url, '_blank');
+  };
+
+  // ✅ 2. ฟังก์ชัน Download PDF (ยิงไป Backend Puppeteer)
+  const handleDownloadPdf = async () => {
+    setIsDownloading(true);
     try {
-      // เรียกไปที่ Route ใหม่ที่เราเพิ่งสร้างใน backend
+      // เรียก API Backend เส้น PDF
       const response = await axios.get(`/genmatsu/api/submissions/reports/daily/pdf`, {
-        params: { date: filterDate },
-        responseType: 'blob', // ‼️ สำคัญมาก: ต้องบอกว่าเป็นไฟล์ (Blob)
+        params: {
+          date: filterDate,
+          lotNoPrefix: lotNoPrefix // ส่งไปถ้า backend รองรับ
+        },
+        responseType: 'blob', // สำคัญ: รับค่าเป็นไฟล์
       });
 
-      // สร้าง Link จำลองเพื่อกดดาวน์โหลด
+      // สร้าง Link ปลอมเพื่อกดโหลดไฟล์
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `Daily_Report_${filterDate}.pdf`); // ตั้งชื่อไฟล์
+      link.setAttribute('download', `Daily_Report_${filterDate}.pdf`);
       document.body.appendChild(link);
       link.click();
 
@@ -82,10 +89,10 @@ const ProductionReportPage: React.FC = () => {
       window.URL.revokeObjectURL(url);
 
     } catch (error) {
-      console.error("Error exporting PDF:", error);
-      alert("เกิดข้อผิดพลาดในการสร้าง PDF");
+      console.error("Error downloading PDF:", error);
+      alert("เกิดข้อผิดพลาดในการสร้าง PDF (ตรวจสอบ Console)");
     } finally {
-      setIsExporting(false);
+      setIsDownloading(false);
     }
   };
 
@@ -94,11 +101,10 @@ const ProductionReportPage: React.FC = () => {
       <Breadcrumb pageName="Daily Production Report" />
 
       <div className="flex flex-col gap-5">
-        {/* Search Bar Card */}
         <div className="rounded-sm border border-stroke bg-white p-5 shadow-default dark:border-strokedark dark:bg-boxdark">
           <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4 items-end">
 
-            {/* Date Filter */}
+            {/* Date Input */}
             <div className="w-full md:w-1/3">
               <label className="mb-2 block text-sm font-medium text-black dark:text-white">
                 Production Date
@@ -111,7 +117,7 @@ const ProductionReportPage: React.FC = () => {
               />
             </div>
 
-            {/* Lot No Filter */}
+            {/* Lot No Input */}
             <div className="w-full md:w-1/3">
               <label className="mb-2 block text-sm font-medium text-black dark:text-white">
                 Lot No. (First 4 digits)
@@ -134,26 +140,40 @@ const ProductionReportPage: React.FC = () => {
               </div>
             </div>
 
-            {/* ปุ่ม Export PDF */}
-            <div className="w-full md:w-auto ml-auto">
+            {/* ปุ่มกด */}
+            <div className="w-full md:w-auto ml-auto flex gap-2">
+              {/* ปุ่ม 1: Web Preview (สีขาว) */}
               <button
                 type="button"
-                onClick={handleExportPdf}
-                disabled={isExporting} // ป้องกันกดรัวๆ
-                className={`flex items-center gap-2 rounded py-2 px-6 font-medium text-white shadow-md transition
-                  ${isExporting ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'}`}
+                onClick={handlePrintPreview}
+                className="flex items-center gap-2 rounded py-2 px-4 font-medium text-black border border-gray-300 hover:bg-gray-100 transition"
               >
-                {isExporting ? (
-                  <>Processing...</>
+                <FaPrint /> Preview
+              </button>
+
+              {/* ปุ่ม 2: Download PDF (สีแดง) */}
+              <button
+                type="button"
+                onClick={handleDownloadPdf}
+                disabled={isDownloading}
+                className="flex items-center gap-2 rounded py-2 px-6 font-medium text-white shadow-md bg-red-600 hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isDownloading ? (
+                  <>
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-t-transparent"></div>
+                    Generating...
+                  </>
                 ) : (
-                  <><FaFilePdf /> Export PDF</>
+                  <>
+                    <FaFilePdf /> Download PDF
+                  </>
                 )}
               </button>
             </div>
           </form>
         </div>
 
-        {/* Report Table Area */}
+        {/* Table Area */}
         {isLoading ? (
           <div className="flex h-60 justify-center items-center bg-white rounded-sm border border-stroke">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>
@@ -163,6 +183,7 @@ const ProductionReportPage: React.FC = () => {
             data={reportData}
             onUpdateStPlan={handleUpdateStPlan}
             selectedDate={filterDate}
+            selectedLotNo={lotNoPrefix}
           />
         )}
       </div>

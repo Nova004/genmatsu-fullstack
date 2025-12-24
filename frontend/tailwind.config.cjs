@@ -39,7 +39,7 @@ module.exports = {
         bodydark2: '#8A99AF',
         primary: '#3C50E0',
         secondary: '#80CAEE',
-        stroke: '#E2E8F0',
+        stroke: '#CBD5E1',
         gray: {
           ...colors.gray,
           DEFAULT: '#EFF4FB',

@@ -79,7 +79,7 @@ exports.getDailyProductionReport = async (req, res) => {
 // --- Controller 2: API สำหรับโหลด PDF (New!) ---
 exports.downloadDailyReportPdf = async (req, res) => {
   try {
-    const { date } = req.query;
+    const { date, lotNoPrefix } = req.query;
     if (!date) return res.status(400).send("Date is required");
 
     // 1. ดึงข้อมูลเตรียมไว้ก่อน
@@ -93,11 +93,9 @@ exports.downloadDailyReportPdf = async (req, res) => {
 
     // 3. เรียก Service สร้าง PDF
     const pdfBuffer = await pdfService.generateDailyReportPdf(
-      reportData,
       date,
-      printUrl
+      lotNoPrefix
     );
-
     // 4. ส่งไฟล์กลับไป
     res.set({
       "Content-Type": "application/pdf",

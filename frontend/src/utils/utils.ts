@@ -55,3 +55,15 @@ export const formatFormData = (data: any): any => {
   return data;
 };
 
+
+export const formatDate = (dateString: string | null) => {
+    if (!dateString) return "-";
+    // ตัดสตริง YYYY-MM-DD ออกมาเป็นชิ้นๆ (วิธีนี้ชัวร์กว่า new Date เรื่อง Timezone)
+    const [year, month, day] = dateString.split('-');
+    
+    // แปลงเลขเดือนเป็นชื่อเดือนย่อ
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthIndex = parseInt(month, 10) - 1;
+    
+    return `${day}-${monthNames[monthIndex]}-${year}`; // คืนค่า: 30-Apr-2025
+  };

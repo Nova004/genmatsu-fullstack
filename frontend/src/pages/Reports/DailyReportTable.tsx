@@ -27,9 +27,10 @@ interface DailyReportTableProps {
   data: ReportData;
   onUpdateStPlan?: (id: number, newValue: number) => void;
   selectedDate: string;
+  selectedLotNo?: string;
 }
 
-const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPlan, selectedDate }) => {
+const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPlan, selectedDate, selectedLotNo }) => {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [tempStValue, setTempStValue] = useState<string>("");
 
@@ -250,7 +251,7 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPla
           </span>
         </td>
 
-        {/* Input & ST. Plan (ตัวเลขใหญ่ขึ้น + หนา) */}
+        {/* Input & ST. Plan */}
         <td className="border-r border-b border-gray-300 px-1 py-0.5 text-right align-top">
           <div className="flex flex-col items-end gap-0">
             <span className="text-base font-bold text-gray-1000 leading-tight">
@@ -282,13 +283,14 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPla
                 <span className="text-ls font-bold text-gray-600 group-hover:text-blue-700">
                   {item.stPlan?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </span>
-                <FaPen size={8} className="opacity-0 group-hover:opacity-100 text-gray-400 ml-0.5" />
+                {/* ซ่อนไอคอนปากกาเวลา Print */}
+                <FaPen size={8} className="opacity-0 group-hover:opacity-100 text-gray-400 ml-0.5 print:hidden" />
               </div>
             )}
           </div>
         </td>
 
-        {/* Output & Yield (Output ตัวใหญ่หนา) */}
+        {/* Output & Yield */}
         <td className="border-r border-b border-gray-300 px-1 py-0.5 text-right align-top">
           <div className="flex flex-col items-end gap-0">
             <span className="text-base font-black text-gray-900 leading-tight">
@@ -302,7 +304,7 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPla
           </div>
         </td>
 
-        {/* Pallets (ปรับให้แน่นและชัด) */}
+        {/* Pallets */}
         <td className="border-r border-b border-gray-300 p-0.5 align-top bg-gray-50 min-w-[80px]">
           {item.pallets && item.pallets.length > 0 ? (
             <div className="flex flex-col gap-0.5">
@@ -338,20 +340,17 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPla
     );
   };
 
-  // 3. Render Total Cells (เน้นความหนาและใหญ่)
+  // 3. Render Total Cells
   const renderTotalCells = (records: ProductionRecord[], isLineC: boolean = false) => {
     const totals = calculateTotals(records);
 
     return (
       <>
-        {/* Label: TOTAL */}
         <td colSpan={2} className="border-r border-b border-gray-400 bg-slate-800 px-2 py-0.5 text-right align-middle">
           <span className="text-xs font-extrabold text-white tracking-widest uppercase">
             Total
           </span>
         </td>
-
-        {/* Total Input */}
         <td className="border-r border-b border-gray-400 bg-gray-100 px-1 py-0.5 text-right align-middle">
           <div className="flex flex-col justify-center items-end">
             <span className="text-lg font-black text-gray-900 leading-tight">
@@ -359,8 +358,6 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPla
             </span>
           </div>
         </td>
-
-        {/* Total Output */}
         <td className="border-r border-b border-gray-400 bg-gray-100 px-1 py-0.5 text-right align-middle">
           <div className="flex flex-col justify-center items-end">
             <span className="text-lg font-black text-gray-900 leading-tight">
@@ -368,8 +365,6 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPla
             </span>
           </div>
         </td>
-
-        {/* Yield */}
         <td className="border-r border-b border-gray-400 bg-gray-100 px-1 py-0.5 text-right align-middle">
           <div className="flex flex-col justify-center items-end">
             <span className={`text-lg font-black leading-tight ${totals.yield < 95 ? 'text-red-700' : 'text-green-700'}`}>
@@ -378,8 +373,6 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPla
             <span className="text-[9px] font-bold text-gray-600 uppercase">Yield</span>
           </div>
         </td>
-
-        {/* Moisture */}
         {isLineC && (
           <td className="border-r border-b border-gray-400 bg-gray-100 px-1 py-0.5 text-right align-middle">
             {totals.moisture > 0 ? (
@@ -398,7 +391,7 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPla
     );
   };
 
-  // 4. Header Group Component (หัวตารางหนาๆ)
+  // 4. Header Group Component
   const TableHeaderGroup = ({ title, hasMoisture = false }: { title: string, hasMoisture?: boolean }) => (
     <>
       <th className="border-r border-b border-gray-300 px-1 py-1 text-xs font-extrabold text-gray-800 uppercase tracking-tight bg-gray-100">Product <br /> Name</th>
@@ -444,8 +437,8 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPla
 
   return (
     <div className="w-full bg-white border border-gray-400 shadow-sm overflow-hidden">
-      {/* UI: แถบ Header และปุ่ม Save */}
-      <div className="flex justify-between items-center bg-slate-100 p-2 border-b border-gray-300">
+      {/* UI: แถบ Header และปุ่ม Save -- ซ่อนทั้งแถบนี้เลยถ้าเป็น Print mode */}
+      <div className="flex justify-between items-center bg-slate-100 p-2 border-b border-gray-300 print:hidden">
         <div className="text-sm font-bold text-gray-600 uppercase tracking-wider">
           Summary Data: <span className="text-black font-black">{selectedDate || "No date selected"}</span>
         </div>
@@ -510,7 +503,8 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPla
                     onClick={handleStartEditGenmatsuType}
                   >
                     <span>{genmatsuTypeHeader}</span>
-                    <FaPen size={8} className="text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    {/* ซ่อนไอคอนปากกา */}
+                    <FaPen size={8} className="text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity print:hidden" />
                   </div>
                 )}
               </th>
@@ -549,7 +543,7 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPla
                     onClick={handleStartEditRecycleHeader}
                   >
                     <span>{recycleLotHeader}</span>
-                    <FaPen size={8} className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <FaPen size={8} className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity print:hidden" />
                   </div>
                 )}
               </th>
@@ -591,7 +585,8 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPla
                               placeholder="0.00"
                               value={recycleValues[index]?.kg || ""}
                               onChange={(e) => handleRecycleValueChange(index, 'kg', e.target.value)}
-                              className="w-full text-right text-sm font-bold text-gray-900 border-b border-gray-200 focus:border-blue-500 outline-none bg-transparent pr-5 pl-1 placeholder-gray-300"
+                              // print:border-none เพื่อลบเส้นขีดข้างล่างเวลาปริ้น
+                              className="w-full text-right text-sm font-bold text-gray-900 border-b border-gray-200 focus:border-blue-500 outline-none bg-transparent pr-5 pl-1 placeholder-gray-300 print:border-none"
                             />
                             {recycleValues[index]?.kg && (
                               <span className="absolute right-0 text-[13px] text-gray-800 font-bold">kg</span>
@@ -605,7 +600,7 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPla
                               placeholder="0.00"
                               value={recycleValues[index]?.percent || ""}
                               onChange={(e) => handleRecycleValueChange(index, 'percent', e.target.value)}
-                              className="w-full text-right text-xs font-bold text-blue-700 border-b border-gray-200 focus:border-blue-500 outline-none bg-transparent pr-5 pl-1 placeholder-gray-300"
+                              className="w-full text-right text-xs font-bold text-blue-700 border-b border-gray-200 focus:border-blue-500 outline-none bg-transparent pr-5 pl-1 placeholder-gray-300 print:border-none"
                             />
                             {recycleValues[index]?.percent && (
                               <span className="absolute right-0 text-[14px] text-blue-400 font-bold">%</span>
@@ -633,7 +628,7 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPla
                           type="number"
                           value={recycleTotalPacking}
                           onChange={(e) => setRecycleTotalPacking(e.target.value)}
-                          className="w-16 text-right border-b border-gray-500 bg-transparent outline-none focus:border-blue-600 text-black font-black"
+                          className="w-16 text-right border-b border-gray-500 bg-transparent outline-none focus:border-blue-600 text-black font-black print:border-none"
                           placeholder="0"
                         />
                         <span>cans.</span>
@@ -645,7 +640,7 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPla
                           type="number"
                           value={recycleTotalDiff}
                           onChange={(e) => setRecycleTotalDiff(e.target.value)}
-                          className="w-16 text-right border-b border-gray-500 bg-transparent outline-none focus:border-blue-600 text-red-600 font-black"
+                          className="w-16 text-right border-b border-gray-500 bg-transparent outline-none focus:border-blue-600 text-red-600 font-black print:border-none"
                           placeholder="0.00"
                         />
                         <span>kg.</span>
@@ -662,11 +657,12 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPla
                   <td colSpan={5} className="border-r border-b border-gray-300 p-1">
                     <div className="flex flex-col gap-0.5">
                       <span className="text-[10px] font-extrabold text-blue-700 uppercase">Line A Remark</span>
+                      {/* เปลี่ยน textarea เป็น border-none เวลาปริ้น */}
                       <textarea
                         value={remarks.lineA}
                         onChange={(e) => handleRemarkChange('lineA', e.target.value)}
                         placeholder="Type here..."
-                        className="w-full text-xs font-bold p-1 outline-none bg-white border border-dashed border-slate-300 focus:border-blue-500 rounded shadow-sm resize-none text-gray-900"
+                        className="w-full text-xs font-bold p-1 outline-none bg-white border border-dashed border-slate-300 focus:border-blue-500 rounded shadow-sm resize-none text-gray-900 print:border-none print:shadow-none print:bg-transparent"
                         rows={2}
                       />
                     </div>
@@ -679,7 +675,7 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPla
                         value={remarks.lineB}
                         onChange={(e) => handleRemarkChange('lineB', e.target.value)}
                         placeholder="Type here..."
-                        className="w-full text-xs font-bold p-1 outline-none bg-white border border-dashed border-slate-300 focus:border-indigo-500 rounded shadow-sm resize-none text-gray-900"
+                        className="w-full text-xs font-bold p-1 outline-none bg-white border border-dashed border-slate-300 focus:border-indigo-500 rounded shadow-sm resize-none text-gray-900 print:border-none print:shadow-none print:bg-transparent"
                         rows={2}
                       />
                     </div>
@@ -692,7 +688,7 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPla
                         value={remarks.lineC}
                         onChange={(e) => handleRemarkChange('lineC', e.target.value)}
                         placeholder="Type here..."
-                        className="w-full text-xs font-bold p-1 outline-none bg-white border border-dashed border-slate-300 focus:border-amber-500 rounded shadow-sm resize-none text-gray-900"
+                        className="w-full text-xs font-bold p-1 outline-none bg-white border border-dashed border-slate-300 focus:border-amber-500 rounded shadow-sm resize-none text-gray-900 print:border-none print:shadow-none print:bg-transparent"
                         rows={2}
                       />
                     </div>
@@ -705,7 +701,7 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({ data, onUpdateStPla
                         value={remarks.recycle}
                         onChange={(e) => handleRemarkChange('recycle', e.target.value)}
                         placeholder="..."
-                        className="w-full text-xs font-bold p-1 outline-none bg-white border border-dashed border-slate-300 focus:border-slate-500 rounded shadow-sm resize-none text-gray-900"
+                        className="w-full text-xs font-bold p-1 outline-none bg-white border border-dashed border-slate-300 focus:border-slate-500 rounded shadow-sm resize-none text-gray-900 print:border-none print:shadow-none print:bg-transparent"
                         rows={2}
                       />
                     </div>

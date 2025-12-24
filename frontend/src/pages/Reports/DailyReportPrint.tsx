@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useSearchParams } from 'react-router-dom';
 import DailyReportTable from './DailyReportTable';
+import { formatDate } from '../../utils/utils';
 
 // --- Interfaces ---
 interface ProductionRecord {
@@ -116,11 +117,34 @@ const DailyReportPrint: React.FC = () => {
     <div id="pdf-content-ready" className="a4-page-container bg-white min-h-screen">
       <div className="p-4">
         {/* ส่วนหัวกระดาษ */}
-        <div className="text-center mb-4">
-          <h1 className="text-2xl font-black text-black uppercase tracking-wide">DAILY PRODUCTION REPORT</h1>
-          <p className="text-sm font-bold text-black">Date: {date}</p>
-        </div>
+        <div className="mb-4">
+          {/* ชื่อหัวเรื่อง (ตรงกลางเหมือนเดิม) */}
+          <h1 className="text-2xl font-black text-center text-black uppercase tracking-wide mb-4">
+            Data of Genmatsu Production Amount
+          </h1>
 
+          {/* จัดวาง Date ชิดซ้าย และ หมายเหตุ ชิดขวา */}
+          <div className="flex justify-between items-end border-b-2 border-black pb-2">
+
+            {/* ฝั่งซ้าย: Date & Lot No */}
+            <div className="flex items-center gap-4 text-sm font-bold text-black">
+              <span>Date: {formatDate(date)}</span>
+              {lotNo && (
+                <>
+                  <span>|</span>
+                  <span>Lot No: {lotNo}</span>
+                </>
+              )}
+            </div>
+
+            {/* ฝั่งขวา: หมายเหตุ (Text Right) */}
+            <div className="flex flex-col items-end gap-0.5 text-xs font-bold text-black text-right">
+              <p>*** If has NCR mix or Recycle genmatsu, record in the Remark.</p>
+              <p>*** This document should be filed untill morning at next working day of production day</p>
+            </div>
+
+          </div>
+        </div>
         {/* ตารางข้อมูล */}
         <DailyReportTable
           data={reportData}
@@ -128,7 +152,7 @@ const DailyReportPrint: React.FC = () => {
         />
       </div>
 
-      {/* CSS สำหรับซ่อน UI ของ Browser ตอน Print */}
+      {/* CSS สำหรับจัดหน้ากระดาษ A4 Landscape */}
       <style>{`
         @media print {
             @page { 
@@ -143,17 +167,26 @@ const DailyReportPrint: React.FC = () => {
                 background-color: white !important;
             }
             
-            /* ซ่อน Header/Footer ของ Browser (บาง Browser ทำได้) */
-            @page { margin: 0; }
+            /* ซ่อน UI แปลกปลอม */
+            .print\\:hidden { display: none !important; }
 
-            /* บังคับ Font และสี */
-            * {
-                -webkit-print-color-adjust: exact !important;   /* Chrome, Safari, Edge */
-                print-color-adjust: exact !important;           /* Firefox */
+            /* 🔥 ปรับลดขนาดลงอีกเหลือ 94% (จากเดิม 98%) */
+            .a4-page-container {
+                transform: scale(0.94);       /* ย่อลงให้เหลือ 94% */
+                transform-origin: top left;   /* ยึดมุมซ้ายบน */
+                width: 106.5% !important;     /* ขยายความกว้างชดเชย (100 / 0.94 ≈ 106.4) */
+                margin: 0 !important;         
+                box-shadow: none !important;
             }
-            
-            /* ซ่อน Scrollbar */
-            ::-webkit-scrollbar { display: none; }
+        }
+        
+        /* หน้าจอปกติ */
+        .a4-page-container {
+            width: 297mm;
+            min-height: 210mm;
+            margin: auto;
+            background: white;
+            padding: 10px; 
         }
       `}</style>
     </div>
