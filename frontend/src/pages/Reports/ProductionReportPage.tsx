@@ -12,7 +12,7 @@ const ProductionReportPage: React.FC = () => {
 
   const [filterDate, setFilterDate] = useState(today);
   const [lotNoPrefix, setLotNoPrefix] = useState('');
-  const [reportData, setReportData] = useState({ lineA: [], lineB: [], lineC: [] });
+  const [reportData, setReportData] = useState({ lineA: [], lineB: [], lineC: [], lineD: [] });
   const [isLoading, setIsLoading] = useState(false);
 
   // State สำหรับปุ่ม Download PDF
@@ -27,19 +27,20 @@ const ProductionReportPage: React.FC = () => {
           lotNoPrefix: lotNoPrefix
         }
       });
-      if (!res.data.lineZE1A || res.data.lineZE1A.length === 0) {
-        res.data.lineZE1A = [
-          {
-            id: 9001, productName: "ZE-TEST-ITEM-1", lotNo: "Z9901",
-            input: 1200, output: 1180, yield: 98.33, stPlan: 1200,
-            pallets: [{ no: 1, qty: 50 }, { no: 2, qty: 50 }], moisture: 12.5
-          },
-          {
-            id: 9002, productName: "ZE-TEST-ITEM-2", lotNo: "Z9902",
-            input: 800, output: 750, yield: 93.75, stPlan: 800, // Yield ต่ำกว่า 95% จะเป็นสีแดง
-            pallets: [{ no: 3, qty: 40 }], moisture: 11.0
-          }
-        ];
+      if (!res.data.lineD || res.data.lineD.length === 0) {
+        // Mock Data หรือ Logic อื่นๆ
+        /* res.data.lineZE1A = [
+        {
+          id: 9001, productName: "ZE-TEST-ITEM-1", lotNo: "Z9901",
+          input: 1200, output: 1180, yield: 98.33, stPlan: 1200,
+          pallets: [{ no: 1, qty: 50 }, { no: 2, qty: 50 }], moisture: 12.5
+        },
+        {
+          id: 9002, productName: "ZE-TEST-ITEM-2", lotNo: "Z9902",
+          input: 800, output: 750, yield: 93.75, stPlan: 800, // Yield ต่ำกว่า 95% จะเป็นสีแดง
+          pallets: [{ no: 3, qty: 40 }], moisture: 11.0
+        }
+      ];*/
       }
       setReportData(res.data);
     } catch (error) {

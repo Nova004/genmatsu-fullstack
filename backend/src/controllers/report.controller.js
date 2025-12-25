@@ -48,19 +48,16 @@ const fetchDailyReportDataInternal = async (date, lotNoPrefix) => {
 exports.getDailyProductionReport = async (req, res) => {
   try {
     const { date, lotNoPrefix } = req.query;
-
-    // 1. ดึงข้อมูลดิบ (ตอนนี้จะได้ Array แล้ว)
     const rawData = await fetchDailyReportDataInternal(date, lotNoPrefix);
 
-    // 2. เตรียม Object รอรับข้อมูล (รวม ZE-1A)
+    // ✅ เปลี่ยนชื่อ Key เป็น lineD
     const reportData = {
       lineA: [],
       lineB: [],
       lineC: [],
-      lineD: [], // ✅ รองรับ ZE-1A
+      lineD: [], // เปลี่ยนจาก lineZE1A เป็น lineD
     };
 
-    // 3. วนลูปจัดกลุ่มข้อมูลเองที่นี่
     if (rawData && rawData.length > 0) {
       rawData.forEach((item) => {
         const formattedItem = {
@@ -78,20 +75,14 @@ exports.getDailyProductionReport = async (req, res) => {
 
         const lineName = item.production_line || "";
 
-        // ✅ Logic แยก Line (รวม ZE-1A)
         if (lineName.includes("Line A") || lineName === "A") {
           reportData.lineA.push(formattedItem);
         } else if (lineName.includes("Line B") || lineName === "B") {
           reportData.lineB.push(formattedItem);
         } else if (lineName.includes("Line C") || lineName === "C") {
           reportData.lineC.push(formattedItem);
-        } else if (
-          lineName.includes("ZE-1A") ||
-          lineName === "ZE-1A" ||
-          lineName === "D" ||
-          lineName.includes("Line D") // ✅ เพิ่มดักไว้เผื่ออนาคตได้ครับ
-        ) {
-          reportData.lineZE1A.push(formattedItem); // ยังคง push ใส่กล่องชื่อเดิม เพื่อส่งให้ Frontend
+        } else if (lineName.includes("Line D") || lineName === "D") {
+          reportData.lineD.push(formattedItem);
         }
       });
     }

@@ -25,7 +25,7 @@ interface FullReportData {
   lineA: ProductionRecord[];
   lineB: ProductionRecord[];
   lineC: ProductionRecord[];
-  lineZE1A?: ProductionRecord[]; // เพิ่ม Line นี้
+  lineD?: ProductionRecord[];
   genmatsuType?: string;
   recycleLot?: string;
   recycleValues?: any[];
@@ -39,7 +39,7 @@ const DailyReportPrint: React.FC = () => {
   const lotNo = searchParams.get('lotNo');
 
   const [reportData, setReportData] = useState<FullReportData>({
-    lineA: [], lineB: [], lineC: [], lineZE1A: [],
+    lineA: [], lineB: [], lineC: [], lineD: [],
     genmatsuType: "Genmatsu Type",
     recycleLot: "-",
     recycleValues: [],
@@ -56,25 +56,25 @@ const DailyReportPrint: React.FC = () => {
         });
 
         let data = res.data;
-        if (!res.data.lineZE1A || res.data.lineZE1A.length === 0) {
-          res.data.lineZE1A = [
-            {
-              id: 9001, productName: "ZE-TEST-ITEM-1", lotNo: "Z9901",
-              input: 1200, output: 1180, yield: 98.33, stPlan: 1200,
-              pallets: [{ no: 1, qty: 50 }, { no: 2, qty: 50 }], moisture: 12.5
-            },
-            {
-              id: 9002, productName: "ZE-TEST-ITEM-2", lotNo: "Z9902",
-              input: 800, output: 750, yield: 93.75, stPlan: 800, // Yield ต่ำกว่า 95% จะเป็นสีแดง
-              pallets: [{ no: 3, qty: 40 }], moisture: 11.0
-            }
-          ];
-        }
+        /*if (!res.data.lineZE1A || res.data.lineZE1A.length === 0) {
+         res.data.lineZE1A = [
+           {
+             id: 9001, productName: "ZE-TEST-ITEM-1", lotNo: "Z9901",
+             input: 1200, output: 1180, yield: 98.33, stPlan: 1200,
+             pallets: [{ no: 1, qty: 50 }, { no: 2, qty: 50 }], moisture: 12.5
+           },
+           {
+             id: 9002, productName: "ZE-TEST-ITEM-2", lotNo: "Z9902",
+             input: 800, output: 750, yield: 93.75, stPlan: 800, // Yield ต่ำกว่า 95% จะเป็นสีแดง
+             pallets: [{ no: 3, qty: 40 }], moisture: 11.0
+           }
+         ];
+       }*/
 
         setReportData(data);
 
         // รอสักนิดให้ Render เสร็จแล้วค่อยสั่ง Print (ถ้าต้องการ Auto Print)
-         setTimeout(() => { window.print(); }, 1000);
+        setTimeout(() => { window.print(); }, 1000);
 
       } catch (error) {
         console.error("Error fetching report:", error);
@@ -116,12 +116,12 @@ const DailyReportPrint: React.FC = () => {
           selectedDate={date || ""}
           selectedLotNo={lotNo || undefined}
           mode="normal" // 👈 ระบุโหมดปกติ
-          hideZE1A={true}
+          hideLineD={true}
         />
       </div>
 
       {/* ================= PAGE 2: Genmatsu ZE-1A ================= */}
-      {reportData.lineZE1A && reportData.lineZE1A.length > 0 && (
+      {reportData.lineD && reportData.lineD.length > 0 && (
 
         // ✅ แก้ไขตรงนี้: ลบ <div className="page-break"> ออก
         // แล้วเอา class "page-break" มาใส่ใน a4-page-container แทนครับ
@@ -148,7 +148,7 @@ const DailyReportPrint: React.FC = () => {
             data={reportData}
             selectedDate={date || ""}
             selectedLotNo={lotNo || undefined}
-            mode="ze1a"
+            mode="lineD"
           />
         </div>
       )}

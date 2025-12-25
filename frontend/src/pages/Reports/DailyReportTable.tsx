@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { FaPen, FaCheck, FaTimes, FaSave } from 'react-icons/fa';
 import axios from 'axios';
-import { ReportData, ProductionRecord, RecycleValue } from '../../types/report'; // ✅ Import Types
-import DailyReportRow from './components/DailyReportRow'; // ✅ Import Row Component
+import { ReportData, ProductionRecord, RecycleValue } from '../../types/report';
+import DailyReportRow from './components/DailyReportRow';
 
 interface DailyReportTableProps {
   data: ReportData;
   onUpdateStPlan?: (id: number, newValue: number) => void;
   selectedDate: string;
   selectedLotNo?: string;
-  mode?: 'normal' | 'ze1a';
-  hideZE1A?: boolean; // รับค่าสั่งซ่อน/แสดง ZE-1A
+  mode?: 'normal' | 'lineD'; // ✅ เปลี่ยนชื่อ Mode เป็น lineD
+  hideLineD?: boolean;       // ✅ เปลี่ยนชื่อ Prop เป็น hideLineD
 }
 
 const DailyReportTable: React.FC<DailyReportTableProps> = ({
@@ -19,7 +19,7 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
   selectedDate,
   selectedLotNo,
   mode = 'normal',
-  hideZE1A = false
+  hideLineD = false
 }) => {
   // --- States ---
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -36,7 +36,7 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
     lineB: "",
     lineC: "",
     recycle: "",
-    lineZE1A: ""
+    lineD: "" // ✅ เปลี่ยน Key เป็น lineD
   });
 
   // Header Titles (Editable)
@@ -72,7 +72,8 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
           setRecycleLotHeader(loaded.recycleLotHeader || "-");
         } else {
           // Reset Values if no data found
-          setRemarks({ lineA: "", lineB: "", lineC: "", recycle: "", lineZE1A: "" });
+          // ✅ Reset lineD
+          setRemarks({ lineA: "", lineB: "", lineC: "", recycle: "", lineD: "" });
           setRecycleValues(Array(8).fill({ kg: "", percent: "" }));
           setRecycleTotalPacking("");
           setRecycleTotalDiff("");
@@ -188,48 +189,48 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
 
   const recycleLabels = ["Input", "Output", "Gen-A", "Gen-B", "Film", "Dust", "Cleaning", "PE Bag"];
 
-  // Calculate max rows for Main Table
-  const maxRows = mode === 'ze1a'
-    ? (data.lineZE1A ? data.lineZE1A.length : 0)
+  // ✅ เปลี่ยน Logic การหา maxRows เป็น data.lineD
+  const maxRows = mode === 'lineD'
+    ? (data.lineD ? data.lineD.length : 0)
     : Math.max(data.lineA.length, data.lineB.length, data.lineC.length, recycleLabels.length);
 
   // ------------------------------------------
-  // 🅰️ RENDER: ZE-1A Mode (สำหรับหน้า 2)
+  // 🅰️ RENDER: Line D Mode (สำหรับหน้า 2)
   // ------------------------------------------
-  if (mode === 'ze1a') {
+  if (mode === 'lineD') {
     return (
       <div className="w-full bg-white border border-gray-400 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-xs">
-             <thead>
-                <tr className="bg-slate-900 text-white">
-                  <th className="border-r border-gray-600 p-1 w-8" rowSpan={3}>No.</th>
-                  <th className="p-1 uppercase tracking-widest" colSpan={5}>Genmatsu ZE-1A</th>
-                </tr>
-
-                {/* 👇 เพิ่ม Line D ตรงนี้เหมือนกัน 👇 */}
-                <tr className="bg-gray-200 border-b border-gray-300 text-gray-900">
-                  <th className="border-r border-gray-300 py-1 text-center font-extrabold text-xs uppercase tracking-wide" colSpan={5}>
-                    Line D
-                  </th>
-                </tr>
-
-                <tr className="border-b border-gray-300">
-                  <TableHeaderGroup title="Line ZE-1A" hasMoisture={false} />
-                </tr>
-              </thead>
+            <thead>
+              <tr className="bg-slate-900 text-white">
+                <th className="border-r border-gray-600 p-1 w-8" rowSpan={3}>No.</th>
+                {/* หัวข้อใหญ่ยังเป็น Genmatsu ZE-1A ตามที่ขอ */}
+                <th className="p-1 uppercase tracking-widest" colSpan={5}>Genmatsu ZE-1A</th>
+              </tr>
+              {/* หัวข้อรองเป็น Line D */}
+              <tr className="bg-gray-200 border-b border-gray-300 text-gray-900">
+                <th className="border-r border-gray-300 py-1 text-center font-extrabold text-xs uppercase tracking-wide" colSpan={5}>
+                  Line D
+                </th>
+              </tr>
+              <tr className="border-b border-gray-300">
+                {/* hasMoisture={false} เพราะ Line D ไม่มี Mois */}
+                <TableHeaderGroup title="Line D" hasMoisture={false} />
+              </tr>
+            </thead>
             <tbody className="bg-white">
               {maxRows === 0 ? (
-                <tr><td colSpan={7} className="text-center py-6 text-gray-400">No ZE-1A Data Available</td></tr>
+                <tr><td colSpan={7} className="text-center py-6 text-gray-400">No Line D Data Available</td></tr>
               ) : (
                 <>
                   {Array.from({ length: maxRows }).map((_, index) => (
-                    // ✅ ใช้ DailyReportRow พร้อม props "isSingleLine"
+                    // ✅ ใช้ itemD ส่งข้อมูล
                     <DailyReportRow
                       key={index}
                       index={index}
-                      itemC={data.lineZE1A?.[index]} // ข้อมูลใส่ช่อง itemC
-                      isSingleLine={true}            // บอกว่าขอแถวเดียว
+                      itemD={data.lineD?.[index]} // ใช้ itemD
+                      isSingleLine={true}            
                       editingId={editingId}
                       tempStValue={tempStValue}
                       setTempStValue={setTempStValue}
@@ -240,15 +241,17 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
                   ))}
                   <tr className="border-t-2 border-gray-500 bg-gray-100 font-bold">
                     <td className="border-r border-b border-gray-400 bg-slate-800 p-1"></td>
-                    {renderTotalCells(data.lineZE1A || [], false)}
+                    {/* ✅ ใช้ data.lineD */}
+                    {renderTotalCells(data.lineD || [], false)}
                   </tr>
                   <tr className="bg-slate-50">
                     <td className="border-r border-b border-gray-300 p-1 bg-slate-200"></td>
                     <td colSpan={6} className="border-r border-b border-gray-300 p-1">
-                      <span className="text-[10px] font-extrabold text-green-700 uppercase">Line ZE-1A Remark</span>
+                      {/* ✅ เปลี่ยน label และใช้ remarks.lineD */}
+                      <span className="text-[10px] font-extrabold text-green-700 uppercase">Line D Remark</span>
                       <textarea
-                        value={remarks.lineZE1A}
-                        onChange={e => handleRemarkChange('lineZE1A', e.target.value)}
+                        value={remarks.lineD}
+                        onChange={e => handleRemarkChange('lineD', e.target.value)}
                         className="w-full text-xs p-1 border border-dashed border-slate-300 rounded resize-none"
                         rows={2}
                         placeholder="Type remark..."
@@ -278,7 +281,6 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-xs">
           <thead>
-            {/* ... Complex Header Structure ... */}
             <tr className="bg-slate-900 text-white">
               <th className="border-r border-gray-600 p-1 text-center font-bold text-xs w-8" rowSpan={3}>No.</th>
               <th className="border-r border-gray-600 py-1 px-1 text-center font-bold text-sm uppercase tracking-widest" colSpan={10}>Genmatsu A</th>
@@ -321,7 +323,6 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
               <tr><td colSpan={19} className="text-center py-6 text-gray-400">No Data Available</td></tr>
             ) : (
               <>
-                {/* ✅ ใช้ DailyReportRow แบบปกติ (ไม่มี isSingleLine) */}
                 {Array.from({ length: maxRows }).map((_, index) => (
                   <DailyReportRow
                     key={index}
@@ -369,18 +370,20 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
         </table>
       </div>
 
-      {/* Logic for showing ZE-1A at bottom (Page 1 Web View) */}
-      {data.lineZE1A && data.lineZE1A.length > 0 && !hideZE1A && (
+      {/* Logic for showing Line D at bottom (Page 1 Web View) */}
+      {/* ✅ เช็ค data.lineD และ hideLineD */}
+      {data.lineD && data.lineD.length > 0 && !hideLineD && (
         <div className="mt-8 border-t-4 border-gray-500 pt-4">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-xs">
               <thead>
                 <tr className="bg-slate-900 text-white">
                   <th className="border-r border-gray-600 p-1 w-8" rowSpan={3}>No.</th>
+                  {/* หัวข้อใหญ่ Genmatsu ZE-1A */}
                   <th className="p-1 uppercase tracking-widest" colSpan={5}>Genmatsu ZE-1A</th>
                 </tr>
 
-                {/* 👇 เพิ่ม Line D ตรงนี้เหมือนกัน 👇 */}
+                {/* หัวข้อรอง Line D */}
                 <tr className="bg-gray-200 border-b border-gray-300 text-gray-900">
                   <th className="border-r border-gray-300 py-1 text-center font-extrabold text-xs uppercase tracking-wide" colSpan={5}>
                     Line D
@@ -388,17 +391,17 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
                 </tr>
 
                 <tr className="border-b border-gray-300">
-                  <TableHeaderGroup title="Line ZE-1A" hasMoisture={false} />
+                  <TableHeaderGroup title="Line D" hasMoisture={false} />
                 </tr>
               </thead>
               <tbody className="bg-white">
-                {data.lineZE1A.map((_, index) => (
-                  // ✅ ใช้ DailyReportRow แบบ Single Line (เหมือนโหมด ZE-1A)
+                {data.lineD.map((_, index) => (
+                  // ✅ ใช้ itemD ส่งข้อมูล
                   <DailyReportRow
                     key={index}
                     index={index}
-                    itemC={data.lineZE1A?.[index]} // ข้อมูลใส่ช่อง itemC
-                    isSingleLine={true}            // บอกว่าขอแถวเดียว
+                    itemD={data.lineD?.[index]} // ใช้ itemD
+                    isSingleLine={true}            
                     editingId={editingId}
                     tempStValue={tempStValue}
                     setTempStValue={setTempStValue}
@@ -407,14 +410,19 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
                     onCancelEdit={() => setEditingId(null)}
                   />
                 ))}
-                <tr className="border-t-2 border-gray-500 bg-gray-100 font-bold"><td className="border-r border-b border-gray-400 bg-slate-800 p-1"></td>{renderTotalCells(data.lineZE1A, false)}</tr>
+                <tr className="border-t-2 border-gray-500 bg-gray-100 font-bold">
+                  <td className="border-r border-b border-gray-400 bg-slate-800 p-1"></td>
+                  {/* ✅ ใช้ data.lineD */}
+                  {renderTotalCells(data.lineD, false)}
+                </tr>
                 <tr className="bg-slate-50">
                   <td className="border-r border-b border-gray-300 p-1 bg-slate-200"></td>
                   <td colSpan={6} className="border-r border-b border-gray-300 p-1">
-                    <span className="text-[10px] font-extrabold text-green-700 uppercase">Line ZE-1A Remark</span>
+                    {/* ✅ ใช้ remarks.lineD */}
+                    <span className="text-[10px] font-extrabold text-green-700 uppercase">Line D Remark</span>
                     <textarea
-                      value={remarks.lineZE1A}
-                      onChange={e => handleRemarkChange('lineZE1A', e.target.value)}
+                      value={remarks.lineD}
+                      onChange={e => handleRemarkChange('lineD', e.target.value)}
                       className="w-full text-xs p-1 border border-dashed border-slate-300 rounded resize-none"
                       rows={2}
                       placeholder="Type remark..."

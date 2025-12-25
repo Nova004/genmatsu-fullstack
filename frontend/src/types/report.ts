@@ -15,7 +15,7 @@ export interface ReportData {
   lineA: ProductionRecord[];
   lineB: ProductionRecord[];
   lineC: ProductionRecord[];
-  lineZE1A?: ProductionRecord[];
+  lineD?: ProductionRecord[];
 }
 
 export interface RecycleValue {

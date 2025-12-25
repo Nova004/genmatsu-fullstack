@@ -1,6 +1,6 @@
 import React from 'react';
 import MenuCard from '../../components/MenuCard';
-import { FaFileAlt, FaCogs } from 'react-icons/fa';
+import { FaFileAlt, FaChartLine, FaCogs } from 'react-icons/fa';
 import { useAuth } from "../../context/AuthContext";
 
 const ECommerce: React.FC = () => {
@@ -8,31 +8,49 @@ const ECommerce: React.FC = () => {
   return (
     <>
       <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-3 2xl:gap-7.5">
+
+        {/* --- Card 1: GEN-A (เอกสารการผลิต - ใช้ Icon เดิม) --- */}
         <MenuCard
-          title="ใบเมนู GEN-A"
+          title="เอกสารการผลิต GEN-A"
           description="เข้าสู่หน้าบันทึกฟอร์ม GEN-A"
           linkTo="/reports/history/gen-a"
         >
-          <FaFileAlt size={22} className="text-primary" />
+          {/* สี Primary (มักเป็นสีน้ำเงิน) สื่อถึงเอกสารหลัก */}
+          <FaFileAlt size={22} className="text-blue-600 dark:text-blue-400" />
         </MenuCard>
 
+        {/* --- Card 2: GEN-B (เอกสารการผลิต - ใช้ Icon เดิม) --- */}
         <MenuCard
-          title="ใบเมนู GEN-B"
+          title="เอกสารการผลิต GEN-B"
           description="เข้าสู่หน้าบันทึกฟอร์ม GEN-B"
-          linkTo="/reports/history/gen-b" // <-- **แก้ URL ปลายทางได้ตามต้องการ**
+          linkTo="/reports/history/gen-b"
         >
-          <FaFileAlt size={22} className="text-success" />
+          {/* สี Success (มักเป็นสีเขียว) แยกความต่างจาก A ด้วยสี */}
+          <FaFileAlt size={22} className="text-green-600 dark:text-green-400" />
         </MenuCard>
+
+        {/* --- Card 3: Report (เปลี่ยน Icon และสีให้ดูเป็น Data/Dashboard) --- */}
+        <MenuCard
+          title="Report Production Amount"
+          description="เข้าสู่หน้า Data Production Amount"
+          linkTo="/reports/daily-production"
+        >
+          {/* ใช้ Icon กราฟ และสีม่วง (Indigo/Purple) เพื่อให้ดูเป็น Analytics */}
+          <FaChartLine size={22} className="text-indigo-600 dark:text-indigo-400" />
+        </MenuCard>
+
+        {/* --- Card 4: Admin (เปลี่ยน Icon และสีให้ดูเป็น System/Control) --- */}
         {((user?.LV_Approvals ?? 0) >= 2) && (
           <MenuCard
             title="Master (Admin)"
             description="จัดการข้อมูลหลังบ้านสำหรับแอดมิน"
             linkTo="/master/Dashbord_Master"
-          // linkTo="/master/form-editor" // <-- **แก้ URL ปลายทางได้ตามต้องการ**
           >
-            <FaCogs size={22} className="text-warning" />
+            {/* ใช้ Icon UserCog หรือ Cogs และสีส้ม/แดง (Warning/Rose) เพื่อสื่อถึงส่วน Admin */}
+            <FaCogs size={22} className="text-rose-500 dark:text-rose-400" />
           </MenuCard>
         )}
+
       </div>
     </>
   );
