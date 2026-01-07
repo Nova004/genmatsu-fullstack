@@ -41,6 +41,8 @@ const BZ3_B_Form = lazy(() => import('./components/formGen/pages/GEN_B/BZ3-B_For
 const BS3_B_Form = lazy(() => import('./components/formGen/pages/GEN_B/BS3-B_Form/BS3-B_index'));
 const BS3_B1_Form = lazy(() => import('./components/formGen/pages/GEN_B/BS3-B1_Form/BS3-B1_index'));
 const AS2_Form = lazy(() => import('./components/formGen/pages/GEN_A/AS2_Form/AS2_index'));
+const AJ4_Form = lazy(() => import('./components/formGen/pages/GEN_A/AJ4_Form/AJ4_index'));
+const AS4_Form = lazy(() => import('./components/formGen/pages/GEN_A/AS4_Form/AS4_index'));
 const AS2_D_Form = lazy(() => import('./components/formGen/pages/GEN_A/AS2-D_Form/AS2-D_index'));
 const AZ_D_Form = lazy(() => import('./components/formGen/pages/GEN_A/AZ-D_Form/AZ-D_index'));
 const AZ1_Form = lazy(() => import('./components/formGen/pages/GEN_A/AZ1_Form/AZ1_index'));
@@ -69,7 +71,7 @@ const AppRoutes = () => {
           path="/auth/signin"
           element={
             <>
-              <PageTitle title="Signin | TailAdmin" />
+              <PageTitle title="Signin | GEN Manufacturing" />
               <SignIn />
             </>
           }
@@ -78,7 +80,7 @@ const AppRoutes = () => {
           path="/auth/signup"
           element={
             <>
-              <PageTitle title="Signup | TailAdmin" />
+              <PageTitle title="Signup | GEN Manufacturing" />
               <SignUp />
             </>
           }
@@ -225,6 +227,14 @@ const AppRoutes = () => {
                         <Route
                           path="/forms/as2-form"
                           element={<><PageTitle title="AS2 Form" /><AS2_Form /></>}
+                        />
+                        <Route
+                          path="/forms/as4-form"
+                          element={<><PageTitle title="AS4 Form" /><AS4_Form /></>}
+                        />
+                        <Route
+                          path="/forms/aj4-form"
+                          element={<><PageTitle title="AS4 Form" /><AJ4_Form /></>}
                         />
                         <Route
                           path="/forms/as2-d-form"

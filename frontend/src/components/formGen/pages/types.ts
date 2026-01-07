@@ -27,6 +27,9 @@ export interface IManufacturingReportForm {
     ZeoliteJikulite: number | null;
     ZeoliteNatto: number | null;
     sodiumChloride: number | null;
+    calciumbromide: number | null;
+    magnesiumstearate: number | null;
+    sodiumbromide: number | null;
     magnesiumHydroxide: number | null;
     IronOxideMTY80: number | null;
     sg: number | null;

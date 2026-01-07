@@ -7,6 +7,7 @@ import EmployeeInputRow from './EmployeeInputRow';
 import ConditionCheckItem from './ConditionCheckItem';
 import { FieldErrors } from 'react-hook-form';
 import ChecklistTable from './ChecklistTable';
+import { getCurrentDate } from '../../../../utils/utils';
 
 // 1. สร้าง Interface สำหรับ Props ที่ Component นี้ต้องการ
 interface SharedFormStep1Props {
@@ -61,7 +62,12 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
         <div className="mb-6 grid grid-cols-1 gap-6 border-b border-stroke pb-6 dark:border-strokedark md:grid-cols-2">
           <div className="flex items-center">
             <label className="w-1/3 text-black dark:text-white">Date</label>
-            <input type="date" className={inputClass} {...register('basicData.date', { required: true })} />
+            <input
+              type="date"
+              className={inputClass}
+              defaultValue={getCurrentDate()} // ✅ เพิ่มบรรทัดนี้
+              {...register('basicData.date', { required: true })}
+            />
           </div>
           <div className="flex items-center">
             <label className="w-1/3 text-black dark:text-white">Machine Name</label>

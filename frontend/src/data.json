@@ -1,39 +1,15 @@
 {
-  "layout_type": "DYNAMIC_ROW",
-  "columns": [
-    {
-      "type": "MULTI_INPUT_GROUP",
-      "span": 2,
-      "description": "เปิด Cover และ Filter อย่างละ 1 ตัว ตรงกลางเท่านั้นเพื่อเช็คอุณหภูมิทั้ง 3 จุดก่อนการบรรจุ แล้วปิด Cover และ Filter ตรงกลาง ( STD ≤ 120 ˚C  )",
-      "validation": {
-        "type": "MAX_VALUE",
-        "max": 120,
-        "errorMessage": "อุณหภูมิต้องไม่เกิน STD ≤ 120 ˚C "
-      },
-      "inputs": [
-        {
-          "label": "Temp Point 1",
-          "unit": "˚C ≤ 120 ˚C ",
-          "type": "number",
-          "field_name": "operationResults.{index}.tempPoint1"
-        },
-        {
-          "label": "Temp Point 2",
-          "unit": "˚C ≤ 120 ˚C ",
-          "type": "number",
-          "field_name": "operationResults.{index}.tempPoint2"
-        },
-        {
-          "label": "Temp Point 3",
-          "unit": "˚C ≤ 120 ˚C ",
-          "type": "number",
-          "field_name": "operationResults.{index}.tempPoint3"
-        }
-      ]
-    }
+  "row_type": "SINGLE_INPUT",
+  "label": "Magnesium Stearate (แม็กนีเซียม สเตียเรท)",
+  "std_value": "2 ± 0.1",
+  "unit": "KG",
+  "inputs": [
+    { "type": "number", "step": "0.01", "field_name": "rawMaterials.magnesiumstearate" }
   ],
-  "inputs": {
-    "startTime": { "enabled": false },
-    "finishTime": { "enabled": false }
+  "validation": {
+    "type": "RANGE_TOLERANCE",
+    "min": 1.9,
+    "max": 2.1,
+    "errorMessage": "ค่าต้องอยู่ระหว่าง 1.9 - 2.1"
   }
 }

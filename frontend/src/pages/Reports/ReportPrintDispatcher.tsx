@@ -7,6 +7,8 @@ import { EXCLUDED_DECIMAL_FIELDS} from './EXCLUDED_DECIMAL_FIELDS';
 // --- ⬇️ (สำคัญ) Import Component "สำหรับพิมพ์" ทั้งหมดที่คุณมี ⬇️ ---
 // (คุณต้องสร้างไฟล์เหล่านี้ขึ้นมา โดยมี Layout สำหรับ A4)
 import PrintableReportAS2 from './AS2/PrintableReportAS2';
+import PrintableReportAJ4 from './AJ4/PrintableReportAJ4';
+import PrintableReportAS4 from './AS4/PrintableReportAS4';
 import PrintableReportAS2_D from './AS2-D/PrintableReportAS2-D';
 import PrintableReportAZ_D from './AZ-D/PrintableReportAZ-D';
 import PrintableReportAZ1 from './AZ1/PrintableReportAZ1';
@@ -148,6 +150,10 @@ const ReportPrintDispatcher: React.FC = () => {
       // --- ⬇️ ตรวจสอบ Case และชื่อ Component ให้ตรงกับที่คุณ Import มา ⬇️ ---
       case 'AS2':
         return <PrintableReportAS2 {...props} />;
+      case 'AJ4':
+        return <PrintableReportAJ4 {...props} />;
+      case 'AS4':
+        return <PrintableReportAS4 {...props} />;
       case 'AS2-D':
         return <PrintableReportAS2_D {...props} />;       
       case 'AZ-D':

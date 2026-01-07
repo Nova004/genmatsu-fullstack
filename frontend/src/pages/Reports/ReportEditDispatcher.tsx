@@ -21,6 +21,8 @@ import ReportEditBZ5_C from './BZ5-C/ReportEditBZ5-C';
 import ReportEditBS5_C from './BS5-C/ReportEditBS5-C';
 import ReportEditBS3_C from './BS3-C/ReportEditBS3-C';
 import ReportEditAS2 from './AS2/ReportEditAS2';
+import ReportEditAJ4 from './AJ4/ReportEditAJ4';
+import ReportEditAS4 from './AS4/ReportEditAS4';
 import ReportEditAS2_D from './AS2-D/ReportEditAS2-D';
 import ReportEditAZ_D from './AZ-D/ReportEditAZ-D';
 import ReportEditAZ1 from './AZ1/ReportEditAZ1';
@@ -143,6 +145,10 @@ const ReportEditDispatcher: React.FC = () => {
                 return <ReportEditBS5_C submission={submission} templates={templates} />;
             case 'AS2':
                 return <ReportEditAS2 submission={submission} templates={templates} />;
+            case 'AJ4':
+                return <ReportEditAJ4 submission={submission} templates={templates} />;
+            case 'AS4':
+                return <ReportEditAS4 submission={submission} templates={templates} />;
             case 'AS2-D':
                 return <ReportEditAS2_D submission={submission} templates={templates} />;
             case 'AZ-D':
