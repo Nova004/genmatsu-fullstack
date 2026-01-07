@@ -41,6 +41,8 @@ const BZ3_B_Form = lazy(() => import('./components/formGen/pages/GEN_B/BZ3-B_For
 const BS3_B_Form = lazy(() => import('./components/formGen/pages/GEN_B/BS3-B_Form/BS3-B_index'));
 const BS3_B1_Form = lazy(() => import('./components/formGen/pages/GEN_B/BS3-B1_Form/BS3-B1_index'));
 const AS2_Form = lazy(() => import('./components/formGen/pages/GEN_A/AS2_Form/AS2_index'));
+const AS2_D_Form = lazy(() => import('./components/formGen/pages/GEN_A/AS2-D_Form/AS2-D_index'));
+const AZ_D_Form = lazy(() => import('./components/formGen/pages/GEN_A/AZ-D_Form/AZ-D_index'));
 const AZ1_Form = lazy(() => import('./components/formGen/pages/GEN_A/AZ1_Form/AZ1_index'));
 const AX9_B_Form = lazy(() => import('./components/formGen/pages/GEN_A/AX9-B_Form/AX9-B_index'));
 const AX2_B_Form = lazy(() => import('./components/formGen/pages/GEN_A/AX2-B_Form/AX2-B_index'));
@@ -223,6 +225,14 @@ const AppRoutes = () => {
                         <Route
                           path="/forms/as2-form"
                           element={<><PageTitle title="AS2 Form" /><AS2_Form /></>}
+                        />
+                        <Route
+                          path="/forms/as2-d-form"
+                          element={<><PageTitle title="AS2-D Form" /><AS2_D_Form /></>}
+                        />
+                        <Route
+                          path="/forms/az-d-form"
+                          element={<><PageTitle title="AZ-D Form" /><AZ_D_Form /></>}
                         />
                         <Route
                           path="/forms/az1-form"

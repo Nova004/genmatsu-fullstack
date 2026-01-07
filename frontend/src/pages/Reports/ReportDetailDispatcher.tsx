@@ -22,6 +22,8 @@ import ReportDetailBS3_C from './BS3-C/ReportDetailBS3-C';
 import ReportDetailBZ5_C from './BZ5-C/ReportDetailBZ5-C';
 import ReportDetailBS5_C from './BS5-C/ReportDetailBS5-C';
 import ReportDetailAS2 from './AS2/ReportDetailAS2';
+import ReportDetailAS2_D from './AS2-D/ReportDetailAS2-D';
+import ReportDetailAZ_D from './AZ-D/ReportDetailAZ-D';
 import ReportDetailAZ1 from './AZ1/ReportDetailAZ1';
 import ReportDetailAX9_B from './AX9-B/ReportDetailAX9-B';
 import ReportDetailAX2_B from './AX2-B/ReportDetailAX2-B';
@@ -32,37 +34,37 @@ import ReportDetailAZ from './AZ/ReportDetailAZ';
 
 
 const processTemplateData = (data: any, parentKey: string = ''): any => {
-    if (Array.isArray(data)) {
-        return data.map(item => processTemplateData(item, parentKey));
-    }
-    if (data !== null && typeof data === 'object') {
-        return Object.fromEntries(
-            Object.entries(data).map(([key, val]) => {
-                const currentPath = parentKey ? `${parentKey}.${key}` : key;
+  if (Array.isArray(data)) {
+    return data.map(item => processTemplateData(item, parentKey));
+  }
+  if (data !== null && typeof data === 'object') {
+    return Object.fromEntries(
+      Object.entries(data).map(([key, val]) => {
+        const currentPath = parentKey ? `${parentKey}.${key}` : key;
 
-                if (isNumeric(val)) {
-                    // 1. เช็คว่าเป็น Field ที่ต้องยกเว้นหรือไม่
-                    const isExcluded = EXCLUDED_DECIMAL_FIELDS.some(excluded => {
-                        return currentPath === excluded ||
-                            currentPath.endsWith(`.${excluded}`) ||
-                            key === excluded;
-                    });
+        if (isNumeric(val)) {
+          // 1. เช็คว่าเป็น Field ที่ต้องยกเว้นหรือไม่
+          const isExcluded = EXCLUDED_DECIMAL_FIELDS.some(excluded => {
+            return currentPath === excluded ||
+              currentPath.endsWith(`.${excluded}`) ||
+              key === excluded;
+          });
 
-                    // 🚩 2. แก้ไขตรงนี้: ลบ typeof val === 'string' ออก
-                    // "ถ้าอยู่ในลิสต์ยกเว้น ให้คืนค่าเดิมทันที (ไม่ว่าจะเป็น int, float หรือ string)"
-                    if (isExcluded) { 
-                        return [key, val];
-                    }
+          // 🚩 2. แก้ไขตรงนี้: ลบ typeof val === 'string' ออก
+          // "ถ้าอยู่ในลิสต์ยกเว้น ให้คืนค่าเดิมทันที (ไม่ว่าจะเป็น int, float หรือ string)"
+          if (isExcluded) {
+            return [key, val];
+          }
 
-                    // ถ้าไม่ใช่ตัวยกเว้น ค่อยจับปัดเศษ
-                    return [key, formatNumberRound(val)];
-                }
+          // ถ้าไม่ใช่ตัวยกเว้น ค่อยจับปัดเศษ
+          return [key, formatNumberRound(val)];
+        }
 
-                return [key, processTemplateData(val, currentPath)];
-            })
-        );
-    }
-    return data;
+        return [key, processTemplateData(val, currentPath)];
+      })
+    );
+  }
+  return data;
 };
 
 
@@ -179,6 +181,10 @@ const ReportDetailDispatcher: React.FC = () => {
         return <ReportDetailBS5_C submission={submission} blueprints={blueprints} />;
       case 'AS2':
         return <ReportDetailAS2 submission={submission} blueprints={blueprints} />;
+      case 'AS2-D':
+        return <ReportDetailAS2_D submission={submission} blueprints={blueprints} />;
+      case 'AZ-D':
+        return <ReportDetailAZ_D submission={submission} blueprints={blueprints} />;
       case 'AZ1':
         return <ReportDetailAZ1 submission={submission} blueprints={blueprints} />;
       case 'AX9-B':

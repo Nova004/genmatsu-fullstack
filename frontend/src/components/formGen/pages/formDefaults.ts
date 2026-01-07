@@ -28,6 +28,8 @@ export const initialFormValues: IManufacturingReportForm = {
     diaEarth: null,
     sodiumChloride: null,
     magnesiumHydroxide: null,
+    perlite : null,
+    sulfur: null,
     remainedGenmatsu: { lot: '', actual: null },
     shelfLife: null,
     ncrGenmatsu: { lot: '', actual: null },

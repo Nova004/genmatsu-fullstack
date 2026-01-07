@@ -1,22 +1,39 @@
 {
-  "remarks": {
-    "lineA": "asfasf",
-    "lineB": "fqwfasfas",
-    "lineC": "qwfwqfasfsaf",
-    "recycle": "fqasfasfasf"
-  },
-  "recycleValues": [
-    { "kg": "1262.52", "percent": "100" },
-    { "kg": "1260.60", "percent": "99.85" },
-    { "kg": "675.00", "percent": "53.46" },
-    { "kg": "189.90", "percent": "15.04" },
-    { "kg": "346.40", "percent": "27.44" },
-    { "kg": "2.40", "percent": "0.19" },
-    { "kg": "26.60", "percent": "2.11" },
-    { "kg": "20.30", "percent": "1.61" }
+  "layout_type": "DYNAMIC_ROW",
+  "columns": [
+    {
+      "type": "MULTI_INPUT_GROUP",
+      "span": 2,
+      "description": "เปิด Cover และ Filter อย่างละ 1 ตัว ตรงกลางเท่านั้นเพื่อเช็คอุณหภูมิทั้ง 3 จุดก่อนการบรรจุ แล้วปิด Cover และ Filter ตรงกลาง ( STD ≤ 120 ˚C  )",
+      "validation": {
+        "type": "MAX_VALUE",
+        "max": 120,
+        "errorMessage": "อุณหภูมิต้องไม่เกิน STD ≤ 120 ˚C "
+      },
+      "inputs": [
+        {
+          "label": "Temp Point 1",
+          "unit": "˚C ≤ 120 ˚C ",
+          "type": "number",
+          "field_name": "operationResults.{index}.tempPoint1"
+        },
+        {
+          "label": "Temp Point 2",
+          "unit": "˚C ≤ 120 ˚C ",
+          "type": "number",
+          "field_name": "operationResults.{index}.tempPoint2"
+        },
+        {
+          "label": "Temp Point 3",
+          "unit": "˚C ≤ 120 ˚C ",
+          "type": "number",
+          "field_name": "operationResults.{index}.tempPoint3"
+        }
+      ]
+    }
   ],
-  "recycleTotalPacking": "9",
-  "recycleTotalDiff": "1.92",
-  "genmatsuTypeHeader": "Genmatsu Type AZ-R",
-  "recycleLotHeader": "5323"
+  "inputs": {
+    "startTime": { "enabled": false },
+    "finishTime": { "enabled": false }
+  }
 }

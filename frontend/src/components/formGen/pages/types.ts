@@ -23,6 +23,7 @@ export interface IManufacturingReportForm {
     gypsumplaster: number | null;
     activatedcarbon: number | null;
     diaEarth: number | null;
+    perlite : number | null;
     ZeoliteJikulite: number | null;
     ZeoliteNatto: number | null;
     sodiumChloride: number | null;
@@ -35,6 +36,7 @@ export interface IManufacturingReportForm {
     AZRGenmatsu: { lot: string; actual: number | null; };
     calciumchloride: number | null;
     activated: number | null;
+    sulfur:number | null;
   };
 
   // --- เพิ่มโครงสร้างใหม่สำหรับ BZ ---

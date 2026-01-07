@@ -5,8 +5,8 @@ import { useParams } from 'react-router-dom';
 import { getSubmissionById } from '../../services/submissionService';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import Loader from '../../common/Loader';
-import { formatNumberRound ,isNumeric } from '../../utils/utils';
-import { EXCLUDED_DECIMAL_FIELDS} from './EXCLUDED_DECIMAL_FIELDS';
+import { formatNumberRound, isNumeric } from '../../utils/utils';
+import { EXCLUDED_DECIMAL_FIELDS } from './EXCLUDED_DECIMAL_FIELDS';
 
 import ReportEditBZ from './BZ/ReportEditBZ';
 import ReportEditBS_B from './BS-B/ReportEditBS-B';
@@ -21,6 +21,8 @@ import ReportEditBZ5_C from './BZ5-C/ReportEditBZ5-C';
 import ReportEditBS5_C from './BS5-C/ReportEditBS5-C';
 import ReportEditBS3_C from './BS3-C/ReportEditBS3-C';
 import ReportEditAS2 from './AS2/ReportEditAS2';
+import ReportEditAS2_D from './AS2-D/ReportEditAS2-D';
+import ReportEditAZ_D from './AZ-D/ReportEditAZ-D';
 import ReportEditAZ1 from './AZ1/ReportEditAZ1';
 import ReportEditAX9_B from './AX9-B/ReportEditAX9-B';
 import ReportEditAX2_B from './AX2-B/ReportEditAX2-B';
@@ -52,7 +54,7 @@ const processTemplateData = (data: any, parentKey: string = ''): any => {
 
                     // 🚩 2. แก้ไขตรงนี้: ลบ typeof val === 'string' ออก
                     // "ถ้าอยู่ในลิสต์ยกเว้น ให้คืนค่าเดิมทันที (ไม่ว่าจะเป็น int, float หรือ string)"
-                    if (isExcluded) { 
+                    if (isExcluded) {
                         return [key, val];
                     }
 
@@ -141,6 +143,10 @@ const ReportEditDispatcher: React.FC = () => {
                 return <ReportEditBS5_C submission={submission} templates={templates} />;
             case 'AS2':
                 return <ReportEditAS2 submission={submission} templates={templates} />;
+            case 'AS2-D':
+                return <ReportEditAS2_D submission={submission} templates={templates} />;
+            case 'AZ-D':
+                return <ReportEditAZ_D submission={submission} templates={templates} />;
             case 'AZ1':
                 return <ReportEditAZ1 submission={submission} templates={templates} />;
             case 'AX9-B':

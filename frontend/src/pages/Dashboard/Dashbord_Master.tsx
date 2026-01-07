@@ -19,7 +19,7 @@ const ECommerce: React.FC = () => {
 
         <MenuCard
           title="NaCl Master"
-          description="จัดการข้อมูลหลังบ้านสำหรับแอดมิน"
+          description="จัดการข้อมูลหลังบ้านNaCl Master"
           linkTo="/master/nacl-master" // <-- **แก้ URL ปลายทางได้ตามต้องการ**
         >
           <FaEyeDropper size={22} className="text-primary" />
@@ -27,10 +27,18 @@ const ECommerce: React.FC = () => {
 
         <MenuCard
           title="Form Master Editor"
-          description="จัดการข้อมูลหลังบ้านสำหรับแอดมิน"
+          description="จัดการข้อมูลหลังบ้านForm Master Editor"
           linkTo="/master/form-editor" // <-- **แก้ URL ปลายทางได้ตามต้องการ**
         >
           <FaWpforms size={22} className="text-secondary" />
+        </MenuCard>
+
+          <MenuCard
+          title="Standard Plan Master"
+          description="จัดการข้อมูลหลังบ้าน Standard Plan Master"
+          linkTo="/master/standard-plan-master" // <-- **แก้ URL ปลายทางได้ตามต้องการ**
+        >
+          <FaCogs size={22} className="text-rose-500 dark:text-rose-400" />
         </MenuCard>
       </div>
 
