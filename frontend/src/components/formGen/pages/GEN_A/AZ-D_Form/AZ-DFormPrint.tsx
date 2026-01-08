@@ -54,7 +54,7 @@ const AZ_DFormPrint: React.FC<AZ_DFormPrintProps> = ({ formData, blueprints, isR
               <SharedFormStep1 {...formStepProps} packagingWarningItemName="Iron Powder" />
             </div>
             <div className="form-section p-1 border-b border-stroke">
-              <FormStep2 {...formStepProps} staticBlueprint={blueprints['AS2-D_Step2_RawMaterials']} />
+              <FormStep2 {...formStepProps} staticBlueprint={blueprints['AZ-D_Step2_RawMaterials']} />
             </div>
             {/* ‼️ ส่ง marginTop เข้าไป ‼️ */}
 
@@ -63,7 +63,7 @@ const AZ_DFormPrint: React.FC<AZ_DFormPrintProps> = ({ formData, blueprints, isR
           {/* === หน้า 2 === */}
           <div className="flex w-full flex-col" style={{ pageBreakBefore: 'always' }}>
             <div className="form-section p-1 border-b border-stroke">
-              <SharedFormStep3 {...formStepProps} staticBlueprint={blueprints['AS2-D_Step3_Operations']} templateName="AZ-D_Step3_Operations" />
+              <SharedFormStep3 {...formStepProps} staticBlueprint={blueprints['AZ-D_Step3_Operations']} templateName="AZ-D_Step3_Operations" />
             </div>
             {/* ‼️ ส่ง marginTop เข้าไป ‼️ */}
 

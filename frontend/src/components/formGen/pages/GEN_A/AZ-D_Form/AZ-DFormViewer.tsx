@@ -1,4 +1,4 @@
-// src/components/formGen/pages/AS2-D_Form/AS2-DFormViewer.tsx
+// src/components/formGen/pages/AZ-D_Form/AZ-DFormViewer.tsx
 
 
 // Import Library ที่จำเป็นจาก React และ React Hook Form
@@ -17,7 +17,7 @@ import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
 import { useProductionForm } from '../../../../../hooks/useProductionForm';
 
 
-// สร้าง Interface เพื่อกำหนดว่า AS2-DFormViewer ต้องรับข้อมูลอะไรเข้ามาบ้าง
+// สร้าง Interface เพื่อกำหนดว่า AZ-DFormViewer ต้องรับข้อมูลอะไรเข้ามาบ้าง
 interface AZ_DFormViewerProps {
   formData: IManufacturingReportForm; // 1. ข้อมูลที่ถูกบันทึกไว้จากฐานข้อมูล
   blueprints: any;                   // 2. "พิมพ์เขียว" (Master Template) ที่ใช้ตอนบันทึก
@@ -47,7 +47,7 @@ const AZ_DFormViewer: React.FC<AZ_DFormViewerProps> = ({ formData, blueprints, i
   const totalSteps = 4;
   const navigate = useNavigate();
   const { formMethods } = useProductionForm({
-    formType: 'AS2-D',
+    formType: 'AZ-D',
     netWeightOfYieldSTD: 800,
     category: 'GEN_A'
   });
@@ -113,9 +113,9 @@ const AZ_DFormViewer: React.FC<AZ_DFormViewerProps> = ({ formData, blueprints, i
           {/* ใช้ Conditional Rendering: ถ้า `step` เท่ากับ 1 ให้แสดง <FormStep1> */}
           {step === 1 && <SharedFormStep1 {...formStepProps} packagingWarningItemName="Iron Powder" />}
           {/* ถ้า `step` เท่ากับ 2 ให้แสดง <FormStep2> และส่ง `staticBlueprint` ที่ถูกต้องเข้าไปด้วย */}
-          {step === 2 && <FormStep2 {...formStepProps} staticBlueprint={blueprints['AS2-D_Step2_RawMaterials']} />}
+          {step === 2 && <FormStep2 {...formStepProps} staticBlueprint={blueprints['AZ-D_Step2_RawMaterials']} />}
           {/* ถ้า `step` เท่ากับ 3 ก็ทำเหมือน Step 2 */}
-          {step === 3 && <SharedFormStep3 {...formStepProps} staticBlueprint={blueprints['AS2-D_Step3_Operations']} templateName="AS2-D_Step3_Operations" />}
+          {step === 3 && <SharedFormStep3 {...formStepProps} staticBlueprint={blueprints['AZ-D_Step3_Operations']} templateName="AZ-D_Step3_Operations" />}
           {/* ถ้า `step` เท่ากับ 4 ให้แสดง <FormStep4> */}
           {step === 4 && <SharedFormStep4 {...formStepProps} totalWeightFieldName="calculations.finalTotalWeight" />}
         </div>

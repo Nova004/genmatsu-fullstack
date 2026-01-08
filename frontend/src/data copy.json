@@ -1,0 +1,81 @@
+{
+  "basicData": {
+    "date": "2026-01-08",
+    "machineName": "B",
+    "lotNo": "6008B1",
+    "mcOperatorRole": "M/C operator"
+  },
+  "mcOperators": [
+    { "id": "201634", "name": "Mr.Tinnakon  Thuengkhamphu", "number": "2" },
+    { "id": "-", "name": "-", "number": "-" },
+    { "id": "-", "name": "-", "number": "-" }
+  ],
+  "assistants": [
+    { "id": "201469", "name": "Mr.Witawat  Subjaroen", "number": "6" },
+    { "id": "202101", "name": "Mr.Sittichok Sutsakkree", "number": "14" },
+    { "id": "-", "name": "-", "number": "-" },
+    { "id": "-", "name": "-", "number": "-" }
+  ],
+  "conditions": [{ "status": "OK" }, { "status": "OK" }],
+  "values": [],
+  "checklist": {
+    "coolingValve": "Mr.Tinnakon  Thuengkhamphu (2)",
+    "butterflyValve": "Mr.Tinnakon  Thuengkhamphu (2)"
+  },
+  "rawMaterials": {
+    "netWeightOfYieldSTD": "0.00",
+    "diaEarth": "2003.00",
+    "sodiumChloride": "20.00",
+    "sg": "1.187",
+    "activated": "13.20",
+    "sulfur": "0.67",
+    "remainedGenmatsu": { "lot": "-", "actual": "0.00" },
+    "shelfLife": "0",
+    "ncrGenmatsu": { "lot": "-", "actual": "0.00" },
+    "rowater": "60.00"
+  },
+  "cg1cWeighting": {
+    "row1": { "bagWeight": "2", "cg1c": 1004, "bagNo": "15", "net": "1002.00" },
+    "row2": { "bagWeight": "2", "cg1c": 1003, "bagNo": "19", "net": "1001.00" },
+    "total": "2003.00"
+  },
+  "rc417Weighting": {
+    "row1": { "bagWeight": "0.00" },
+    "row2": { "bagWeight": "0.00" }
+  },
+  "operationResults": [
+    { "startTime": "07:55" },
+    {},
+    {},
+    {
+      "subItems": [null, { "startTime": "08:13", "finishTime": "08:18" }],
+      "startTime": "08:05",
+      "finishTime": "08:10"
+    },
+    { "subItems": [{ "startTime": "08:19", "finishTime": "08:29" }] },
+    { "subItems": [{ "startTime": "08:31", "finishTime": "08:44" }] },
+    { "subItems": [{ "startTime": "08:46", "finishTime": "09:26" }] },
+    { "tempPoint1": 85, "tempPoint2": 97, "tempPoint3": 95 },
+    {},
+    { "startTime": "09:29" },
+    { "finishTime": "10:09" },
+    { "startTime": "10:29", "finishTime": "10:30" },
+    { "humidity": 2.66 },
+    { "tempPoint1": 76, "tempPoint2": 84, "tempPoint3": 82 },
+    { "startTime": "10:33", "finishTime": "10:51" }
+  ],
+  "palletInfo": [
+    { "no": "12", "qty": "750", "canNo": "1-5" },
+    { "no": "13", "qty": "750", "canNo": "6-10" },
+    { "no": "14", "qty": "550", "canNo": "11-14" }
+  ],
+  "lot_no": "6008B1",
+  "calculations": { "finalTotalWeight": "2036.87" },
+  "packingResults": {
+    "yieldPercent": "100.64",
+    "quantityOfProduct": { "cans": 13, "calculated": "2050.00" },
+    "weighttank": { "tank": "100" },
+    "remain": 0,
+    "meshPass40": 6.7
+  }
+}
