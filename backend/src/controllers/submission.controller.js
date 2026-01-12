@@ -3,14 +3,35 @@ const submissionService = require("../services/submission.service");
 const pdfService = require("../services/pdf.service");
 
 exports.createSubmission = async (req, res) => {
-  const { formType, lotNo, templateIds, formData, submittedBy } = req.body;
+  const { formType, lotNo, templateIds, formData } = req.body;
 
-  if (!formType || !templateIds || templateIds.length === 0 || !formData) {
+  // 1. Validate พื้นฐาน
+  if (!formType || !lotNo || !templateIds || !formData) {
     return res.status(400).send({ message: "Missing required fields." });
   }
 
   try {
-    const submissionId = await submissionService.createSubmission(req.body);
+    // ✅ 2. [เพิ่มใหม่] ตรวจสอบ Lot No ซ้ำ
+    const isDuplicate = await submissionService.checkLotNoExists(lotNo);
+
+    if (isDuplicate) {
+      // ถ้าซ้ำ ให้ส่ง Error 409 (Conflict) กลับไป
+      return res.status(409).send({
+        message: `Lot No: ${lotNo} มีอยู่ในระบบแล้ว กรุณาตรวจสอบใหม่อีกครั้ง`,
+        errorCode: "DUPLICATE_LOT",
+      });
+    }
+
+    // 3. ถ้าไม่ซ้ำ ก็บันทึกตามปกติ
+    const submittedBy = req.user ? req.user.id : req.body.submittedBy;
+    const submissionId = await submissionService.createSubmission({
+      formType,
+      lotNo,
+      templateIds,
+      formData,
+      submittedBy,
+    });
+
     res.status(201).send({
       message: "Form submitted successfully!",
       submissionId: submissionId,
@@ -35,9 +56,9 @@ exports.updateStPlan = async (req, res) => {
     res.json({ message: "ST. Plan updated successfully" });
   } catch (error) {
     console.error("Update ST Plan Error:", error);
-    res.status(500).json({ 
-      message: "Error updating ST. Plan", 
-      error: error.message 
+    res.status(500).json({
+      message: "Error updating ST. Plan",
+      error: error.message,
     });
   }
 };

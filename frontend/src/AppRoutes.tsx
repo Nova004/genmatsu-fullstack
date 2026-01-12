@@ -104,7 +104,7 @@ const AppRoutes = () => {
                           index
                           element={
                             <>
-                              <PageTitle title="Dashbord_App Dashboard" />
+                              <PageTitle title="HOME MENU" />
                               <Dashbord_App />
                             </>
                           }
@@ -113,7 +113,7 @@ const AppRoutes = () => {
                           path="/master/Dashbord_Master"
                           element={
                             <>
-                              <PageTitle title="Dashbord_Master" />
+                              <PageTitle title="Master MENU" />
                               <Dashbord_Master />
                             </>
                           }
@@ -166,9 +166,12 @@ const AppRoutes = () => {
                         <Route
                           path="/master/nacl-master"
                           element={
+                            <>
+                            <PageTitle title="NaCl Master | Genmatsu" />
                             <ProtectedRoute>
                               <NaClMaster />
                             </ProtectedRoute>
+                            </>
                           }
                         />
                         <Route
@@ -206,7 +209,7 @@ const AppRoutes = () => {
                           element={
                             <ProtectedRoute>
                               <>
-                                <PageTitle title="Report History | Genmatsu" />
+                                <PageTitle title="Report History (Genmatsu B) | Genmatsu" />
                                 <ReportHistory_GEN_B />
                               </>
                             </ProtectedRoute>

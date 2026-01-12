@@ -121,18 +121,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
             </ul>
           </div>
 
-          {/* ================= GROUP 2: MODULES (งานระบบ/ฟอร์ม) ================= */}
+          {/* ================= GROUP: MODULES (งานระบบ/ฟอร์ม) ================= */}
           <div>
             <h3 className="mb-4 ml-4 text-sm font-semibold text-bodydark2 uppercase tracking-wider">
-              Modules
+              Production Data 
             </h3>
 
             <ul className="mb-6 flex flex-col gap-1.5">
 
-              {/* Forms Group (Dropdown) */}
+              {/* --- Item 1: Forms & Reports (Everyone) --- */}
               <SidebarLinkGroup
                 activeCondition={
-                  pathname === '/forms' || pathname.includes('forms') || pathname.includes('master') || pathname.includes('reports')
+                  pathname === '/forms' || pathname.includes('forms') || pathname.includes('reports')
                 }
               >
                 {(handleClick, open) => {
@@ -140,7 +140,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     <React.Fragment>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/forms' || pathname.includes('forms') || pathname.includes('master') || pathname.includes('reports')) &&
+                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/forms' || pathname.includes('forms') || pathname.includes('reports')) &&
                           'bg-graydark dark:bg-meta-4'
                           }`}
                         onClick={(e) => {
@@ -177,11 +177,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       {/* Dropdown Items */}
                       <div className={`translate transform overflow-hidden ${!open && 'hidden'}`}>
                         <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-
-                          {/* Sub-Header: Reports */}
-                          <li className="mb-1 text-xs font-semibold text-gray-500 uppercase px-4 pt-2">
-                            History & Reports
-                          </li>
                           <li>
                             <NavLink
                               to="/reports/history/gen-a"
@@ -204,7 +199,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               Genmatsu B
                             </NavLink>
                           </li>
-
                           <li>
                             <NavLink
                               to="/reports/daily-production"
@@ -216,70 +210,125 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               Data Production Amount
                             </NavLink>
                           </li>
-
-                          {/* 🟡 3. ซ่อนส่วน Master Data ถ้าไม่ใช่ LV 3 */}
-                          {(user?.LV_Approvals ?? 0) >= 2 && (
-                            <>
-                              <li className="mb-1 text-xs font-semibold text-gray-500 uppercase px-4 pt-2 mt-2">
-                                Master Data
-                              </li>
-                              <li>
-                                <NavLink
-                                  to="/master/form-editor"
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                    (isActive && '!text-white')
-                                  }
-                                >
-                                  Form Master
-                                </NavLink>
-                              </li>
-                              <li>
-                                <NavLink
-                                  to="/master/user-master"
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                    (isActive && '!text-white')
-                                  }
-                                >
-                                  User Master
-                                </NavLink>
-                              </li>
-                              <li>
-                                <NavLink
-                                  to="/master/nacl-master"
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                    (isActive && '!text-white')
-                                  }
-                                >
-                                  NaCl Master
-                                </NavLink>
-                              </li>
-                              {/* --- ส่วนที่เพิ่มใหม่สำหรับ ST. Plan Master --- */}
-                              <li>
-                                <NavLink
-                                  to="/master/standard-plan-master"
-                                  className={({ isActive }) =>
-                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                    (isActive && '!text-white')
-                                  }
-                                >
-                                  ST. Plan Master
-                                </NavLink>
-                              </li>
-                            </>
-                          )}
                         </ul>
                       </div>
                     </React.Fragment>
                   );
                 }}
               </SidebarLinkGroup>
-
             </ul>
           </div>
 
+          {/* ================= GROUP: MASTER DATA (Admin Only) ================= */}
+          {(user?.LV_Approvals ?? 0) >= 2 && (
+            <div>
+              <h3 className="mb-4 ml-4 text-sm font-semibold text-bodydark2 uppercase tracking-wider">
+                Master Data
+              </h3>
+
+              <ul className="mb-6 flex flex-col gap-1.5">
+
+                {/* --- Item 2: Master Admin (Restricted) --- */}
+                <SidebarLinkGroup
+                  activeCondition={
+                    pathname === '/master' || pathname.includes('master')
+                  }
+                >
+                  {(handleClick, open) => {
+                    return (
+                      <React.Fragment>
+                        <NavLink
+                          to="#"
+                          className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/master' || pathname.includes('master')) &&
+                            'bg-graydark dark:bg-meta-4'
+                            }`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                          }}
+                        >
+                          {/* Icon: Database */}
+                          <svg className="fill-none stroke-current" width="18" height="18" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+                            <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                            <path d="M3 5v14c0 1.66 4 3 9 3s 9-1.34 9-3V5"></path>
+                          </svg>
+
+                          Master Admin
+
+                          <svg
+                            className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-180'}`}
+                            width="20"
+                            height="20"
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              clipRule="evenodd"
+                              d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
+                              fill=""
+                            />
+                          </svg>
+                        </NavLink>
+
+                        {/* Dropdown Items */}
+                        <div className={`translate transform overflow-hidden ${!open && 'hidden'}`}>
+                          <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                            <li>
+                              <NavLink
+                                to="/master/form-editor"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                  (isActive && '!text-white')
+                                }
+                              >
+                                Form Master
+                              </NavLink>
+                            </li>
+                            <li>
+                              <NavLink
+                                to="/master/user-master"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                  (isActive && '!text-white')
+                                }
+                              >
+                                User Master
+                              </NavLink>
+                            </li>
+                            <li>
+                              <NavLink
+                                to="/master/nacl-master"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                  (isActive && '!text-white')
+                                }
+                              >
+                                NaCl Master
+                              </NavLink>
+                            </li>
+                            <li>
+                              <NavLink
+                                to="/master/standard-plan-master"
+                                className={({ isActive }) =>
+                                  'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                  (isActive && '!text-white')
+                                }
+                              >
+                                ST. Plan Master
+                              </NavLink>
+                            </li>
+                          </ul>
+                        </div>
+                      </React.Fragment>
+                    );
+                  }}
+                </SidebarLinkGroup>
+              </ul>
+            </div>
+          )}
           {/* ================= GROUP 3: SETTINGS (ส่วนตัว/อื่นๆ) ================= */}
           <div>
             <h3 className="mb-4 ml-4 text-sm font-semibold text-bodydark2 uppercase tracking-wider">
@@ -300,6 +349,41 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   </svg>
                   My Profile
                 </NavLink>
+              </li>
+            </ul>
+          </div>
+
+          {/* ================= GROUP 3: SETTINGS (ส่วนตัว/อื่นๆ) ================= */}
+          <div>
+            <h3 className="mb-4 ml-4 text-sm font-semibold text-bodydark2 uppercase tracking-wider">
+              Other
+            </h3>
+
+            <ul className="mb-6 flex flex-col gap-1.5">
+              <li className="mb-6 flex flex-col gap-1.5">
+                <a
+                  href="https://www.google.com"  // 👈 ใส่ URL เว็บปลายทางตรงนี้
+                  target="_blank"                // 👈 สั่งให้เปิดแท็บใหม่
+                  rel="noopener noreferrer"      // 👈 เพื่อความปลอดภัยเมื่อเปิดแท็บใหม่
+                  className="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1"
+                >
+                  {/* Icon: Book */}
+                  <svg
+                    className="fill-none stroke-current"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                  </svg>
+                  Manual (คู่มือ)
+                </a>
               </li>
             </ul>
           </div>

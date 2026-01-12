@@ -1,6 +1,24 @@
 const { sql, poolConnect } = require("../db"); // ✅ 1. เรียกใช้ poolConnect จากไฟล์กลาง
 const submissionRepo = require("../repositories/submission.repository");
 
+exports.checkLotNoExists = async (lotNo) => {
+  try {
+    const pool = await poolConnect; // ✅ 2. ใช้ Pool กลาง
+    const result = await pool.request().input("lotNo", sql.NVarChar, lotNo) // ป้องกัน SQL Injection
+      .query(`
+        SELECT TOP 1 fs.lot_no 
+        FROM AGT_SMART_SY.dbo.Form_Submissions AS fs 
+        WHERE fs.lot_no = @lotNo
+      `);
+
+    // ถ้าเจอข้อมูล recordset.length จะมากกว่า 0 แปลว่า "ซ้ำ" (return true)
+    return result.recordset.length > 0;
+  } catch (error) {
+    console.error("Error checking LotNo:", error);
+    throw error;
+  }
+};
+
 // Helper function to create approval flow (Logic เดิมครบถ้วน)
 async function createApprovalFlow(pool, submissionId, submittedBy) {
   let transaction;
