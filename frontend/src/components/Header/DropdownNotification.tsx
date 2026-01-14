@@ -3,6 +3,7 @@ import ClickOutside from '../ClickOutside';
 import { getMyPendingTasks } from '../../services/submissionService';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { socket } from '../../services/socket';
 
 
 const DropdownNotification = () => {
@@ -31,14 +32,23 @@ const DropdownNotification = () => {
       }
     };
 
-    // 1. ✅ เอาคอมเมนต์ออก: เรียกทันทีเมื่อโหลด หรือเปลี่ยนหน้า
+    // 1. เรียกทันทีเมื่อโหลด หรือเปลี่ยนหน้า
     fetchNotifications();
 
-    // 2. ✅ เอาคอมเมนต์ออก: ตั้งเวลาให้เรียกซ้ำทุกๆ 30 วินาที (ตอนนี้ Backend รับไหวแล้ว)
-    const interval = setInterval(fetchNotifications, 30000);
+    // ✅ Socket.io Listener: อัปเดตทันทีเมื่อมี Action (Create, Update, Delete, Approve, etc.)
+    const handleServerAction = (data: any) => {
+      if (data.action === 'refresh_data') {
+        console.log("🔔 Notification Refresh Triggered by Socket");
+        fetchNotifications();
+      }
+    };
 
-    // เคลียร์ interval ทิ้งเมื่อ component ถูกทำลาย
-    return () => clearInterval(interval);
+    socket.on('server-action', handleServerAction);
+
+    // Cleanup
+    return () => {
+      socket.off('server-action', handleServerAction);
+    };
 
   }, [user, location]);
 

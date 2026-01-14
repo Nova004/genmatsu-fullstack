@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import ClickOutside from '../ClickOutside';
 import { getMyMessages } from '../../services/submissionService';
 import { useAuth } from '../../context/AuthContext';
+import { socket } from '../../services/socket';
 
 // รูป Default กรณีไม่มีรูปโปรไฟล์
 import UserDefault from '../../images/user/user-01.png';
@@ -39,21 +40,26 @@ const DropdownMessage = () => {
 
     fetchMessages(); // โหลดครั้งแรก
 
-    // 1. ตั้งเวลาเช็คปกติ (เผื่อมีงานใหม่เข้ามาเอง)
-    const interval = setInterval(fetchMessages, 60000);
+    // ✅ Socket.io Listener: อัปเดตทันทีเมื่อมี Action (Approved/Rejected)
+    const handleServerAction = (data: any) => {
+      if (data.action === 'refresh_data') {
+        console.log("💬 Message Refresh Triggered by Socket");
+        fetchMessages();
+      }
+    };
 
-    // 2. ✅ เพิ่มตัวดักฟัง Event ( Listener )
-    // เมื่อไหร่ก็ตามที่มีคนตะโกนว่า 'REFRESH_NOTIFICATIONS' ให้ทำงาน fetchMessages ทันที
+    socket.on('server-action', handleServerAction);
+
+    // ✅ Listener สำหรับ custom event เดิม (เผื่อยังมีใช้ที่อื่น)
     const handleRefresh = () => fetchMessages();
     window.addEventListener('REFRESH_NOTIFICATIONS', handleRefresh);
 
     return () => {
-      clearInterval(interval);
-      // 3. ✅ อย่าลืมลบ Listener ออกเมื่อ Component ถูกทำลาย
+      socket.off('server-action', handleServerAction);
       window.removeEventListener('REFRESH_NOTIFICATIONS', handleRefresh);
     };
   }, [user]);
-  
+
   // ฟังก์ชันช่วยเลือกไอคอนตามสถานะ Action
   const getActionIcon = (action: string) => {
     const lowerAction = action?.toLowerCase() || '';
@@ -219,11 +225,11 @@ const DropdownMessage = () => {
                               clipRule="evenodd"
                             />
                           </svg>
-                            {new Date(msg.action_date).toLocaleDateString('en-US', {
+                          {new Date(msg.action_date).toLocaleDateString('en-US', {
                             day: '2-digit',
                             month: '2-digit',
                             year: '2-digit',
-                            })}{' '}
+                          })}{' '}
                           • Lot: {msg.lot_no}
                         </div>
                       </div>
