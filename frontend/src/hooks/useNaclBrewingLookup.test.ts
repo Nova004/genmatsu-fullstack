@@ -38,9 +38,7 @@ describe('useNaclBrewingLookup', () => {
       vi.runAllTimers();
     });
 
-    expect(apiClient.get).toHaveBeenCalledWith(
-      '/genmatsu/api/nacl/lookup/10/15%25/null',
-    );
+    expect(apiClient.get).toHaveBeenCalledWith('/nacl/lookup/10/15%25/null');
     expect(mockSetValue).toHaveBeenCalledWith(
       'calculations.naclBrewingTable',
       123,
@@ -62,9 +60,7 @@ describe('useNaclBrewingLookup', () => {
     });
 
     // 'Type A' should be encoded to 'Type%20A'
-    expect(apiClient.get).toHaveBeenCalledWith(
-      '/genmatsu/api/nacl/lookup/20/4%25/Type%20A',
-    );
+    expect(apiClient.get).toHaveBeenCalledWith('/nacl/lookup/20/4%25/Type%20A');
     expect(mockSetValue).toHaveBeenCalledWith(
       'calculations.naclBrewingTable',
       456,
@@ -141,8 +137,6 @@ describe('useNaclBrewingLookup', () => {
 
     expect(apiClient.get).toHaveBeenCalledTimes(1);
     // Should call with the latest value (11)
-    expect(apiClient.get).toHaveBeenCalledWith(
-      '/genmatsu/api/nacl/lookup/11/15%25/null',
-    );
+    expect(apiClient.get).toHaveBeenCalledWith('/nacl/lookup/11/15%25/null');
   });
 });

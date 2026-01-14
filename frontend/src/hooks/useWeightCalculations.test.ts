@@ -35,14 +35,14 @@ describe('useWeightingCalculation', () => {
     );
 
     // Row 1: 103 - 3 = 100
-    expect(mockSetValue).toHaveBeenCalledWith('row1.net', 100);
+    expect(mockSetValue).toHaveBeenCalledWith('row1.net', '100.00');
 
     // Row 2: 205 - 5 = 200
-    expect(mockSetValue).toHaveBeenCalledWith('row2.net', 200);
+    expect(mockSetValue).toHaveBeenCalledWith('row2.net', '200.00');
 
     // Total: 100 + 200 = 300
-    expect(mockSetValue).toHaveBeenCalledWith('total.weight', 300);
-    expect(mockSetValue).toHaveBeenCalledWith('final.destination', 300, {
+    expect(mockSetValue).toHaveBeenCalledWith('total.weight', '300.00');
+    expect(mockSetValue).toHaveBeenCalledWith('final.destination', '300.00', {
       shouldValidate: true,
     });
   });
@@ -81,14 +81,14 @@ describe('useWeightingCalculation', () => {
     );
 
     // Row 1: 100
-    expect(mockSetValue).toHaveBeenCalledWith('row1.net', 100);
+    expect(mockSetValue).toHaveBeenCalledWith('row1.net', '100.00');
 
     // Row 2: null
     expect(mockSetValue).toHaveBeenCalledWith('row2.net', null);
 
     // Total: 100 + 0 = 100
-    expect(mockSetValue).toHaveBeenCalledWith('total.weight', 100);
-    expect(mockSetValue).toHaveBeenCalledWith('final.destination', 100, {
+    expect(mockSetValue).toHaveBeenCalledWith('total.weight', '100.00');
+    expect(mockSetValue).toHaveBeenCalledWith('final.destination', '100.00', {
       shouldValidate: true,
     });
   });

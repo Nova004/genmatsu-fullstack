@@ -133,7 +133,7 @@ const StandardPlanMaster: React.FC = () => {
                   Form Type (Product)
                 </th>
                 <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
-                  ST. Plan Target (Kg)
+                  Std. Plan Target (Kg)
                 </th>
                 <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
                   Last Updated

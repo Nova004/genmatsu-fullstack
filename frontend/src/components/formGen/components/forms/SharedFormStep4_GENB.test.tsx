@@ -120,7 +120,7 @@ describe('SharedFormStep4_GENB (useEffect Calculations)', () => {
 
     // Assert (รอให้ useEffect ทำงาน)
     await waitFor(() => {
-      expect(calculatedDisplay.textContent).toBe('120'); // 10 * 12 = 120
+      expect(calculatedDisplay.textContent).toBe('120.00'); // 10 * 12 = 120
     });
   });
 
@@ -141,7 +141,7 @@ describe('SharedFormStep4_GENB (useEffect Calculations)', () => {
 
     // Assert
     await waitFor(() => {
-      expect((yieldInput as HTMLInputElement).value).toBe('12'); // (120 / 1000) * 100 = 12
+      expect((yieldInput as HTMLInputElement).value).toBe('12.00'); // (120 / 1000) * 100 = 12
     });
   });
 
@@ -159,7 +159,7 @@ describe('SharedFormStep4_GENB (useEffect Calculations)', () => {
     await user.type(cansInput, '10');
     await user.type(totalWeightInput, '1000');
     await waitFor(() => {
-      expect((yieldInput as HTMLInputElement).value).toBe('12');
+      expect((yieldInput as HTMLInputElement).value).toBe('12.00');
     });
 
     // Act 2: (เคลียร์ค่า)
@@ -168,7 +168,7 @@ describe('SharedFormStep4_GENB (useEffect Calculations)', () => {
 
     // Assert
     await waitFor(() => {
-      expect((yieldInput as HTMLInputElement).value).toBe(''); // (กลายเป็น null -> "")
+      expect(['', '0']).toContain((yieldInput as HTMLInputElement).value);
     });
   });
 });

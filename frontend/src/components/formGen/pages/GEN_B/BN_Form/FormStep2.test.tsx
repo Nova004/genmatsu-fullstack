@@ -5,7 +5,7 @@ import { renderHook, act } from '@testing-library/react';
 
 // 1. 🚀 Import "สมอง" ที่เราจะเทส (ตัวที่ export ออกมา)
 // ตรวจสอบ path import ให้ตรงกับไฟล์จริงของคุณนะครับ
-import { useExcelFormulaCalculations } from './FormStep2'; 
+import { useExcelFormulaCalculations } from './FormStep2';
 
 // --- 2. 🚀 สร้าง "ห้องทดลอง" (Mock Environment) ---
 
@@ -76,31 +76,31 @@ describe('FormStep2 - useExcelFormulaCalculations (Logic การคำนว�
     // สูตร: (Total * Table) / (Yield * SG)
     // คำนวณ: (100 * 10) / (1200 * 1.1) = 1000 / 1320 = 0.7575... 
     // ปัดเศษ (2) -> 0.76
-    expect(mockFormState.rawMaterials.sodiumChloride).toBe(0.76);
+    expect(mockFormState.rawMaterials.sodiumChloride).toBe('0.76');
 
     // --- B. naclWaterCalc (W23) ---
     // สูตร: (Total * Table) / Yield
     // คำนวณ: (100 * 10) / 1200 = 0.83333...
     // ปัดเศษ (2) -> 0.83
-    expect(mockFormState.calculations.naclWaterCalc).toBe(0.83);
+    expect(mockFormState.calculations.naclWaterCalc).toBe('0.83');
 
     // --- C. waterCalc ---
-    // สูตร: naclWaterCalc(Raw) * 0.85
-    // คำนวณ: 0.83333... * 0.85 = 0.70833...
-    // ปัดเศษ (2) -> 0.71
-    expect(mockFormState.calculations.waterCalc).toBe(0.71);
+    // สูตร: naclWaterCalc(Raw) * 0.96
+    // คำนวณ: 0.83333... * 0.96 = 0.8
+    // ปัดเศษ (2) -> 0.80
+    expect(mockFormState.calculations.waterCalc).toBe('0.80');
 
     // --- D. saltCalc ---
-    // สูตร: naclWaterCalc(Raw) * 0.15
-    // คำนวณ: 0.83333... * 0.15 = 0.125
-    // ปัดเศษ (2) -> 0.13 (0.125 ปัดขึ้น)
-    expect(mockFormState.calculations.saltCalc).toBe(0.13);
+    // สูตร: naclWaterCalc(Raw) * 0.04
+    // คำนวณ: 0.83333... * 0.04 = 0.0333...
+    // ปัดเศษ (2) -> 0.03
+    expect(mockFormState.calculations.saltCalc).toBe('0.03');
 
     // --- E. finalTotalWeight ---
     // สูตร: Total + naclWaterCalc(Raw) + Mg + NCR
     // คำนวณ: 100 + 0.8333... + 5 + 2 = 107.8333...
-    // ปัดเศษ (3) -> 107.833
-    expect(mockFormState.calculations.finalTotalWeight).toBe(107.833);
+    // ปัดเศษ (2) -> 107.83
+    expect(mockFormState.calculations.finalTotalWeight).toBe('107.83');
   });
 
 
@@ -145,8 +145,8 @@ describe('FormStep2 - useExcelFormulaCalculations (Logic การคำนว�
     expect(mockFormState.rawMaterials?.sodiumChloride || null).toBe(null);
 
     // B. แต่ Final Total Weight ต้องคำนวณได้ (เพราะไม่ต้องใช้ SG)
-    // 100 + (1000/1200) + 5 + 2 = 107.833
-    expect(mockFormState.calculations.finalTotalWeight).toBe(107.833);
+    // 100 + (1000/1200) + 5 + 2 = 107.833 -> 107.83
+    expect(mockFormState.calculations.finalTotalWeight).toBe('107.83');
   });
 
 });

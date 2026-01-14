@@ -95,7 +95,7 @@ const EditStandardPlanModal: React.FC<EditStandardPlanModalProps> = ({
 
             <div className="mb-4.5">
               <label className="mb-2.5 block text-black dark:text-white">
-                Target Value (ST. Plan) <span className="text-meta-1">*</span>
+                Target Value (Std. Plan) <span className="text-meta-1">*</span>
               </label>
               <input
                 type="number"

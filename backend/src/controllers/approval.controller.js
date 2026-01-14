@@ -219,6 +219,11 @@ const performApprovalAction = async (req, res) => {
     // --- 5. Commit Transaction ---
     await transaction.commit();
 
+    if (req.io) {
+      console.log(`[Approval] Emitting 'refresh_data' for Submission ID: ${submissionId}`);
+      req.io.emit("server-action", { action: "refresh_data", updatedId: submissionId });
+    }
+
     res.status(200).send({ message: `ดำเนินการ ${action} สำเร็จ!` });
   } catch (error) {
     console.error("Error performing approval action:", error.message);

@@ -32,6 +32,11 @@ exports.createSubmission = async (req, res) => {
       submittedBy,
     });
 
+    // Notify clients about new submission
+    if (req.io) {
+      req.io.emit("server-action", { action: "refresh_data", lotNo: lotNo });
+    }
+
     res.status(201).send({
       message: "Form submitted successfully!",
       submissionId: submissionId,
@@ -94,17 +99,31 @@ exports.getSubmissionById = async (req, res) => {
 
 exports.deleteSubmission = async (req, res) => {
   const { id } = req.params;
+  console.log(`[Controller] deleteSubmission called for ID: ${id}`);
+  
   try {
     const isDeleted = await submissionService.deleteSubmission(id);
+    console.log(`[Controller] isDeleted result: ${isDeleted}`);
+
     if (!isDeleted) {
+      console.log(`[Controller] Submission not found, returning 404`);
       return res
         .status(404)
         .send({ message: `Submission with ID ${id} not found.` });
     }
+
+    if (req.io) {
+      console.log(`[Controller] Emitting 'refresh_data' socket event for deleted ID: ${id}`);
+      req.io.emit("server-action", { action: "refresh_data", deletedId: id });
+    } else {
+      console.warn(`[Controller] req.io is undefined!`);
+    }
+
     res
       .status(200)
       .send({ message: `Submission ID ${id} has been deleted successfully.` });
   } catch (err) {
+    console.error(`[Controller] Error in deleteSubmission:`, err);
     res
       .status(500)
       .send({ message: "Failed to delete submission.", error: err.message });
@@ -121,6 +140,12 @@ exports.updateSubmission = async (req, res) => {
 
   try {
     await submissionService.updateSubmission(id, lot_no, form_data);
+    
+    // Notify clients about update
+    if (req.io) {
+      req.io.emit("server-action", { action: "refresh_data", lotNo: lot_no });
+    }
+
     res.status(200).send({ message: "อัปเดตข้อมูลสำเร็จ" });
   } catch (error) {
     console.error("SQL error", error);
@@ -162,6 +187,12 @@ exports.resubmitSubmission = async (req, res) => {
 
   try {
     await submissionService.resubmitSubmission(id, formDataJson);
+
+    if (req.io) {
+      console.log(`[Controller] Emitting 'refresh_data' for resubmitted ID: ${id}`);
+      req.io.emit("server-action", { action: "refresh_data", resubmittedId: id });
+    }
+
     res.status(200).json({ message: "Resubmitted successfully." });
   } catch (error) {
     console.error("Error resubmitting submission:", error);

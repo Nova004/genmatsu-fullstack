@@ -80,22 +80,23 @@ describe('FormStep2 (BZ5-C) - useBZ5_CCalculations (Logic การคำนว�
     // (เรารอ 'totalWeightWithNcr' เพราะมันคือตัวสุดท้าย)
     await waitFor(() => {
       // [E-2] = 1075 (A) + 614.385 (D) + 300 (NCR) = 1989.385 -> 1989.38
-      expect(mockFormState.bz5cCalculations.totalWeightWithNcr).toBe(1989.38); // 👈 (FIX)
+      expect(mockFormState.bz5cCalculations.totalWeightWithNcr).toBe('1989.39'); // 👈 (FIX)
     });
 
     // --- ตอนนี้ 'useEffect' ทำงานเสร็จแล้ว ---
     // (เช็คค่าที่เหลือ)
 
     // [NEW ✨] P22 (เหมือนเดิม)
-    expect(mockFormState.bz5cCalculations.rc417WaterContentweight).toBe(100.000);
+    expect(mockFormState.bz5cCalculations.rc417WaterContentweight).toBe('100.00');
     // [A] Total Materials (เหมือนเดิม)
     expect(mockFormState.bz5cCalculations.totalWeightOfMaterials).toBe('1075.00');
 
     // [D] Total NaCl Water (นี่คือจุดที่พัง)
-    // (ค่าจริงคือ 614.385... -> ปัดเศษ 614.38)
-    expect(mockFormState.bz5cCalculations.totalNaclWater).toBe(614.38); // 👈 (FIX)
+    // (ค่าจริงคือ 614.385... -> ปัดเศษ 614.39)
+    expect(mockFormState.bz5cCalculations.totalNaclWater).toBe('614.39'); // 👈 (FIX)
 
     // [E-1] (L) naclWater4
+    // (614.385 / 1.1 = 558.53... -> ปัดเศษ 559)
     // (614.385 / 1.1 = 558.53... -> ปัดเศษ 559)
     expect(mockFormState.bz5cCalculations.naclWater4).toBe(559); // 👈 (FIX)
     expect(mockFormState.rawMaterials.sodiumChloride).toBe(559); // 👈 (FIX)

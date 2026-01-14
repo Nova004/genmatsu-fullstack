@@ -51,7 +51,7 @@ const DataCell = ({ item, isLineC = false, editingId, tempStValue, setTempStValu
             <td className="border-r border-b border-gray-300 px-1 py-0.5 text-center align-top">
                 <span className="font-bold text-gray-800 text-xs bg-gray-100 border border-gray-300 px-1 py-0.5 rounded block leading-none">{item.lotNo}</span>
             </td>
-            {/* Input & ST. Plan */}
+            {/* Input & Std. Plan */}
             <td className="border-r border-b border-gray-300 px-1 py-0.5 text-right align-top">
                 <div className="flex flex-col items-end gap-0">
                     <span className="text-base font-bold text-gray-1000 leading-tight">
@@ -71,7 +71,7 @@ const DataCell = ({ item, isLineC = false, editingId, tempStValue, setTempStValu
                         </div>
                     ) : (
                         <div className="group flex items-center justify-end gap-1 cursor-pointer hover:bg-gray-100 rounded px-1 w-full" onClick={() => onStartEdit(item)}>
-                            <span className="text-[13px] text-gray-400 font-bold">ST.</span>
+                            <span className="text-[13px] text-gray-400 font-bold">Std.</span>
                             <span className="text-ls font-bold text-gray-600 group-hover:text-blue-700">
                                 {item.stPlan?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                             </span>

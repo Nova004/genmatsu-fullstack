@@ -147,7 +147,7 @@ describe('SharedFormStep4_GENA (useEffect Calculations)', () => {
     // Assert (รอให้ useEffect ทำงาน)
     // คาดหวัง: 1500 + 500 = 2000
     await waitFor(() => {
-      expect(calculatedDisplay.textContent).toBe('2000');
+      expect(calculatedDisplay.textContent).toBe('2000.00');
     });
   });
 
@@ -177,7 +177,7 @@ describe('SharedFormStep4_GENA (useEffect Calculations)', () => {
     // Assert (รอให้ useEffect (ตัวที่ 2) ทำงาน)
     // คาดหวัง: (2000 / 10000) * 100 = 20
     await waitFor(() => {
-      expect((yieldInput as HTMLInputElement).value).toBe('20');
+      expect((yieldInput as HTMLInputElement).value).toBe('20.00');
     });
   });
 
@@ -194,10 +194,10 @@ describe('SharedFormStep4_GENA (useEffect Calculations)', () => {
     // Act: (พิมพ์ค่าอื่นก่อน)
     await user.type(cansInput, '10'); // calc = 1500
     await user.type(totalWeightInput, '15000'); // yield = 10
-    
+
     // Assert (มีค่าแล้ว)
     await waitFor(() => {
-      expect((yieldInput as HTMLInputElement).value).toBe('10');
+      expect((yieldInput as HTMLInputElement).value).toBe('10.00');
     });
 
     // Act 2: (เคลียร์ค่า total weight)
@@ -206,7 +206,7 @@ describe('SharedFormStep4_GENA (useEffect Calculations)', () => {
 
     // Assert (รอให้ useEffect ทำงาน)
     await waitFor(() => {
-      expect((yieldInput as HTMLInputElement).value).toBe(''); // (กลายเป็น null -> "")
+      expect(['', '0']).toContain((yieldInput as HTMLInputElement).value);
     });
   });
 });

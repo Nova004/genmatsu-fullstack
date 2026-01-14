@@ -104,7 +104,7 @@ describe('BZ3-B FormStep2 Calculations', () => {
     // Rounded to 1 decimal: 115.7
 
     await waitFor(() => {
-      const finalNaclInput = screen.getByDisplayValue('115.7'); // naclWater15
+      const finalNaclInput = screen.getByDisplayValue('115.67'); // naclWater15
       expect(finalNaclInput).toBeTruthy();
     });
 

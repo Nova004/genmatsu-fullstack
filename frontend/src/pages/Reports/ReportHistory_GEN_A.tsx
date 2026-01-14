@@ -7,6 +7,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'; // เพิ่ม useNavigate
 import { getAllSubmissions, deleteSubmission } from '../../services/submissionService';
+import { socket } from '../../services/socket';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import { getStatusColorClass } from '../../utils/statusHelpers'; // 👈 เพิ่มบรรทัดนี้
 import { fireToast } from '../../hooks/fireToast';
@@ -77,36 +78,56 @@ const ReportHistory_GEN_A: React.FC = () => {
   }, [searchParams]); // ทำงานทุกครั้งที่ URL เปลี่ยน
 
   // --- 3.2. DATA FETCHING EFFECT ---
-  // `useEffect` hook นี้จะทำงานเพียงครั้งเดียวเมื่อคอมโพเนนต์ถูกสร้างขึ้น
-  // เพื่อดึงข้อมูลประวัติการบันทึกทั้งหมดจาก API
+  const fetchSubmissions = async () => {
+    try {
+      // 1. ดึงข้อมูลมาเป็น any หรือ type เดิมก่อน (เพื่อเลี่ยง error ตอนรับค่า)
+      const response: any[] = await getAllSubmissions('GEN_A');
+
+      // 2. แปลงข้อมูล (Map) ให้ตรงกับ SubmissionData
+      const formattedData: SubmissionData[] = response.map((item) => ({
+        submission_id: item.id || item.submission_id, // API อาจส่งมาเป็น id
+        lot_no: item.lot_no,
+        submitted_at: item.created_at || item.submitted_at, // API อาจส่งมาเป็น created_at
+        status: item.status,
+        form_type: item.form_type,
+        production_date: item.production_date,
+        pending_level: item.pending_level,
+        submitted_by_name: item.user?.username || item.submitted_by || 'Unknown',
+        category: item.category || 'GEN_A'
+      }));
+
+      setSubmissions(formattedData);
+    } catch (err) {
+      console.error(err); // Log error ดูด้วย
+      setError('ไม่สามารถดึงข้อมูลประวัติการบันทึก (GEN_A) ได้');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchSubmissions = async () => {
-      try {
-        // 1. ดึงข้อมูลมาเป็น any หรือ type เดิมก่อน (เพื่อเลี่ยง error ตอนรับค่า)
-        const response: any[] = await getAllSubmissions('GEN_A');
+    fetchSubmissions();
+  }, []);
 
-        // 2. แปลงข้อมูล (Map) ให้ตรงกับ SubmissionData
-        const formattedData: SubmissionData[] = response.map((item) => ({
-          submission_id: item.id || item.submission_id, // API อาจส่งมาเป็น id
-          lot_no: item.lot_no,
-          submitted_at: item.created_at || item.submitted_at, // API อาจส่งมาเป็น created_at
-          status: item.status,
-          form_type: item.form_type,
-          production_date: item.production_date,
-          pending_level: item.pending_level,
-          submitted_by_name: item.user?.username || item.submitted_by || 'Unknown',
-          category: item.category || 'GEN_A'
-        }));
+  // ✅ Socket.io listener for real-time updates
+  useEffect(() => {
+    const handleServerAction = (data: any) => {
+      console.log("⚡ Real-time update received:", data);
 
-        setSubmissions(formattedData);
-      } catch (err) {
-        console.error(err); // Log error ดูด้วย
-        setError('ไม่สามารถดึงข้อมูลประวัติการบันทึก (GEN_A) ได้');
-      } finally {
-        setIsLoading(false);
+      if (data.action === 'refresh_data') {
+        if (data.deletedId) {
+          setSubmissions(prev => prev.filter(item => item.submission_id !== parseInt(data.deletedId)));
+        } else {
+          fetchSubmissions();
+        }
       }
     };
-    fetchSubmissions();
+
+    socket.on('server-action', handleServerAction);
+
+    return () => {
+      socket.off('server-action', handleServerAction);
+    };
   }, []);
 
   const handlePrint = (id: number) => {
@@ -114,6 +135,7 @@ const ReportHistory_GEN_A: React.FC = () => {
     // Proxy ใน vite.config.js จะจัดการเปลี่ยนเส้นทางให้เราเอง
     window.open(`/genmatsu/api/submissions/print/${id}`, '_blank');
   };
+
   // --- 3.3. FILTERING EFFECT (รวมพลังกรอง 4 ทิศทาง) ---
   // แก้ไขจากของเดิมที่กรองแค่วันที่ ให้กรองครบทุกเงื่อนไข
   useEffect(() => {

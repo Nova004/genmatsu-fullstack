@@ -1,24 +1,39 @@
 const express = require("express");
 const cors = require("cors");
-const config = require("./config/env");
+const http = require("http");
+const { Server } = require("socket.io");
+require("dotenv").config();
+const { sql, poolPromise } = require("./db");
 
-// --- 1. แก้ไข Import (ต้องมี ./ นำหน้า) ---
-// ตรวจสอบดูว่าโฟลเดอร์ของคุณชื่อ "api" หรือ "routes" นะครับ
-// ถ้าโฟลเดอร์ชื่อ api ใช้แบบนี้:
+// Routes
 const authRoutes = require("./api/auth.routes");
-const formRoutes = require("./api/form.routes");
-const masterRoutes = require("./api/master.routes");
 const userRoutes = require("./api/user.routes");
+const masterRoutes = require("./api/master.routes");
 const naclRoutes = require("./api/nacl.routes");
+const formRoutes = require("./api/form.routes");
 const submissionRoutes = require("./api/submission.routes");
-const approvalRoutes = require("./api/approval.routes");
 const reportRoutes = require("./api/report.routes");
+const approvalRoutes = require("./api/approval.routes");
 
 const app = express();
-const port = config.port;
+const server = http.createServer(app);
 
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
+
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
+// ... (ส่วน Middleware เดิมของคุณ) ...
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 // --- 2. แก้ไข Route Path (ต้องมี / นำหน้า) ---
 app.use("/api/auth", authRoutes);
@@ -30,36 +45,19 @@ app.use("/api/approvals", approvalRoutes);
 app.use("/api/nacl", naclRoutes);
 app.use("/genmatsu/api/submissions/reports", reportRoutes);
 
-// Handle Unhandled Routes
-app.use((req, res, next) => {
-  // ตรวจสอบว่าไฟล์ AppError อยู่ที่ไหน (ถ้าไม่มีไฟล์นี้จะ error นะครับ)
+// Error Handling
+const errorMiddleware = require("./middlewares/error.middleware");
+app.use(errorMiddleware);
+
+// ✅ 6. เปลี่ยนจาก app.listen เป็น server.listen
+const PORT = process.env.PORT || 4000;
+server.listen(PORT, async () => {
+  console.log(`Backend server is running on http://localhost:${PORT}`);
   try {
-    const AppError = require("./utils/AppError");
-    next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+    await poolPromise;
+    console.log("Database Connected!");
+    console.log("Socket.io is ready!");
   } catch (err) {
-    // กันเหนียว เผื่อหาไฟล์ AppError ไม่เจอ
-    res
-      .status(404)
-      .json({
-        status: "fail",
-        message: `Can't find ${req.originalUrl} on this server!`,
-      });
+    console.error("Database Connection Failed! Bad Config: ", err);
   }
-});
-
-// Global Error Handler
-// ตรวจสอบว่าไฟล์นี้มีอยู่จริงไหม
-try {
-  const globalErrorHandler = require("./middlewares/error.middleware");
-  app.use(globalErrorHandler);
-} catch (err) {
-  console.warn("Warning: Error middleware not found, using default.");
-}
-
-app.get("/", (req, res) => {
-  res.send("Hello from organized Backend!");
-});
-
-app.listen(port, () => {
-  console.log(`Backend server is running on http://localhost:${port}`);
 });

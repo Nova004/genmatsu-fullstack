@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 
 // 1. 🚀 Import "สมอง" (Custom Hook)
-import { useBS5_CCalculations } from './FormStep2'; 
+import { useBS5_CCalculations } from './FormStep2';
 
 // --- 2. 🚀 สร้าง "ห้องทดลอง" (Mock Environment) ---
 
@@ -87,11 +87,11 @@ describe('FormStep2 (BS5-C) - useBS5_CCalculations (Logic การคำนว�
     });
 
     // --- ตอนนี้ 'useEffect' ทำงานเสร็จแล้ว ---
-    
+
     // --- [NEW ✨] P22 (WaterContentWeight) ---
     // P20 * (P21 / 100) = 1000 * 0.10 = 100
     // (ปัดเศษ .toFixed(2))
-    expect(mockFormState.bs5cCalculations.rc417WaterContentweight).toBe(100.00);
+    expect(mockFormState.bs5cCalculations.rc417WaterContentweight).toBe('100.00');
 
     // --- [A] Total Materials ---
     // P20 + Mg + Carbon + Gypsum = 1000 + 50 + 20 + 5 = 1075
@@ -104,13 +104,13 @@ describe('FormStep2 (BS5-C) - useBS5_CCalculations (Logic การคำนว�
     const AD19 = 1000;
     const O23_B_dec = 0.04; // (4%)
     const O23_C_dec = 0.04; // (naclWater = 4%)
-    
+
     // (ค่าจาก Form)
     const S19 = 1000;
     const P21 = 10;
     // (ค่าที่คำนวณใน [P22])
     const AD20_raw = (S19 * (P21 / 100)); // = 100
-    
+
     // [B] Initial NaCl
     // part1 = S19 - AD20_raw = 1000 - 100 = 900
     // part2 = S24 / AD19 = 649.8144 / 1000 = 0.6498144
@@ -123,12 +123,12 @@ describe('FormStep2 (BS5-C) - useBS5_CCalculations (Logic การคำนว�
     // (O23_C_dec = 0.04)
     // rawIntermediateWater_RAW = (24.36804 / 0.04) * (1 - 0.04) = 609.201 * 0.96 = 584.83296
     // (roundSafe) -> 584.83296
-    
+
     // [D] Total NaCl
     // [B] + [C] = 24.36804 + 584.83296 = 609.201
     // (roundSafe) -> 609.201
     // (ปัดเศษ .toFixed(2))
-    expect(mockFormState.bs5cCalculations.totalNaclWater).toBe(609.20); // 👈 (FIX)
+    expect(mockFormState.bs5cCalculations.totalNaclWater).toBe('609.20'); // 👈 (FIX)
 
     // [E-1] Final NaCl (L) (naclWater4)
     // [D] / SpecGrav = 609.201 / 1.1 = 553.819...
@@ -147,7 +147,7 @@ describe('FormStep2 (BS5-C) - useBS5_CCalculations (Logic การคำนว�
     // [A] + [D] + NCR = 1075 + 609.201 + 300 = 1984.201
     // (roundSafe) -> 1984.201
     // (ปัดเศษ .toFixed(2))
-    expect(mockFormState.bs5cCalculations.totalWeightWithNcr).toBe(1984.20); // 👈 (FIX)
+    expect(mockFormState.bs5cCalculations.totalWeightWithNcr).toBe('1984.20'); // 👈 (FIX)
   });
 
 
@@ -172,5 +172,5 @@ describe('FormStep2 (BS5-C) - useBS5_CCalculations (Logic การคำนว�
     expect(mockFormState.rawMaterials.sodiumChloride).toBe(null);
     expect(mockFormState.bs5cCalculations.lminRate).toBe(''); // (เพราะ 0 ถูกแปลงเป็น '')
   });
-  
+
 });
