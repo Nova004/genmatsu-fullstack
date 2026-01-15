@@ -17,8 +17,3 @@ export interface ReportData {
   lineC: ProductionRecord[];
   lineD?: ProductionRecord[];
 }
-
-export interface RecycleValue {
-  kg: string;
-  percent: string;
-}

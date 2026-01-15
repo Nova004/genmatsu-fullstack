@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { FaPen, FaCheck, FaTimes } from 'react-icons/fa';
-import { ProductionRecord, RecycleValue } from '../../../types/report';
+import { ProductionRecord } from '../../../types/report';
 
 interface DailyReportRowProps {
     index: number;
@@ -11,8 +11,6 @@ interface DailyReportRowProps {
     itemC?: ProductionRecord;
     itemD?: ProductionRecord;
     recycleLabel?: string;
-    recycleValue?: RecycleValue;
-    onRecycleChange?: (index: number, field: 'kg' | 'percent', value: string) => void;
     // Props สำหรับ Edit ST Plan
     editingId: number | null;
     tempStValue: string;
@@ -136,12 +134,9 @@ const DailyReportRow: React.FC<DailyReportRowProps> = (props) => {
             <DataCell item={props.itemC} isLineC={true} {...props} />
             <td className="border-r border-b border-gray-300 p-0.5 pl-2 text-left text-xs font-extrabold text-gray-700 bg-gray-50 align-top">{props.recycleLabel}</td>
             <td className="border-b border-gray-300 p-0.5 align-top bg-white min-w-[110px]">
-                {props.index < 8 && props.onRecycleChange && (
-                    <div className="flex flex-col gap-0.5 h-full justify-center">
-                        <div className="relative flex items-center"><input type="number" placeholder="0.00" value={props.recycleValue?.kg || ""} onChange={(e) => props.onRecycleChange!(props.index, 'kg', e.target.value)} className="w-full text-right text-sm font-bold text-gray-900 border-b border-gray-200 outline-none bg-transparent pr-5 pl-1 print:border-none" />{props.recycleValue?.kg && <span className="absolute right-0 text-[13px] text-gray-800 font-bold">kg</span>}</div>
-                        <div className="relative flex items-center"><input type="number" placeholder="0.00" value={props.recycleValue?.percent || ""} onChange={(e) => props.onRecycleChange!(props.index, 'percent', e.target.value)} className="w-full text-right text-xs font-bold text-blue-700 border-b border-gray-200 outline-none bg-transparent pr-5 pl-1 print:border-none" />{props.recycleValue?.percent && <span className="absolute right-0 text-[14px] text-blue-400 font-bold">%</span>}</div>
-                    </div>
-                )}
+                <div className="flex flex-col gap-0.5 h-full justify-center items-center">
+                    <span className="text-gray-400 font-bold">-</span>
+                </div>
             </td>
         </tr>
     );

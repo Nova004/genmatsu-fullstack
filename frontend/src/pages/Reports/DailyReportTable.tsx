@@ -1,7 +1,9 @@
+// frontend/src/pages/Reports/DailyReportTable.tsx
+
 import React, { useState, useEffect } from 'react';
-import { FaPen, FaCheck, FaTimes, FaSave } from 'react-icons/fa';
+import { FaPen, FaTimes, FaSave } from 'react-icons/fa';
 import axios from 'axios';
-import { ReportData, ProductionRecord, RecycleValue } from '../../types/report';
+import { ReportData, ProductionRecord } from '../../types/report';
 import DailyReportRow from './components/DailyReportRow';
 
 interface DailyReportTableProps {
@@ -26,9 +28,7 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
   const [tempStValue, setTempStValue] = useState<string>("");
 
   // Recycle Data
-  const [recycleValues, setRecycleValues] = useState<RecycleValue[]>(
-    Array(8).fill({ kg: "", percent: "" })
-  );
+
 
   // Remarks
   const [remarks, setRemarks] = useState({
@@ -40,18 +40,10 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
   });
 
   // Header Titles (Editable)
-  const [recycleLotHeader, setRecycleLotHeader] = useState<string>("-");
-  const [genmatsuTypeHeader, setGenmatsuTypeHeader] = useState<string>("Genmatsu Type");
 
-  // Recycle Summary Inputs
-  const [recycleTotalPacking, setRecycleTotalPacking] = useState<string>("");
-  const [recycleTotalDiff, setRecycleTotalDiff] = useState<string>("");
 
-  // Edit States for Headers
-  const [isEditingRecycleHeader, setIsEditingRecycleHeader] = useState(false);
-  const [tempRecycleHeader, setTempRecycleHeader] = useState("");
-  const [isEditingGenmatsuType, setIsEditingGenmatsuType] = useState(false);
-  const [tempGenmatsuType, setTempGenmatsuType] = useState("");
+
+
 
   // --- Effects: Load Summary Data ---
   useEffect(() => {
@@ -65,20 +57,12 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
         if (res.data) {
           const loaded = res.data;
           setRemarks(prev => ({ ...prev, ...loaded.remarks }));
-          setRecycleValues(loaded.recycleValues || Array(8).fill({ kg: "", percent: "" }));
-          setRecycleTotalPacking(loaded.recycleTotalPacking || "");
-          setRecycleTotalDiff(loaded.recycleTotalDiff || "");
-          setGenmatsuTypeHeader(loaded.genmatsuTypeHeader || "Genmatsu Type");
-          setRecycleLotHeader(loaded.recycleLotHeader || "-");
         } else {
           // Reset Values if no data found
           // ✅ Reset lineD
           setRemarks({ lineA: "", lineB: "", lineC: "", recycle: "", lineD: "" });
-          setRecycleValues(Array(8).fill({ kg: "", percent: "" }));
-          setRecycleTotalPacking("");
-          setRecycleTotalDiff("");
-          setGenmatsuTypeHeader("Genmatsu Type");
-          setRecycleLotHeader("-");
+          // genmatsuTypeHeader removed
+          // recycleLotHeader removed
         }
       } catch (error) {
         console.error("Error loading daily summary:", error);
@@ -89,32 +73,25 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
   }, [selectedDate]);
 
   // --- Handlers ---
+
+
+
+
   const handleSaveSummary = async () => {
     if (!selectedDate) return alert("Please select a date first.");
     try {
       const summaryData = {
-        remarks,
-        recycleValues,
-        recycleTotalPacking,
-        recycleTotalDiff,
-        genmatsuTypeHeader,
-        recycleLotHeader
+        remarks
       };
       await axios.post(`/genmatsu/api/submissions/reports/summary`, {
         date: selectedDate,
         summaryData
       });
-      alert("Saved Remarks & Recycle Data successfully!");
+      alert("Saved Remarks Data successfully!");
     } catch (error) {
       console.error("Error saving summary:", error);
       alert("Failed to save summary.");
     }
-  };
-
-  const handleRecycleValueChange = (index: number, field: 'kg' | 'percent', value: string) => {
-    const newValues = [...recycleValues];
-    newValues[index] = { ...newValues[index], [field]: value };
-    setRecycleValues(newValues);
   };
 
   const handleRemarkChange = (line: string, value: string) => {
@@ -136,8 +113,8 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
   };
 
   // Header Edit Handlers
-  const saveRecycleHeader = () => { if (tempRecycleHeader.trim()) setRecycleLotHeader(tempRecycleHeader); setIsEditingRecycleHeader(false); };
-  const saveGenmatsuType = () => { if (tempGenmatsuType.trim()) setGenmatsuTypeHeader(tempGenmatsuType); setIsEditingGenmatsuType(false); };
+  // Header Edit Handlers
+
 
   // --- Helpers ---
   const calculateTotals = (records: ProductionRecord[]) => {
@@ -155,7 +132,7 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
   };
 
   // Sub-component for Headers (Reusable)
-  const TableHeaderGroup = ({ title, hasMoisture = false }: { title: string, hasMoisture?: boolean }) => (
+  const TableHeaderGroup = ({ hasMoisture = false }: { hasMoisture?: boolean }) => (
     <>
       <th className="border-r border-b border-gray-300 px-1 py-1 text-xs font-extrabold text-gray-800 uppercase tracking-tight bg-gray-100">Product<br />Name</th>
       <th className="border-r border-b border-gray-300 px-1 py-1 text-xs font-extrabold text-gray-800 uppercase tracking-tight bg-gray-100">Lot<br />No.</th>
@@ -216,7 +193,7 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
               </tr>
               <tr className="border-b border-gray-300">
                 {/* hasMoisture={false} เพราะ Line D ไม่มี Mois */}
-                <TableHeaderGroup title="Line D" hasMoisture={false} />
+                <TableHeaderGroup hasMoisture={false} />
               </tr>
             </thead>
             <tbody className="bg-white">
@@ -230,7 +207,7 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
                       key={index}
                       index={index}
                       itemD={data.lineD?.[index]} // ใช้ itemD
-                      isSingleLine={true}            
+                      isSingleLine={true}
                       editingId={editingId}
                       tempStValue={tempStValue}
                       setTempStValue={setTempStValue}
@@ -291,30 +268,18 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
               <th className="border-r border-gray-300 py-1 font-extrabold uppercase" colSpan={5}>Line A</th>
               <th className="border-r border-gray-300 py-1 font-extrabold uppercase" colSpan={5}>Line B</th>
               <th className="border-r border-gray-300 py-1 font-extrabold uppercase" colSpan={6}>Line C</th>
-              {/* Type Input */}
-              <th className="py-1 font-extrabold uppercase bg-gray-300 cursor-pointer" colSpan={2} onClick={() => { setTempGenmatsuType(genmatsuTypeHeader); setIsEditingGenmatsuType(true); }}>
-                {isEditingGenmatsuType ? (
-                  <div className="flex items-center justify-center gap-1">
-                    <input autoFocus value={tempGenmatsuType} onChange={e => setTempGenmatsuType(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') saveGenmatsuType(); if (e.key === 'Escape') setIsEditingGenmatsuType(false); }} className="w-24 text-center text-xs font-bold bg-white border-b border-blue-500 outline-none" />
-                    <button onClick={saveGenmatsuType} className="text-green-600"><FaCheck size={10} /></button>
-                  </div>
-                ) : genmatsuTypeHeader}
+              {/* Type Input: Static now */}
+              <th className="py-1 font-extrabold uppercase bg-gray-300" colSpan={2}>
+                Genmatsu Type
               </th>
             </tr>
             <tr className="border-b border-gray-300">
-              <TableHeaderGroup title="Line A" />
-              <TableHeaderGroup title="Line B" />
-              <TableHeaderGroup title="Line C" hasMoisture={true} />
+              <TableHeaderGroup />
+              <TableHeaderGroup />
+              <TableHeaderGroup hasMoisture={true} />
 
               <th className="border-r border-b border-gray-300 px-1 py-1 text-center font-extrabold bg-gray-100">Lot No.</th>
-              <th className="border-b border-gray-300 px-1 py-1 text-center font-extrabold bg-gray-100 cursor-pointer min-w-[100px]" onClick={() => { setTempRecycleHeader(recycleLotHeader); setIsEditingRecycleHeader(true); }}>
-                {isEditingRecycleHeader ? (
-                  <div className="flex items-center justify-center gap-1">
-                    <input autoFocus value={tempRecycleHeader} onChange={e => setTempRecycleHeader(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') saveRecycleHeader(); if (e.key === 'Escape') setIsEditingRecycleHeader(false); }} className="w-16 text-center text-xs font-bold bg-white border-b border-blue-500 outline-none" />
-                    <button onClick={saveRecycleHeader} className="text-green-600"><FaCheck size={10} /></button>
-                  </div>
-                ) : recycleLotHeader}
-              </th>
+              <th className="border-b border-gray-300 px-1 py-1 text-center font-extrabold bg-gray-100 min-w-[100px]"></th>
             </tr>
           </thead>
 
@@ -331,8 +296,7 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
                     itemB={data.lineB[index]}
                     itemC={data.lineC[index]}
                     recycleLabel={recycleLabels[index]}
-                    recycleValue={recycleValues[index]}
-                    onRecycleChange={handleRecycleValueChange}
+                    // recycleValue and onRecycleChange removed
                     editingId={editingId}
                     tempStValue={tempStValue}
                     setTempStValue={setTempStValue}
@@ -350,8 +314,8 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
                   {renderTotalCells(data.lineC, true)}
                   <td colSpan={2} className="border-b border-gray-400 bg-gray-200 p-1 text-right text-[11px] font-extrabold">
                     <div className="flex flex-col gap-1">
-                      <div className="flex items-center justify-end gap-1">Packing result = <input type="number" value={recycleTotalPacking} onChange={e => setRecycleTotalPacking(e.target.value)} className="w-10 text-right bg-transparent border-b border-gray-500 outline-none" placeholder="0" /> cans.</div>
-                      <div className="flex items-center justify-end gap-1">Output - Input = <span className="text-red-600">-</span><input type="number" value={recycleTotalDiff} onChange={e => setRecycleTotalDiff(e.target.value)} className="w-10 text-right text-red-600 bg-transparent border-b border-gray-500 outline-none" placeholder="0.00" /> kg.</div>
+                      <div className="flex items-center justify-end gap-1">Packing result = <span className="w-10 text-center font-bold text-gray-400">-</span> cans.</div>
+                      <div className="flex items-center justify-end gap-1">Output - Input = <span className="w-10 text-center font-bold text-gray-400">-</span> kg.</div>
                     </div>
                   </td>
                 </tr>
@@ -391,7 +355,7 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
                 </tr>
 
                 <tr className="border-b border-gray-300">
-                  <TableHeaderGroup title="Line D" hasMoisture={false} />
+                  <TableHeaderGroup hasMoisture={false} />
                 </tr>
               </thead>
               <tbody className="bg-white">
@@ -401,7 +365,7 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
                     key={index}
                     index={index}
                     itemD={data.lineD?.[index]} // ใช้ itemD
-                    isSingleLine={true}            
+                    isSingleLine={true}
                     editingId={editingId}
                     tempStValue={tempStValue}
                     setTempStValue={setTempStValue}

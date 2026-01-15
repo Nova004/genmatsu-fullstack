@@ -27,9 +27,6 @@ interface FullReportData {
   lineC: ProductionRecord[];
   lineD?: ProductionRecord[];
   genmatsuType?: string;
-  recycleLot?: string;
-  recycleValues?: any[];
-  recycleTotals?: any;
   remarks?: any;
 }
 
@@ -41,8 +38,7 @@ const DailyReportPrint: React.FC = () => {
   const [reportData, setReportData] = useState<FullReportData>({
     lineA: [], lineB: [], lineC: [], lineD: [],
     genmatsuType: "Genmatsu Type",
-    recycleLot: "-",
-    recycleValues: [],
+
     remarks: {}
   });
 
