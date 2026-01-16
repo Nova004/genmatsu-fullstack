@@ -1,23 +1,90 @@
 {
-  "operationResults": [
-    { "startTime": "07:55" },
-    {},
-    {},
-    {
-      "subItems": [null, { "startTime": "08:13", "finishTime": "08:18" }],
-      "startTime": "08:05",
-      "finishTime": "08:10"
-    },
-    { "subItems": [{ "startTime": "08:19", "finishTime": "08:29" }] },
-    { "subItems": [{ "startTime": "08:31", "finishTime": "08:44" }] },
-    { "subItems": [{ "startTime": "08:46", "finishTime": "09:26" }] },
-    { "tempPoint1": 85, "tempPoint2": 97, "tempPoint3": 95 },
-    {},
-    { "startTime": "09:29" },
-    { "finishTime": "10:09" },
-    { "startTime": "10:29", "finishTime": "10:30" },
-    { "humidity": 2.66 },
-    { "tempPoint1": 76, "tempPoint2": 84, "tempPoint3": 82 },
-    { "startTime": "10:33", "finishTime": "10:51" }
-  ]
+  "basicData": {
+    "date": "2026-01-16",
+    "machineName": "A",
+    "lotNo": "5278",
+    "mcOperatorRole": "M/C operator"
+  },
+  "mcOperators": [
+    { "id": "201634", "name": "Mr.Tinnakon  Thuengkhamphu", "number": "2" },
+    { "id": "201933", "name": "Mr.Adool  Faengmuangkook", "number": "5" },
+    { "id": "-", "name": "-", "number": "-" }
+  ],
+  "assistants": [
+    { "id": "201949", "name": "Mr.Natthawat  Yodrak", "number": "9" }
+  ],
+  "conditions": [],
+  "values": [],
+  "checklist": {
+    "coolingValve": "Mr.Tinnakon  Thuengkhamphu (2)",
+    "butterflyValve": "Mr.Tinnakon  Thuengkhamphu (2)"
+  },
+  "cg1cWeighting": { "row1": { "bagWeight": 0 }, "row2": { "bagWeight": 0 } },
+  "rc417Weighting": { "row1": { "bagWeight": 0 }, "row2": { "bagWeight": 0 } },
+  "operationResults": [],
+  "palletInfo": [
+    { "no": "23", "qty": "450", "canNo": "-" },
+    { "no": "24", "qty": "150", "canNo": "-" }
+  ],
+  "inputProduct": [{ "weight": 1054 }],
+  "outputGenmatsuA": [
+    { "canNo": "1", "weight": 600 },
+    { "canNo": "2" },
+    { "canNo": "3" },
+    { "canNo": "4" }
+  ],
+  "outputGenmatsuB": [
+    { "bagNo": "1" },
+    { "bagNo": "2" },
+    { "bagNo": "3" },
+    { "bagNo": "4" }
+  ],
+  "outputGenmatsuBRight": [
+    { "bagNo": "5", "weight": 118 },
+    { "bagNo": "6" },
+    { "bagNo": "7" },
+    { "bagNo": "8" }
+  ],
+  "outputFilmProduct": [
+    { "bagNo": "1" },
+    { "bagNo": "2" },
+    { "bagNo": "3" },
+    { "bagNo": "4" }
+  ],
+  "outputFilmProductRight": [
+    { "bagNo": "5", "weight": 317.1 },
+    { "bagNo": "6" },
+    { "bagNo": "7" },
+    { "bagNo": "8" }
+  ],
+  "outputPEBag": [
+    { "bagNo": "1", "weight": 10.3 },
+    { "bagNo": "2" },
+    { "bagNo": "3" },
+    { "bagNo": "4" }
+  ],
+  "outputDustCollector": [
+    { "bagNo": "1", "weight": 2.6 },
+    { "bagNo": "2" },
+    { "bagNo": "3" },
+    { "bagNo": "4" }
+  ],
+  "outputCleaning": [
+    { "bagNo": "1", "weight": 4.8 },
+    { "bagNo": "2" },
+    { "bagNo": "3" },
+    { "bagNo": "4" }
+  ],
+  "quantityOfProductCans": 8,
+  "quantityOfProductWeight": 75,
+  "lastCanWeight": 0,
+  "totalInput": 1054,
+  "totalOutput": 1052.7999999999997,
+  "diffWeight": 1.2000000000002728,
+  "totalGenmatsuA": 600,
+  "totalGenmatsuB": 118,
+  "totalFilm": 317.1,
+  "totalPEBag": 10.3,
+  "totalDustCollector": 2.6,
+  "totalCleaning": 4.8
 }

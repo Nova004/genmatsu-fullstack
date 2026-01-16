@@ -289,7 +289,7 @@ const IronpowderFormEdit: React.FC<IronpowderFormEditProps> = ({
         </div>
 
         {/* Summary Section */}
-        <Summary register={register} watch={watch} />
+        <Summary register={register} watch={watch}  setValue={setValue} />
 
         {/* Action Buttons */}
         <div className="flex justify-center gap-4 rounded-sm border border-stroke p-4 dark:border-strokedark">

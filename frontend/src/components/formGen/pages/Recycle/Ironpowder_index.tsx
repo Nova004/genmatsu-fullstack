@@ -230,6 +230,7 @@ function Ironpowder_Form() {
                 <Summary
                     register={register}
                     watch={watch}
+                    setValue={setValue} // <--- 1. เพิ่มบรรทัดนี้ ส่ง setValue ไปให้ลูก
                 />
 
                 {/* Action Buttons */}

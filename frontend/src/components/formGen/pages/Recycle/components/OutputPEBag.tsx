@@ -1,3 +1,5 @@
+// frontend/src/components/formGen/pages/Recycle/components/OutputPEBag.tsx
+
 import React from 'react';
 import { UseFormRegister, UseFormWatch, UseFieldArrayReturn, FieldArrayWithId } from 'react-hook-form';
 
