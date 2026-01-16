@@ -162,6 +162,56 @@ export interface IManufacturingReportForm {
     qty: number | null;
     canNo: string;
   }[];
+
+  // Recycle/Ironpowder form fields
+  inputProduct: {
+    palletNo: string;
+    areaNo: string;
+    weight: number | null;
+  }[];
+  outputGenmatsuA: {
+    canNo: string;
+    temperature: string;
+    weight: number | null;
+  }[];
+  outputGenmatsuB: {
+    bagNo: string;
+    weight: number | null;
+  }[];
+  outputGenmatsuBRight: {
+    bagNo: string;
+    weight: number | null;
+  }[];
+  outputFilmProduct: {
+    bagNo: string;
+    weight: number | null;
+  }[];
+  outputFilmProductRight: {
+    bagNo: string;
+    weight: number | null;
+  }[];
+  outputPEBag: {
+    bagNo: string;
+    weight: number | null;
+  }[];
+  outputDustCollector: {
+    bagNo: string;
+    weight: number | null;
+  }[];
+  outputCleaning: {
+    bagNo: string;
+    weight: number | null;
+  }[];
+
+  // Summary fields
+  productionStartTime: string;
+  productionEndTime: string;
+  cleaningStartTime: string;
+  cleaningEndTime: string;
+  quantityOfProductCans: number | null;
+  quantityOfProductWeight: number | null;
+  quantityOfProductTotal: number | null;
+  lastCanWeight: number | null;
 }
 
 

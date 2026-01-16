@@ -1,3 +1,5 @@
+// frontend/src/context/AuthContext.tsx
+
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 // 1. สร้าง Type สำหรับ User และ Context เพื่อความปลอดภัยของโค้ด

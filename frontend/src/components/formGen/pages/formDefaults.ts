@@ -148,4 +148,25 @@ export const initialFormValues: IManufacturingReportForm = {
     yieldPercent: null,
   },
   palletInfo: [], // (Array ว่าง)
+
+  // --- Recycle/Ironpowder Form Fields ---
+  inputProduct: [],
+  outputGenmatsuA: [],
+  outputGenmatsuB: [],
+  outputGenmatsuBRight: [],
+  outputFilmProduct: [],
+  outputFilmProductRight: [],
+  outputPEBag: [],
+  outputDustCollector: [],
+  outputCleaning: [],
+
+  // --- Summary Fields ---
+  productionStartTime: '',
+  productionEndTime: '',
+  cleaningStartTime: '',
+  cleaningEndTime: '',
+  quantityOfProductCans: null,
+  quantityOfProductWeight: null,
+  quantityOfProductTotal: null,
+  lastCanWeight: null,
 };

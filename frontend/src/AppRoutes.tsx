@@ -53,6 +53,8 @@ const BS5_C_Form = lazy(() => import('./components/formGen/pages/GEN_B/BS5-C_For
 const BS3_C_Form = lazy(() => import('./components/formGen/pages/GEN_B/BS3-C_Form/BS3-C_index.tsx'));
 const AZ_Form = lazy(() => import('./components/formGen/pages/GEN_A/AZ_Form/AZ_index'));
 
+const Ironpowder_Form = lazy(() => import('./components/formGen/pages/Recycle/Ironpowder_index.tsx'));
+
 const AppRoutes = () => {
   return (
     <Suspense fallback={<Loader />}>
@@ -262,6 +264,10 @@ const AppRoutes = () => {
                         <Route
                           path="/forms/az-form"
                           element={<><PageTitle title="AZ Form" /><AZ_Form /></>}
+                        />
+                         <Route
+                          path="/forms/ronpowder-form"
+                          element={<><PageTitle title="IronpowderForm" /><Ironpowder_Form /></>}
                         />
                         <Route
                           path="/reports/edit/:id"

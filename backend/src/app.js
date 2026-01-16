@@ -14,6 +14,7 @@ const formRoutes = require("./api/form.routes");
 const submissionRoutes = require("./api/submission.routes");
 const reportRoutes = require("./api/report.routes");
 const approvalRoutes = require("./api/approval.routes");
+const ironpowderRoutes = require("./api/ironpowder.routes");
 
 const app = express();
 const server = http.createServer(app);
@@ -43,6 +44,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/submissions", submissionRoutes);
 app.use("/api/approvals", approvalRoutes);
 app.use("/api/nacl", naclRoutes);
+app.use("/api/ironpowder", ironpowderRoutes);
 app.use("/genmatsu/api/submissions/reports", reportRoutes);
 
 // Error Handling
