@@ -33,21 +33,21 @@ const PackingResultTable: React.FC<PackingResultTableProps> = ({ register, watch
         <tbody>
           <tr>
             <td className={tdLeftClass} colSpan={2}>Quantity<br></br>(จำนวนถังเต็ม x 150 kg.) + น้ำหนักถังเศษ</td>
-            <td className={tdCenterClass}><input type="number" step="any" className={inputClass} {...register('packingResults.quantityOfProduct.cans', { valueAsNumber: true })} /></td>
+            <td className={tdCenterClass}><input type="number" step="any" className={inputClass} {...register('packingResults.quantityOfProduct.cans', { valueAsNumber: true, required: 'กรุณากรอกจำนวนถัง' })} /></td>
             {/* 3. แสดงผลค่าตัวคูณแบบ Dynamic */}
             <td className={tdCenterClass}>Cans x {cansMultiplier} KG + </td>
-            <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={inputClass} {...register('packingResults.weighttank.tank')} /><span className="ml-2">KG</span></div></td>
+            <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={inputClass} {...register('packingResults.weighttank.tank', { required: 'กรุณากรอกน้ำหนักถังเศษ' })} /><span className="ml-2">KG</span></div></td>
             <td className={tdCenterClass}>=</td>
             <td className={tdCenterClass}><div className="flex items-center"><input type="text" className={disabledInputClass} readOnly disabled {...register('packingResults.quantityOfProduct.calculated')} /><span className="ml-2">KG</span></div></td>
           </tr>
           <tr>
             <td className={tdLeftClass} colSpan={2}>Remain</td>
-            <td className={tdCenterClass}><input type="number" step="any" className={inputClass} {...register('packingResults.remain', { valueAsNumber: true })} /></td>
+            <td className={tdCenterClass}><input type="number" step="any" className={inputClass} {...register('packingResults.remain', { valueAsNumber: true, required: 'กรุณากรอก Remain' })} /></td>
             <td className={tdLeftClass} colSpan={4}><span className="text-s">(Genmatsu ที่ผ่านการผลิตเรียบร้อยแล้ว ถูกแบ่งเก็บไว้สำหรับเทปิดรูวาล์วในการผลิตครั้งต่อไป)</span></td>
           </tr>
           <tr>
             <td className={tdLeftClass} colSpan={2}>Scrape on 30 mesh</td>
-            <td className={tdCenterClass}><div className="flex items-center"><input type="number" step="any" className={inputClass} {...register('packingResults.meshPass40', { valueAsNumber: true })} /><span className="ml-2">KG</span></div></td>
+            <td className={tdCenterClass}><div className="flex items-center"><input type="number" step="any" className={inputClass} {...register('packingResults.meshPass40', { valueAsNumber: true, required: 'กรุณากรอก Scrape on 30 mesh' })} /><span className="ml-2">KG</span></div></td>
             <td className={tdLeftClass} colSpan={3}><span className="text-s"> (เก็นที่จับเป็นก้อนซึ่งเป็นของเสียที่ไม่สามารถส่ง Production ได้)</span></td>
           </tr>
         </tbody>

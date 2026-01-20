@@ -156,7 +156,7 @@ export const useBZ3_BCalculations = (
       console.log(`✅ SET: bz3Calculations.naclWater15 = ${finalNaclWater15Result}`);
 
       // ตั้งค่า Sodium Chloride และ L/min Rate
-      setValue('bz3Calculations.naclWater15', formatNumberRound(finalNaclWater15Result) as any);
+      setValue('bz3Calculations.naclWater15', finalNaclWater15Result?.toFixed(0) as any);
       setValue('rawMaterials.sodiumChloride', formatNumberRound(finalNaclWater15Result) as any, { shouldValidate: true });
 
       // คำนวณ "(L/B)/20 min." (L/min Rate)
@@ -349,7 +349,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               </tr>
               <tr>
                 <td className={tdLeftClass}>NaCl water =</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bz3Calculations.naclWater', { valueAsNumber: true })} value="15.00" readOnly disabled /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bz3Calculations.naclWater', { valueAsNumber: true })} value="15" readOnly disabled /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass}>NaCl Water Specific gravity</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('bz3Calculations.naclWaterSpecGrav', { valueAsNumber: true, required: 'กรุณากรอก NaCl Water Specific gravity' })} />
                   {errors.bz3Calculations?.naclWaterSpecGrav &&

@@ -139,7 +139,7 @@ export const useBS5_CCalculations = (
     const AD19 = 1000;
     const numAD20 = calculatedWaterContentWeight_RAW || 0;
     console.log(`[BS5-C DEBUG] [B] Inputs: S19=${S19}, numAD20=${numAD20}, numS24=${numS24}`);
-    // O23 = 4.00%
+    // O23 = 4%
     const O23_percent = 4.0;
     const O23_decimal = O23_percent / 100;
     console.log(`[BS5-C DEBUG] [B] Constants: AD19=${AD19}, O23_decimal=${O23_decimal}`);
@@ -446,7 +446,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               </tr>
               <tr>
                 <td className={tdLeftClass}>NaCl water =</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bs5cCalculations.naclWater', { valueAsNumber: true })} value="4.00" readOnly disabled /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bs5cCalculations.naclWater', { valueAsNumber: true })} value="4" readOnly disabled /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass}>NaCl Water Specific gravity</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('bs5cCalculations.naclWaterSpecGrav', { valueAsNumber: true, required: 'กรุณากรอก  NaCl Water Specific gravity' })} />
                   {errors.bs5cCalculations?.naclWaterSpecGrav &&

@@ -27,12 +27,12 @@ const PackingResultTable: React.FC<PackingResultTableProps> = ({ register, watch
 
   const actualMultiplier = useMemo(() => {
     if (formType === 'BN') {
-      return 15; 
+      return 15;
     }
     return cansMultiplier;
-  }, [formType, cansMultiplier]); 
+  }, [formType, cansMultiplier]);
 
-   //console.log(`Using actualMultiplier: ${actualMultiplier} for formType: ${formType}`);
+  //console.log(`Using actualMultiplier: ${actualMultiplier} for formType: ${formType}`);
 
   useEffect(() => {
     if (quantityOfCans === null || quantityOfCans === undefined) {
@@ -55,14 +55,14 @@ const PackingResultTable: React.FC<PackingResultTableProps> = ({ register, watch
         <tbody>
           <tr>
             <td className={tdLeftClass} colSpan={2}>Ø 3*5 P on</td>
-            <td className={tdCenterClass}><input type="number" step="any" className={inputClass} {...register('packingResults.diameter', { valueAsNumber: true })} /></td>
+            <td className={tdCenterClass}><input type="number" step="any" className={inputClass} {...register('packingResults.diameter', { valueAsNumber: true, required: 'กรุณากรอก Ø 3*5 P on' })} /></td>
             <td className={tdCenterClass}>KG</td>
             <td className={tdCenterClass}></td>
             <td className={tdCenterClass}></td>
           </tr>
           <tr>
             <td className={tdLeftClass} colSpan={2}>Quantity of Product</td>
-            <td className={tdCenterClass}><input type="number" className={inputClass} {...register('packingResults.quantityOfProduct.cans', { valueAsNumber: true })} /></td>
+            <td className={tdCenterClass}><input type="number" className={inputClass} {...register('packingResults.quantityOfProduct.cans', { valueAsNumber: true, required: 'กรุณากรอกจำนวนถัง' })} /></td>
             {/* 3. แสดงผลค่าตัวคูณแบบ Dynamic */}
             <td className={tdCenterClass}>Cans x {actualMultiplier}</td>
             <td className={tdCenterClass}><input type="text" className={disabledInputClass} readOnly disabled {...register('packingResults.quantityOfProduct.calculated')} /></td>
@@ -70,14 +70,14 @@ const PackingResultTable: React.FC<PackingResultTableProps> = ({ register, watch
           </tr>
           <tr>
             <td className={tdLeftClass} colSpan={2}>40 mesh Pass</td>
-            <td className={tdCenterClass}><input type="number" step="any" className={inputClass} {...register('packingResults.meshPass40', { valueAsNumber: true })} /></td>
+            <td className={tdCenterClass}><input type="number" step="any" className={inputClass} {...register('packingResults.meshPass40', { valueAsNumber: true, required: 'กรุณากรอก 40 mesh Pass' })} /></td>
             <td className={tdCenterClass}>KG</td>
             <td className={tdCenterClass}></td>
             <td className={tdCenterClass}></td>
           </tr>
           <tr>
             <td className={tdLeftClass} colSpan={2}>Remain</td>
-            <td className={tdCenterClass}><input type="number" step="any" className={inputClass} {...register('packingResults.remain', { valueAsNumber: true })} /></td>
+            <td className={tdCenterClass}><input type="number" step="any" className={inputClass} {...register('packingResults.remain', { valueAsNumber: true, required: 'กรุณากรอก Remain' })} /></td>
             <td className={tdCenterClass}>KG</td>
             <td className={tdCenterClass}></td>
             <td className={tdCenterClass}></td>

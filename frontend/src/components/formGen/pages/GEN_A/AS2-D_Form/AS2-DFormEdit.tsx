@@ -38,11 +38,11 @@ const AS2_D_VALIDATION_SCHEMA = {
         message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
     },
     3: {
-        fields: ['conditions', 'operationResults', 'operationRemark', 'packingResults'], // 👈 เพิ่ม 'conditions'
+        fields: [ 'operationResults', 'operationRemark'], // 👈 เพิ่ม 'conditions'
         message: 'กรุณาตรวจสอบข้อมูลเงื่อนไขและผลการปฏิบัติงานให้ถูกต้อง',
     },
     4: {
-        fields: ['packingResults'], // 👈 เพิ่ม 'conditions'
+        fields: ['packingResults.diameter' ,'packingResults.quantityOfProduct.cans' , 'packingResults.meshPass40'], // 👈 เพิ่ม 'conditions'
         scope: 'packingResults',
         message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, Lot No. และตรวจสอบสภาพบรรจุภัณฑ์ให้ครบถ้วน',
     },

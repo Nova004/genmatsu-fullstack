@@ -229,6 +229,7 @@ const DropdownMessage = () => {
                             day: '2-digit',
                             month: '2-digit',
                             year: '2-digit',
+                            timeZone: 'UTC'
                           })}{' '}
                           • Lot: {msg.lot_no}
                         </div>

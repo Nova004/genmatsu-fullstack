@@ -70,7 +70,7 @@ export const useExcelFormulaCalculations = (
     // =================================================================
     // === 2. คำนวณ naclWaterCalc (W23) ===
     // =================================================================
-    let naclWaterCalcResult: number | null = null;
+    let naclWaterCalcResult: string | number | null = null;
     if (numNaclBrewingTable > 0 && stdYield > 0) {
       const rawResult = (numTotalWeight * numNaclBrewingTable) / stdYield;
 
@@ -78,7 +78,7 @@ export const useExcelFormulaCalculations = (
       _rawNaclWaterCalcResult = rawResult;
 
       // ✅ ปัดเศษเฉพาะผลลัพธ์ที่จะ setVaule (สำหรับการแสดงผล)
-      naclWaterCalcResult = rawResult;
+      naclWaterCalcResult = rawResult.toFixed(0);
     }
     setValue('calculations.naclWaterCalc', formatNumberRound(naclWaterCalcResult)as any);
 

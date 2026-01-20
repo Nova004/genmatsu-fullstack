@@ -229,6 +229,7 @@ const ReportHistory_GEN_B: React.FC = () => {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
+            timeZone: 'UTC'
           });
         },
 

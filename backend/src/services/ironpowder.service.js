@@ -384,8 +384,9 @@ exports.resubmitIronpowder = async (submissionId, formData, submittedBy) => {
 
         -- [Resubmit Reset]
         -- 1. Reset Flow Status & Approver (เพื่อให้เริ่มอนุมัติใหม่ โดยไม่ลบแถว)
+        -- 🔴 แก้ไข: set updated_at = NULL เพื่อให้ Frontend ไม่แสดงวันที่
         UPDATE Form_Ironpowder_Approval_Flow
-        SET status = 'Pending', approver_user_id = NULL, updated_at = GETDATE()
+        SET status = 'Pending', approver_user_id = NULL, updated_at = NULL
         WHERE submissionId = @submissionId;
 
         -- 2. ลบ Log เดิมทิ้ง (เพื่อให้เริ่มอนุมัติใหม่)

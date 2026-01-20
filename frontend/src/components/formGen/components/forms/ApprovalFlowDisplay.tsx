@@ -221,11 +221,12 @@ const ApprovalFlowDisplay: React.FC<Props> = ({ submissionId, submissionData }) 
 
         {/* 3. ส่วนท้าย (Date) */}
         <div className="border-t border-stroke p-2 text-center text-sm dark:border-strokedark">
-          {stepData?.updated_at ? ( // ⚠️ เช็คว่ามี 'updated_at' ใน Type ApprovalFlowStep หรือยัง
+          {stepData?.updated_at ? (
             new Date(stepData.updated_at).toLocaleDateString("en-GB", {
               day: "2-digit",
               month: "short",
               year: "numeric",
+              timeZone: 'UTC'
             })
           ) : (
             <>&nbsp;</>
@@ -261,6 +262,7 @@ const ApprovalFlowDisplay: React.FC<Props> = ({ submissionId, submissionData }) 
                 day: "2-digit",
                 month: "short",
                 year: "numeric",
+                timeZone: 'UTC'
               })
             ) : (
               <>&nbsp;</>
