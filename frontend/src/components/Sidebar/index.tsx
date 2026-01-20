@@ -124,7 +124,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
           {/* ================= GROUP: MODULES (งานระบบ/ฟอร์ม) ================= */}
           <div>
             <h3 className="mb-4 ml-4 text-sm font-semibold text-bodydark2 uppercase tracking-wider">
-              Production Data 
+              Production Data
             </h3>
 
             <ul className="mb-6 flex flex-col gap-1.5">
@@ -197,6 +197,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               }
                             >
                               Genmatsu B
+                            </NavLink>
+                          </li>
+                          <li>
+                            <NavLink
+                              to="/reports/history/recycle"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-white')
+                              }
+                            >
+                              Recycle Form
                             </NavLink>
                           </li>
                           <li>

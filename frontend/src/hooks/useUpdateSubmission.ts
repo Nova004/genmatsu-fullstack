@@ -4,11 +4,16 @@ import { updateSubmission } from '../services/submissionService'; // ปรั�
 import { fireToast } from './fireToast'; // ปรับ path ให้ตรงโปรเจค
 
 interface UseUpdateSubmissionProps {
-  submission: any;          // ข้อมูล Submission (ต้องมี submission_id, lot_no)
-  redirectPath: string;     // URL ที่จะให้เด้งไปเมื่อบันทึกเสร็จ (เช่น '/reports/history/gen-b')
+  submission: any; // ข้อมูล Submission (ต้องมี submission_id, lot_no)
+  redirectPath: string; // URL ที่จะให้เด้งไปเมื่อบันทึกเสร็จ (เช่น '/reports/history/gen-b')
+  updateFn?: (id: number | string, data: any) => Promise<any>; // 👈 เพิ่ม Optional Prop สำหรับระบุฟังก์ชันอัปเดตเอง
 }
 
-export const useUpdateSubmission = ({ submission, redirectPath }: UseUpdateSubmissionProps) => {
+export const useUpdateSubmission = ({
+  submission,
+  redirectPath,
+  updateFn,
+}: UseUpdateSubmissionProps) => {
   const navigate = useNavigate();
 
   const handleUpdate = async (formData: any) => {
@@ -22,28 +27,39 @@ export const useUpdateSubmission = ({ submission, redirectPath }: UseUpdateSubmi
       cancelButtonText: 'ยกเลิก',
       customClass: {
         popup: 'dark:bg-boxdark dark:text-white',
-        confirmButton: 'inline-flex items-center justify-center rounded-md bg-danger py-2 px-5 text-center font-medium text-white hover:bg-opacity-90 lg:px-6',
-        cancelButton: 'ml-3 inline-flex items-center justify-center rounded-md bg-primary py-2 px-5 text-center font-medium text-white hover:bg-opacity-90 lg:px-6'
+        confirmButton:
+          'inline-flex items-center justify-center rounded-md bg-danger py-2 px-5 text-center font-medium text-white hover:bg-opacity-90 lg:px-6',
+        cancelButton:
+          'ml-3 inline-flex items-center justify-center rounded-md bg-primary py-2 px-5 text-center font-medium text-white hover:bg-opacity-90 lg:px-6',
       },
     });
 
     // 2. ถ้ากดยืนยัน ให้เรียก API
     if (result.isConfirmed) {
       try {
-        await updateSubmission(submission.submission_id, {
+        const payload = {
           lot_no: formData.basicData?.lotNo || submission.lot_no,
           form_data: formData,
-        });
+        };
+
+        if (updateFn) {
+          // กรณีระบุฟังก์ชันอัปเดตเอง (เช่น Ironpowder)
+          // Ironpowder requires explicit { formData: ... } wrapper and disallows 'lot_no' at top level for updates
+          const specificPayload = { formData: formData };
+          await updateFn(submission.submission_id, specificPayload);
+        } else {
+          // กรณีปกติ (GEN_A, GEN_B)
+          await updateSubmission(submission.submission_id, payload);
+        }
 
         fireToast('success', 'บันทึกการเปลี่ยนแปลงสำเร็จ');
         window.dispatchEvent(new Event('REFRESH_NOTIFICATIONS'));
         // 3. เด้งกลับไปหน้า History พร้อม Highlight
         navigate(redirectPath, {
-          state: { highlightedId: submission.submission_id }
+          state: { highlightedId: submission.submission_id },
         });
-
       } catch (error) {
-        console.error("Failed to update submission:", error);
+        console.error('Failed to update submission:', error);
         fireToast('error', 'ไม่สามารถบันทึกการเปลี่ยนแปลงได้');
       }
     }

@@ -41,7 +41,7 @@ Ironpowder form ของคุณสามารถทำงาน "Drafted" fu
       
       const result = await ironpowderService.createIronpowder(ironpowderPayload);
       fireToast('success', 'บันทึกร่าง Ironpowder สำเร็จ!');
-      navigate('/reports/history/recycle', { state: { highlightedId: result.ironpowder_id } });
+      navigate('/reports/history/recycle', { state: { highlightedId: result.submissionId } });
     }
   };
 
@@ -72,7 +72,7 @@ Ironpowder form ของคุณสามารถทำงาน "Drafted" fu
   2. ตรวจสอบ required fields ✓
   3. ตรวจสอบ duplicate lot_no (ถ้าซ้ำ return 409 Conflict) ✓
   4. เรียก ironpowderService.createIronpowder() ✓
-  5. Return 201 Created + ironpowderId ✓
+  5. Return 201 Created + submissionId ✓
 
 Error Handling:
   ✓ 400 Bad Request สำหรับ missing fields
@@ -108,7 +108,7 @@ Error Handling:
   
   4. Commit transaction ✓
   5. สร้าง approval flow asynchronously ✓
-  6. Return ironpowder_id ✓
+  6. Return submissionId ✓
 
 Approval Flow Creation:
   ✓ Line 24-69: createApprovalFlow function
@@ -187,7 +187,7 @@ POST /api/ironpowder/submit    → status = "Submitted"
    ├─ INSERT Form_Ironpowder_Submissions (status: "Submitted")
    └─ Create approval flow asynchronously
    ↓
-9️⃣ Return ironpowder_id (201 Created)
+9️⃣ Return submissionId (201 Created)
    ↓
 🔟 Frontend: fireToast success message
    ↓

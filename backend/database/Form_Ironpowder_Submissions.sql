@@ -5,7 +5,7 @@ IF NOT EXISTS (SELECT * FROM sysobjects WHERE name = 'Form_Ironpowder_Submission
 BEGIN
     CREATE TABLE Form_Ironpowder_Submissions (
         -- Primary Key
-        ironpowder_id INT PRIMARY KEY IDENTITY(1,1),
+        submissionId INT PRIMARY KEY IDENTITY(1,1),
         
         -- Core Information
         lot_no NVARCHAR(50) NOT NULL UNIQUE,

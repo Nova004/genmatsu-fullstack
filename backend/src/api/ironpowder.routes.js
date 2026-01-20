@@ -30,6 +30,6 @@ router.put(
 router.delete("/:id", ironpowderController.deleteIronpowder);
 
 // PUT /api/ironpowder/:id/resubmit - ส่งใหม่หลังจาก Rejected
-router.put("/resubmit/:id", ironpowderController.resubmitIronpowder);
+router.put("/:id/resubmit", ironpowderController.resubmitIronpowder);
 
 module.exports = router;

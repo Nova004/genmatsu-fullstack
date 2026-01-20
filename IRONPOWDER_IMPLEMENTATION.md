@@ -104,7 +104,7 @@ backend/src/
 ### Table: Form_Ironpowder_Submissions
 ```sql
 CREATE TABLE Form_Ironpowder_Submissions (
-    ironpowder_id          INT PRIMARY KEY IDENTITY(1,1),
+    submissionId          INT PRIMARY KEY IDENTITY(1,1),
     lot_no                 NVARCHAR(50) NOT NULL UNIQUE,
     form_type              NVARCHAR(50) DEFAULT 'Ironpowder',
     submitted_by           INT NOT NULL,
@@ -244,7 +244,7 @@ Run the database creation script:
    }
    ```
 6. Backend creates record + approval flow in transaction
-7. Returns ironpowder_id
+7. Returns submissionId
 8. Frontend navigates to `/reports/history/recycle`
 
 ### Approval Workflow

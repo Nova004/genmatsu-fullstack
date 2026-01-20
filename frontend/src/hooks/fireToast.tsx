@@ -9,7 +9,7 @@ import dataJSON from '../data.json';
 // =================================================================
 
 // ใช้ 'success' | 'warning' | 'error' แทน number เพื่อให้โค้ดอ่านง่ายขึ้น
-const createToastUI = (title: string, msg: string, type: 'success' | 'warning' | 'error') => {
+const createToastUI = (title: string, msg: string, type: 'success' | 'warning' | 'error' | 'info') => {
   // กำหนดสีพื้นหลังตาม type ที่ได้รับมา
   let bgColor = 'bg-[#04b20c]'; // success
   if (type === 'warning') bgColor = 'bg-[#eab90f]';
@@ -71,7 +71,7 @@ const createToastUI = (title: string, msg: string, type: 'success' | 'warning' |
  * @param title หัวข้อ (ถ้าไม่ใส่ จะใช้ชื่อ type แทน)
  */
 export const fireToast = (
-  type: 'success' | 'warning' | 'error',
+  type: 'success' | 'warning' | 'error' | 'info',
   message: string,
   title?: string
 ) => {

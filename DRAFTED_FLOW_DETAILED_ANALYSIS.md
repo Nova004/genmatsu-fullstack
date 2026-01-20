@@ -44,11 +44,11 @@ const handleDraftSubmit = async () => {
             const result = await ironpowderService.createIronpowder(ironpowderPayload);
             
             // ✅ สำเร็จ → แสดง Toast
-            fireToast('success', `บันทึกร่าง Ironpowder สำเร็จ! (ID: ${result.ironpowder_id})`);
+            fireToast('success', `บันทึกร่าง Ironpowder สำเร็จ! (ID: ${result.submissionId})`);
             
             // ✅ Navigate
             navigate('/reports/history/recycle', {
-                state: { highlightedId: result.ironpowder_id },
+                state: { highlightedId: result.submissionId },
             });
             return;  // ✅ ออกจากฟังก์ชัน
         }
@@ -77,7 +77,7 @@ createIronpowder: async (data) => {
     try {
         // ✅ ยิง POST request ไป /api/ironpowder
         const response = await api.post("/ironpowder", data);
-        return response.data;  // ✅ Return { ironpowder_id: ... }
+        return response.data;  // ✅ Return { submissionId: ... }
     } catch (error) {
         throw error.response?.data || error;  // ❌ Error handling
     }
@@ -149,7 +149,7 @@ exports.createIronpowder = async (req, res) => {
         }
 
         // ✅ เรียก Service เพื่อสร้าง Ironpowder
-        const ironpowderId = await ironpowderService.createIronpowder({
+        const submissionId = await ironpowderService.createIronpowder({
             lotNo,
             formData,
             submittedBy,
@@ -158,7 +158,7 @@ exports.createIronpowder = async (req, res) => {
         // ✅ 201 Created - สำเร็จ
         res.status(201).send({
             message: "Ironpowder form submitted successfully!",
-            ironpowderId: ironpowderId,
+            submissionId: submissionId,
         });
     } catch (error) {
         // ❌ 500 Server Error
@@ -176,7 +176,7 @@ exports.createIronpowder = async (req, res) => {
 - ❌ **500**: Server error
 
 **กรณี Success:**
-- ✅ **201**: Return `ironpowderId`
+- ✅ **201**: Return `submissionId`
 
 ---
 
@@ -220,20 +220,20 @@ await transaction
         (lot_no, form_type, submitted_by, status, report_date, machine_name, total_input, total_output, diff_weight, form_data_json, created_at, updated_at)
         VALUES (@lotNo, @formType, @submittedBy, @status, @reportDate, @machineName, @totalInput, @totalOutput, @diffWeight, @formDataJson, GETDATE(), GETDATE())
         
-        SELECT SCOPE_IDENTITY() as ironpowder_id
+        SELECT SCOPE_IDENTITY() as submissionId
     `);
 ```
 
 **Database ตาราง `Form_Ironpowder_Submissions`:**
 ```
-| ironpowder_id | lot_no | form_type | submitted_by | status | report_date | machine_name | total_input | total_output | diff_weight | form_data_json | created_at | updated_at |
+| submissionId | lot_no | form_type | submitted_by | status | report_date | machine_name | total_input | total_output | diff_weight | form_data_json | created_at | updated_at |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 1 | IP-2024-001 | Ironpowder | 1 | Submitted | 2024-01-16 | Machine A | 100.00 | 90.00 | 10.00 | {...json...} | 2026-01-16 10:30 | 2026-01-16 10:30 |
 ```
 
 #### 5.4 Commit Transaction
 ```javascript
-const ironpowderId = result.recordset[0].ironpowder_id;  // ✅ ได้ ironpowder_id = 1
+const submissionId = result.recordset[0].submissionId;  // ✅ ได้ submissionId = 1
 await transaction.commit();  // ✅ บันทึกลงฐานข้อมูลจริง
 ```
 
@@ -241,7 +241,7 @@ await transaction.commit();  // ✅ บันทึกลงฐานข้อ�
 ```javascript
 // ✅ สร้าง approval flow asynchronously (ไม่ใช้ transaction)
 const pool2 = await poolConnect;
-await createApprovalFlow(pool2, ironpowderId, submittedBy);
+await createApprovalFlow(pool2, submissionId, submittedBy);
 ```
 
 ---
@@ -280,7 +280,7 @@ if (userLevel === 0) {
 for (const step of flowSteps) {
     await transaction
         .request()
-        .input("submissionId", sql.Int, 1)                    // ✅ ironpowder_id
+        .input("submissionId", sql.Int, 1)                    // ✅ submissionId
         .input("sequence", sql.Int, step.sequence)            // ✅ 1, 2, 3
         .input("requiredLevel", sql.Int, step.required_level) // ✅ 1, 2, 3
         .input("status", sql.NVarChar, "Pending")             // ✅ "Pending"
@@ -309,14 +309,14 @@ for (const step of flowSteps) {
 ```javascript
 res.status(201).send({
     message: "Ironpowder form submitted successfully!",
-    ironpowderId: 1,
+    submissionId: 1,
 });
 ```
 
 ### Frontend Hook Processing
 ```typescript
 const result = await ironpowderService.createIronpowder(ironpowderPayload);
-// ✅ result = { message: "...", ironpowderId: 1 }
+// ✅ result = { message: "...", submissionId: 1 }
 
 fireToast('success', `บันทึกร่าง Ironpowder สำเร็จ! (ID: 1)`);
 // ✅ แสดง Toast notification
@@ -401,7 +401,7 @@ Repository: User ID not found in Users table
   ↓
 ✅ COMMIT TRANSACTION
   ↓
-✅ Get ironpowder_id = 1
+✅ Get submissionId = 1
   ↓
 ✅ Service: BEGIN TRANSACTION (approval flow)
   ↓
@@ -413,7 +413,7 @@ Repository: User ID not found in Users table
   ↓
 ✅ COMMIT TRANSACTION
   ↓
-✅ Return 201 Created { ironpowderId: 1 }
+✅ Return 201 Created { submissionId: 1 }
   ↓
 ✅ Frontend: fireToast success
   ↓
@@ -429,7 +429,7 @@ Repository: User ID not found in Users table
 **Backend Console:**
 ```
 [Ironpowder] Successfully created ironpowder ID: 1
-[Approval] Creating flow for IronpowderID: 1, By: 1
+[Approval] Creating flow for submissionId: 1, By: 1
 [Approval] User Level is: 0
 [Repo] Created 3 approval flow steps
 [Approval] Successfully created 3 approval steps.
@@ -438,7 +438,7 @@ Repository: User ID not found in Users table
 **Frontend Console:**
 ```
 POST /api/ironpowder → 201 Created
-Response: { message: "...", ironpowderId: 1 }
+Response: { message: "...", submissionId: 1 }
 Navigation: /reports/history/recycle
 ```
 

@@ -11,32 +11,37 @@ import type {
 /**
  * ดึงข้อมูล Flow การอนุมัติทั้งหมดสำหรับเอกสาร (Submission) ID ที่กำหนด
  */
+/**
+ * ดึงข้อมูล Flow การอนุมัติทั้งหมดสำหรับเอกสาร (Submission) ID ที่กำหนด
+ */
 export const getApprovalFlowBySubmissionId = async (
-  submissionId: number
+  submissionId: number,
+  category: string = 'General', // Default to General
 ): Promise<ApprovalFlowStep[]> => {
   try {
     const response = await apiClient.get<ApprovalFlowStep[]>(
-      `${API_ENDPOINTS.APPROVALS}/flow/${submissionId}`
+      `${API_ENDPOINTS.APPROVALS}/flow/${submissionId}`,
+      { params: { category } }, // Pass category as query param
     );
     return response.data;
   } catch (error) {
-    console.error("Error fetching approval flow:", error);
+    console.error('Error fetching approval flow:', error);
     throw error;
   }
 };
 
 export const performApprovalAction = async (
-  payload: ApprovalActionPayload
+  payload: ApprovalActionPayload & { category?: string }, // Add category to payload type
 ): Promise<ApprovalActionResponse> => {
   try {
     // ยิง API (POST /api/approvals/action) ที่เราเพิ่งสร้าง
     const response = await apiClient.post<ApprovalActionResponse>(
       `${API_ENDPOINTS.APPROVALS}/action`,
-      payload
+      payload,
     );
     return response.data;
   } catch (error) {
-    console.error("Error performing approval action:", error);
+    console.error('Error performing approval action:', error);
     throw error; // ส่ง Error ต่อให้ Component จัดการ
   }
 };

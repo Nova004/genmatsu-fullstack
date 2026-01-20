@@ -77,9 +77,9 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
               defaultValue="" // 👈 (ทางเลือก) ปกติ react-hook-form จะจัดการให้ แต่ใส่ไว้กันเหนียวได้ครับ
             >
               <option value="" disabled hidden>Select Product name</option>
-              <option value="A">AZ-R</option>
-              <option value="B">AS2-R</option>
-              <option value="C">AS2-DR</option>
+              <option value="AZ-R">AZ-R</option>
+              <option value="AS2-R">AS2-R</option>
+              <option value="AS2-DR">AS2-DR</option>
             </select>
           </div>
           <div className="flex items-center">

@@ -24,6 +24,7 @@ const UserMaster = lazy(() => import('./components/formGen/pages/Master/UserMast
 const NaClMaster = lazy(() => import('./components/formGen/pages/Master/NaClMaster'));
 const ReportHistory_GEN_B = lazy(() => import('./pages/Reports/ReportHistory_GEN_B'));
 const ReportHistory_GEN_A = lazy(() => import('./pages/Reports/ReportHistory_GEN_A'));
+const ReportHistory_Gen_Recycle = lazy(() => import('./pages/Reports/ReportHistory_Gen_Recycle'));
 const ReportDetailDispatcher = lazy(() => import('./pages/Reports/ReportDetailDispatcher'));
 const ReportEditDispatcher = lazy(() => import('./pages/Reports/ReportEditDispatcher'));
 const ReportPrintDispatcher = lazy(() => import('./pages/Reports/ReportPrintDispatcher'));
@@ -169,10 +170,10 @@ const AppRoutes = () => {
                           path="/master/nacl-master"
                           element={
                             <>
-                            <PageTitle title="NaCl Master | Genmatsu" />
-                            <ProtectedRoute>
-                              <NaClMaster />
-                            </ProtectedRoute>
+                              <PageTitle title="NaCl Master | Genmatsu" />
+                              <ProtectedRoute>
+                                <NaClMaster />
+                              </ProtectedRoute>
                             </>
                           }
                         />
@@ -229,6 +230,20 @@ const AppRoutes = () => {
                             </ProtectedRoute>
                           }
                         />
+
+                        <Route
+                          path="/reports/history/recycle"
+                          element={
+                            <ProtectedRoute>
+                              <>
+                                <PageTitle title="Report History (Genmatsu recycle) | Genmatsu" />
+                                <ReportHistory_Gen_Recycle />
+                              </>
+                            </ProtectedRoute>
+                          }
+                        />
+
+
                         <Route
                           path="/forms/as2-form"
                           element={<><PageTitle title="AS2 Form" /><AS2_Form /></>}
@@ -265,8 +280,8 @@ const AppRoutes = () => {
                           path="/forms/az-form"
                           element={<><PageTitle title="AZ Form" /><AZ_Form /></>}
                         />
-                         <Route
-                          path="/forms/ronpowder-form"
+                        <Route
+                          path="/forms/ironpowder-form"
                           element={<><PageTitle title="IronpowderForm" /><Ironpowder_Form /></>}
                         />
                         <Route
@@ -279,6 +294,19 @@ const AppRoutes = () => {
                         />
                         <Route
                           path="/reports/view/:id"
+                          element={<ReportDetailDispatcher />}
+                        />
+                        {/* ✅ Add specific routes for Recycle to match the links in History page */}
+                        <Route
+                          path="/reports/edit/recycle/:id"
+                          element={
+                            <ProtectedRoute>
+                              <ReportEditDispatcher />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/reports/view/recycle/:id"
                           element={<ReportDetailDispatcher />}
                         />
                         <Route

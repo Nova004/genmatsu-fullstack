@@ -1,4 +1,5 @@
 import apiClient from "./apiService";
+import api from '../constants/api';
 
 interface IronpowderSubmissionData {
   lotNo: string;
@@ -10,7 +11,7 @@ export const ironpowderService = {
   /**
    * Create a new Ironpowder submission
    * @param {Object} data - Form data containing lotNo, formData, submittedBy
-   * @returns {Promise} Response with ironpowder_id and approval flow info
+   * @returns {Promise} Response with submissionId and approval flow info
    */
   createIronpowder: async (data: IronpowderSubmissionData) => {
     try {
@@ -20,6 +21,7 @@ export const ironpowderService = {
       throw error.response?.data || error;
     }
   },
+  
 
   /**
    * Get all Ironpowder submissions (paginated)

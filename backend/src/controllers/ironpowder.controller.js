@@ -20,7 +20,7 @@ exports.createIronpowder = async (req, res) => {
     }
 
     // บันทึกข้อมูล
-    const ironpowderId = await ironpowderService.createIronpowder({
+    const submissionId = await ironpowderService.createIronpowder({
       lotNo,
       formData,
       submittedBy,
@@ -28,7 +28,7 @@ exports.createIronpowder = async (req, res) => {
 
     res.status(201).send({
       message: "Ironpowder form submitted successfully!",
-      ironpowderId: ironpowderId,
+      submissionId: submissionId,
     });
   } catch (error) {
     console.error("Error creating ironpowder:", error.message);

@@ -1,4 +1,4 @@
-// frontend/src/pages/Reports/BZ/ReportDetailBZ.tsx
+// frontend/src/pages/Reports/BZ/ReportDetailAS2.tsx
 
 import React from 'react';
 import AS2FormViewer from '../../../components/formGen/pages/GEN_A/AS2_Form/AS2FormViewer';

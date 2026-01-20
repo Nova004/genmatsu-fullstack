@@ -5,7 +5,7 @@ import {
 } from "../../../../services/approvalService";
 // ❌ ลบอันเก่า: import { ApprovalFlowStep } from "../../pages/types";
 // ✅ ใช้อันใหม่จาก api.ts แทน:
-import type { ApprovalFlowStep } from "../../../../types/api"; 
+import type { ApprovalFlowStep } from "../../../../types/api";
 
 import Loader from "../../../../common/Loader";
 import { useAuth } from "../../../../context/AuthContext";
@@ -60,6 +60,9 @@ const ApprovalFlowDisplay: React.FC<Props> = ({ submissionId, submissionData }) 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [comment, setComment] = useState("");
 
+  // Determine category based on form_type or other properties
+  const category = submissionData?.form_type === 'Ironpowder' ? 'Recycle' : 'General';
+
   const currentStep = flowSteps.find((step) => step.status === "Pending");
   const canApprove = user && currentStep && user.LV_Approvals === currentStep.required_level;
 
@@ -74,7 +77,7 @@ const ApprovalFlowDisplay: React.FC<Props> = ({ submissionId, submissionData }) 
     setIsLoading(true);
     setError(null);
     try {
-      const data = await getApprovalFlowBySubmissionId(submissionId);
+      const data = await getApprovalFlowBySubmissionId(submissionId, category); // Pass category
       setFlowSteps(data);
     } catch (err: any) {
       setError(err.message || "ไม่สามารถโหลดข้อมูลการอนุมัติได้");
@@ -102,6 +105,7 @@ const ApprovalFlowDisplay: React.FC<Props> = ({ submissionId, submissionData }) 
         action: action,
         comment: comment,
         approverUserId: user.id,
+        category: category, // Pass category
       };
       await performApprovalAction(payload);
       fireToast("success", `ดำเนินการ ${action} สำเร็จ!`);

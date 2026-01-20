@@ -151,7 +151,7 @@ VITE v5.x.x running at:
 #### Verify Database
 ```sql
 -- Check if record was saved
-SELECT ironpowder_id, lot_no, status, submitted_by 
+SELECT submissionId, lot_no, status, submitted_by 
 FROM Form_Ironpowder_Submissions 
 ORDER BY created_at DESC;
 
@@ -208,9 +208,9 @@ ORDER BY sequence;
 {
   "success": true,
   "message": "Ironpowder submission created successfully",
-  "ironpowder_id": 1,
+  "submissionId": 1,
   "lot_no": "IP-2024-001",
-  "status": "Submitted",
+  "status": "Drafted",
   "approvalFlow": [
     {
       "sequence": 1,
@@ -230,9 +230,9 @@ ORDER BY sequence;
   "success": true,
   "data": [
     {
-      "ironpowder_id": 1,
+      "submissionId": 1,
       "lot_no": "IP-2024-001",
-      "status": "Submitted",
+      "status": "Drafted",
       "submitted_by": 1,
       "total_input": 50.5,
       "total_output": 75,

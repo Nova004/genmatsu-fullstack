@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getSubmissionById } from '../../services/submissionService';
+import { ironpowderService } from '../../services/ironpowder.service';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import Loader from '../../common/Loader';
 import { formatNumberRound, isNumeric } from '../../utils/utils';
@@ -29,6 +30,8 @@ import ReportEditAZ1 from './AZ1/ReportEditAZ1';
 import ReportEditAX9_B from './AX9-B/ReportEditAX9-B';
 import ReportEditAX2_B from './AX2-B/ReportEditAX2-B';
 import ReportEditAZ from './AZ/ReportEditAZ';
+import ReportEditIronpowder from './Ironpowder/ReportEditIronpowder';
+
 
 // Interface สำหรับข้อมูล Submission ที่คาดหวัง
 interface SubmissionPayload {
@@ -86,6 +89,7 @@ const ReportEditDispatcher: React.FC = () => {
                 return;
             }
             try {
+                // 1. ลองดึงข้อมูลแบบปกติก่อน (SubmitSubmission)
                 const data = await getSubmissionById(id);
 
                 const formattedSubmission = {
@@ -99,8 +103,34 @@ const ReportEditDispatcher: React.FC = () => {
                 });
 
             } catch (err) {
-                setError('ไม่สามารถดึงข้อมูลรายงานได้');
-                console.error(err);
+                console.warn("Standard submission not found, trying Ironpowder...", err);
+
+                // 2. ถ้าไม่เจอ (Error) ให้ลองดึงแบบ Ironpowder
+                try {
+                    const ironData = await ironpowderService.getIronpowderById(id);
+
+                    // Map ข้อมูลให้เข้ากับโครงสร้างที่ ReportEditDispatcher คาดหวัง
+                    const formattedSubmission = {
+                        ...ironData,
+                        form_type: 'Ironpowder', // บังคับระบุ Type
+                        form_data_json: processTemplateData(ironData.form_data_json || ironData.formData), // Map formData or form_data_json
+                        lot_no: ironData.lotNo || ironData.lot_no, // Map lotNo -> lot_no (เผื่อ Component ลูกใช้)
+
+                        // Map keys to snake_case for compatibility with ReportEditIronpowder
+                        submission_id: ironData.submissionId || ironData.submission_id,
+                        submitted_by: ironData.submittedBy || ironData.submitted_by,
+                    };
+
+                    setSubmissionData({
+                        submission: formattedSubmission,
+                        templates: [] // Ironpowder อาจจะไม่ได้ใช้ blueprint/templates แบบเดิม
+                    });
+
+                } catch (ironErr) {
+                    // ถ้ายังไม่เจออีก ก็ยอมแพ้
+                    setError('ไม่สามารถดึงข้อมูลรายงานได้ (Submission Not Found)');
+                    console.error("Failed to fetch Ironpowder submission:", ironErr);
+                }
             } finally {
                 setIsLoading(false);
             }
@@ -161,6 +191,8 @@ const ReportEditDispatcher: React.FC = () => {
                 return <ReportEditAX2_B submission={submission} templates={templates} />;
             case 'AZ':
                 return <ReportEditAZ submission={submission} templates={templates} />;
+            case 'Ironpowder':
+                return <ReportEditIronpowder submission={submission}  />;
             default:
                 return <div>ไม่รองรับการแก้ไขฟอร์มประเภท: {formType}</div>;
         }

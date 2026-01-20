@@ -9,7 +9,7 @@ exports.checkLotNoExists = async (lotNo) => {
     const pool = await poolConnect;
     const result = await pool.request().input("lotNo", sql.NVarChar, lotNo)
       .query(`
-        SELECT TOP 1 ironpowder_id 
+        SELECT TOP 1 submissionId 
         FROM Form_Ironpowder_Submissions 
         WHERE lot_no = @lotNo
       `);
@@ -21,11 +21,13 @@ exports.checkLotNoExists = async (lotNo) => {
   }
 };
 
-async function createApprovalFlow(pool, ironpowderId, submittedBy) {
+
+
+async function createApprovalFlow(pool, submissionId, submittedBy) {
   let transaction;
   try {
     console.log(
-      `[Approval] Creating flow for IronpowderID: ${ironpowderId}, By: ${submittedBy}`
+      `[Approval] Creating flow for submissionId: ${submissionId}, By: ${submittedBy}`
     );
 
     const userLevel = await ironpowderRepo.getUserApprovalLevel(
@@ -58,7 +60,7 @@ async function createApprovalFlow(pool, ironpowderId, submittedBy) {
 
       await ironpowderRepo.createApprovalFlowSteps(
         transaction,
-        ironpowderId,
+        submissionId,
         flowSteps,
         "Form_Ironpowder_Submissions"
       );
@@ -111,7 +113,7 @@ exports.createIronpowder = async ({ lotNo, formData, submittedBy }) => {
       .input("lotNo", sql.NVarChar, lotNo)
       .input("formType", sql.NVarChar, "Ironpowder")
       .input("submittedBy", sql.Int, submittedBy)
-      .input("status", sql.NVarChar, "Submitted")
+      .input("status", sql.NVarChar, "Drafted")
       .input("reportDate", sql.Date, reportDate)
       .input("machineName", sql.NVarChar, machineName)
       .input("totalInput", sql.Decimal(10, 2), totalInput)
@@ -138,21 +140,21 @@ exports.createIronpowder = async ({ lotNo, formData, submittedBy }) => {
           @totalGenmatsuA, @totalGenmatsuB, @totalFilm, @totalPEBag, @totalDustCollector, @totalCleaning, -- เพิ่ม value
           @formDataJson, GETDATE(), GETDATE()
         )
-        SELECT SCOPE_IDENTITY() as ironpowder_id
+        SELECT SCOPE_IDENTITY() as submissionId
       `);
 
-    const ironpowderId = result.recordset[0].ironpowder_id;
+    const submissionId = result.recordset[0].submissionId;
 
     await transaction.commit();
 
     // Create approval flow (ไม่ใช้ transaction แล้ว)
     const pool2 = await poolConnect;
-    await createApprovalFlow(pool2, ironpowderId, submittedBy);
+    await createApprovalFlow(pool2, submissionId, submittedBy);
 
     console.log(
-      `[Ironpowder] Successfully created ironpowder ID: ${ironpowderId}`
+      `[Ironpowder] Successfully created ironpowder ID: ${submissionId}`
     );
-    return ironpowderId;
+    return submissionId;
   } catch (error) {
     if (transaction && transaction.state === "begun") {
       await transaction.rollback();
@@ -167,21 +169,28 @@ exports.getAllIronpowder = async () => {
     const pool = await poolConnect;
     const result = await pool.request().query(`
       SELECT 
-        ironpowder_id,
-        lot_no,
-        form_type,
-        submitted_by,
-        submission_date,
-        status,
-        report_date,
-        machine_name,
-        total_input,
-        total_output,
-        diff_weight,
-        created_at,
-        updated_at
-      FROM Form_Ironpowder_Submissions
-      ORDER BY created_at DESC
+        fs.submissionId,
+        fs.lot_no,
+        fs.form_type,
+        fs.submitted_by,
+        u.agt_member_nameEN AS submitted_by_name, -- ✅ เพิ่มชื่อผู้บันทึก
+        fs.status,
+        fs.report_date,
+        fs.machine_name,
+        (
+          SELECT TOP 1 required_level 
+          FROM Form_Ironpowder_Approval_Flow f 
+          WHERE f.submissionId = fs.submissionId AND f.status = 'Pending'
+          ORDER BY f.sequence ASC
+        ) AS pending_level, -- ✅ คำนวณ pending_level จากตาราง Flow
+        fs.total_input,
+        fs.total_output,
+        fs.diff_weight,
+        fs.created_at,
+        fs.updated_at
+      FROM Form_Ironpowder_Submissions fs
+      LEFT JOIN AGT_SMART_SY.dbo.agt_member u ON CAST(fs.submitted_by AS NVARCHAR(50)) COLLATE Thai_CI_AS = u.agt_member_id
+      ORDER BY fs.created_at DESC
     `);
 
     return result.recordset;
@@ -191,29 +200,31 @@ exports.getAllIronpowder = async () => {
   }
 };
 
-exports.getIronpowderById = async (ironpowderId) => {
+exports.getIronpowderById = async (submissionId) => {
   try {
     const pool = await poolConnect;
     const result = await pool
       .request()
-      .input("ironpowderId", sql.Int, ironpowderId).query(`
+      .input("submissionId", sql.Int, submissionId).query(`
         SELECT 
-          ironpowder_id,
-          lot_no,
-          form_type,
-          submitted_by,
-          submission_date,
-          status,
-          report_date,
-          machine_name,
-          total_input,
-          total_output,
-          diff_weight,
-          form_data_json,
-          created_at,
-          updated_at
-        FROM Form_Ironpowder_Submissions
-        WHERE ironpowder_id = @ironpowderId
+          fs.submissionId,
+          fs.lot_no,
+          fs.form_type,
+          fs.submitted_by,
+          u.agt_member_nameEN AS submitted_by_name, -- ✅ เพิ่มชื่อผู้บันทึก
+          fs.report_date,
+          fs.status,
+          fs.machine_name,
+          fs.total_input,
+          fs.total_output,
+          fs.diff_weight,
+          fs.form_data_json,
+          fs.created_at,
+          fs.updated_at
+        FROM Form_Ironpowder_Submissions fs
+        LEFT JOIN AGT_SMART_SY.dbo.agt_member u
+          ON CAST(fs.submitted_by AS NVARCHAR(50)) COLLATE Thai_CI_AS = u.agt_member_id
+        WHERE fs.submissionId = @submissionId
       `);
 
     if (result.recordset.length === 0) {
@@ -231,7 +242,7 @@ exports.getIronpowderById = async (ironpowderId) => {
   }
 };
 
-exports.updateIronpowder = async (ironpowderId, formData) => {
+exports.updateIronpowder = async (submissionId, formData) => {
   try {
     const pool = await poolConnect;
 
@@ -241,31 +252,54 @@ exports.updateIronpowder = async (ironpowderId, formData) => {
     const diffWeight = totalInput - totalOutput;
     const reportDate = formData.basicData?.date || null;
     const machineName = formData.basicData?.machineName || null;
+    const lotNo = formData.basicData?.lotNo || null; // Extract Lot No
+
+    // Extract additional calculated fields to sync with columns
+    const totalGenmatsuA = formData.totalGenmatsuA || 0;
+    const totalGenmatsuB = formData.totalGenmatsuB || 0;
+    const totalFilm = formData.totalFilm || 0;
+    const totalPEBag = formData.totalPEBag || 0;
+    const totalDustCollector = formData.totalDustCollector || 0;
+    const totalCleaning = formData.totalCleaning || 0;
 
     await pool
       .request()
-      .input("ironpowderId", sql.Int, ironpowderId)
+      .input("submissionId", sql.Int, submissionId)
       .input("reportDate", sql.Date, reportDate)
       .input("machineName", sql.NVarChar, machineName)
+      .input("lotNo", sql.NVarChar, lotNo) // Input Lot No
       .input("totalInput", sql.Decimal(10, 2), totalInput)
       .input("totalOutput", sql.Decimal(10, 2), totalOutput)
       .input("diffWeight", sql.Decimal(10, 2), diffWeight)
+      .input("totalGenmatsuA", sql.Decimal(10, 2), totalGenmatsuA)
+      .input("totalGenmatsuB", sql.Decimal(10, 2), totalGenmatsuB)
+      .input("totalFilm", sql.Decimal(10, 2), totalFilm)
+      .input("totalPEBag", sql.Decimal(10, 2), totalPEBag)
+      .input("totalDustCollector", sql.Decimal(10, 2), totalDustCollector)
+      .input("totalCleaning", sql.Decimal(10, 2), totalCleaning)
       .input("formDataJson", sql.NVarChar(sql.MAX), JSON.stringify(formData))
       .query(`
         UPDATE Form_Ironpowder_Submissions
         SET 
           report_date = @reportDate,
           machine_name = @machineName,
+          lot_no = @lotNo, -- Update Lot No
           total_input = @totalInput,
           total_output = @totalOutput,
           diff_weight = @diffWeight,
+          total_genmatsu_a = @totalGenmatsuA, -- Update new columns
+          total_genmatsu_b = @totalGenmatsuB,
+          total_film = @totalFilm,
+          total_pe_bag = @totalPEBag,
+          total_dust_collector = @totalDustCollector,
+          total_cleaning = @totalCleaning,
           form_data_json = @formDataJson,
           updated_at = GETDATE()
-        WHERE ironpowder_id = @ironpowderId
+        WHERE submissionId = @submissionId
       `);
 
     console.log(
-      `[Ironpowder] Successfully updated ironpowder ID: ${ironpowderId}`
+      `[Ironpowder] Successfully updated ironpowder ID: ${submissionId}`
     );
   } catch (error) {
     console.error("Error updating ironpowder:", error);
@@ -273,16 +307,16 @@ exports.updateIronpowder = async (ironpowderId, formData) => {
   }
 };
 
-exports.deleteIronpowder = async (ironpowderId) => {
+exports.deleteIronpowder = async (submissionId) => {
   try {
     const pool = await poolConnect;
-    await pool.request().input("ironpowderId", sql.Int, ironpowderId).query(`
+    await pool.request().input("submissionId", sql.Int, submissionId).query(`
         DELETE FROM Form_Ironpowder_Submissions
-        WHERE ironpowder_id = @ironpowderId
+        WHERE submissionId = @submissionId
       `);
 
     console.log(
-      `[Ironpowder] Successfully deleted ironpowder ID: ${ironpowderId}`
+      `[Ironpowder] Successfully deleted ironpowder ID: ${submissionId}`
     );
   } catch (error) {
     console.error("Error deleting ironpowder:", error);
@@ -290,7 +324,7 @@ exports.deleteIronpowder = async (ironpowderId) => {
   }
 };
 
-exports.resubmitIronpowder = async (ironpowderId, formData, submittedBy) => {
+exports.resubmitIronpowder = async (submissionId, formData, submittedBy) => {
   try {
     const pool = await poolConnect;
 
@@ -300,17 +334,33 @@ exports.resubmitIronpowder = async (ironpowderId, formData, submittedBy) => {
     const diffWeight = totalInput - totalOutput;
     const reportDate = formData.basicData?.date || null;
     const machineName = formData.basicData?.machineName || null;
+    const lotNo = formData.basicData?.lotNo || null; // Extract Lot No
 
-    // Update status to Submitted
+    // Extract additional calculated fields to sync with columns
+    const totalGenmatsuA = formData.totalGenmatsuA || 0;
+    const totalGenmatsuB = formData.totalGenmatsuB || 0;
+    const totalFilm = formData.totalFilm || 0;
+    const totalPEBag = formData.totalPEBag || 0;
+    const totalDustCollector = formData.totalDustCollector || 0;
+    const totalCleaning = formData.totalCleaning || 0;
+
+    // Update status to Drafted
     await pool
       .request()
-      .input("ironpowderId", sql.Int, ironpowderId)
-      .input("status", sql.NVarChar, "Submitted")
+      .input("submissionId", sql.Int, submissionId)
+      .input("status", sql.NVarChar, "Pending")
       .input("reportDate", sql.Date, reportDate)
       .input("machineName", sql.NVarChar, machineName)
+      .input("lotNo", sql.NVarChar, lotNo) // Input Lot No
       .input("totalInput", sql.Decimal(10, 2), totalInput)
       .input("totalOutput", sql.Decimal(10, 2), totalOutput)
       .input("diffWeight", sql.Decimal(10, 2), diffWeight)
+      .input("totalGenmatsuA", sql.Decimal(10, 2), totalGenmatsuA)
+      .input("totalGenmatsuB", sql.Decimal(10, 2), totalGenmatsuB)
+      .input("totalFilm", sql.Decimal(10, 2), totalFilm)
+      .input("totalPEBag", sql.Decimal(10, 2), totalPEBag)
+      .input("totalDustCollector", sql.Decimal(10, 2), totalDustCollector)
+      .input("totalCleaning", sql.Decimal(10, 2), totalCleaning)
       .input("formDataJson", sql.NVarChar(sql.MAX), JSON.stringify(formData))
       .query(`
         UPDATE Form_Ironpowder_Submissions
@@ -318,19 +368,37 @@ exports.resubmitIronpowder = async (ironpowderId, formData, submittedBy) => {
           status = @status,
           report_date = @reportDate,
           machine_name = @machineName,
+          lot_no = @lotNo, -- Update Lot No
           total_input = @totalInput,
           total_output = @totalOutput,
           diff_weight = @diffWeight,
+          total_genmatsu_a = @totalGenmatsuA, -- Update new columns
+          total_genmatsu_b = @totalGenmatsuB,
+          total_film = @totalFilm,
+          total_pe_bag = @totalPEBag,
+          total_dust_collector = @totalDustCollector,
+          total_cleaning = @totalCleaning,
           form_data_json = @formDataJson,
           updated_at = GETDATE()
-        WHERE ironpowder_id = @ironpowderId
+        WHERE submissionId = @submissionId
+
+        -- [Resubmit Reset]
+        -- 1. Reset Flow Status & Approver (เพื่อให้เริ่มอนุมัติใหม่ โดยไม่ลบแถว)
+        UPDATE Form_Ironpowder_Approval_Flow
+        SET status = 'Pending', approver_user_id = NULL, updated_at = GETDATE()
+        WHERE submissionId = @submissionId;
+
+        -- 2. ลบ Log เดิมทิ้ง (เพื่อให้เริ่มอนุมัติใหม่)
+        DELETE FROM Form_Ironpowder_Approved_Log
+        WHERE submissionId = @submissionId;
       `);
 
-    // Create new approval flow
-    await createApprovalFlow(pool, ironpowderId, submittedBy);
+    console.log(
+      `[Ironpowder] Successfully resubmitted ironpowder ID: ${submissionId}`
+    );
 
     console.log(
-      `[Ironpowder] Successfully resubmitted ironpowder ID: ${ironpowderId}`
+      `[Ironpowder] Successfully resubmitted ironpowder ID: ${submissionId}`
     );
   } catch (error) {
     console.error("Error resubmitting ironpowder:", error);

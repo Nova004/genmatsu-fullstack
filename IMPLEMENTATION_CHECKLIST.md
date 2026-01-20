@@ -99,7 +99,7 @@
 9. [x] Extracts key metrics (total_input, total_output, diff_weight)
 10. [x] Inserts record with transaction
 11. [x] Creates approval flow based on user LV_Approvals
-12. [x] Returns ironpowder_id
+12. [x] Returns submissionId
 13. [x] Frontend navigates to /reports/history/recycle
 14. [x] Displays success toast
 
@@ -131,7 +131,7 @@
 ### Backend API Testing
 - [ ] Start backend server
 - [ ] POST /api/ironpowder with valid data
-- [ ] Verify 201 response with ironpowder_id
+- [ ] Verify 201 response with submissionId
 - [ ] POST /api/ironpowder with duplicate lot_no → 409 response
 - [ ] GET /api/ironpowder → returns list
 - [ ] GET /api/ironpowder/:id → returns single record

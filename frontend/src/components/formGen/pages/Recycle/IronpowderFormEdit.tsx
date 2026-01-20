@@ -58,11 +58,19 @@ const IronpowderFormEdit: React.FC<IronpowderFormEditProps> = ({
     getValues,
     setValue,
     control,
+    reset,
     formState: { errors },
   } = useForm<IManufacturingReportForm>({
     defaultValues: initialData,
     mode: 'onChange',
   });
+
+  // Update form values when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      reset(initialData);
+    }
+  }, [initialData, reset]);
 
   // Setup useFieldArray for each table
   const inputProductFieldArray = useFieldArray({
@@ -159,11 +167,12 @@ const IronpowderFormEdit: React.FC<IronpowderFormEditProps> = ({
       };
 
       if (status === 'Rejected') {
-        await onResubmit(formattedData);
-        fireToast('success', 'ส่งใหม่สำเร็จ');
+        // กรณี Rejected การกด Save เฉยๆ ควรแค่แก้ไขข้อมูล ไม่ใช่ส่งอนุมัติใหม่
+        // แต่ถ้าต้องการให้ Save = แก้ไขเฉยๆ ให้เรียก onSubmit
+        await onSubmit(formattedData);
+        // ถ้า User ต้องการส่งอนุมัติใหม่ เขาจะกดปุ่ม Resubmit แยกต่างหาก
       } else {
         await onSubmit(formattedData);
-        fireToast('success', 'บันทึกเสร็จสิ้น');
       }
     } catch (error) {
       fireToast('error', 'เกิดข้อผิดพลาดในการบันทึก');
@@ -289,27 +298,39 @@ const IronpowderFormEdit: React.FC<IronpowderFormEditProps> = ({
         </div>
 
         {/* Summary Section */}
-        <Summary register={register} watch={watch}  setValue={setValue} />
+        <Summary register={register} watch={watch} setValue={setValue} />
 
-        {/* Action Buttons */}
         <div className="flex justify-center gap-4 rounded-sm border border-stroke p-4 dark:border-strokedark">
-          <button
-            type="button"
-            onClick={handleBack}
-            className="rounded-md bg-warning px-10 py-2 font-medium text-white hover:bg-opacity-90"
-          >
-            Back
-          </button>
-
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`rounded-md bg-primary px-10 py-2 font-medium text-white hover:bg-opacity-90 ${
-              isSubmitting ? 'cursor-not-allowed opacity-50' : ''
-            }`}
+            className={`rounded-md bg-amber-500 px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
           >
-            {isSubmitting ? 'กำลังบันทึก...' : status === 'Rejected' ? 'ส่งใหม่' : 'บันทึก'}
+            {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
           </button>
+
+          {(status === 'Rejected' || status === 'Drafted') && (
+            <button
+              type="button"
+              onClick={handleSubmit(onResubmit)} // ใช้ฟังก์ชันส่งอนุมัติ
+              disabled={isSubmitting}
+              className={`rounded-md px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''
+                } ${
+                // เปลี่ยนสีปุ่มตามสถานะได้ด้วยเพื่อความชัดเจน
+                status === 'Rejected'
+                  ? 'bg-indigo-600' // สีม่วง (Resubmit)
+                  : 'bg-green-600'  // สีเขียว (Submit ครั้งแรก)
+                }`}
+            >
+              {isSubmitting
+                ? 'กำลังบันทึก...'
+                : status === 'Rejected'
+                  ? 'บันทึก และ ส่งอนุมัติใหม่ (Resubmit)'
+                  : 'บันทึก และ ส่งอนุมัติ (Submit)'
+              }
+            </button>
+          )}
+
         </div>
       </form>
     </div>

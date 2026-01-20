@@ -204,7 +204,7 @@ const Summary: React.FC<SummaryProps> = ({
                                 <span className={labelClass}>=</span>
                                 <div className="flex gap-1 items-center">
                                     <span className={valueClass}>
-                                        {((quantityCans || 0) * (quantityWeight || 0)).toFixed(2)}
+                                        {(Number(quantityCans || 0) * Number(quantityWeight || 0)).toFixed(2)}
                                     </span>
                                     <span className={labelClass}>kg.</span>
                                 </div>
@@ -233,7 +233,7 @@ const Summary: React.FC<SummaryProps> = ({
                             <label className={labelClass}>Total Quantity of product</label>
                             <div className="flex gap-2 items-center">
                                 <span className={valueClass}>
-                                    {(((quantityCans || 0) * (quantityWeight || 0)) + (lastCan || 0)).toFixed(2)}
+                                    {((Number(quantityCans || 0) * Number(quantityWeight || 0)) + Number(lastCan || 0)).toFixed(2)}
                                 </span>
                                 <span className={labelClass}>kg.</span>
                             </div>

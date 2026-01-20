@@ -3,12 +3,32 @@
 const sql = require("mssql");
 const dbConfig = require("../config/db.config");
 
+// Helper to get table names and column names based on category
+const getTables = (category) => {
+  if (category === 'Recycle' || category === 'Ironpowder') {
+    return {
+      flowTable: 'Form_Ironpowder_Approval_Flow',
+      logTable: 'Form_Ironpowder_Approved_Log',
+      submissionTable: 'Form_Ironpowder_Submissions',
+      submissionIdCol: 'submissionId' // Ironpowder uses camelCase
+    };
+  }
+  return {
+    flowTable: 'Gen_Approval_Flow',
+    logTable: 'Gen_Approved_log',
+    submissionTable: 'Form_Submissions',
+    submissionIdCol: 'submission_id' // Generic uses snake_case
+  };
+};
+
 // ----------------------------------------------------------------
 // 1. API สำหรับ "อ่าน" (GET /api/approvals/flow/:submissionId)
-// (โค้ดของคุณ - ถูกต้อง 100% ครับ)
 // ----------------------------------------------------------------
 const getApprovalFlow = async (req, res) => {
   const { submissionId } = req.params;
+  const { category } = req.query; // รับ category จาก query string
+
+  const { flowTable, logTable, submissionIdCol } = getTables(category);
 
   let pool;
   try {
@@ -18,7 +38,7 @@ const getApprovalFlow = async (req, res) => {
     const query = `
         SELECT 
             gaf.flow_id,
-            gaf.submission_id,
+            gaf.${submissionIdCol} as submission_id,
             gaf.sequence,
             gaf.required_level,
             gaf.status,
@@ -29,7 +49,7 @@ const getApprovalFlow = async (req, res) => {
 
             gal.comment -- 1. [เพิ่ม] ดึง comment จากตาราง Log
 
-        FROM Gen_Approval_Flow gaf
+        FROM ${flowTable} gaf
 
         LEFT JOIN AGT_SMART_SY.dbo.Gen_Manu_Member us 
             ON gaf.approver_user_id COLLATE DATABASE_DEFAULT = us.Gen_Manu_mem_Memid COLLATE DATABASE_DEFAULT
@@ -38,19 +58,25 @@ const getApprovalFlow = async (req, res) => {
             ON us.Gen_Manu_mem_Memid COLLATE DATABASE_DEFAULT = am.agt_member_id COLLATE DATABASE_DEFAULT
                   
         -- 2. [เพิ่ม] JOIN ตาราง Log
-        LEFT JOIN AGT_SMART_SY.dbo.Gen_Approved_log gal
+        LEFT JOIN ${logTable} gal
             -- กุญแจที่ 1: ต้องเป็น Submission เดียวกัน
-            ON gaf.submission_id = gal.submission_id 
+            ON gaf.${submissionIdCol} = gal.${submissionIdCol} 
             -- กุญแจที่ 2: ต้องเป็น Level เดียวกัน
             AND gaf.required_level = gal.level 
+            
+            -- กุญแจที่ 3 (optional but good practice): เลือก Log ล่าสุด หรือ Log ที่ตรงกับ action ปัจจุบัน
+            -- (ในที่นี้เรา assume ว่า Log ล่าสุดคืออันที่ถูกต้อง)
 
-        WHERE gaf.submission_id = @submissionId
+        WHERE gaf.${submissionIdCol} = @submissionId
         ORDER BY gaf.sequence ASC;
     `;
 
     const result = await request
       .input("submissionId", sql.Int, submissionId)
       .query(query);
+
+    // Map result to ensure consistent camelCase/snake_case for frontend if needed
+    // But aligning the AS alias in SQL is better
 
     res.status(200).send(result.recordset);
   } catch (error) {
@@ -67,11 +93,12 @@ const getApprovalFlow = async (req, res) => {
 
 // ----------------------------------------------------------------
 // 2. API สำหรับ "กระทำ" (POST /api/approvals/action)
-// (ฉบับสร้างใหม่ 100%)
 // ----------------------------------------------------------------
 const performApprovalAction = async (req, res) => {
   // ข้อมูลที่ Frontend ต้องส่งมา
-  const { submissionId, action, comment, approverUserId } = req.body; // 👈 [ใหม่] เราต้องรู้ ID ของ "ผู้กด"
+  const { submissionId, action, comment, approverUserId, category } = req.body; // รับ category
+
+  const { flowTable, logTable, submissionTable, submissionIdCol } = getTables(category);
 
   // ตรวจสอบข้อมูล
   if (!submissionId || !action || !approverUserId) {
@@ -121,8 +148,8 @@ const performApprovalAction = async (req, res) => {
       sql.Int,
       submissionId
     ).query(`
-        SELECT TOP 1 * FROM Gen_Approval_Flow 
-        WHERE submission_id = @submissionId AND status = 'Pending'
+        SELECT TOP 1 * FROM ${flowTable} 
+        WHERE ${submissionIdCol} = @submissionId AND status = 'Pending'
         ORDER BY sequence ASC
       `);
 
@@ -147,14 +174,14 @@ const performApprovalAction = async (req, res) => {
     }
 
     // --- 2. ถ้าสิทธิ์ถูกต้อง (UPDATE State) ---
-    // (อัปเดตตาราง Gen_Approval_Flow)
+    // (อัปเดตตาราง Gen_Approval_Flow หรือ Ironpowder Flow)
     const updateStateRequest = new sql.Request(transaction);
     await updateStateRequest
       .input("actionStatus", sql.NVarChar, action) // 'Approved' หรือ 'Rejected'
       .input("flowId", sql.Int, currentStep.flow_id)
       .input("approverUserId", sql.NVarChar, approverUserId) // (เราต้องใช้ input() เพื่อความปลอดภัย)
       .query(`
-        UPDATE Gen_Approval_Flow 
+        UPDATE ${flowTable} 
         SET 
           status = @actionStatus, 
           approver_user_id = @approverUserId, 
@@ -163,7 +190,7 @@ const performApprovalAction = async (req, res) => {
       `);
 
     // --- 3. (INSERT Log) ---
-    // (เพิ่มประวัติลงใน Gen_Approved_log)
+    // (เพิ่มประวัติลงใน Gen_Approved_log หรือ Ironpowder Log)
     const insertLogRequest = new sql.Request(transaction);
     await insertLogRequest
       .input("submissionId", sql.Int, submissionId)
@@ -172,14 +199,14 @@ const performApprovalAction = async (req, res) => {
       .input("actionStatus", sql.NVarChar, action)
       .input("comment", sql.NVarChar, comment || null) // รับ comment (ถ้ามี)
       .query(`
-        INSERT INTO Gen_Approved_log 
-          (submission_id, User_approver_id, [level], [action], [comment], created_at)
+        INSERT INTO ${logTable} 
+          (${submissionIdCol}, User_approver_id, [level], [action], [comment], created_at)
         VALUES 
           (@submissionId, @approverUserId, @approverLevel, @actionStatus, @comment, GETDATE())
       `);
 
     // --- 4. (Check Overall Status) ---
-    // (อัปเดตตารางแม่ Form_Submissions)
+    // (อัปเดตตารางแม่ Form_Submissions หรือ Form_Ironpowder_Submissions)
 
     let overallStatus = null; // (ค่าเริ่มต้น = ยังไม่ทำอะไร)
 
@@ -194,8 +221,8 @@ const performApprovalAction = async (req, res) => {
         submissionId
       ).query(`
           SELECT COUNT(*) as pendingCount 
-          FROM Gen_Approval_Flow 
-          WHERE submission_id = @submissionId AND status = 'Pending'
+          FROM ${flowTable} 
+          WHERE ${submissionIdCol} = @submissionId AND status = 'Pending'
         `);
 
       if (remainingResult.recordset[0].pendingCount === 0) {
@@ -210,9 +237,9 @@ const performApprovalAction = async (req, res) => {
       await updateOverallRequest
         .input("overallStatus", sql.NVarChar, overallStatus)
         .input("submissionId", sql.Int, submissionId).query(`
-          UPDATE Form_Submissions 
+          UPDATE ${submissionTable} 
           SET status = @overallStatus 
-          WHERE submission_id = @submissionId
+          WHERE ${submissionIdCol} = @submissionId
         `);
     }
 

@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getSubmissionById, generatePdfById } from '../../services/submissionService';
+import { ironpowderService } from '../../services/ironpowder.service'; // Import Ironpowder Service
 import { fireToast } from '../../hooks/fireToast';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import { formatNumberRound, isNumeric } from '../../utils/utils';
@@ -30,6 +31,9 @@ import ReportDetailAZ1 from './AZ1/ReportDetailAZ1';
 import ReportDetailAX9_B from './AX9-B/ReportDetailAX9-B';
 import ReportDetailAX2_B from './AX2-B/ReportDetailAX2-B';
 import ReportDetailAZ from './AZ/ReportDetailAZ';
+import ReportDetailIronpowder from './Ironpowder/ReportDetailIronpowder'; // Import Component
+
+
 
 
 
@@ -88,7 +92,29 @@ const ReportDetailDispatcher: React.FC = () => {
     const fetchDetails = async () => {
       console.log(`[Dispatcher] Attempting to fetch data for ID: ${id}`);
       try {
-        const data = await getSubmissionById(id);
+        let data = await getSubmissionById(id).catch(() => null);
+
+        // ถ้าหาไม่เจอในตารางหลัก ให้ลองหาใน Ironpowder Table
+        if (!data) {
+          const ironData: any = await ironpowderService.getIronpowderById(id).catch(() => null);
+          if (ironData) {
+            // Map Data ให้เหมือนกับ Structure ของ Submission ปกติ
+            data = {
+              submission: {
+                ...ironData,
+                submission_id: ironData.submissionId, // Map submissionId to submission_id
+                form_type: 'Ironpowder',
+                form_data_json: ironData.form_data_json || ironData.formData // Handle field mismatch
+              },
+              blueprints: {} // Ironpowder may not use blueprints in the same way, or fetch if needed
+            };
+          }
+        }
+
+        if (!data) {
+          throw new Error("Submission not found");
+        }
+
 
         // ✅ 4. ดักแปลงข้อมูล submission ให้มีทศนิยมสวยงามก่อน
         if (data && data.submission) {
@@ -199,6 +225,8 @@ const ReportDetailDispatcher: React.FC = () => {
         return <ReportDetailAX2_B submission={submission} blueprints={blueprints} />;
       case 'AZ':
         return <ReportDetailAZ submission={submission} blueprints={blueprints} />;
+      case 'Ironpowder':
+        return <ReportDetailIronpowder submission={submission} blueprints={blueprints} />;
       default:
         return <div>ไม่พบ Component สำหรับ Form Type: {submission.form_type}</div>;
 
