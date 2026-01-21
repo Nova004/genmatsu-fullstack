@@ -36,8 +36,11 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
     lineB: "",
     lineC: "",
     recycle: "",
-    lineD: "" // ✅ เปลี่ยน Key เป็น lineD
+    lineD: ""
   });
+
+  // Recycle Data State
+  const [recycleData, setRecycleData] = useState<any>(null);
 
   // Header Titles (Editable)
 
@@ -57,6 +60,12 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
         if (res.data) {
           const loaded = res.data;
           setRemarks(prev => ({ ...prev, ...loaded.remarks }));
+          // Set Recycle Data
+          if (loaded.recycleData) {
+            setRecycleData(loaded.recycleData);
+          } else {
+            setRecycleData(null);
+          }
         } else {
           // Reset Values if no data found
           // ✅ Reset lineD
@@ -268,9 +277,9 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
               <th className="border-r border-gray-300 py-1 font-extrabold uppercase" colSpan={5}>Line A</th>
               <th className="border-r border-gray-300 py-1 font-extrabold uppercase" colSpan={5}>Line B</th>
               <th className="border-r border-gray-300 py-1 font-extrabold uppercase" colSpan={6}>Line C</th>
-              {/* Type Input: Static now */}
+              {/* Type Input: Dynamic Machine Name */}
               <th className="py-1 font-extrabold uppercase bg-gray-300" colSpan={2}>
-                Genmatsu Type
+                Genmatsu Type {recycleData?.machineName ? `${recycleData.machineName}` : ''}
               </th>
             </tr>
             <tr className="border-b border-gray-300">
@@ -278,8 +287,10 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
               <TableHeaderGroup />
               <TableHeaderGroup hasMoisture={true} />
 
-              <th className="border-r border-b border-gray-300 px-1 py-1 text-center font-extrabold bg-gray-100">Lot No.</th>
-              <th className="border-b border-gray-300 px-1 py-1 text-center font-extrabold bg-gray-100 min-w-[100px]"></th>
+              <th className="border-r border-b border-gray-300 px-1 py-1 text-center font-extrabold bg-gray-100">
+                Lot No.<br />
+              </th>
+              <th className="border-b border-gray-300 px-1 py-1 text-center font-extrabold bg-gray-100 min-w-[100px]">{recycleData?.lotNo || ''}</th>
             </tr>
           </thead>
 
@@ -296,6 +307,34 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
                     itemB={data.lineB[index]}
                     itemC={data.lineC[index]}
                     recycleLabel={recycleLabels[index]}
+                    // Pass Recycle Value based on label/index
+                    recycleValue={
+                      recycleData ? (
+                        index === 0 ? recycleData.totalInput :
+                          index === 1 ? recycleData.totalOutput :
+                            index === 2 ? recycleData.totalGenmatsuA :
+                              index === 3 ? recycleData.totalGenmatsuB :
+                                index === 4 ? recycleData.totalFilm :
+                                  index === 5 ? recycleData.totalDustCollector :
+                                    index === 6 ? recycleData.totalCleaning :
+                                      index === 7 ? recycleData.totalPEBag :
+                                        undefined
+                      ) : undefined
+                    }
+                    recyclePercent={
+                      recycleData && recycleData.totalInput > 0 ? (
+                        (
+                          (index === 0 ? recycleData.totalInput :
+                            index === 1 ? recycleData.totalOutput :
+                              index === 2 ? recycleData.totalGenmatsuA :
+                                index === 3 ? recycleData.totalGenmatsuB :
+                                  index === 4 ? recycleData.totalFilm :
+                                    index === 5 ? recycleData.totalDustCollector :
+                                      index === 6 ? recycleData.totalCleaning :
+                                        index === 7 ? recycleData.totalPEBag : 0) || 0
+                        ) / recycleData.totalInput * 100
+                      ) : undefined
+                    }
                     // recycleValue and onRecycleChange removed
                     editingId={editingId}
                     tempStValue={tempStValue}
@@ -314,8 +353,12 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
                   {renderTotalCells(data.lineC, true)}
                   <td colSpan={2} className="border-b border-gray-400 bg-gray-200 p-1 text-right text-[11px] font-extrabold">
                     <div className="flex flex-col gap-1">
-                      <div className="flex items-center justify-end gap-1">Packing result = <span className="w-10 text-center font-bold text-gray-400">-</span> cans.</div>
-                      <div className="flex items-center justify-end gap-1">Output - Input = <span className="w-10 text-center font-bold text-gray-400">-</span> kg.</div>
+                      <div className="flex items-center justify-end gap-1">
+                        Packing result = <span className={`min-w-[40px] px-1 text-center font-bold ${recycleData?.totalCans ? 'text-gray-800' : 'text-gray-400'}`}>
+                          {recycleData?.totalCans ? recycleData.totalCans.toLocaleString() : '-'}
+                        </span> cans.
+                      </div>
+                      <div className="flex items-center justify-end gap-1">Output - Input = <span className={`min-w-[40px] px-1 text-center font-bold ${recycleData?.diffWeight < 0 ? 'text-red-600' : 'text-gray-800'}`}>{recycleData?.diffWeight ? recycleData.diffWeight.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '-'}</span> kg.</div>
                     </div>
                   </td>
                 </tr>

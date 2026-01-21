@@ -96,32 +96,45 @@ exports.getDailyProductionReport = async (req, res) => {
   }
 };
 
-// --- Controller 2: API Summary (เหมือนเดิม) ---
+const ironpowderService = require("../services/ironpowder.service");
+
+// --- Controller 2: API Summary (แก้ไขเพื่อรวม Ironpowder) ---
 exports.getDailySummary = async (req, res) => {
   try {
     const { date } = req.query;
     if (!date) return res.status(400).send({ message: "Date is required" });
 
     const pool = await poolConnect;
-    const result = await pool
+
+    // 1. ดึง Remarks (เดิม)
+    const remarksResult = await pool
       .request()
       .input("date", sql.Date, date)
       .query(
         `SELECT summary_json FROM GEN_Daily_Report_Summary WHERE report_date = @date`
       );
 
-    if (result.recordset.length > 0) {
-      // แปลง JSON string กลับเป็น Object
-      let data = result.recordset[0].summary_json;
+    let summaryData = {};
+    if (remarksResult.recordset.length > 0) {
+      let data = remarksResult.recordset[0].summary_json;
       if (typeof data === "string") {
         try {
           data = JSON.parse(data);
-        } catch (e) {}
+          summaryData = data; // คาดหวัง { remarks: {...} }
+        } catch (e) { }
       }
-      res.json(data);
-    } else {
-      res.json(null);
     }
+
+    // 2. ดึง Ironpowder Summary (ใหม่)
+    const recycleData = await ironpowderService.getIronpowderSummaryByDate(date);
+
+    // 3. รวมร่าง
+    const finalResponse = {
+      ...summaryData, // remarks เดิม
+      recycleData, // ข้อมูลใหม่
+    };
+
+    res.json(finalResponse);
   } catch (error) {
     console.error("Error fetching summary:", error);
     res.status(500).send({ message: "Error fetching summary" });

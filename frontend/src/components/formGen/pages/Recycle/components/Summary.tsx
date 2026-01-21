@@ -1,3 +1,5 @@
+// local src/components/formGen/pages/Recycle/components/Summary.tsx
+
 import React, { useEffect } from 'react'; // <--- 1. อย่าลืม import useEffect
 import { UseFormRegister, UseFormWatch, UseFormSetValue } from 'react-hook-form'; // <--- 2. import Type เพิ่ม
 

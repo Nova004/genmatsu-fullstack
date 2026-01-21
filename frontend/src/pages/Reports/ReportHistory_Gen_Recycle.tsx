@@ -15,7 +15,7 @@ import Swal from 'sweetalert2';
 import 'sweetalert2/src/sweetalert2.scss';
 import { useAuth } from "../../context/AuthContext";
 import { Tooltip } from '../../components/Tooltip';
-import { availableForms } from '../../components/formGen/pages/GEN_A/availableForms_GENA';
+import { availableForms } from '../../components/formGen/pages/Recycle/availableForms_Recycle';
 import {
   useReactTable,
   getCoreRowModel,

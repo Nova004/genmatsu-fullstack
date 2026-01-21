@@ -11,6 +11,8 @@ interface DailyReportRowProps {
     itemC?: ProductionRecord;
     itemD?: ProductionRecord;
     recycleLabel?: string;
+    recycleValue?: number; // ✅ รับค่า Recycle
+    recyclePercent?: number; // ✅ รับค่า %
     // Props สำหรับ Edit ST Plan
     editingId: number | null;
     tempStValue: string;
@@ -135,7 +137,21 @@ const DailyReportRow: React.FC<DailyReportRowProps> = (props) => {
             <td className="border-r border-b border-gray-300 p-0.5 pl-2 text-left text-xs font-extrabold text-gray-700 bg-gray-50 align-top">{props.recycleLabel}</td>
             <td className="border-b border-gray-300 p-0.5 align-top bg-white min-w-[110px]">
                 <div className="flex flex-col gap-0.5 h-full justify-center items-center">
-                    <span className="text-gray-400 font-bold">-</span>
+                    {props.recycleValue != null ? (
+                        <>
+                            <span className="text-base font-black text-gray-900 leading-tight">
+                                {props.recycleValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                            </span>
+                            {/* Show percentage if available */}
+                            {props.recyclePercent !== undefined && (
+                                <span className={`text-sm font-bold ${props.recycleLabel === 'Input' ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    ({props.recyclePercent.toFixed(2)}%)
+                                </span>
+                            )}
+                        </>
+                    ) : (
+                        <span className="text-gray-400 font-bold">-</span>
+                    )}
                 </div>
             </td>
         </tr>

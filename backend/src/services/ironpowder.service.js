@@ -103,6 +103,7 @@ exports.createIronpowder = async ({ lotNo, formData, submittedBy }) => {
     const totalPEBag = formData.totalPEBag || 0;
     const totalDustCollector = formData.totalDustCollector || 0;
     const totalCleaning = formData.totalCleaning || 0;
+    const quantityOfProductCans = formData.quantityOfProductCans || 0; // ✅ New Field
 
     const reportDate = formData.basicData?.date || null;
     const machineName = formData.basicData?.machineName || null;
@@ -125,19 +126,22 @@ exports.createIronpowder = async ({ lotNo, formData, submittedBy }) => {
       .input("totalPEBag", sql.Decimal(10, 2), totalPEBag)
       .input("totalDustCollector", sql.Decimal(10, 2), totalDustCollector)
       .input("totalCleaning", sql.Decimal(10, 2), totalCleaning)
+      .input("quantityOfProductCans", sql.Int, quantityOfProductCans) // ✅ Bind Param
       .input("formDataJson", sql.NVarChar(sql.MAX), JSON.stringify(cleanedFormData))
       .query(`
         INSERT INTO Form_Ironpowder_Submissions 
         (
           lot_no, form_type, submitted_by, status, report_date, machine_name, 
           total_input, total_output, diff_weight, 
-          total_genmatsu_a, total_genmatsu_b, total_film, total_pe_bag, total_dust_collector, total_cleaning, -- เพิ่มคอลัมน์
+          total_genmatsu_a, total_genmatsu_b, total_film, total_pe_bag, total_dust_collector, total_cleaning, 
+          quantity_of_product_cans, -- ✅ New Column
           form_data_json, created_at, updated_at
         )
         VALUES (
           @lotNo, @formType, @submittedBy, @status, @reportDate, @machineName, 
           @totalInput, @totalOutput, @diffWeight,
-          @totalGenmatsuA, @totalGenmatsuB, @totalFilm, @totalPEBag, @totalDustCollector, @totalCleaning, -- เพิ่ม value
+          @totalGenmatsuA, @totalGenmatsuB, @totalFilm, @totalPEBag, @totalDustCollector, @totalCleaning, 
+          @quantityOfProductCans, -- ✅ New Value
           @formDataJson, GETDATE(), GETDATE()
         )
         SELECT SCOPE_IDENTITY() as submissionId
@@ -261,6 +265,7 @@ exports.updateIronpowder = async (submissionId, formData) => {
     const totalPEBag = formData.totalPEBag || 0;
     const totalDustCollector = formData.totalDustCollector || 0;
     const totalCleaning = formData.totalCleaning || 0;
+    const quantityOfProductCans = formData.quantityOfProductCans || 0; // ✅ New Field
 
     await pool
       .request()
@@ -277,6 +282,7 @@ exports.updateIronpowder = async (submissionId, formData) => {
       .input("totalPEBag", sql.Decimal(10, 2), totalPEBag)
       .input("totalDustCollector", sql.Decimal(10, 2), totalDustCollector)
       .input("totalCleaning", sql.Decimal(10, 2), totalCleaning)
+      .input("quantityOfProductCans", sql.Int, quantityOfProductCans) // ✅ Bind Param
       .input("formDataJson", sql.NVarChar(sql.MAX), JSON.stringify(formData))
       .query(`
         UPDATE Form_Ironpowder_Submissions
@@ -293,6 +299,7 @@ exports.updateIronpowder = async (submissionId, formData) => {
           total_pe_bag = @totalPEBag,
           total_dust_collector = @totalDustCollector,
           total_cleaning = @totalCleaning,
+          quantity_of_product_cans = @quantityOfProductCans, -- ✅ New Column
           form_data_json = @formDataJson,
           updated_at = GETDATE()
         WHERE submissionId = @submissionId
@@ -343,6 +350,7 @@ exports.resubmitIronpowder = async (submissionId, formData, submittedBy) => {
     const totalPEBag = formData.totalPEBag || 0;
     const totalDustCollector = formData.totalDustCollector || 0;
     const totalCleaning = formData.totalCleaning || 0;
+    const quantityOfProductCans = formData.quantityOfProductCans || 0; // ✅ New Field
 
     // Update status to Drafted
     await pool
@@ -361,6 +369,7 @@ exports.resubmitIronpowder = async (submissionId, formData, submittedBy) => {
       .input("totalPEBag", sql.Decimal(10, 2), totalPEBag)
       .input("totalDustCollector", sql.Decimal(10, 2), totalDustCollector)
       .input("totalCleaning", sql.Decimal(10, 2), totalCleaning)
+      .input("quantityOfProductCans", sql.Int, quantityOfProductCans) // ✅ Bind Param
       .input("formDataJson", sql.NVarChar(sql.MAX), JSON.stringify(formData))
       .query(`
         UPDATE Form_Ironpowder_Submissions
@@ -378,6 +387,7 @@ exports.resubmitIronpowder = async (submissionId, formData, submittedBy) => {
           total_pe_bag = @totalPEBag,
           total_dust_collector = @totalDustCollector,
           total_cleaning = @totalCleaning,
+          quantity_of_product_cans = @quantityOfProductCans, -- ✅ New Column
           form_data_json = @formDataJson,
           updated_at = GETDATE()
         WHERE submissionId = @submissionId
@@ -403,6 +413,34 @@ exports.resubmitIronpowder = async (submissionId, formData, submittedBy) => {
     );
   } catch (error) {
     console.error("Error resubmitting ironpowder:", error);
+    throw error;
+  }
+};
+
+exports.getIronpowderSummaryByDate = async (date) => {
+  try {
+    const pool = await poolConnect;
+    const result = await pool.request().input("date", sql.Date, date).query(`
+        SELECT 
+          SUM(total_input) as totalInput,
+          SUM(total_output) as totalOutput,
+          SUM(total_genmatsu_a) as totalGenmatsuA,
+          SUM(total_genmatsu_b) as totalGenmatsuB,
+          SUM(total_film) as totalFilm,
+          SUM(total_pe_bag) as totalPEBag,
+          SUM(total_dust_collector) as totalDustCollector,
+          SUM(total_cleaning) as totalCleaning,
+          SUM(diff_weight) as diffWeight,
+          SUM(quantity_of_product_cans) as totalCans,
+          MAX(lot_no) as lotNo,
+          MAX(machine_name) as machineName
+        FROM Form_Ironpowder_Submissions
+        WHERE report_date = @date AND status != 'Rejected'
+      `);
+
+    return result.recordset[0] || {};
+  } catch (error) {
+    console.error("Error fetching ironpowder summary:", error);
     throw error;
   }
 };
