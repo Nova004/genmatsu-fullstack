@@ -328,7 +328,7 @@ const ReportHistory_GEN_A: React.FC = () => {
                 const canEdit = (
                   (user?.id == submission.submitted_by_name) ||
                   (user?.LV_Approvals === 3)
-                ) && (submission.status !== "Approved");
+                );
 
                 const tooltipText = isNeedsEdit ? "งานถูกตีกลับ กรุณาแก้ไข" : "แก้ไขข้อมูล";
 
@@ -362,8 +362,7 @@ const ReportHistory_GEN_A: React.FC = () => {
                 (user?.id == submission.submitted_by_name) ||  // เป็นเจ้าของงาน
                 (user?.LV_Approvals === 3)                // หรือเป็นผู้ดูแลระดับ 3
               )
-                &&
-                (submission.status !== "Approved") &&       // และ ต้องยังไม่ Approved
+               &&       // และ ต้องยังไม่ Approved
                 (
                   // 🟡 เพิ่ม Tooltip ครอบปุ่ม Delete
                   <Tooltip message="ลบรายการนี้">

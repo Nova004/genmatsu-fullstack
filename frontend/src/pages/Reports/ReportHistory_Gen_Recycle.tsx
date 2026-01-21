@@ -136,9 +136,8 @@ const ReportHistory_GEN_A: React.FC = () => {
   }, []);
 
   const handlePrint = (id: number) => {
-    // TODO: Implement Print Logic for Ironpowder if API exists
-    // window.open(`/genmatsu/api/submissions/print/ironpowder/${id}`, '_blank');
-    fireToast('info', 'ฟังก์ชันพิมพ์รายงาน Ironpowder กำลังพัฒนา');
+    // 🟢 เรียก API Print ผ่าน Proxy (เหมือน GEN_A)
+    window.open(`/genmatsu/api/submissions/print/${id}`, '_blank');
   };
 
   // --- 3.3. FILTERING EFFECT (รวมพลังกรอง 4 ทิศทาง) ---
@@ -351,11 +350,11 @@ const ReportHistory_GEN_A: React.FC = () => {
                   </Tooltip>
                 )}
 
-              {/* ปุ่ม Print (Placeholder) */}
-              <Tooltip message="พิมพ์รายงาน (Coming Soon)">
+              {/* ปุ่ม Print */}
+              <Tooltip message="พิมพ์รายงาน">
                 <button
                   onClick={() => handlePrint(submission.submissionId)}
-                  className="hover:text-blue-500 opacity-50 cursor-not-allowed"
+                  className="hover:text-blue-500"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="6 9 6 2 18 2 18 9"></polyline>

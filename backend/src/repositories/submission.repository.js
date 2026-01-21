@@ -361,6 +361,7 @@ exports.updateSubmissionData = async (
     .input("yieldPercent", sql.Decimal(5, 2), keyMetrics.yieldPercent || null)
     .input("totalQty", sql.Int, keyMetrics.totalQty || null)
     .input("productionDate", sql.Date, keyMetrics.productionDate || null)
+    .input("stTargetValue", sql.Decimal(10, 2), keyMetrics.stTargetValue || 0) // 🔴 เพิ่ม Input
     // 💧 5. เพิ่ม Input Moisture ตอนแก้ไข
     .input("moisture", sql.Decimal(5, 2), keyMetrics.moisture || null)
     .input(
@@ -376,6 +377,7 @@ exports.updateSubmissionData = async (
             yield_percent = @yieldPercent,
             total_qty = @totalQty,
             production_date = @productionDate,
+            st_target_value = @stTargetValue, -- 🔴 เพิ่มการอัปเดต ST Value
             moisture = @moisture, -- 💧 6. เพิ่มการอัปเดต Field Moisture
             pallet_data = @palletData
         WHERE submission_id = @submission_id;
@@ -409,6 +411,7 @@ exports.resubmitSubmissionData = async (
   );
   request.input("totalQty", sql.Int, keyMetrics.totalQty || null);
   request.input("productionDate", sql.Date, keyMetrics.productionDate || null);
+  request.input("stTargetValue", sql.Decimal(10, 2), keyMetrics.stTargetValue || 0); // 🔴 เพิ่ม Input
   // 💧 7. เพิ่ม Input Moisture ตอน Resubmit
   request.input("moisture", sql.Decimal(5, 2), keyMetrics.moisture || null);
   request.input(
@@ -435,6 +438,7 @@ exports.resubmitSubmissionData = async (
             yield_percent = @yieldPercent,
             total_qty = @totalQty,
             production_date = @productionDate,
+            st_target_value = @stTargetValue, -- 🔴 เพิ่มการอัปเดต ST Value
             moisture = @moisture, -- 💧 8. เพิ่มการอัปเดต Field Moisture
             pallet_data = @palletData
           WHERE submission_id = @submissionId

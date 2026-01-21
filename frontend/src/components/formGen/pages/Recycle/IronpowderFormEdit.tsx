@@ -1,9 +1,8 @@
 // location: frontend/src/components/formGen/pages/Recycle/IronpowderFormEdit.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { IManufacturingReportForm } from '../types';
-import { useNavigate } from 'react-router-dom';
 import SharedFormStep1 from '../../components/forms/SharedFormStep1_Recycle';
 import PalletTable from '../../components/forms/PalletTable';
 import InputProductTable from './components/InputProductTable';
@@ -16,9 +15,9 @@ import OutputCleaning from './components/OutputCleaning';
 import Summary from './components/Summary';
 import FormHeader from '../../components/FormHeader';
 import ProgressBar from '../../components/ProgressBar';
-import { fireToast } from '../../../../hooks/fireToast';
 import { useFieldArray } from 'react-hook-form';
 import { useMultiStepForm } from '../../../../hooks/useMultiStepForm';
+import { useFormSubmitHandler } from '../../../../hooks/useFormSubmitHandler';
 
 interface IronpowderFormEditProps {
   initialData: Partial<IManufacturingReportForm>;
@@ -44,8 +43,6 @@ const IronpowderFormEdit: React.FC<IronpowderFormEditProps> = ({
   status,
 }) => {
   const totalSteps = 1;
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate();
   const availableForms = [
     { value: 'Ironpowder', label: 'Ironpowder', path: '/forms/ironpowder-form' },
   ];
@@ -55,7 +52,6 @@ const IronpowderFormEdit: React.FC<IronpowderFormEditProps> = ({
     handleSubmit,
     trigger,
     watch,
-    getValues,
     setValue,
     control,
     reset,
@@ -129,7 +125,7 @@ const IronpowderFormEdit: React.FC<IronpowderFormEditProps> = ({
 
   // Initialize fields with 4 default rows for each dynamic table
   useEffect(() => {
-    const initializeFieldArray = (fieldArray: any, fieldName: string) => {
+    const initializeFieldArray = (fieldArray: any) => {
       if (fieldArray.fields.length === 0) {
         for (let i = 0; i < 4; i++) {
           fieldArray.append({});
@@ -137,18 +133,18 @@ const IronpowderFormEdit: React.FC<IronpowderFormEditProps> = ({
       }
     };
 
-    initializeFieldArray(inputProductFieldArray, 'inputProduct');
-    initializeFieldArray(outputGenmatsuAFieldArray, 'outputGenmatsuA');
-    initializeFieldArray(outputGenmatsuBFieldArray, 'outputGenmatsuB');
-    initializeFieldArray(outputGenmatsuBRightFieldArray, 'outputGenmatsuBRight');
-    initializeFieldArray(outputFilmProductFieldArray, 'outputFilmProduct');
-    initializeFieldArray(outputFilmProductRightFieldArray, 'outputFilmProductRight');
-    initializeFieldArray(outputPEBagFieldArray, 'outputPEBag');
-    initializeFieldArray(outputDustCollectorFieldArray, 'outputDustCollector');
-    initializeFieldArray(outputCleaningFieldArray, 'outputCleaning');
+    initializeFieldArray(inputProductFieldArray);
+    initializeFieldArray(outputGenmatsuAFieldArray);
+    initializeFieldArray(outputGenmatsuBFieldArray);
+    initializeFieldArray(outputGenmatsuBRightFieldArray);
+    initializeFieldArray(outputFilmProductFieldArray);
+    initializeFieldArray(outputFilmProductRightFieldArray);
+    initializeFieldArray(outputPEBagFieldArray);
+    initializeFieldArray(outputDustCollectorFieldArray);
+    initializeFieldArray(outputCleaningFieldArray);
   }, []);
 
-  const { step, handleNext, handleBack } = useMultiStepForm({
+  const { step } = useMultiStepForm({
     totalSteps: 1,
     trigger,
     errors,
@@ -158,29 +154,17 @@ const IronpowderFormEdit: React.FC<IronpowderFormEditProps> = ({
   const inputClass =
     'w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary';
 
-  const handleFormSubmit: SubmitHandler<IManufacturingReportForm> = async (data) => {
-    setIsSubmitting(true);
-    try {
+  // --- ใช้ Custom Hook สำหรับจัดการ Submit ---
+  // Wrap onSubmit to include submissionId as expected by Ironpowder logic
+  const { isSubmitting, handleFormSubmit } = useFormSubmitHandler({
+    onSubmit: async (data: IManufacturingReportForm) => {
       const formattedData = {
         ...data,
         submissionId,
       };
-
-      if (status === 'Rejected') {
-        // กรณี Rejected การกด Save เฉยๆ ควรแค่แก้ไขข้อมูล ไม่ใช่ส่งอนุมัติใหม่
-        // แต่ถ้าต้องการให้ Save = แก้ไขเฉยๆ ให้เรียก onSubmit
-        await onSubmit(formattedData);
-        // ถ้า User ต้องการส่งอนุมัติใหม่ เขาจะกดปุ่ม Resubmit แยกต่างหาก
-      } else {
-        await onSubmit(formattedData);
-      }
-    } catch (error) {
-      fireToast('error', 'เกิดข้อผิดพลาดในการบันทึก');
-      console.error(error);
-    } finally {
-      setIsSubmitting(false);
+      await onSubmit(formattedData);
     }
-  };
+  });
 
   return (
     <div className="rounded-lg border border-stroke bg-white p-6 shadow-md dark:border-strokedark dark:bg-boxdark md:p-8">

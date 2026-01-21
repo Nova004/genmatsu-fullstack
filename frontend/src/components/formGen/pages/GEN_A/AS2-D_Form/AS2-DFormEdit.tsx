@@ -1,6 +1,6 @@
 // location: frontend/src/components/formGen/pages/AS2-D_Form/AS2-DFormEdit.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { IManufacturingReportForm } from '../../types';
 import { useNavigate } from 'react-router-dom';
@@ -9,9 +9,9 @@ import FormStep2 from './FormStep2';
 import SharedFormStep3 from '../../../components/forms/SharedFormStep3';
 import SharedFormStep4 from '../../../components/forms/SharedFormStep4_GENA';
 import FormHeader from '../../../components/FormHeader';
-import { fireToast } from '../../../../../hooks/fireToast';
 import ProgressBar from '../../../components/ProgressBar';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
+import { useFormSubmitHandler } from '../../../../../hooks/useFormSubmitHandler';
 
 
 // Props ที่ Component นี้จะรับเข้ามา
@@ -38,11 +38,11 @@ const AS2_D_VALIDATION_SCHEMA = {
         message: 'กรุณากรอกข้อมูลการชั่งวัตถุดิบและค่าคำนวณที่จำเป็นให้ครบถ้วน',
     },
     3: {
-        fields: [ 'operationResults', 'operationRemark'], // 👈 เพิ่ม 'conditions'
+        fields: ['operationResults', 'operationRemark'], // 👈 เพิ่ม 'conditions'
         message: 'กรุณาตรวจสอบข้อมูลเงื่อนไขและผลการปฏิบัติงานให้ถูกต้อง',
     },
     4: {
-        fields: ['packingResults.diameter' ,'packingResults.quantityOfProduct.cans' , 'packingResults.meshPass40'], // 👈 เพิ่ม 'conditions'
+        fields: ['packingResults.diameter', 'packingResults.quantityOfProduct.cans', 'packingResults.meshPass40'], // 👈 เพิ่ม 'conditions'
         scope: 'packingResults',
         message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, Lot No. และตรวจสอบสภาพบรรจุภัณฑ์ให้ครบถ้วน',
     },
@@ -56,7 +56,6 @@ const AS2_DFormEdit: React.FC<AS2_DFormEditProps> = ({ initialData, onSubmit, on
     console.log('เทียบกับ "Rejected":', status === 'Rejected');
 
     const totalSteps = 4;
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const navigate = useNavigate();
 
     const {
@@ -80,19 +79,8 @@ const AS2_DFormEdit: React.FC<AS2_DFormEditProps> = ({ initialData, onSubmit, on
         }
     }, [initialData, reset]);
 
-    // --- ฟังก์ชัน Handle การ Submit ของฟอร์ม ---
-    const handleFormSubmit: SubmitHandler<IManufacturingReportForm> = async (data) => {
-        setIsSubmitting(true);
-        try {
-            await onSubmit(data); // เรียกใช้ฟังก์ชัน onSubmit ที่ส่งมาจาก Parent Component
-        } catch (error: any) {
-            const errorMessage = error.response?.data?.message || error.message || "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ";
-            fireToast('error', `เกิดข้อผิดพลาด: ${errorMessage}`);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
+    // --- ใช้ Custom Hook สำหรับจัดการ Submit ---
+    const { isSubmitting, handleFormSubmit } = useFormSubmitHandler({ onSubmit });
 
     // --- ฟังก์ชันสำหรับจัดการปุ่ม Next และ Back ---
     const { step, setStep, handleNext, handleBack, handleSubmit_form } = useMultiStepForm({
@@ -153,7 +141,7 @@ const AS2_DFormEdit: React.FC<AS2_DFormEditProps> = ({ initialData, onSubmit, on
                         {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
                     </button>
 
-                    {(status === 'Rejected' || status === 'Drafted') && (
+                    {(status === 'Rejected' || status === 'Drafted') && step === totalSteps && (
                         <button
                             type="button"
                             onClick={handleSubmit(onResubmit)} // ใช้ฟังก์ชันส่งอนุมัติ

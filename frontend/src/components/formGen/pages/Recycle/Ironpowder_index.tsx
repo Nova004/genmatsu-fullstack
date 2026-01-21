@@ -88,7 +88,7 @@ function Ironpowder_Form() {
     useEffect(() => {
         const initializeFieldArray = (fieldArray: any, fieldName: string) => {
             if (fieldArray.fields.length === 0) {
-                for (let i = 0; i < 4; i++) {
+                for (let i = 0; i < 13; i++) {
                     fieldArray.append({});
                 }
             }
@@ -242,13 +242,6 @@ function Ironpowder_Form() {
                         className={`rounded-md bg-primary px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
                     >
                         {isSubmitting ? 'กำลังบันทึก...' : 'Drafted'}
-                    </button>
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className={`rounded-md bg-success px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
-                    >
-                        {isSubmitting ? 'กำลังส่ง...' : 'Submit'}
                     </button>
                 </div>
             </form>

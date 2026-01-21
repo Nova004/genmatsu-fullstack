@@ -101,10 +101,9 @@ describe('BZ3-B FormStep2 Calculations', () => {
     // Total NaCl Water = 138.80
     // Spec Grav = 1.2
     // Final NaCl Water = 138.80 / 1.2 = 115.666...
-    // Rounded to 1 decimal: 115.7
-
+    // Rounded to 0 decimal: 116
     await waitFor(() => {
-      const finalNaclInput = screen.getByDisplayValue('115.67'); // naclWater15
+      const finalNaclInput = screen.getByDisplayValue('116'); // naclWater15
       expect(finalNaclInput).toBeTruthy();
     });
 

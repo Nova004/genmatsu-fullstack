@@ -90,6 +90,14 @@
 
 ### ตารางที่ 3: Form_Ironpowder_Approved_Log (เก็บประวัติ)
 
+*   `log_id` (PK): รหัส Log.
+*   `submissionId` (FK): เชื่อมกับตาราง Ironpowder.
+*   `user_approver_id` (INT): รหัสผู้อนุมัติ.
+*   `level` (INT): Level ที่อนุมัติ.
+*   `action` (NVARCHAR(50)): Action (Approve/Reject).
+*   `comment` (NVARCHAR(MAX)): คอมเมนต์.
+*   `created_at` (DATETIME): วันเวลาที่บันทึก.
+
 *   ใช้เก็บ Comment และ Action (Approve/Reject) ของแต่ละคน.
 *   จะถูกล้างทิ้งเมื่อมีการ Resubmit.
 

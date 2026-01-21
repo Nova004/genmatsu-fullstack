@@ -1,6 +1,6 @@
 // location: frontend/src/components/formGen/pages/AJ4_Form/AJ4FormEdit.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { IManufacturingReportForm } from '../../types';
 import { useNavigate } from 'react-router-dom';
@@ -9,9 +9,9 @@ import FormStep2 from './FormStep2';
 import SharedFormStep3 from '../../../components/forms/SharedFormStep3';
 import SharedFormStep4 from '../../../components/forms/SharedFormStep4_GENA';
 import FormHeader from '../../../components/FormHeader';
-import { fireToast } from '../../../../../hooks/fireToast';
 import ProgressBar from '../../../components/ProgressBar';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
+import { useFormSubmitHandler } from '../../../../../hooks/useFormSubmitHandler'; // Import Hook ใหม่
 
 
 // Props ที่ Component นี้จะรับเข้ามา
@@ -29,7 +29,7 @@ const AJ4_VALIDATION_SCHEMA = {
         scope: 'basicData',
         message: 'กรุณากรอกข้อมูลวันที่, เครื่อง, Lot No. และตรวจสอบสภาพบรรจุภัณฑ์ให้ครบถ้วน',
     },
-   2: {
+    2: {
         fields: [
             'rawMaterials',
             'cg1cWeighting.row1.cg1c',
@@ -50,10 +50,6 @@ const AJ4FormEdit: React.FC<AJ4FormEditProps> = ({ initialData, onSubmit, onResu
     console.log('Status คือ:', status);
     console.log('เทียบกับ "Rejected":', status === 'Rejected');
 
-    const totalSteps = 4;
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const navigate = useNavigate();
-
     const {
         register,
         handleSubmit,
@@ -68,6 +64,8 @@ const AJ4FormEdit: React.FC<AJ4FormEditProps> = ({ initialData, onSubmit, onResu
         mode: 'onChange',
     });
 
+    const navigate = useNavigate();
+
     // --- ใช้ useEffect เพื่อเติมข้อมูลเดิมลงในฟอร์มเมื่อ Component ถูกสร้างขึ้น ---
     useEffect(() => {
         if (initialData) {
@@ -75,21 +73,9 @@ const AJ4FormEdit: React.FC<AJ4FormEditProps> = ({ initialData, onSubmit, onResu
         }
     }, [initialData, reset]);
 
-    // --- ฟังก์ชัน Handle การ Submit ของฟอร์ม ---
-    const handleFormSubmit: SubmitHandler<IManufacturingReportForm> = async (data) => {
-        setIsSubmitting(true);
-        try {
-            await onSubmit(data); // เรียกใช้ฟังก์ชัน onSubmit ที่ส่งมาจาก Parent Component
-        } catch (error: any) {
-            const errorMessage = error.response?.data?.message || error.message || "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ";
-            fireToast('error', `เกิดข้อผิดพลาด: ${errorMessage}`);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-
-    // --- ฟังก์ชันสำหรับจัดการปุ่ม Next และ Back ---
+    const totalSteps = 4;
+    // --- ใช้ Custom Hook สำหรับจัดการ Submit ---
+    const { isSubmitting, handleFormSubmit } = useFormSubmitHandler({ onSubmit });
     const { step, setStep, handleNext, handleBack, handleSubmit_form } = useMultiStepForm({
         totalSteps: 4,
         trigger,
@@ -139,6 +125,7 @@ const AJ4FormEdit: React.FC<AJ4FormEditProps> = ({ initialData, onSubmit, onResu
                             Next
                         </button>
                     )}
+                    {/* ปุ่มบันทึก (Save Changes) แสดงตลอด เพื่อให้ User กด Save ได้ทุกเมื่อ */}
                     <button
                         type="submit"
                         disabled={isSubmitting}
@@ -148,7 +135,8 @@ const AJ4FormEdit: React.FC<AJ4FormEditProps> = ({ initialData, onSubmit, onResu
                         {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
                     </button>
 
-                    {(status === 'Rejected' || status === 'Drafted') && (
+                    {/* ปุ่มส่งอนุมัติ (Submit / Resubmit) แสดงเฉพาะหน้าสุดท้าย (Step 4) เท่านั้น */}
+                    {(status === 'Rejected' || status === 'Drafted') && step === totalSteps && (
                         <button
                             type="button"
                             onClick={handleSubmit(onResubmit)} // ใช้ฟังก์ชันส่งอนุมัติ

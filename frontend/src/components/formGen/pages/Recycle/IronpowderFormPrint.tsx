@@ -12,18 +12,23 @@ import OutputPEBag from './components/OutputPEBag';
 import OutputDustCollector from './components/OutputDustCollector';
 import OutputCleaning from './components/OutputCleaning';
 import Summary from './components/Summary';
-import FormHeader from '../../components/FormHeader';
+
 import { useForm, FormProvider } from 'react-hook-form';
 import { useFieldArray } from 'react-hook-form';
 
 interface IronpowderFormPrintProps {
   formData: IManufacturingReportForm;
+  blueprints?: any; // Add blueprints
+  isReadOnly?: boolean; // Add isReadOnly
+  approvalFlowComponent?: React.ReactNode; // Add approvalFlowComponent
 }
 
-const IronpowderFormPrint: React.FC<IronpowderFormPrintProps> = ({ formData }) => {
-  const availableForms = [
-    { value: 'Ironpowder', label: 'Ironpowder', path: '/forms/ironpowder-form' },
-  ];
+const IronpowderFormPrint: React.FC<IronpowderFormPrintProps> = ({
+  formData,
+  isReadOnly = false,
+  approvalFlowComponent // Destructure approvalFlowComponent
+}) => {
+
 
   const methods = useForm<IManufacturingReportForm>({
     defaultValues: formData,
@@ -92,61 +97,79 @@ const IronpowderFormPrint: React.FC<IronpowderFormPrintProps> = ({ formData }) =
     shouldUnregister: true,
   });
 
-  const inputClass =
-    'w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary';
+  // 🟡 Remove Dark Mode Classes for Print
+
 
   return (
     <FormProvider {...methods}>
-      <div className="rounded-lg border border-stroke bg-white p-6 shadow-md dark:border-strokedark dark:bg-boxdark md:p-8 print:shadow-none print:border-0">
+      <div className="rounded-lg border border-stroke bg-white p-6 shadow-md md:p-8 print:shadow-none print:border-0 text-black">
         <style>{`
           @media print {
-            body { margin: 0; padding: 0; }
-            .no-print { display: none; }
-            .print\\:shadow-none { box-shadow: none; }
-            .print\\:border-0 { border: none; }
+            body { 
+              margin: 0; padding: 0; 
+              background-color: white !important; 
+              -webkit-print-color-adjust: exact !important; 
+              print-color-adjust: exact !important;
+            }
+            * { visibility: visible !important; }
+            
+            /* Force table borders to be visible but not too harsh */
+            table, th, td, tr {
+              border-color: #555 !important;
+              border-width: 1px !important;
+            }
+            .border-stroke {
+              border-color: #555 !important;
+            }
+            /* Remove shadows and ensuring distinct borders */
+            div {
+              box-shadow: none !important;
+            }
+            input {
+              color: black !important;
+            }
           }
+          /* Override dark mode manually to ensure black text on white paper */
+          .dark .text-white { color: black !important; }
         `}</style>
 
         <div className="space-y-6">
-          <FormHeader
-            title="ใบรายงานการผลิต (Ironpowder) - พิมพ์"
-            formTypes={availableForms}
-            currentValue="Ironpowder"
-            inputClass={inputClass}
-          />
-
-          <div className="border-t border-stroke dark:border-strokedark pt-6">
-            <SharedFormStep1
-              register={register}
-              watch={watch}
-              setValue={setValue}
-              errors={{}}
-              packagingWarningItemName=""
-            />
-          </div>
-
-          <div className="border-t border-stroke dark:border-strokedark pt-6">
-            <PalletTable
-              title="Pallet (พาเลท)"
-              numberOfRows={4}
-              register={register}
-              fieldName="palletInfo"
-            />
-          </div>
-
-          <div className="border-t border-stroke dark:border-strokedark pt-6">
-            <InputProductTable
-              title="Input product"
-              register={register}
-              watch={watch}
-              fieldArray={inputProductFieldArray}
-              fieldName="inputProduct"
-            />
-          </div>
-
-          {/* Output Section - 2 Columns Layout */}
-          <div className="border-t border-stroke dark:border-strokedark pt-6">
+          <div className="border-t border-stroke pt-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <SharedFormStep1
+                  register={register}
+                  watch={watch}
+                  setValue={setValue}
+                  errors={{}}
+                  packagingWarningItemName=""
+                // isReadOnly={isReadOnly} <SharedFormStep1 does not support isReadOnly>
+                />
+              </div>
+              <div>
+                <PalletTable
+                  title="Pallet (พาเลท)"
+                  numberOfRows={4}
+                  register={register}
+                  fieldName="palletInfo"
+                />
+                <div className="mt-6">
+                  <InputProductTable
+                    title="Input product"
+                    register={register}
+                    watch={watch}
+                    fieldArray={inputProductFieldArray}
+                    fieldName="inputProduct"
+                    isReadOnly={isReadOnly}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Combined Output Section - 3 Columns Layout */}
+          <div className="border-t border-stroke pt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div>
                 <OutputProductGenmatsuA
                   title="Output product Genmatsu A"
@@ -154,6 +177,7 @@ const IronpowderFormPrint: React.FC<IronpowderFormPrintProps> = ({ formData }) =
                   watch={watch}
                   fieldArray={outputGenmatsuAFieldArray}
                   fieldName="outputGenmatsuA"
+                  isReadOnly={isReadOnly}
                 />
               </div>
               <div>
@@ -164,14 +188,9 @@ const IronpowderFormPrint: React.FC<IronpowderFormPrintProps> = ({ formData }) =
                   fieldArray={outputGenmatsuBFieldArray}
                   fieldArrayRight={outputGenmatsuBRightFieldArray}
                   fieldName="outputGenmatsuB"
+                  isReadOnly={isReadOnly}
                 />
               </div>
-            </div>
-          </div>
-
-          {/* Film & PE Bag - 2 Columns Layout */}
-          <div className="border-t border-stroke dark:border-strokedark pt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <OutputFilmProduct
                   title="Output Film product"
@@ -180,6 +199,7 @@ const IronpowderFormPrint: React.FC<IronpowderFormPrintProps> = ({ formData }) =
                   fieldArray={outputFilmProductFieldArray}
                   fieldArrayRight={outputFilmProductRightFieldArray}
                   fieldName="outputFilmProduct"
+                  isReadOnly={isReadOnly}
                 />
               </div>
               <div>
@@ -189,14 +209,9 @@ const IronpowderFormPrint: React.FC<IronpowderFormPrintProps> = ({ formData }) =
                   watch={watch}
                   fieldArray={outputPEBagFieldArray}
                   fieldName="outputPEBag"
+                  isReadOnly={isReadOnly}
                 />
               </div>
-            </div>
-          </div>
-
-          {/* Dust Collector & Cleaning - 2 Columns Layout */}
-          <div className="border-t border-stroke dark:border-strokedark pt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <OutputDustCollector
                   title="Output from dust collector"
@@ -204,6 +219,7 @@ const IronpowderFormPrint: React.FC<IronpowderFormPrintProps> = ({ formData }) =
                   watch={watch}
                   fieldArray={outputDustCollectorFieldArray}
                   fieldName="outputDustCollector"
+                  isReadOnly={isReadOnly}
                 />
               </div>
               <div>
@@ -213,24 +229,28 @@ const IronpowderFormPrint: React.FC<IronpowderFormPrintProps> = ({ formData }) =
                   watch={watch}
                   fieldArray={outputCleaningFieldArray}
                   fieldName="outputCleaning"
+                  isReadOnly={isReadOnly}
                 />
               </div>
             </div>
           </div>
 
-          {/* Summary Section */}
-          <Summary register={register} watch={watch}  setValue={setValue} />
+          {/* Summary & Approval Flow - Side by Side */}
+          <div className="border-t border-stroke pt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+              <div>
+                <Summary register={register} watch={watch} setValue={setValue} />
+              </div>
 
-          {/* Print Button */}
-          <div className="flex justify-center gap-4 rounded-sm border border-stroke p-4 dark:border-strokedark no-print">
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className="rounded-md bg-primary px-10 py-2 font-medium text-white hover:bg-opacity-90"
-            >
-              Print
-            </button>
+              {/* 🟡 3. Render Approval Flow */}
+              {approvalFlowComponent && (
+                <div className="break-inside-avoid">
+                  {approvalFlowComponent}
+                </div>
+              )}
+            </div>
           </div>
+
         </div>
       </div>
     </FormProvider>

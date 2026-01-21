@@ -1,6 +1,6 @@
 // location: frontend/src/components/formGen/pages/BS3_Form/BZFormEdit.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { IManufacturingReportForm } from '../../types';
 import SharedFormStep1 from '../../../components/forms/SharedFormStep1_GENB';
@@ -8,10 +8,10 @@ import FormStep2 from './FormStep2';
 import SharedFormStep3 from '../../../components/forms/SharedFormStep3';
 import SharedFormStep4 from '../../../components/forms/SharedFormStep4_GENB';
 import FormHeader from '../../../components/FormHeader';
-import { fireToast } from '../../../../../hooks/fireToast';
 import { useNavigate } from 'react-router-dom';
 import ProgressBar from '../../../components/ProgressBar';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
+import { useFormSubmitHandler } from '../../../../../hooks/useFormSubmitHandler';
 import { initialFormValues } from '../../formDefaults'; // (แก้ path ให้ถูก)
 
 
@@ -47,7 +47,8 @@ const BS3_VALIDATION_SCHEMA = {
 
 const BS3FormEdit: React.FC<BS3FormEditProps> = ({ initialData, onSubmit, onResubmit, submissionId, status }) => {
     const totalSteps = 4;
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    // --- ใช้ Custom Hook สำหรับจัดการ Submit ---
+    const { isSubmitting, handleFormSubmit } = useFormSubmitHandler({ onSubmit });
     const navigate = useNavigate();
     const {
         register,
@@ -70,21 +71,6 @@ const BS3FormEdit: React.FC<BS3FormEditProps> = ({ initialData, onSubmit, onResu
             reset(initialData);
         }
     }, [initialData, reset]);
-
-    // --- ฟังก์ชัน Handle การ Submit ของฟอร์ม ---
-    const handleFormSubmit: SubmitHandler<IManufacturingReportForm> = async (data) => {
-        setIsSubmitting(true);
-        try {
-            await onSubmit(data); // เรียกใช้ฟังก์ชัน onSubmit ที่ส่งมาจาก Parent Component
-        } catch (error: any) {
-            const errorMessage = error.response?.data?.message || error.message || "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ";
-            fireToast('error', `เกิดข้อผิดพลาด: ${errorMessage}`);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-
 
     // --- ฟังก์ชันสำหรับจัดการปุ่ม Next และ Back ---
     const { step, setStep, handleNext, handleBack, handleSubmit_form } = useMultiStepForm({
@@ -141,12 +127,13 @@ const BS3FormEdit: React.FC<BS3FormEditProps> = ({ initialData, onSubmit, onResu
                     <button
                         type="submit"
                         disabled={isSubmitting}
+                        onClick={handleSubmit_form}
                         className={`rounded-md bg-amber-500 px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
                     >
                         {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
                     </button>
 
-                    {(status === 'Rejected' || status === 'Drafted') && (
+                    {(status === 'Rejected' || status === 'Drafted') && step === totalSteps && (
                         <button
                             type="button"
                             onClick={handleSubmit(onResubmit)} // ใช้ฟังก์ชันส่งอนุมัติ

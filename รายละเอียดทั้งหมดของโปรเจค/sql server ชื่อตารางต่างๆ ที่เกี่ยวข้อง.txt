@@ -283,3 +283,37 @@ UPDATE Form_Submissions (เปลี่ยน status กลับเป็น '
 UPDATE Gen_Approval_Flow (รีเซ็ตแถว 'Rejected'/'Pending' กลับเป็น 'Pending' และล้าง approver_user_id ออก)
 
 DELETE Gen_Approved_log (ลบ Log เก่าที่มี action = 'Rejected')
+
+ส่วนที่ 5: ตารางสำหรับ Ironpowder (Recycle) (ใหม่ล่าสุด)
+--------------------------------------------------
+
+### ตารางที่ 1: Form_Ironpowder_Submissions (เก็บเอกสาร)
+
+*   `submissionId` (PK, INT): รหัสเอกสาร unique.
+*   `lot_no` (NVARCHAR(50)): เลข Lot.
+*   `status` (NVARCHAR(50)): สถานะ (Drafted/Pending/Approved).
+*   `submitted_by` (INT): รหัสผู้ส่ง.
+*   `total_genmatsu_a` ... `total_cleaning` (DECIMAL): ยอดรวมแยกประเภท (เพิ่มใหม่).
+*   `form_data_json` (NVARCHAR(MAX)): ข้อมูลรายละเอียดทั้งหมดในรูปแบบ JSON.
+
+### ตารางที่ 2: Form_Ironpowder_Approval_Flow (เก็บเส้นทางอนุมัติ)
+
+*   `flow_id` (PK): รหัส Flow.
+*   `submissionId` (FK): เชื่อมกับตาราง Ironpowder (ชื่อคอลัมน์เป็น camelCase).
+*   `required_level` (INT): Level ที่ต้องอนุมัติ.
+*   `sequence` (INT): ลำดับการอนุมัติ.
+*   `approver_user_id` (INT, Nullable): คนที่กดอนุมัติ (เป็น NULL เมื่อ Reset).
+*   `status` (NVARCHAR(50)): สถานะของ Step นั้นๆ (Pending/Approved).
+
+### ตารางที่ 3: Form_Ironpowder_Approved_Log (เก็บประวัติ)
+
+*   `log_id` (PK): รหัส Log.
+*   `submissionId` (FK): เชื่อมกับตาราง Ironpowder.
+*   `user_approver_id` (INT): รหัสผู้อนุมัติ.
+*   `level` (INT): Level ที่อนุมัติ.
+*   `action` (NVARCHAR(50)): Action (Approve/Reject).
+*   `comment` (NVARCHAR(MAX)): คอมเมนต์.
+*   `created_at` (DATETIME): วันเวลาที่บันทึก.
+
+*   ใช้เก็บ Comment และ Action (Approve/Reject) ของแต่ละคน.
+*   จะถูกล้างทิ้งเมื่อมีการ Resubmit.

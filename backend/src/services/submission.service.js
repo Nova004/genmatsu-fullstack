@@ -92,6 +92,29 @@ exports.getSubmissionDataForPdf = async (submissionId) => {
     );
 
     if (!submissionData) {
+      // 🟡 Fallback: Check if it's an Ironpowder (Recycle) form
+      console.log(`[PDF-Helper] Generic fetch failed. Trying Ironpowder for ID: ${submissionId}`);
+      try {
+        const ironpowderService = require("./ironpowder.service");
+        const ironData = await ironpowderService.getIronpowderById(submissionId);
+
+        if (ironData) {
+          console.log(`[PDF-Helper] Found Ironpowder data for ID: ${submissionId}`);
+          return {
+            submission: {
+              ...ironData,
+              submission_id: ironData.submissionId, // Map to snake_case
+              form_type: 'Ironpowder',
+              // ironData.form_data_json is already parsed by getIronpowderById
+              form_data_json: ironData.form_data_json,
+            },
+            blueprints: {}, // Ironpowder typically doesn't use the dynamic blueprints system
+          };
+        }
+      } catch (ironError) {
+        console.error(`[PDF-Helper] Ironpowder fetch also failed:`, ironError);
+      }
+
       console.error(`[PDF-Helper] Submission not found: ${submissionId}`);
       throw new Error("Submission not found.");
     }
@@ -197,23 +220,17 @@ exports.createSubmission = async (data) => {
       );
     }
 
-    const stPlanResult = await transaction
-      .request()
-      .input("f_type", sql.NVarChar, formType)
-      .query(
-        "SELECT target_value FROM Gen_StandardPlan_MT WHERE form_type = @f_type"
-      );
-
-    // ถ้ามีค่า ให้ใช้ค่านั้น ถ้าไม่มีให้เป็น 0
-    const currentStValue =
-      stPlanResult.recordset.length > 0
-        ? stPlanResult.recordset[0].target_value
-        : 0;
-
-    // ดึง Key Metrics
+    // ดึง Key Metrics (รวมถึง NCR)
     const keyMetrics = extractKeyMetrics(cleanedFormData);
 
-    keyMetrics.stTargetValue = currentStValue;
+    // 🔴 คำนวณ ST Value ใหม่ (รวม NCR)
+    const finalStValue = await calculateTotalStValue(
+      transaction,
+      formType,
+      keyMetrics.ncrGenmatsuActual
+    );
+
+    keyMetrics.stTargetValue = finalStValue;
 
     // 3. Insert Submission
     // 🟡 แก้ไข: บังคับ status เป็น 'Drafted' เสมอ (ตามที่คุณต้องการ)
@@ -301,6 +318,19 @@ exports.updateSubmission = async (id, lot_no, form_data) => {
 
     const cleanedFormData = cleanSubmissionData(form_data);
     const keyMetrics = extractKeyMetrics(cleanedFormData);
+
+    // 🔴 1. หา Form Type ก่อน (เพื่อเอาไปหา Standard Plan)
+    const submissionInfo = await submissionRepo.getSubmissionWithDetails(pool, id);
+    if (!submissionInfo) throw new Error("Submission not found");
+    const formType = submissionInfo.form_type;
+
+    // 🔴 2. คำนวณ ST Value ใหม่ (Base + NCR)
+    const finalStValue = await calculateTotalStValue(
+      transaction,
+      formType,
+      keyMetrics.ncrGenmatsuActual
+    );
+    keyMetrics.stTargetValue = finalStValue;
 
     // 1. อัปเดตข้อมูลปกติ
     await submissionRepo.updateSubmissionRecord(
@@ -444,6 +474,15 @@ exports.resubmitSubmission = async (id, formDataJson) => {
     // เรียก Helper Function ในไฟล์เดียวกัน
     const cleanedFormData = cleanSubmissionData(formDataJson);
     const keyMetrics = extractKeyMetrics(cleanedFormData);
+    const formType = submission.form_type; // มีอยู่แล้วจาก getSubmissionWithDetails ข้างบน
+
+    // 🔴 คำนวณ ST Value ใหม่ (Base + NCR)
+    const finalStValue = await calculateTotalStValue(
+      transaction,
+      formType,
+      keyMetrics.ncrGenmatsuActual
+    );
+    keyMetrics.stTargetValue = finalStValue;
 
     // 3. อัปเดตข้อมูล (ส่ง Status ใหม่ และ keyMetrics ที่มี productionLine ไปด้วย)
     await submissionRepo.resubmitSubmissionData(
@@ -608,10 +647,9 @@ function extractKeyMetrics(formData) {
     }
   }
 
-  // ⭐ Logic ใหม่: หา Moisture ใน Array operationResults
+  // 💧 Logic ใหม่: หา Moisture ใน Array operationResults
   if (Array.isArray(formData.operationResults)) {
     for (const item of formData.operationResults) {
-      // เช็คว่ามี key 'humidity' ไหม
       if (
         item &&
         item.humidity !== undefined &&
@@ -620,10 +658,20 @@ function extractKeyMetrics(formData) {
       ) {
         const parsed = parseFloat(item.humidity);
         if (!isNaN(parsed)) {
-          moisture = parsed; // ✅ เจอแล้วเก็บเลย
+          moisture = parsed;
           break;
         }
       }
+    }
+  }
+
+  // 🔴 Logic ใหม่: หา NCR Genmatsu Actual
+  let ncrGenmatsuActual = 0;
+  const ncrVal = getNestedValue(formData, "rawMaterials.ncrGenmatsu.actual");
+  if (ncrVal !== null && ncrVal !== undefined && ncrVal !== "") {
+    const parsed = parseFloat(ncrVal);
+    if (!isNaN(parsed)) {
+      ncrGenmatsuActual = parsed;
     }
   }
 
@@ -645,7 +693,25 @@ function extractKeyMetrics(formData) {
     productionDate,
     palletData,
     productionLine,
-    productionLine, // (ซ้ำนิดหน่อยแต่ไม่ error)
-    moisture, // ✅ ส่งออกไปใช้งาน
+    productionLine,
+    moisture,
+    ncrGenmatsuActual, // 🔴 เพิ่มค่านี้ส่งออกไป
   };
+}
+
+// 🔴 Helper Function: คำนวณ ST Value (Base Plan + NCR)
+async function calculateTotalStValue(transaction, formType, ncrValue = 0) {
+  const stPlanResult = await transaction
+    .request()
+    .input("f_type", sql.NVarChar, formType)
+    .query(
+      "SELECT target_value FROM Gen_StandardPlan_MT WHERE form_type = @f_type"
+    );
+
+  const baseStValue =
+    stPlanResult.recordset.length > 0
+      ? stPlanResult.recordset[0].target_value
+      : 0;
+
+  return baseStValue + ncrValue; // 🔴 บวก NCR เข้าไป
 }

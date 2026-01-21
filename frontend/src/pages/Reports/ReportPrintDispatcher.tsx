@@ -2,8 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getSubmissionById } from '../../services/submissionService';
-import { formatNumberRound ,isNumeric } from '../../utils/utils';
-import { EXCLUDED_DECIMAL_FIELDS} from './EXCLUDED_DECIMAL_FIELDS';
+import { formatNumberRound, isNumeric } from '../../utils/utils';
+import { EXCLUDED_DECIMAL_FIELDS } from './EXCLUDED_DECIMAL_FIELDS';
 // --- ⬇️ (สำคัญ) Import Component "สำหรับพิมพ์" ทั้งหมดที่คุณมี ⬇️ ---
 // (คุณต้องสร้างไฟล์เหล่านี้ขึ้นมา โดยมี Layout สำหรับ A4)
 import PrintableReportAS2 from './AS2/PrintableReportAS2';
@@ -25,6 +25,7 @@ import PrintableReportBZ from './BZ/PrintableReportBZ';
 import PrintableReportBS5_C from './BS5-C/PrintableReportBS5-C';
 import PrintableReportBS3_C from './BS3-C/PrintableReportBS3-C';
 import PrintableReportAZ from './AZ/PrintableReportAZ';
+import PrintableReportIronpowder from './Ironpowder/PrintableReportIronpowder';
 
 // --- ⬆️ สิ้นสุดส่วน Import Component ⬆️ ---
 
@@ -107,7 +108,11 @@ const ReportPrintDispatcher: React.FC = () => {
         console.log(`[PrintDispatcher] Data fetched successfully for ID: ${id}`, data);
         if (data && data.submission) {
           // แยกส่วน submission ออกมาแปลง
-          const processedSubmission = processTemplateData(data.submission);
+          // 🟡 ถ้าเป็น Ironpowder (Recycle) ไม่ต้องแปลงตัวเลข เพราะ Component ใช้ <input type="number">
+          // ซึ่งถ้าเจอ Commas (เช่น "1,200") จะแสดงค่าไม่ออก
+          const processedSubmission = (data.submission.form_type === 'Ironpowder')
+            ? data.submission
+            : processTemplateData(data.submission);
 
           // ประกอบร่างกลับเข้าไป (รักษา structure เดิมไว้)
           setSubmissionData({
@@ -155,9 +160,9 @@ const ReportPrintDispatcher: React.FC = () => {
       case 'AS4':
         return <PrintableReportAS4 {...props} />;
       case 'AS2-D':
-        return <PrintableReportAS2_D {...props} />;       
+        return <PrintableReportAS2_D {...props} />;
       case 'AZ-D':
-        return <PrintableReportAZ_D {...props} />;  
+        return <PrintableReportAZ_D {...props} />;
       case 'AZ1':
         return <PrintableReportAZ1 {...props} />;
       case 'AX9-B':
@@ -186,6 +191,8 @@ const ReportPrintDispatcher: React.FC = () => {
         return <PrintableReportBS5_C {...props} />;
       case 'AZ':
         return <PrintableReportAZ {...props} />;
+      case 'Ironpowder': // 🟢 เพิ่ม Case ใหม่
+        return <PrintableReportIronpowder {...props} />;
 
       // --- ⬆️ เพิ่ม Case อื่นๆ ถ้ามี ⬆️ ---
       default:
