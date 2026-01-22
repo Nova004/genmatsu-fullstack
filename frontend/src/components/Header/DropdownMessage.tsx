@@ -9,6 +9,7 @@ import { socket } from '../../services/socket';
 
 // รูป Default กรณีไม่มีรูปโปรไฟล์
 import UserDefault from '../../images/user/user-01.png';
+
 interface Message {
   submission_id: number;
   User_approver_id: string; // หรือ number ตาม DB
@@ -17,6 +18,7 @@ interface Message {
   comment: string;
   action_date: string;
   lot_no: string;
+  category?: string; // ✅ เพิ่ม Field Category
 }
 
 const DropdownMessage = () => {
@@ -174,69 +176,77 @@ const DropdownMessage = () => {
                   ยังไม่มีข้อความหรือคอมเมนต์ใหม่
                 </li>
               ) : (
-                messages.map((msg, index) => (
-                  <li key={index}>
-                    <Link
-                      className="flex gap-4 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4 transition-colors"
-                      to={`/reports/edit/${msg.submission_id}`}
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      {/* ส่วนรูปโปรไฟล์ */}
-                      <div className="h-11 w-11 min-w-11 rounded-full overflow-hidden border border-stroke dark:border-strokedark">
-                        <img
-                          src={`/genmatsu/api/auth/user/${msg.User_approver_id}/photo`}
-                          onError={(e) => {
-                            // เช็คก่อนว่ารูปปัจจุบันใช่ Default หรือยัง เพื่อกัน Loop
-                            if (e.currentTarget.src !== UserDefault) {
-                              e.currentTarget.src = UserDefault;
-                            }
-                          }}
-                          alt="User"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
+                messages.map((msg, index) => {
+                  // ✅ Logic การเลือกลิงก์ตาม Category
+                  const isRecycle = msg.category === 'Recycle';
+                  const linkTo = isRecycle
+                    ? `/reports/edit/recycle/${msg.submission_id}`
+                    : `/reports/edit/${msg.submission_id}`;
 
-                      {/* ส่วนเนื้อหา */}
-                      <div className="w-full">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <h6 className="text-sm font-semibold text-black dark:text-white truncate pr-2">
-                            {msg.commenter_name || 'Unknown Approver'}
-                          </h6>
-                          {/* เรียกใช้ฟังก์ชันแสดงไอคอน */}
-                          <div className="shrink-0">
-                            {getActionIcon(msg.action)}
+                  return (
+                    <li key={index}>
+                      <Link
+                        className="flex gap-4 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4 transition-colors"
+                        to={linkTo} // ใช้ Dynamic Link
+                        onClick={() => setDropdownOpen(false)}
+                      >
+                        {/* ส่วนรูปโปรไฟล์ */}
+                        <div className="h-11 w-11 min-w-11 rounded-full overflow-hidden border border-stroke dark:border-strokedark">
+                          <img
+                            src={`/genmatsu/api/auth/user/${msg.User_approver_id}/photo`}
+                            onError={(e) => {
+                              // เช็คก่อนว่ารูปปัจจุบันใช่ Default หรือยัง เพื่อกัน Loop
+                              if (e.currentTarget.src !== UserDefault) {
+                                e.currentTarget.src = UserDefault;
+                              }
+                            }}
+                            alt="User"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+
+                        {/* ส่วนเนื้อหา */}
+                        <div className="w-full">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <h6 className="text-sm font-semibold text-black dark:text-white truncate pr-2">
+                              {msg.commenter_name || 'Unknown Approver'}
+                            </h6>
+                            {/* เรียกใช้ฟังก์ชันแสดงไอคอน */}
+                            <div className="shrink-0">
+                              {getActionIcon(msg.action)}
+                            </div>
+                          </div>
+
+                          <p className="text-sm text-black/80 dark:text-white/80 line-clamp-2 mb-1.5 font-medium">
+                            "{msg.comment}"
+                          </p>
+
+                          <div className="flex items-center text-xs text-body dark:text-bodydark">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                              className="w-3 h-3 mr-1"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            {new Date(msg.action_date).toLocaleDateString('en-US', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: '2-digit',
+                              timeZone: 'UTC'
+                            })}{' '}
+                            • Lot: {msg.lot_no}
                           </div>
                         </div>
-
-                        <p className="text-sm text-black/80 dark:text-white/80 line-clamp-2 mb-1.5 font-medium">
-                          "{msg.comment}"
-                        </p>
-
-                        <div className="flex items-center text-xs text-body dark:text-bodydark">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                            className="w-3 h-3 mr-1"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                          {new Date(msg.action_date).toLocaleDateString('en-US', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: '2-digit',
-                            timeZone: 'UTC'
-                          })}{' '}
-                          • Lot: {msg.lot_no}
-                        </div>
-                      </div>
-                    </Link>
-                  </li>
-                ))
+                      </Link>
+                    </li>
+                  );
+                })
               )}
             </ul>
           </div>

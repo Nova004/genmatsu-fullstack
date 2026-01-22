@@ -15,36 +15,67 @@ import type {
  * @param submissionData - ข้อมูลทั้งหมดที่จะบันทึก
  */
 export const submitProductionForm = async (
-  submissionData: CreateSubmissionPayload
+  submissionData: CreateSubmissionPayload,
 ): Promise<CreateSubmissionResponse> => {
   try {
     const response = await apiClient.post<CreateSubmissionResponse>(
       API_ENDPOINTS.SUBMISSIONS,
-      submissionData
+      submissionData,
     );
     return response.data;
   } catch (error) {
-    console.error("Error submitting form:", error);
+    console.error('Error submitting form:', error);
     throw error;
   }
 };
 
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+}
 
-export const getAllSubmissions = async (category?: string): Promise<Submission[]> => {
+export const getAllSubmissions = async (
+  category: string = 'GEN-A',
+  params: {
+    page: number;
+    pageSize: number;
+    search?: string;
+    startDate?: string | null;
+    endDate?: string | null;
+    status?: string;
+    formType?: string;
+  },
+): Promise<PaginatedResponse<any>> => {
   try {
-    const url = category ? `${API_ENDPOINTS.SUBMISSIONS}?category=${category}` : API_ENDPOINTS.SUBMISSIONS;
-    const response = await apiClient.get<Submission[]>(url);
+    const queryParams = new URLSearchParams({
+      category,
+      page: params.page.toString(),
+      pageSize: params.pageSize.toString(),
+    });
+
+    if (params.search) queryParams.append('search', params.search);
+    if (params.startDate) queryParams.append('startDate', params.startDate);
+    if (params.endDate) queryParams.append('endDate', params.endDate);
+    if (params.status) queryParams.append('status', params.status);
+    if (params.formType) queryParams.append('formType', params.formType);
+
+    const response = await apiClient.get<PaginatedResponse<any>>(
+      `${API_ENDPOINTS.SUBMISSIONS}?${queryParams.toString()}`,
+    );
     return response.data;
   } catch (error) {
-    console.error("Error fetching all submissions:", error);
+    console.error('Error fetching submissions:', error);
     throw error;
   }
 };
 
-
-export const getSubmissionById = async (id: string): Promise<SubmissionWithDetails> => {
+export const getSubmissionById = async (
+  id: string,
+): Promise<SubmissionWithDetails> => {
   try {
-    const response = await apiClient.get<SubmissionWithDetails>(API_ENDPOINTS.SUBMISSION_BY_ID(id));
+    const response = await apiClient.get<SubmissionWithDetails>(
+      API_ENDPOINTS.SUBMISSION_BY_ID(id),
+    );
     return response.data;
   } catch (error) {
     console.error(`Error fetching submission with id ${id}:`, error);
@@ -52,11 +83,12 @@ export const getSubmissionById = async (id: string): Promise<SubmissionWithDetai
   }
 };
 
-
-export const deleteSubmission = async (id: number): Promise<DeleteSubmissionResponse> => {
+export const deleteSubmission = async (
+  id: number,
+): Promise<DeleteSubmissionResponse> => {
   try {
     const response = await apiClient.delete<DeleteSubmissionResponse>(
-      API_ENDPOINTS.SUBMISSION_BY_ID(id)
+      API_ENDPOINTS.SUBMISSION_BY_ID(id),
     );
     return response.data;
   } catch (error) {
@@ -65,15 +97,23 @@ export const deleteSubmission = async (id: number): Promise<DeleteSubmissionResp
   }
 };
 
-export const getMyPendingTasks = async (userLevel: number): Promise<any[]> => {
+export const getMyPendingTasks = async (
+  userLevel: number,
+  userId?: string, // ✅ เพิ่ม optional param userId
+): Promise<any[]> => {
   try {
     // ใช้ API_ENDPOINTS.SUBMISSIONS (base url) แล้วต่อด้วย path /pending-tasks
-    const response = await apiClient.get<any[]>(
-      `${API_ENDPOINTS.SUBMISSIONS}/pending-tasks?level=${userLevel}`
-    );
+    let url = `${API_ENDPOINTS.SUBMISSIONS}/pending-tasks?level=${userLevel}`;
+
+    // ✅ ถ้ามี userId ส่งมา ให้แนบไปกับ Query String
+    if (userId) {
+      url += `&userId=${userId}`;
+    }
+
+    const response = await apiClient.get<any[]>(url);
     return response.data;
   } catch (error) {
-    console.error("Error fetching pending tasks:", error);
+    console.error('Error fetching pending tasks:', error);
     // ส่งค่าว่างกลับไปเพื่อป้องกัน Frontend พัง
     return [];
   }
@@ -86,12 +126,12 @@ export const getMyPendingTasks = async (userLevel: number): Promise<any[]> => {
  */
 export const updateSubmission = async (
   id: string,
-  data: UpdateSubmissionPayload
+  data: UpdateSubmissionPayload,
 ): Promise<UpdateSubmissionResponse> => {
   try {
     const response = await apiClient.put<UpdateSubmissionResponse>(
       API_ENDPOINTS.SUBMISSION_BY_ID(id),
-      data
+      data,
     );
     return response.data;
   } catch (error) {
@@ -100,7 +140,6 @@ export const updateSubmission = async (
   }
 };
 
-
 export const generatePdfById = async (id: string): Promise<Blob> => {
   try {
     const response = await apiClient.get(API_ENDPOINTS.SUBMISSION_PRINT(id), {
@@ -108,20 +147,25 @@ export const generatePdfById = async (id: string): Promise<Blob> => {
     });
     return response.data;
   } catch (error: any) {
-    console.error(`Error generating PDF for ID ${id}:`, error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || `Failed to generate PDF for submission ${id}`);
+    console.error(
+      `Error generating PDF for ID ${id}:`,
+      error.response?.data || error.message,
+    );
+    throw new Error(
+      error.response?.data?.message ||
+        `Failed to generate PDF for submission ${id}`,
+    );
   }
 };
 
-
 export const resubmitSubmission = async (
   id: number,
-  formDataJson: Record<string, any>
+  formDataJson: Record<string, any>,
 ): Promise<UpdateSubmissionResponse> => {
   try {
     const response = await apiClient.put<UpdateSubmissionResponse>(
       API_ENDPOINTS.SUBMISSION_RESUBMIT(id),
-      { formDataJson }
+      { formDataJson },
     );
     return response.data;
   } catch (error) {
@@ -133,11 +177,49 @@ export const resubmitSubmission = async (
 export const getMyMessages = async (userId: string) => {
   try {
     const response = await apiClient.get<any[]>(
-      `${API_ENDPOINTS.SUBMISSIONS}/my-messages?userId=${userId}`
+      `${API_ENDPOINTS.SUBMISSIONS}/my-messages?userId=${userId}`,
     );
     return response.data;
   } catch (error) {
-    console.error("Error fetching messages:", error);
+    console.error('Error fetching messages:', error);
     return [];
+  }
+};
+
+/**
+ * ดึงข้อมูลสรุปรายวัน (Daily Summary) รวมถึง Ironpowder Summary
+ * @param date วันที่ที่ต้องการดูข้อมูล (YYYY-MM-DD)
+ */
+export const getDailyReportSummary = async (date: string) => {
+  try {
+    const response = await apiClient.get(
+      `${API_ENDPOINTS.SUBMISSIONS}/reports/summary`, // Update endpoint path if needed
+      { params: { date } },
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching daily summary:', error);
+    throw error;
+  }
+};
+
+/**
+ * บันทึกข้อมูลสรุปรายวัน (Daily Summary Remarks)
+ * @param date วันที่ (YYYY-MM-DD)
+ * @param summaryData ข้อมูลที่จะบันทึก (remarks)
+ */
+export const saveDailyReportSummary = async (
+  date: string,
+  summaryData: any,
+) => {
+  try {
+    const response = await apiClient.post(
+      `${API_ENDPOINTS.SUBMISSIONS}/reports/summary`,
+      { date, summaryData },
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error saving daily summary:', error);
+    throw error;
   }
 };

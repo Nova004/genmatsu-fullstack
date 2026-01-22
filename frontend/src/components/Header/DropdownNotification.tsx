@@ -1,3 +1,5 @@
+// src/components/Header/DropdownNotification.tsx
+
 import { useState, useEffect } from 'react';
 import ClickOutside from '../ClickOutside';
 import { getMyPendingTasks } from '../../services/submissionService';
@@ -22,7 +24,7 @@ const DropdownNotification = () => {
       if (user.LV_Approvals === undefined || user.LV_Approvals === null) return;
 
       try {
-        const myTasks = await getMyPendingTasks(user.LV_Approvals);
+        const myTasks = await getMyPendingTasks(user.LV_Approvals, user.id); // ✅ ส่ง User ID ไปด้วย
         setNotificationList(myTasks);
         setNotifying(myTasks.length > 0);
       } catch (error) {
@@ -65,7 +67,7 @@ const DropdownNotification = () => {
         >
           {/* --- จุดแดงแจ้งเตือน (Pulse Effect) --- */}
           <span
-            className={`absolute -top-0.5 right-0 z-1 h-2 w-2 rounded-full bg-danger ${notificationList.length === 0 ? 'hidden' : 'inline'
+            className={`absolute -top-0.5 right-0 z-1 h-2 w-2 rounded-full bg-danger ${!notifying || notificationList.length === 0 ? 'hidden' : 'inline'
               }`}
           >
             <span className="absolute -z-1 inline-flex h-full w-full animate-ping rounded-full bg-danger opacity-75"></span>
@@ -92,7 +94,7 @@ const DropdownNotification = () => {
           >
             <div className="px-4.5 py-3 bg-gray-50 dark:bg-meta-4 border-b border-stroke dark:border-strokedark">
               <h5 className="text-sm font-semibold text-bodydark2 flex justify-between items-center">
-                งานรออนุมัติ
+                การแจ้งเตือน
                 {notificationList.length > 0 && (
                   <span className="bg-danger text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                     {notificationList.length}
@@ -112,40 +114,73 @@ const DropdownNotification = () => {
                   <div className="bg-gray-100 dark:bg-meta-4 p-3 rounded-full mb-3">
                     <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
                   </div>
-                  <p className="text-sm font-medium text-black dark:text-white">ไม่มีงานค้าง</p>
-                  <p className="text-xs text-body">คุณอนุมัติครบทุกงานแล้ว</p>
+                  <p className="text-sm font-medium text-black dark:text-white">ไม่มีการแจ้งเตือน</p>
+                  <p className="text-xs text-body">คุณดำเนินการครบทุกงานแล้ว</p>
                 </li>
               ) : (
-                notificationList.map((item, index) => (
-                  <li key={index}>
-                    <Link
-                      className="flex gap-4 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4 transition-colors duration-200"
-                      to={`/reports/view/${item.submission_id}`}
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      <div className="h-10 w-10 flex-shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                        </svg>
-                      </div>
+                notificationList.map((item, index) => {
+                  // ✅ เช็คว่าเป็น Rejected หรือไม่
+                  const isRejected = item.status === 'Rejected';
+                  const isRecycle = item.category === 'Recycle' || item.form_type === 'Recycle' || item.machine_name;
 
-                      <div className="flex flex-col gap-1 w-full">
-                        <div className="flex justify-between items-start">
-                          <p className="text-sm font-semibold text-black dark:text-white truncate w-32">
-                            Lot: {item.lot_no}
+                  // ✅ กำหนด Link 
+                  // - ถ้า Rejected -> ไปหน้า Edit (เพื่อแก้ส่งใหม่)
+                  // - ถ้า Pending -> ไปหน้า View (เพื่ออนุมัติ)
+                  let linkPath = isRecycle
+                    ? `/reports/view/recycle/${item.submission_id}`
+                    : `/reports/view/${item.submission_id}`;
+
+                  if (isRejected) {
+                    linkPath = isRecycle
+                      ? `/reports/edit/recycle/${item.submission_id}`
+                      : `/reports/edit/${item.submission_id}`;
+                  }
+
+                  return (
+                    <li key={index}>
+                      <Link
+                        className={`flex gap-4 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4 transition-colors duration-200 ${isRejected ? 'bg-red-50 dark:bg-red-900/20' : ''}`} // Highlight rejected row
+                        to={linkPath}
+                        onClick={() => setDropdownOpen(false)}
+                      >
+                        {isRejected ? (
+                          // ❌ Icon for Rejected
+                          <div className="h-10 w-10 flex-shrink-0 rounded-full bg-danger/10 flex items-center justify-center text-danger">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </div>
+                        ) : (
+                          // 📄 Icon for Pending
+                          <div className="h-10 w-10 flex-shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                            </svg>
+                          </div>
+                        )}
+
+                        <div className="flex flex-col gap-1 w-full">
+                          <div className="flex justify-between items-start">
+                            <p className="text-sm font-semibold text-black dark:text-white truncate w-32">
+                              {/* {isRejected ? '[ถูกปฏิเสธ] ' : ''} */}
+                              Lot: {item.lot_no}
+                            </p>
+                            <span className="text-[10px] text-body">
+                              {new Date(item.created_at || item.submitted_at).toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' })}
+                            </span>
+                          </div>
+
+                          <p className="text-xs text-body truncate">
+                            <span className={isRejected ? 'text-danger font-medium' : ''}>
+                              {isRejected ? 'ถูกปฏิเสธ' : 'รออนุมัติ'}
+                            </span>
+                            • {item.form_type || (isRecycle ? 'Recycle' : 'N/A')} • โดย {item.submitted_by_name || item.submitted_by || 'User'}
                           </p>
-                          <span className="text-[10px] text-body">
-                            {new Date(item.created_at || item.submitted_at).toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' })}
-                          </span>
                         </div>
-
-                        <p className="text-xs text-body truncate">
-                          รออนุมัติ • โดย {item.submitted_by_name || item.submitted_by || 'User'}
-                        </p>
-                      </div>
-                    </Link>
-                  </li>
-                ))
+                      </Link>
+                    </li>
+                  );
+                })
               )}
             </ul>
           </div>

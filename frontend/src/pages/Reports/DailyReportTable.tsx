@@ -1,18 +1,36 @@
 // frontend/src/pages/Reports/DailyReportTable.tsx
 
 import React, { useState, useEffect } from 'react';
-import { FaPen, FaTimes, FaSave } from 'react-icons/fa';
-import axios from 'axios';
+import { FaSave, FaPen, FaTimes } from 'react-icons/fa'; // Added FaPen, FaTimes back if used in DailyReportRow
 import { ReportData, ProductionRecord } from '../../types/report';
 import DailyReportRow from './components/DailyReportRow';
+import { getDailyReportSummary, saveDailyReportSummary } from '../../services/submissionService';
+import { fireToast } from '../../hooks/fireToast'; // Use fireToast for better UX
 
 interface DailyReportTableProps {
   data: ReportData;
   onUpdateStPlan?: (id: number, newValue: number) => void;
   selectedDate: string;
   selectedLotNo?: string;
-  mode?: 'normal' | 'lineD'; // ✅ เปลี่ยนชื่อ Mode เป็น lineD
-  hideLineD?: boolean;       // ✅ เปลี่ยนชื่อ Prop เป็น hideLineD
+  mode?: 'normal' | 'lineD';
+  hideLineD?: boolean;
+}
+
+// ✅ Define Interface for Recycle Data
+interface RecycleData {
+  machineName: string;
+  lotNo: string;
+  totalInput: number;
+  totalOutput: number;
+  totalGenmatsuA: number;
+  totalGenmatsuB: number;
+  totalFilm: number;
+  totalDustCollector: number;
+  totalCleaning: number;
+  totalPEBag: number;
+  totalCans: number;
+  diffWeight: number;
+  quantityOfProductCans?: number; // Add if needed
 }
 
 const DailyReportTable: React.FC<DailyReportTableProps> = ({
@@ -27,9 +45,6 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
   const [editingId, setEditingId] = useState<number | null>(null);
   const [tempStValue, setTempStValue] = useState<string>("");
 
-  // Recycle Data
-
-
   // Remarks
   const [remarks, setRemarks] = useState({
     lineA: "",
@@ -40,25 +55,17 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
   });
 
   // Recycle Data State
-  const [recycleData, setRecycleData] = useState<any>(null);
-
-  // Header Titles (Editable)
-
-
-
-
+  const [recycleData, setRecycleData] = useState<RecycleData | null>(null);
 
   // --- Effects: Load Summary Data ---
   useEffect(() => {
     const fetchSummary = async () => {
       if (!selectedDate) return;
       try {
-        const res = await axios.get(`/genmatsu/api/submissions/reports/summary`, {
-          params: { date: selectedDate }
-        });
+        // ✅ Use Service
+        const loaded = await getDailyReportSummary(selectedDate);
 
-        if (res.data) {
-          const loaded = res.data;
+        if (loaded) {
           setRemarks(prev => ({ ...prev, ...loaded.remarks }));
           // Set Recycle Data
           if (loaded.recycleData) {
@@ -68,13 +75,11 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
           }
         } else {
           // Reset Values if no data found
-          // ✅ Reset lineD
           setRemarks({ lineA: "", lineB: "", lineC: "", recycle: "", lineD: "" });
-          // genmatsuTypeHeader removed
-          // recycleLotHeader removed
         }
       } catch (error) {
         console.error("Error loading daily summary:", error);
+        fireToast('error', 'Failed to load summary data');
       }
     };
 
@@ -83,23 +88,18 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
 
   // --- Handlers ---
 
-
-
-
   const handleSaveSummary = async () => {
-    if (!selectedDate) return alert("Please select a date first.");
+    if (!selectedDate) return fireToast('warning', "Please select a date first.");
     try {
       const summaryData = {
         remarks
       };
-      await axios.post(`/genmatsu/api/submissions/reports/summary`, {
-        date: selectedDate,
-        summaryData
-      });
-      alert("Saved Remarks Data successfully!");
+      // ✅ Use Service
+      await saveDailyReportSummary(selectedDate, summaryData);
+      fireToast('success', "Saved Remarks Data successfully!");
     } catch (error) {
       console.error("Error saving summary:", error);
-      alert("Failed to save summary.");
+      fireToast('error', "Failed to save summary.");
     }
   };
 
@@ -120,9 +120,6 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
     }
     setEditingId(null);
   };
-
-  // Header Edit Handlers
-  // Header Edit Handlers
 
 
   // --- Helpers ---
@@ -175,10 +172,95 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
 
   const recycleLabels = ["Input", "Output", "Gen-A", "Gen-B", "Film", "Dust", "Cleaning", "PE Bag"];
 
-  // ✅ เปลี่ยน Logic การหา maxRows เป็น data.lineD
+  // ✅ Helper to map index to Recycle Value safely
+  const getRecycleValueByIndex = (index: number, data: RecycleData | null): number | undefined => {
+    if (!data) return undefined;
+    switch (index) {
+      case 0: return data.totalInput;
+      case 1: return data.totalOutput;
+      case 2: return data.totalGenmatsuA;
+      case 3: return data.totalGenmatsuB;
+      case 4: return data.totalFilm;
+      case 5: return data.totalDustCollector;
+      case 6: return data.totalCleaning;
+      case 7: return data.totalPEBag;
+      default: return undefined;
+    }
+  }
+
+  // ✅ Helper for percentage
+  const getRecyclePercentage = (recVal: number | undefined, totalInput: number | undefined): number | undefined => {
+    if (recVal === undefined || !totalInput || totalInput === 0) return undefined;
+    return (recVal / totalInput) * 100;
+  }
+
+
   const maxRows = mode === 'lineD'
     ? (data.lineD ? data.lineD.length : 0)
     : Math.max(data.lineA.length, data.lineB.length, data.lineC.length, recycleLabels.length);
+
+
+  // ✅ Reusable Line D Table Component (to avoid duplication)
+  const RenderLineDTable = ({ records }: { records: ProductionRecord[] }) => (
+    <div className="overflow-x-auto">
+      <table className="w-full border-collapse text-xs">
+        <thead>
+          <tr className="bg-slate-900 text-white">
+            <th className="border-r border-gray-600 p-1 w-8" rowSpan={3}>No.</th>
+            <th className="p-1 uppercase tracking-widest" colSpan={5}>Genmatsu ZE-1A</th>
+          </tr>
+          <tr className="bg-gray-200 border-b border-gray-300 text-gray-900">
+            <th className="border-r border-gray-300 py-1 text-center font-extrabold text-xs uppercase tracking-wide" colSpan={5}>
+              Line D
+            </th>
+          </tr>
+          <tr className="border-b border-gray-300">
+            <TableHeaderGroup hasMoisture={false} />
+          </tr>
+        </thead>
+        <tbody className="bg-white">
+          {!records || records.length === 0 ? (
+            <tr><td colSpan={7} className="text-center py-6 text-gray-400">No Line D Data Available</td></tr>
+          ) : (
+            <>
+              {records.map((_, index) => (
+                <DailyReportRow
+                  key={index}
+                  index={index}
+                  itemD={records[index]}
+                  isSingleLine={true}
+                  editingId={editingId}
+                  tempStValue={tempStValue}
+                  setTempStValue={setTempStValue}
+                  onStartEdit={handleStartEdit}
+                  onSaveEdit={handleSaveEdit}
+                  onCancelEdit={() => setEditingId(null)}
+                />
+              ))}
+              <tr className="border-t-2 border-gray-500 bg-gray-100 font-bold">
+                <td className="border-r border-b border-gray-400 bg-slate-800 p-1"></td>
+                {renderTotalCells(records, false)}
+              </tr>
+              <tr className="bg-slate-50">
+                <td className="border-r border-b border-gray-300 p-1 bg-slate-200"></td>
+                <td colSpan={6} className="border-r border-b border-gray-300 p-1">
+                  <span className="text-[10px] font-extrabold text-green-700 uppercase">Line D Remark</span>
+                  <textarea
+                    value={remarks.lineD}
+                    onChange={e => handleRemarkChange('lineD', e.target.value)}
+                    className="w-full text-xs p-1 border border-dashed border-slate-300 rounded resize-none"
+                    rows={2}
+                    placeholder="Type remark..."
+                  />
+                </td>
+              </tr>
+            </>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+
 
   // ------------------------------------------
   // 🅰️ RENDER: Line D Mode (สำหรับหน้า 2)
@@ -186,69 +268,8 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
   if (mode === 'lineD') {
     return (
       <div className="w-full bg-white border border-gray-400 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-xs">
-            <thead>
-              <tr className="bg-slate-900 text-white">
-                <th className="border-r border-gray-600 p-1 w-8" rowSpan={3}>No.</th>
-                {/* หัวข้อใหญ่ยังเป็น Genmatsu ZE-1A ตามที่ขอ */}
-                <th className="p-1 uppercase tracking-widest" colSpan={5}>Genmatsu ZE-1A</th>
-              </tr>
-              {/* หัวข้อรองเป็น Line D */}
-              <tr className="bg-gray-200 border-b border-gray-300 text-gray-900">
-                <th className="border-r border-gray-300 py-1 text-center font-extrabold text-xs uppercase tracking-wide" colSpan={5}>
-                  Line D
-                </th>
-              </tr>
-              <tr className="border-b border-gray-300">
-                {/* hasMoisture={false} เพราะ Line D ไม่มี Mois */}
-                <TableHeaderGroup hasMoisture={false} />
-              </tr>
-            </thead>
-            <tbody className="bg-white">
-              {maxRows === 0 ? (
-                <tr><td colSpan={7} className="text-center py-6 text-gray-400">No Line D Data Available</td></tr>
-              ) : (
-                <>
-                  {Array.from({ length: maxRows }).map((_, index) => (
-                    // ✅ ใช้ itemD ส่งข้อมูล
-                    <DailyReportRow
-                      key={index}
-                      index={index}
-                      itemD={data.lineD?.[index]} // ใช้ itemD
-                      isSingleLine={true}
-                      editingId={editingId}
-                      tempStValue={tempStValue}
-                      setTempStValue={setTempStValue}
-                      onStartEdit={handleStartEdit}
-                      onSaveEdit={handleSaveEdit}
-                      onCancelEdit={() => setEditingId(null)}
-                    />
-                  ))}
-                  <tr className="border-t-2 border-gray-500 bg-gray-100 font-bold">
-                    <td className="border-r border-b border-gray-400 bg-slate-800 p-1"></td>
-                    {/* ✅ ใช้ data.lineD */}
-                    {renderTotalCells(data.lineD || [], false)}
-                  </tr>
-                  <tr className="bg-slate-50">
-                    <td className="border-r border-b border-gray-300 p-1 bg-slate-200"></td>
-                    <td colSpan={6} className="border-r border-b border-gray-300 p-1">
-                      {/* ✅ เปลี่ยน label และใช้ remarks.lineD */}
-                      <span className="text-[10px] font-extrabold text-green-700 uppercase">Line D Remark</span>
-                      <textarea
-                        value={remarks.lineD}
-                        onChange={e => handleRemarkChange('lineD', e.target.value)}
-                        className="w-full text-xs p-1 border border-dashed border-slate-300 rounded resize-none"
-                        rows={2}
-                        placeholder="Type remark..."
-                      />
-                    </td>
-                  </tr>
-                </>
-              )}
-            </tbody>
-          </table>
-        </div>
+        {/* ✅ Use Reusable Component */}
+        <RenderLineDTable records={data.lineD || []} />
       </div>
     );
   }
@@ -299,51 +320,28 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
               <tr><td colSpan={19} className="text-center py-6 text-gray-400">No Data Available</td></tr>
             ) : (
               <>
-                {Array.from({ length: maxRows }).map((_, index) => (
-                  <DailyReportRow
-                    key={index}
-                    index={index}
-                    itemA={data.lineA[index]}
-                    itemB={data.lineB[index]}
-                    itemC={data.lineC[index]}
-                    recycleLabel={recycleLabels[index]}
-                    // Pass Recycle Value based on label/index
-                    recycleValue={
-                      recycleData ? (
-                        index === 0 ? recycleData.totalInput :
-                          index === 1 ? recycleData.totalOutput :
-                            index === 2 ? recycleData.totalGenmatsuA :
-                              index === 3 ? recycleData.totalGenmatsuB :
-                                index === 4 ? recycleData.totalFilm :
-                                  index === 5 ? recycleData.totalDustCollector :
-                                    index === 6 ? recycleData.totalCleaning :
-                                      index === 7 ? recycleData.totalPEBag :
-                                        undefined
-                      ) : undefined
-                    }
-                    recyclePercent={
-                      recycleData && recycleData.totalInput > 0 ? (
-                        (
-                          (index === 0 ? recycleData.totalInput :
-                            index === 1 ? recycleData.totalOutput :
-                              index === 2 ? recycleData.totalGenmatsuA :
-                                index === 3 ? recycleData.totalGenmatsuB :
-                                  index === 4 ? recycleData.totalFilm :
-                                    index === 5 ? recycleData.totalDustCollector :
-                                      index === 6 ? recycleData.totalCleaning :
-                                        index === 7 ? recycleData.totalPEBag : 0) || 0
-                        ) / recycleData.totalInput * 100
-                      ) : undefined
-                    }
-                    // recycleValue and onRecycleChange removed
-                    editingId={editingId}
-                    tempStValue={tempStValue}
-                    setTempStValue={setTempStValue}
-                    onStartEdit={handleStartEdit}
-                    onSaveEdit={handleSaveEdit}
-                    onCancelEdit={() => setEditingId(null)}
-                  />
-                ))}
+                {Array.from({ length: maxRows }).map((_, index) => {
+                  const recVal = getRecycleValueByIndex(index, recycleData);
+                  return (
+                    <DailyReportRow
+                      key={index}
+                      index={index}
+                      itemA={data.lineA[index]}
+                      itemB={data.lineB[index]}
+                      itemC={data.lineC[index]}
+                      recycleLabel={recycleLabels[index]}
+                      // ✅ Use Helper Logic
+                      recycleValue={recVal}
+                      recyclePercent={getRecyclePercentage(recVal, recycleData?.totalInput)}
+                      editingId={editingId}
+                      tempStValue={tempStValue}
+                      setTempStValue={setTempStValue}
+                      onStartEdit={handleStartEdit}
+                      onSaveEdit={handleSaveEdit}
+                      onCancelEdit={() => setEditingId(null)}
+                    />
+                  )
+                })}
 
                 {/* Total Row */}
                 <tr className="border-t-2 border-gray-500 bg-gray-100 font-bold">
@@ -358,7 +356,7 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
                           {recycleData?.totalCans ? recycleData.totalCans.toLocaleString() : '-'}
                         </span> cans.
                       </div>
-                      <div className="flex items-center justify-end gap-1">Output - Input = <span className={`min-w-[40px] px-1 text-center font-bold ${recycleData?.diffWeight < 0 ? 'text-red-600' : 'text-gray-800'}`}>{recycleData?.diffWeight ? recycleData.diffWeight.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '-'}</span> kg.</div>
+                      <div className="flex items-center justify-end gap-1">Output - Input = <span className={`min-w-[40px] px-1 text-center font-bold ${(recycleData?.diffWeight ?? 0) < 0 ? 'text-red-600' : 'text-gray-800'}`}>{recycleData?.diffWeight != null ? recycleData.diffWeight.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '-'}</span> kg.</div>
                     </div>
                   </td>
                 </tr>
@@ -378,67 +376,10 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
       </div>
 
       {/* Logic for showing Line D at bottom (Page 1 Web View) */}
-      {/* ✅ เช็ค data.lineD และ hideLineD */}
       {data.lineD && data.lineD.length > 0 && !hideLineD && (
         <div className="mt-8 border-t-4 border-gray-500 pt-4">
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-xs">
-              <thead>
-                <tr className="bg-slate-900 text-white">
-                  <th className="border-r border-gray-600 p-1 w-8" rowSpan={3}>No.</th>
-                  {/* หัวข้อใหญ่ Genmatsu ZE-1A */}
-                  <th className="p-1 uppercase tracking-widest" colSpan={5}>Genmatsu ZE-1A</th>
-                </tr>
-
-                {/* หัวข้อรอง Line D */}
-                <tr className="bg-gray-200 border-b border-gray-300 text-gray-900">
-                  <th className="border-r border-gray-300 py-1 text-center font-extrabold text-xs uppercase tracking-wide" colSpan={5}>
-                    Line D
-                  </th>
-                </tr>
-
-                <tr className="border-b border-gray-300">
-                  <TableHeaderGroup hasMoisture={false} />
-                </tr>
-              </thead>
-              <tbody className="bg-white">
-                {data.lineD.map((_, index) => (
-                  // ✅ ใช้ itemD ส่งข้อมูล
-                  <DailyReportRow
-                    key={index}
-                    index={index}
-                    itemD={data.lineD?.[index]} // ใช้ itemD
-                    isSingleLine={true}
-                    editingId={editingId}
-                    tempStValue={tempStValue}
-                    setTempStValue={setTempStValue}
-                    onStartEdit={handleStartEdit}
-                    onSaveEdit={handleSaveEdit}
-                    onCancelEdit={() => setEditingId(null)}
-                  />
-                ))}
-                <tr className="border-t-2 border-gray-500 bg-gray-100 font-bold">
-                  <td className="border-r border-b border-gray-400 bg-slate-800 p-1"></td>
-                  {/* ✅ ใช้ data.lineD */}
-                  {renderTotalCells(data.lineD, false)}
-                </tr>
-                <tr className="bg-slate-50">
-                  <td className="border-r border-b border-gray-300 p-1 bg-slate-200"></td>
-                  <td colSpan={6} className="border-r border-b border-gray-300 p-1">
-                    {/* ✅ ใช้ remarks.lineD */}
-                    <span className="text-[10px] font-extrabold text-green-700 uppercase">Line D Remark</span>
-                    <textarea
-                      value={remarks.lineD}
-                      onChange={e => handleRemarkChange('lineD', e.target.value)}
-                      className="w-full text-xs p-1 border border-dashed border-slate-300 rounded resize-none"
-                      rows={2}
-                      placeholder="Type remark..."
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          {/* ✅ Use Reusable Component */}
+          <RenderLineDTable records={data.lineD} />
         </div>
       )}
     </div>

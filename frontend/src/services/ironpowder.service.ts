@@ -1,10 +1,14 @@
-import apiClient from "./apiService";
-import api from '../constants/api';
+import apiClient from './apiService';
 
 interface IronpowderSubmissionData {
   lotNo: string;
   formData: any;
   submittedBy: number | string;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
 }
 
 export const ironpowderService = {
@@ -15,25 +19,42 @@ export const ironpowderService = {
    */
   createIronpowder: async (data: IronpowderSubmissionData) => {
     try {
-      const response = await apiClient.post("/ironpowder", data);
+      const response = await apiClient.post('/ironpowder', data);
       return response.data;
     } catch (error: any) {
       throw error.response?.data || error;
     }
   },
-  
 
   /**
    * Get all Ironpowder submissions (paginated)
-   * @param {number} page - Page number
-   * @param {number} limit - Records per page
+   * @param {Object} params - Pagination and filter params
    * @returns {Promise} List of submissions
    */
-  getAllIronpowder: async (page: number = 1, limit: number = 10) => {
+  getAllIronpowder: async (params: {
+    page: number;
+    limit: number;
+    search?: string;
+    startDate?: string | null;
+    endDate?: string | null;
+    status?: string;
+    category?: string;
+  }) => {
     try {
-      const response = await apiClient.get("/ironpowder", {
-        params: { page, limit },
+      const queryParams = new URLSearchParams({
+        page: params.page.toString(),
+        pageSize: params.limit.toString(), // Controller expects pageSize
       });
+
+      if (params.search) queryParams.append('search', params.search);
+      if (params.startDate) queryParams.append('startDate', params.startDate);
+      if (params.endDate) queryParams.append('endDate', params.endDate);
+      if (params.status) queryParams.append('status', params.status);
+      if (params.category) queryParams.append('category', params.category);
+
+      const response = await apiClient.get<PaginatedResponse<any>>(
+        `/ironpowder?${queryParams.toString()}`,
+      );
       return response.data;
     } catch (error: any) {
       throw error.response?.data || error;

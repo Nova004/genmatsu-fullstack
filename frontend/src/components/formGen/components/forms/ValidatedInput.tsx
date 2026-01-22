@@ -17,7 +17,7 @@ const formatNumberPreserve = (num: number | string, shouldFormatDecimal: boolean
 
   // ถ้าไม่ต้อง format ทศนิยม (เช่น shelfLife, จำนวนวัน) ให้คืนค่าเป็นจำนวนเต็ม string ไปเลย
   if (!shouldFormatDecimal) {
-      return String(numericVal);
+    return String(numericVal);
   }
 
   const multiplier = 100000000;
@@ -43,17 +43,17 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({ config, inputIndex = 0,
   // 🔥 1. สร้างลิสต์รายชื่อ field ที่เรา "ยกเว้น" ไม่ต้องเติม .00
   // คุณสามารถเพิ่มชื่อ field อื่นๆ ที่เป็นจำนวนวัน หรือจำนวนนับได้ที่นี่
   const EXCLUDED_DECIMAL_FIELDS = [
-    'rawMaterials.shelfLife', 
+    'rawMaterials.shelfLife',
     'shelfLife',
     'leadTime',
     'amount', // สมมติว่ามี field จำนวนชิ้น
-    // 'lotNo' // อันนี้ config เป็น text อยู่แล้ว ไม่ต้องใส่ก็ได้
+    'rawMaterials.sg',
   ];
 
   // 🔥 2. ตรวจสอบว่า field ปัจจุบันอยู่ในรายการยกเว้นหรือไม่
   // เราเช็คทั้งชื่อเต็ม (fieldName) และชื่อใน config (inputConfig.field_name) เผื่อไว้
-  const isExcludedField = EXCLUDED_DECIMAL_FIELDS.some(excluded => 
-      fieldName.includes(excluded) || inputConfig.field_name === excluded
+  const isExcludedField = EXCLUDED_DECIMAL_FIELDS.some(excluded =>
+    fieldName.includes(excluded) || inputConfig.field_name === excluded
   );
 
   // 🔥 3. ตัวแปร Flag บอกว่า "ต้อง Format ทศนิยมไหม?"
@@ -78,33 +78,33 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({ config, inputIndex = 0,
   const { ref: formRef, ...restRegister } = register(fieldName, {
     valueAsNumber: false,
     validate: (value: any) => {
-        if (!validationRules) return true;
-        if (inputConfig.type !== 'number' && typeof value === 'string') return true; 
-        
-        if (value === 0 || value === '0' || value == '0.00' || value === '-') return true;
-        if (value === null || value === '' || value === undefined) return false; // ปรับเป็น true ตามที่คุณเคยขอ
+      if (!validationRules) return true;
+      if (inputConfig.type !== 'number' && typeof value === 'string') return true;
 
-        const numericValue = parseFloat(value);
-        if (isNaN(numericValue)) return validationRules.errorMessage || 'กรุณากรอกเป็นตัวเลข';
-        
-        switch (validationRules.type) {
-            case 'RANGE_TOLERANCE':
-            case 'RANGE_DIRECT':
-                if (validationRules.min !== undefined && validationRules.max !== undefined) {
-                    if (numericValue < validationRules.min || numericValue > validationRules.max) {
-                        return validationRules.errorMessage || `ค่าต้องอยู่ระหว่าง ${validationRules.min} - ${validationRules.max}`;
-                    }
-                }
-                return true;
-            case 'MAX_VALUE':
-                if (validationRules.max !== undefined) {
-                    if (numericValue > validationRules.max) {
-                        return validationRules.errorMessage || `ค่าต้องไม่เกิน ${validationRules.max}`;
-                    }
-                }
-                return true;
-            default: return true;
-        }
+      if (value === 0 || value === '0' || value == '0.00' || value === '-') return true;
+      if (value === null || value === '' || value === undefined) return false; // ปรับเป็น true ตามที่คุณเคยขอ
+
+      const numericValue = parseFloat(value);
+      if (isNaN(numericValue)) return validationRules.errorMessage || 'กรุณากรอกเป็นตัวเลข';
+
+      switch (validationRules.type) {
+        case 'RANGE_TOLERANCE':
+        case 'RANGE_DIRECT':
+          if (validationRules.min !== undefined && validationRules.max !== undefined) {
+            if (numericValue < validationRules.min || numericValue > validationRules.max) {
+              return validationRules.errorMessage || `ค่าต้องอยู่ระหว่าง ${validationRules.min} - ${validationRules.max}`;
+            }
+          }
+          return true;
+        case 'MAX_VALUE':
+          if (validationRules.max !== undefined) {
+            if (numericValue > validationRules.max) {
+              return validationRules.errorMessage || `ค่าต้องไม่เกิน ${validationRules.max}`;
+            }
+          }
+          return true;
+        default: return true;
+      }
     }
   });
 
@@ -112,11 +112,11 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({ config, inputIndex = 0,
   useEffect(() => {
     // ทำงานถ้าเป็น number และ disabled
     if (inputConfig.type === 'number' && inputConfig.is_disabled && internalRef.current && internalRef.current.value) {
-        const currentVal = parseFloat(internalRef.current.value);
-        if(!isNaN(currentVal)) {
-            // ส่ง flag shouldFormatDecimal เข้าไป
-            internalRef.current.value = formatNumberPreserve(currentVal, shouldFormatDecimal);
-        }
+      const currentVal = parseFloat(internalRef.current.value);
+      if (!isNaN(currentVal)) {
+        // ส่ง flag shouldFormatDecimal เข้าไป
+        internalRef.current.value = formatNumberPreserve(currentVal, shouldFormatDecimal);
+      }
     }
   });
 
@@ -130,10 +130,10 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({ config, inputIndex = 0,
         disabled={inputConfig.is_disabled}
 
         {...restRegister}
-        
+
         ref={(e) => {
-            formRef(e); 
-            internalRef.current = e; 
+          formRef(e);
+          internalRef.current = e;
         }}
 
         onBlur={(e) => {
@@ -145,7 +145,7 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({ config, inputIndex = 0,
               // ถ้าเป็น shelfLife -> shouldFormatDecimal = false -> ได้ค่าเดิม (18)
               // ถ้าเป็น weight -> shouldFormatDecimal = true -> ได้ค่ามี .00 (18.00)
               e.target.value = formatNumberPreserve(val, shouldFormatDecimal);
-              restRegister.onChange(e); 
+              restRegister.onChange(e);
             }
           }
           restRegister.onBlur(e);

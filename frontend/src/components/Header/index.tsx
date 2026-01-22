@@ -1,3 +1,6 @@
+// frontend/src/components/Header/index.tsx
+
+
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import DropdownMessage from './DropdownMessage';
@@ -88,8 +91,14 @@ const Header = (props: {
               type="text"
               placeholder="Search Lot No, ID..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              // เพิ่ม pr-12 เพื่อเว้นที่ให้ปุ่มด้านขวา
+              // ห้ามใส่ maxLength={6} ตรงนี้นะครับ เดี๋ยวตอนก็อปวางมันจะตัดก่อนแก้
+              onChange={(e) => {
+                const cleanValue = e.target.value
+                  .replace(/[^a-zA-Z0-9]/g, '') // 1. ลบอักษรแปลกปลอม/ช่องว่าง/ภาษาไทย
+                  .toUpperCase();               // 2. แปลงเป็นตัวพิมพ์ใหญ่
+
+                setSearchTerm(cleanValue.slice(0, 6)); // 3. ตัดให้เหลือ 6 ตัว
+              }}
               className="w-full bg-transparent pl-3 pr-12 py-2.5 text-sm font-medium text-black placeholder:text-gray-500 focus:outline-none dark:text-white"
             />
 
@@ -110,9 +119,8 @@ const Header = (props: {
         {/* --- Right Side: Actions & Profile --- */}
         <div className="flex items-center gap-3 2xsm:gap-7">
           <ul className="flex items-center gap-2 2xsm:gap-4">
-            <DarkModeSwitcher />
             <DropdownNotification />
-            <DropdownMessage />
+            {/* --- <DropdownMessage />--- */}
           </ul>
 
           <div className="h-6 w-[1px] bg-gray-300 dark:bg-strokedark hidden sm:block"></div>

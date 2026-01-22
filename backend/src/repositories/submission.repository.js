@@ -223,50 +223,99 @@ exports.createSubmissionData = async (
       `);
 };
 
-exports.getAllSubmissions = async (pool, category) => {
-  let baseQuery = `
-            SELECT 
-                -- ข้อมูลหัวเอกสาร (เหมือนเดิม)
-                fs.submission_id, 
-                fs.form_type, 
-                fs.lot_no, 
-                fs.submitted_at, 
-                fs.status,
-                fs.submitted_by,
-                fvs.category,
+exports.getAllSubmissions = async (pool, params) => {
+  const { page, pageSize, search, startDate, endDate, status, formType, category } = params;
+  const offset = (page - 1) * pageSize;
 
-                -- [ใหม่] ดึงข้อมูลตัวเลขและวันที่ผลิตมาจากตารางเนื้อหา
-                fsd.input_kg,
-                fsd.output_kg,
-                fsd.yield_percent,
-                fsd.total_qty,
-                fsd.production_date,
-                (
-                    SELECT TOP 1 required_level 
-                    FROM Gen_Approval_Flow 
-                    WHERE submission_id = fs.submission_id AND status = 'Pending' 
-                    ORDER BY sequence ASC
-                ) AS pending_level
+  const request = new sql.Request(pool);
 
-            FROM 
-                Form_Submissions AS fs
-            LEFT JOIN 
-                Form_Version_Sets AS fvs ON fs.version_set_id = fvs.version_set_id
-            LEFT JOIN
-                Form_Submission_Data AS fsd ON fs.submission_id = fsd.submission_id
-        `;
-
-  const request = pool.request();
+  let conditions = [];
 
   if (category) {
-    baseQuery += ` WHERE fvs.category = @category`;
-    request.input("category", sql.NVarChar, category);
+    request.input('category', sql.NVarChar, category);
+    conditions.push("fvs.category = @category");
   }
 
-  baseQuery += ` ORDER BY fs.submission_id DESC`;
+  if (search) {
+    request.input('search', sql.NVarChar, `%${search}%`);
+    conditions.push("(fs.lot_no LIKE @search OR u.agt_member_nameEN LIKE @search)");
+  }
 
-  const result = await request.query(baseQuery);
-  return result.recordset;
+  // Validate dates before adding to query
+  if (startDate && startDate !== 'null' && endDate && endDate !== 'null') {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+      request.input('startDate', sql.Date, startDate);
+      request.input('endDate', sql.Date, endDate);
+      conditions.push("fsd.production_date BETWEEN @startDate AND @endDate");
+    }
+  }
+
+  if (status) {
+    request.input('status', sql.NVarChar, status);
+    conditions.push("fs.status = @status");
+  }
+
+  if (formType) {
+    request.input('formType', sql.NVarChar, formType);
+    conditions.push("fs.form_type = @formType");
+  }
+
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  // 1. Get Total Count
+  const countQuery = `
+    SELECT COUNT(*) AS total
+    FROM Form_Submissions fs
+    JOIN Form_Submission_Data fsd ON fs.submission_id = fsd.submission_id
+    LEFT JOIN agt_member u ON fs.submitted_by COLLATE Thai_CI_AS = u.agt_member_id
+    LEFT JOIN Form_Version_Sets fvs ON fs.version_set_id = fvs.version_set_id
+    ${whereClause}
+  `;
+  const countResult = await request.query(countQuery);
+  const total = countResult.recordset[0].total;
+
+  // 2. Get Data with Pagination
+  request.input('offset', sql.Int, offset);
+  request.input('limit', sql.Int, pageSize);
+
+  const dataQuery = `
+    SELECT 
+        fs.submission_id, 
+        fs.form_type, 
+        fs.lot_no,
+        fs.submitted_by, 
+        fs.submitted_at, 
+        fs.status, 
+        fsd.production_date,
+        fsd.input_kg,
+        fsd.output_kg,
+        fsd.yield_percent,
+        fsd.total_qty,
+        u.agt_member_nameEN AS submitted_by_name,
+        (
+            SELECT TOP 1 required_level 
+            FROM Gen_Approval_Flow 
+            WHERE submission_id = fs.submission_id AND status = 'Pending' 
+            ORDER BY sequence ASC
+        ) AS pending_level
+    FROM Form_Submissions fs
+    JOIN Form_Submission_Data fsd ON fs.submission_id = fsd.submission_id
+    LEFT JOIN agt_member u ON fs.submitted_by COLLATE Thai_CI_AS = u.agt_member_id
+    LEFT JOIN Form_Version_Sets fvs ON fs.version_set_id = fvs.version_set_id
+    ${whereClause}
+    ORDER BY fs.submitted_at DESC
+    OFFSET @offset ROWS
+    FETCH NEXT @limit ROWS ONLY
+  `;
+
+  const dataResult = await request.query(dataQuery);
+
+  return {
+    data: dataResult.recordset,
+    total: total
+  };
 };
 
 exports.getPendingSubmissionsByLevel = async (pool, userLevel) => {
@@ -278,6 +327,7 @@ exports.getPendingSubmissionsByLevel = async (pool, userLevel) => {
           s.lot_no,
           s.submitted_by,
           u.agt_member_nameEN AS submitted_by_name, -- ⚠️ แก้ u.username เป็น u.agt_member_nameEN ตาม query บนๆ
+          s.form_type, -- ✅ เพิ่ม form_type
           s.submitted_at AS created_at, -- ⚠️ แก้ s.created_at เป็น s.submitted_at
           s.status,
           (
@@ -299,9 +349,36 @@ exports.getPendingSubmissionsByLevel = async (pool, userLevel) => {
         ORDER BY s.submitted_at DESC
       `);
 
+
     return result.recordset;
   } catch (error) {
     console.error("Error fetching pending submissions:", error);
+    throw error;
+  }
+};
+
+exports.getRejectedSubmissionsByUser = async (pool, userId) => {
+  try {
+    const result = await pool.request().input("userId", sql.NVarChar, userId)
+      .query(`
+        SELECT 
+          s.submission_id,
+          s.lot_no,
+          s.submitted_by,
+          u.agt_member_nameEN AS submitted_by_name,
+          s.form_type, -- ✅ เพิ่ม form_type
+          s.submitted_at AS created_at,
+          s.status,
+          'Rejected' AS pending_level -- Dummy field for consistency
+        FROM Form_Submissions s
+        LEFT JOIN agt_member u ON s.submitted_by COLLATE Thai_CI_AS = u.agt_member_id
+        WHERE s.submitted_by COLLATE Thai_CI_AS = @userId 
+          AND s.status = 'Rejected'
+        ORDER BY s.submitted_at DESC
+      `);
+    return result.recordset;
+  } catch (error) {
+    console.error("Error fetching rejected submissions:", error);
     throw error;
   }
 };
@@ -479,7 +556,8 @@ exports.getRecentCommentsForUser = async (pool, userId) => {
           l.created_at AS action_date,
           s.lot_no,
           u.agt_member_nameEN AS commenter_name,
-          l.User_approver_id -- ✅ 1. เพิ่มบรรทัดนี้ (เพื่อเอา ID ไปดึงรูป)
+          l.User_approver_id,
+          'General' AS category -- ✅ Mark as General
         FROM AGT_SMART_SY.dbo.Gen_Approved_log l
         JOIN Form_Submissions s ON l.submission_id = s.submission_id
         LEFT JOIN AGT_SMART_SY.dbo.agt_member u 

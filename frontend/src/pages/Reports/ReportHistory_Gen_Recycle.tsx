@@ -4,9 +4,10 @@
 // --- 1. IMPORT STATEMENTS ---
 // นำเข้าไลบรารีและคอมโพเนนต์ที่จำเป็นทั้งหมด
 // =============================================================================
+import { socket } from '../../services/socket';
 import React, { useEffect, useState, useMemo } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { ironpowderService } from '../../services/ironpowder.service.ts'; // ยังต้องใช้สำหรับ Delete? หรือใช้ service รวมได้? deleteSubmission น่าจะใช้ได้ถ้ารวม ID
+import { ironpowderService } from '../../services/ironpowder.service'; // ยังต้องใช้สำหรับ Delete? หรือใช้ service รวมได้? deleteSubmission น่าจะใช้ได้ถ้ารวม ID
 // Recycle ใช้ deleteIronpowder ซึ่งอาจจะไม่เหมือน deleteSubmission...
 // เพื่อความชัวร์ ใช้ ironpowderService.deleteIronpowder ใน handleDelete ของตัวเองดีกว่า
 // หรือ... ใน handleDelete ถ้าเป็น Recycle ก็เรียก ironpowderService
@@ -22,8 +23,6 @@ import { availableForms } from '../../components/formGen/pages/Recycle/available
 import {
   useReactTable,
   getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
   flexRender,
   ColumnDef,
   ColumnFiltersState,
@@ -41,7 +40,7 @@ import { SubmissionData } from './components/types';
 const ReportHistory_Gen_Recycle: React.FC = () => {
 
   // --- 3.1. STATE MANAGEMENT & DATA FETCHING (VIA HOOK) ---
-  const { submissions, setSubmissions, isLoading, error } = useReportHistoryData('Recycle'); // ✅ Use Recycle
+  const { submissions, setSubmissions, totalRows, isLoading, error, fetchSubmissions } = useReportHistoryData('Recycle');
 
   // UI State
   const [globalFilter, setGlobalFilter] = useState('');
@@ -51,7 +50,21 @@ const ReportHistory_Gen_Recycle: React.FC = () => {
   const [filterUser, setFilterUser] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [dateRange, setDateRange] = useState<DateValueType>({ startDate: null, endDate: null });
-  const [printingId, setPrintingId] = useState<number | null>(null); // ✅ State สำหรับ Button Loading
+  const [printingId, setPrintingId] = useState<number | null>(null);
+
+  // Pagination State
+  const [{ pageIndex, pageSize }, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+
+  const pagination = useMemo(
+    () => ({
+      pageIndex,
+      pageSize,
+    }),
+    [pageIndex, pageSize]
+  );
 
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -67,17 +80,37 @@ const ReportHistory_Gen_Recycle: React.FC = () => {
     }
   }, [searchParams]);
 
-  // --- 3.3. FILTERING EFFECT (Consolidated) ---
+  // --- 3.3. DATA FETCHING TRIGGER ---
+  // Fetch data when pagination or filters change
   useEffect(() => {
-    const newFilters = [];
+    fetchSubmissions(pageIndex, pageSize, {
+      search: globalFilter,
+      startDate: dateRange,
+      status: filterStatus,
+      formType: filterFormType,
+      user: filterUser
+    });
+  }, [pageIndex, pageSize, globalFilter, filterStatus, filterFormType, dateRange, filterUser]);
 
-    if (dateRange?.startDate) newFilters.push({ id: 'production_date', value: dateRange });
-    if (filterFormType) newFilters.push({ id: 'form_type', value: filterFormType });
-    if (filterUser) newFilters.push({ id: 'submitted_by_name', value: filterUser });
-    if (filterStatus) newFilters.push({ id: 'status', value: filterStatus });
+  // --- 3.4. REAL-TIME UPDATES (Socket.io) ---
+  useEffect(() => {
+    const handleServerAction = (data: any) => {
+      if (data.action === 'refresh_data') {
+        fetchSubmissions(pageIndex, pageSize, {
+          search: globalFilter,
+          startDate: dateRange,
+          status: filterStatus,
+          formType: filterFormType,
+          user: filterUser
+        });
+      }
+    };
 
-    setColumnFilters(newFilters);
-  }, [dateRange, filterFormType, filterUser, filterStatus]);
+    socket.on('server-action', handleServerAction);
+    return () => {
+      socket.off('server-action', handleServerAction);
+    };
+  }, [pageIndex, pageSize, globalFilter, filterStatus, filterFormType, dateRange, filterUser, fetchSubmissions]);
 
 
   // --- 3.5. ACTION HANDLERS (DEFINED BEFORE COLUMNS) ---
@@ -105,7 +138,14 @@ const ReportHistory_Gen_Recycle: React.FC = () => {
           setDeletingRowId(id);
           fireToast('success', `รายงาน Lot No: "${lotNo}" ถูกลบแล้ว`);
           setTimeout(() => {
-            setSubmissions(prev => prev.filter(s => s.submission_id !== id));
+            // Refetch to stay consistent
+            fetchSubmissions(pageIndex, pageSize, {
+              search: globalFilter,
+              startDate: dateRange,
+              status: filterStatus,
+              formType: filterFormType,
+              user: filterUser
+            });
             setDeletingRowId(null);
           }, 500);
         } catch (error) {
@@ -149,18 +189,16 @@ const ReportHistory_Gen_Recycle: React.FC = () => {
   const table = useReactTable({
     data: submissions,
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    pageCount: Math.ceil(totalRows / pageSize),
     state: {
+      pagination,
       globalFilter,
       columnFilters,
     },
-    initialState: {
-      pagination: {
-        pageSize: 10,
-      },
-    },
+    manualPagination: true,
+    onPaginationChange: setPagination,
+    getCoreRowModel: getCoreRowModel(),
+    // getFilteredRowModel: getFilteredRowModel(),
     onGlobalFilterChange: setGlobalFilter,
     onColumnFiltersChange: setColumnFilters,
   });

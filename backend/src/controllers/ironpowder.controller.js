@@ -30,6 +30,10 @@ exports.createIronpowder = async (req, res) => {
       message: "Ironpowder form submitted successfully!",
       submissionId: submissionId,
     });
+
+    if (req.io) {
+      req.io.emit("server-action", { action: "refresh_data", lotNo: lotNo });
+    }
   } catch (error) {
     console.error("Error creating ironpowder:", error.message);
     res.status(500).send({
@@ -41,7 +45,19 @@ exports.createIronpowder = async (req, res) => {
 
 exports.getAllIronpowder = async (req, res) => {
   try {
-    const data = await ironpowderService.getAllIronpowder();
+    const { page, pageSize, search, startDate, endDate, status } = req.query;
+
+    const params = {
+      page: parseInt(page) || 1,
+      pageSize: parseInt(pageSize) || 10,
+      search: search || '',
+      startDate: startDate || null,
+      endDate: endDate || null,
+      status: status || '',
+      category: req.query.category || 'Recycle' // ✅ รับ Category from Query Param (Default 'Recycle')
+    };
+
+    const data = await ironpowderService.getAllIronpowder(params);
     res.status(200).send(data);
   } catch (error) {
     console.error("Error fetching ironpowder:", error.message);
@@ -79,6 +95,10 @@ exports.updateIronpowder = async (req, res) => {
     res.status(200).send({
       message: "Ironpowder updated successfully!",
     });
+
+    if (req.io) {
+      req.io.emit("server-action", { action: "refresh_data", lotNo: formData.basicData?.lotNo });
+    }
   } catch (error) {
     console.error("Error updating ironpowder:", error.message);
     res.status(500).send({
@@ -94,6 +114,10 @@ exports.deleteIronpowder = async (req, res) => {
   try {
     await ironpowderService.deleteIronpowder(id);
     res.status(200).send({ message: "Ironpowder deleted successfully!" });
+
+    if (req.io) {
+      req.io.emit("server-action", { action: "refresh_data", deletedId: id });
+    }
   } catch (error) {
     console.error("Error deleting ironpowder:", error.message);
     res.status(500).send({
@@ -112,6 +136,10 @@ exports.resubmitIronpowder = async (req, res) => {
     res.status(200).send({
       message: "Ironpowder resubmitted successfully!",
     });
+
+    if (req.io) {
+      req.io.emit("server-action", { action: "refresh_data", resubmittedId: id });
+    }
   } catch (error) {
     console.error("Error resubmitting ironpowder:", error.message);
     res.status(500).send({

@@ -70,9 +70,20 @@ exports.updateStPlan = async (req, res) => {
 
 exports.getAllSubmissions = async (req, res) => {
   try {
-    const { category } = req.query;
-    const submissions = await submissionService.getAllSubmissions(category);
-    res.status(200).send(submissions);
+    const { page, pageSize, search, startDate, endDate, status, formType, category } = req.query;
+
+    const result = await submissionService.getAllSubmissions({
+      page: parseInt(page) || 1,
+      pageSize: parseInt(pageSize) || 10,
+      search,
+      startDate,
+      endDate,
+      status,
+      formType,
+      category
+    });
+
+    res.status(200).send(result);
   } catch (err) {
     console.error("!!! ERROR in getAllSubmissions:", err);
     res
@@ -100,7 +111,7 @@ exports.getSubmissionById = async (req, res) => {
 exports.deleteSubmission = async (req, res) => {
   const { id } = req.params;
   console.log(`[Controller] deleteSubmission called for ID: ${id}`);
-  
+
   try {
     const isDeleted = await submissionService.deleteSubmission(id);
     console.log(`[Controller] isDeleted result: ${isDeleted}`);
@@ -140,7 +151,7 @@ exports.updateSubmission = async (req, res) => {
 
   try {
     await submissionService.updateSubmission(id, lot_no, form_data);
-    
+
     // Notify clients about update
     if (req.io) {
       req.io.emit("server-action", { action: "refresh_data", lotNo: lot_no });
@@ -204,15 +215,15 @@ exports.resubmitSubmission = async (req, res) => {
 
 exports.getMyPendingTasks = async (req, res) => {
   try {
-    // รับค่า level มาจาก Query String (เช่น ?level=1)
-    const { level } = req.query;
+    // รับค่า level และ userId มาจาก Query String
+    const { level, userId } = req.query;
 
     if (!level) {
       return res.status(400).json({ message: "User Level is required" });
     }
 
-    // เรียก Service ที่เราทำไว้ก่อนหน้านี้
-    const tasks = await submissionService.getMyPendingTasks(parseInt(level));
+    // เรียก Service ที่เราทำไว้ก่อนหน้านี้ (ส่ง userId ไปด้วย)
+    const tasks = await submissionService.getMyPendingTasks(parseInt(level), userId);
 
     // ส่งข้อมูลกลับไปให้ Frontend
     res.status(200).send(tasks);

@@ -265,10 +265,10 @@ exports.createSubmission = async (data) => {
   }
 };
 
-exports.getAllSubmissions = async (category) => {
+exports.getAllSubmissions = async (params) => {
   const pool = await poolConnect; // ✅ ใช้ Pool กลาง
   try {
-    return await submissionRepo.getAllSubmissions(pool, category);
+    return await submissionRepo.getAllSubmissions(pool, params);
   } finally {
     // ✅ ลบ pool.close() ออก
   }
@@ -357,10 +357,55 @@ exports.updateSubmission = async (id, lot_no, form_data) => {
   }
 };
 
-exports.getMyPendingTasks = async (userLevel) => {
+
+exports.getMyPendingTasks = async (userLevel, userId) => {
   const pool = await poolConnect;
-  // เรียกใช้ Repository ตัวใหม่ที่สร้างตะกี้
-  return await submissionRepo.getPendingSubmissionsByLevel(pool, userLevel);
+  const ironpowderRepo = require("../repositories/ironpowder.repository"); // ✅ Import
+
+  // 1. ดึงงานปกติ (Pending Approval)
+  const standardTasks = await submissionRepo.getPendingSubmissionsByLevel(
+    pool,
+    userLevel
+  );
+
+  // 2. ดึงงาน Recycle (Pending Approval)
+  let recycleTasks = [];
+  try {
+    recycleTasks = await ironpowderRepo.getPendingIronpowderByLevel(
+      pool,
+      userLevel
+    );
+  } catch (error) {
+    console.error("Error fetching ironpowder pending tasks:", error);
+  }
+
+  // 3. (Optional) ดึงงานที่ถูก Reject ถ้ามี userId ส่งมา
+  let rejectedStandard = [];
+  let rejectedRecycle = [];
+
+  if (userId) {
+    try {
+      rejectedStandard = await submissionRepo.getRejectedSubmissionsByUser(pool, userId);
+    } catch (err) {
+      console.error("Error fetching rejected standard tasks:", err);
+    }
+
+    try {
+      rejectedRecycle = await ironpowderRepo.getRejectedIronpowderByUser(pool, userId);
+    } catch (err) {
+      console.error("Error fetching rejected recycle tasks:", err);
+    }
+  }
+
+  // 4. รวมและเรียงลำดับตามเวลาล่าสุด
+  const allTasks = [
+    ...standardTasks,
+    ...recycleTasks,
+    ...rejectedStandard,
+    ...rejectedRecycle
+  ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+  return allTasks;
 };
 
 exports.resubmitSubmissionData = async (
@@ -507,9 +552,30 @@ exports.resubmitSubmission = async (id, formDataJson) => {
   }
 };
 
+
 exports.getMyMessages = async (userId) => {
   const pool = await poolConnect;
-  return await submissionRepo.getRecentCommentsForUser(pool, userId);
+  const ironpowderRepo = require("../repositories/ironpowder.repository"); // ✅ Import
+
+  // 1. ดึงข้อความจากงานปกติ
+  const standardMessages = await submissionRepo.getRecentCommentsForUser(pool, userId);
+
+  // 2. ดึงข้อความจากงาน Recycle
+  let recycleMessages = [];
+  try {
+    recycleMessages = await ironpowderRepo.getRecentCommentsForUser(pool, userId);
+  } catch (error) {
+    console.error("Error fetching ironpowder messages:", error);
+    // ไม่ throw error เพื่อให้งานปกติยังแสดงได้
+  }
+
+  // 3. รวมและเรียงลำดับตามเวลาล่าสุด (Action Date)
+  const allMessages = [...standardMessages, ...recycleMessages].sort(
+    (a, b) => new Date(b.action_date) - new Date(a.action_date)
+  );
+
+  // 4. ส่งกลับแค่ 10 รายการล่าสุด
+  return allMessages.slice(0, 10);
 };
 
 // [ฟังก์ชันช่วย] ค้นหาค่าจาก Path (เหมือนเดิม)

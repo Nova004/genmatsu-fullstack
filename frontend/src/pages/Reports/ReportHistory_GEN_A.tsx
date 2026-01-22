@@ -4,6 +4,7 @@
 // --- 1. IMPORT STATEMENTS ---
 // นำเข้าไลบรารีและคอมโพเนนต์ที่จำเป็นทั้งหมด
 // =============================================================================
+import { socket } from '../../services/socket';
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'; // เพิ่ม useNavigate
 import { deleteSubmission, generatePdfById } from '../../services/submissionService';
@@ -17,8 +18,6 @@ import { availableForms } from '../../components/formGen/pages/GEN_A/availableFo
 import {
   useReactTable,
   getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel, // 👈 เพิ่ม import
   flexRender,
   ColumnDef,
   ColumnFiltersState,
@@ -39,7 +38,7 @@ import { SubmissionData } from './components/types'; // ✅ Import Types
 const ReportHistory_GEN_A: React.FC = () => {
 
   // --- 3.1. STATE MANAGEMENT & DATA FETCHING (VIA HOOK) ---
-  const { submissions, setSubmissions, isLoading, error } = useReportHistoryData('GEN_A');
+  const { submissions, setSubmissions, totalRows, isLoading, error, fetchSubmissions } = useReportHistoryData('GEN_A');
 
   // UI State
   const [globalFilter, setGlobalFilter] = useState('');
@@ -49,7 +48,21 @@ const ReportHistory_GEN_A: React.FC = () => {
   const [filterUser, setFilterUser] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [dateRange, setDateRange] = useState<DateValueType>({ startDate: null, endDate: null });
-  const [printingId, setPrintingId] = useState<number | null>(null); // ✅ State สำหรับ Button Loading
+  const [printingId, setPrintingId] = useState<number | null>(null);
+
+  // Pagination State
+  const [{ pageIndex, pageSize }, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+
+  const pagination = useMemo(
+    () => ({
+      pageIndex,
+      pageSize,
+    }),
+    [pageIndex, pageSize]
+  );
 
   const location = useLocation();
   const highlightedId = location.state?.highlightedId;
@@ -65,22 +78,42 @@ const ReportHistory_GEN_A: React.FC = () => {
     }
   }, [searchParams]);
 
-  // --- 3.3. FILTERING EFFECT (Consolidated) ---
+  // --- 3.3. DATA FETCHING TRIGGER ---
+  // Fetch data when pagination or filters change
   useEffect(() => {
-    const newFilters = [];
+    fetchSubmissions(pageIndex, pageSize, {
+      search: globalFilter,
+      startDate: dateRange, // hook will parse property
+      status: filterStatus,
+      formType: filterFormType,
+      user: filterUser // User filter might need implementation in repo if not done
+    });
+  }, [pageIndex, pageSize, globalFilter, filterStatus, filterFormType, dateRange, filterUser]);
 
-    if (dateRange?.startDate) newFilters.push({ id: 'production_date', value: dateRange });
-    if (filterFormType) newFilters.push({ id: 'form_type', value: filterFormType });
-    if (filterUser) newFilters.push({ id: 'submitted_by_name', value: filterUser });
-    if (filterStatus) newFilters.push({ id: 'status', value: filterStatus });
+  // --- 3.4. REAL-TIME UPDATES (Socket.io) ---
+  useEffect(() => {
+    const handleServerAction = (data: any) => {
+      console.log('⚡ Real-time update received:', data);
+      if (data.action === 'refresh_data') {
+        fetchSubmissions(pageIndex, pageSize, {
+          search: globalFilter,
+          startDate: dateRange,
+          status: filterStatus,
+          formType: filterFormType,
+          user: filterUser
+        });
+      }
+    };
 
-    setColumnFilters(newFilters);
-  }, [dateRange, filterFormType, filterUser, filterStatus]);
+    socket.on('server-action', handleServerAction);
+    return () => {
+      socket.off('server-action', handleServerAction);
+    };
+  }, [pageIndex, pageSize, globalFilter, filterStatus, filterFormType, dateRange, filterUser, fetchSubmissions]);
 
 
   // --- 3.5. ACTION HANDLERS (DEFINED BEFORE COLUMNS) ---
-
-  // ฟังก์ชันสำหรับจัดการการลบข้อมูล
+  // ... (handleDelete, handlePrint remain unchanged)
   const handleDelete = (id: number, lotNo: string) => {
     Swal.fire({
       title: 'คุณแน่ใจหรือไม่?',
@@ -102,7 +135,14 @@ const ReportHistory_GEN_A: React.FC = () => {
           setDeletingRowId(id);
           fireToast('success', `รายงาน Lot No: "${lotNo}" ถูกลบแล้ว`);
           setTimeout(() => {
-            setSubmissions(prev => prev.filter(s => s.submission_id !== id));
+            // Refetch to stay consistent, or filter locally
+            fetchSubmissions(pageIndex, pageSize, {
+              search: globalFilter,
+              startDate: dateRange,
+              status: filterStatus,
+              formType: filterFormType,
+              user: filterUser
+            });
             setDeletingRowId(null);
           }, 500);
         } catch (error) {
@@ -129,6 +169,7 @@ const ReportHistory_GEN_A: React.FC = () => {
     }
   };
 
+
   // --- 3.6. TABLE COLUMN DEFINITIONS ---
   const columns = useMemo<ColumnDef<SubmissionData>[]>(
     () => getReportColumns({
@@ -136,34 +177,27 @@ const ReportHistory_GEN_A: React.FC = () => {
       navigate,
       handleDelete,
       handlePrint,
-      printingId // ✅ ส่ง State ไปให้ Columns Component
+      printingId
     }),
-    [highlightedId, deletingRowId, user, printingId] // ✅ เพิ่ม printingId ใน dependency array
+    [highlightedId, deletingRowId, user, printingId]
   );
 
-
-  // --- 3.6. DELETE HANDLER ---
-  // ฟังก์ชันสำหรับจัดการการลบข้อมูล ใช้ Swal.fire เพื่อแสดง dialog ยืนยันก่อนลบ
-
-
   // --- 3.7. TABLE INSTANCE CREATION ---
-  // สร้าง instance ของตารางด้วย `useReactTable` hook
-  // โดยส่งข้อมูล (data), โครงสร้างคอลัมน์ (columns), และ state การกรองต่างๆ เข้าไป
   const table = useReactTable({
     data: submissions,
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(), // ✅ เพิ่ม Pagination Model
+    pageCount: Math.ceil(totalRows / pageSize), // ✅ Pass pageCount from backend total
     state: {
+      pagination, // ✅ Control pagination state
       globalFilter,
       columnFilters,
     },
-    initialState: {
-      pagination: {
-        pageSize: 10, // ✅ กำหนดให้แสดงหน้าละ 10 แถว
-      },
-    },
+    manualPagination: true, // ✅ Enable server-side pagination
+    onPaginationChange: setPagination,
+    getCoreRowModel: getCoreRowModel(),
+    // getFilteredRowModel: getFilteredRowModel(), // Disable client-side filtering if doing server-side?
+    // Actually keep it for client-side column filters if needed, but usually we move all to server.
+    // For now, let's keep getFilteredRowModel just in case, but data coming in is already filtered.
     onGlobalFilterChange: setGlobalFilter,
     onColumnFiltersChange: setColumnFilters,
   });

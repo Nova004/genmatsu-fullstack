@@ -168,41 +168,22 @@ exports.createIronpowder = async ({ lotNo, formData, submittedBy }) => {
   }
 };
 
-exports.getAllIronpowder = async () => {
+exports.getAllIronpowder = async (params) => {
   try {
     const pool = await poolConnect;
-    const result = await pool.request().query(`
-      SELECT 
-        fs.submissionId,
-        fs.lot_no,
-        fs.form_type,
-        fs.submitted_by,
-        u.agt_member_nameEN AS submitted_by_name, -- ✅ เพิ่มชื่อผู้บันทึก
-        fs.status,
-        fs.report_date,
-        fs.machine_name,
-        (
-          SELECT TOP 1 required_level 
-          FROM Form_Ironpowder_Approval_Flow f 
-          WHERE f.submissionId = fs.submissionId AND f.status = 'Pending'
-          ORDER BY f.sequence ASC
-        ) AS pending_level, -- ✅ คำนวณ pending_level จากตาราง Flow
-        fs.total_input,
-        fs.total_output,
-        fs.diff_weight,
-        fs.created_at,
-        fs.updated_at
-      FROM Form_Ironpowder_Submissions fs
-      LEFT JOIN AGT_SMART_SY.dbo.agt_member u ON CAST(fs.submitted_by AS NVARCHAR(50)) COLLATE Thai_CI_AS = u.agt_member_id
-      ORDER BY fs.created_at DESC
-    `);
+    const result = await ironpowderRepo.getAllIronpowder(pool, params);
 
-    return result.recordset;
+    // result is now { data: [...], total: number }
+    return {
+      data: result.data,
+      total: result.total
+    };
   } catch (error) {
     console.error("Error fetching ironpowder list:", error);
     throw error;
   }
 };
+
 
 exports.getIronpowderById = async (submissionId) => {
   try {
