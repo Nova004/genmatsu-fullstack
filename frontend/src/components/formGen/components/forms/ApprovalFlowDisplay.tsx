@@ -1,3 +1,4 @@
+// local src/components/formGen/components/forms/ApprovalFlowDisplay.tsx
 import React, { useState, useEffect } from "react";
 import {
   getApprovalFlowBySubmissionId,
@@ -131,7 +132,8 @@ const ApprovalFlowDisplay: React.FC<Props> = ({ submissionId, submissionData }) 
   // ⚠️ "creator_name" และ "created_at" เป็นชื่อสมมติ, คุณต้องเปลี่ยนเป็นชื่อที่ถูกต้องจาก object "submissionData"
   const creator = {
     name: submissionData?.submitted_by_name || submissionData?.submitted_by || "N/A",
-    date: submissionData?.submitted_at || submissionData?.created_at || null,
+    // ✅ Prioritize production_date (General) or report_date (Ironpowder), fallback to created/submitted
+    date: submissionData?.production_date || submissionData?.report_date || submissionData?.submitted_at || submissionData?.created_at || null,
   };
 
   console.log('ข้อมูล submissionData ที่ได้รับมา:', submissionData);

@@ -46,6 +46,7 @@ exports.getSubmissionWithDetails = async (pool, submissionId) => {
           fs.submitted_at, 
           fs.status, 
           fsd.form_data_json,
+          fsd.production_date, -- ✅ Added production_date
           u.agt_member_nameEN AS submitted_by_name
       FROM Form_Submissions fs
       JOIN Form_Submission_Data fsd ON fs.submission_id = fsd.submission_id
@@ -262,7 +263,7 @@ exports.getAllSubmissions = async (pool, category) => {
     request.input("category", sql.NVarChar, category);
   }
 
-  baseQuery += ` ORDER BY fs.submitted_at DESC`;
+  baseQuery += ` ORDER BY fs.submission_id DESC`;
 
   const result = await request.query(baseQuery);
   return result.recordset;
