@@ -129,9 +129,9 @@ export const getReportColumns = ({
 
                         {/* Edit Button */}
                         {(() => {
-                            const isNeedsEdit = submission.status === 'Rejected' && (user?.id == submission.submitted_by_name);
+                            const isNeedsEdit = submission.status === 'Rejected' && (user?.id == submission.submitted_by);
                             const canEdit = (
-                                (user?.id == submission.submitted_by_name) ||
+                                (user?.id == submission.submitted_by) ||
                                 (user?.LV_Approvals === 3)
                             );
                             const tooltipText = isNeedsEdit ? "งานถูกตีกลับ กรุณาแก้ไข" : "แก้ไขข้อมูล";
@@ -165,7 +165,7 @@ export const getReportColumns = ({
                         })()}
 
                         {/* Delete Button */}
-                        {((user?.id == submission.submitted_by_name) || (user?.LV_Approvals === 3)) && (
+                        {((user?.id == submission.submitted_by) || (user?.LV_Approvals === 3)) && (
                             <Tooltip message="ลบรายการนี้">
                                 <button
                                     onClick={() => handleDelete(submission.submission_id, submission.lot_no)}

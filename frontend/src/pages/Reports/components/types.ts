@@ -5,6 +5,7 @@ export interface SubmissionData {
   status: string;
   form_type: string;
   pending_level?: number;
+  submitted_by?: number | string; // ✅ Added to fix TS Error
   submitted_by_name: string;
   category: string;
   production_date?: string; // Optional because logic checks for it
