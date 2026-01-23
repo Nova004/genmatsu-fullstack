@@ -48,6 +48,7 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({ config, inputIndex = 0,
     'leadTime',
     'amount', // สมมติว่ามี field จำนวนชิ้น
     'rawMaterials.sg',
+    'humidity'
   ];
 
   // 🔥 2. ตรวจสอบว่า field ปัจจุบันอยู่ในรายการยกเว้นหรือไม่

@@ -28,5 +28,6 @@ export const EXCLUDED_DECIMAL_FIELDS = [
     'calculations.nacl15SpecGrav',
     'no',
     'qty',
-    'rawMaterials.sg'
+    'rawMaterials.sg',
+    'humidity'
 ];
