@@ -45,7 +45,7 @@ const DataCell = ({ item, isLineC = false, editingId, tempStValue, setTempStValu
         <>
             {/* Product Name */}
             <td className="border-r border-b border-gray-300 px-1 py-0.5 text-center align-top max-w-[80px]">
-                <span className="font-bold text-gray-900 text-sm block break-words leading-tight" title={item.productName}>{item.productName}</span>
+                <span className="font-bold text-gray-900 text-xs block break-words leading-tight" title={item.productName}>{item.productName}</span>
             </td>
             {/* Lot No */}
             <td className="border-r border-b border-gray-300 px-1 py-0.5 text-center align-top">
@@ -54,7 +54,7 @@ const DataCell = ({ item, isLineC = false, editingId, tempStValue, setTempStValu
             {/* Input & Std. Plan */}
             <td className="border-r border-b border-gray-300 px-1 py-0.5 text-right align-top">
                 <div className="flex flex-col items-end gap-0">
-                    <span className="text-base font-bold text-gray-1000 leading-tight">
+                    <span className="text-xs font-bold text-gray-1000 leading-tight">
                         {item.input?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </span>
                     {isEditing ? (
@@ -71,11 +71,11 @@ const DataCell = ({ item, isLineC = false, editingId, tempStValue, setTempStValu
                         </div>
                     ) : (
                         <div className="group flex items-center justify-end gap-1 cursor-pointer hover:bg-gray-100 rounded px-1 w-full" onClick={() => onStartEdit(item)}>
-                            <span className="text-[13px] text-gray-400 font-bold">Std.</span>
-                            <span className="text-ls font-bold text-gray-600 group-hover:text-blue-700">
+                            <span className="text-xs text-gray-900 font-bold">Std.</span>
+                            <span className="text-xs font-bold text-gray-900 group-hover:text-blue-700">
                                 {item.stPlan?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                             </span>
-                            <FaPen size={8} className="opacity-0 group-hover:opacity-100 text-gray-400 ml-0.5 print:hidden" />
+                            <FaPen size={8} className="opacity-0 group-hover:opacity-100 text-gray-600 ml-0.5 print:hidden" />
                         </div>
                     )}
                 </div>
@@ -83,11 +83,11 @@ const DataCell = ({ item, isLineC = false, editingId, tempStValue, setTempStValu
             {/* Output & Yield */}
             <td className="border-r border-b border-gray-300 px-1 py-0.5 text-right align-top">
                 <div className="flex flex-col items-end gap-0">
-                    <span className="text-base font-black text-gray-900 leading-tight">
+                    <span className="text-xs font-black text-gray-900 leading-tight">
                         {item.output?.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </span>
                     <div className={`flex items-center justify-end gap-1 px-0 ${isLowYield ? 'text-red-700' : 'text-green-700'}`}>
-                        <span className="text-[13px] opacity-80 font-bold">Yield</span>
+                        <span className="text-xs font-bold">Yield</span>
                         <span className="text-xs font-extrabold">{item.yield?.toFixed(2)}%</span>
                     </div>
                 </div>
@@ -103,12 +103,12 @@ const DataCell = ({ item, isLineC = false, editingId, tempStValue, setTempStValu
                             </div>
                         ))}
                     </div>
-                ) : <span className="text-gray-300 text-center block text-xs py-0.5 font-bold">-</span>}
+                ) : <span className="text-gray-900 text-center block text-xs py-0.5 font-bold">-</span>}
             </td>
             {/* Moisture */}
             {isLineC && (
                 <td className="border-r border-b border-gray-300 p-0.5 text-center align-top">
-                    {item.moisture != null ? <span className="text-lg font-black text-gray-1000">{item.moisture.toFixed(2)}%</span> : <span className="text-gray-300 text-xs font-bold">-</span>}
+                    {item.moisture != null ? <span className="text-xs font-black text-gray-1000">{item.moisture.toFixed(2)}%</span> : <span className="text-gray-900 text-xs font-bold">-</span>}
                 </td>
             )}
         </>
@@ -120,7 +120,7 @@ const DailyReportRow: React.FC<DailyReportRowProps> = (props) => {
     if (props.isSingleLine) {
         return (
             <tr className="hover:bg-blue-50 border-b border-gray-300 transition-colors">
-                <td className="border-r border-gray-300 p-0.5 text-center font-bold text-gray-600 bg-gray-50 align-top text-xs">{props.index + 1}</td>
+                <td className="border-r border-gray-300 p-0.5 text-center font-bold text-gray-900 bg-gray-50 align-top text-xs">{props.index + 1}</td>
                 {/* ใช้ itemD ที่ส่งมา */}
                 <DataCell item={props.itemD} isLineC={false} {...props} />
             </tr>
@@ -130,7 +130,7 @@ const DailyReportRow: React.FC<DailyReportRowProps> = (props) => {
     // ✅ 2. โหมดปกติ (หน้าแรก) : แสดง A, B, C และ Recycle
     return (
         <tr className="hover:bg-blue-50 border-b border-gray-300 transition-colors">
-            <td className="border-r border-gray-300 p-0.5 text-center font-bold text-gray-600 bg-gray-50 align-top text-xs">{props.index + 1}</td>
+            <td className="border-r border-gray-300 p-0.5 text-center font-bold text-gray-900 bg-gray-50 align-top text-xs">{props.index + 1}</td>
             <DataCell item={props.itemA} {...props} />
             <DataCell item={props.itemB} {...props} />
             <DataCell item={props.itemC} isLineC={true} {...props} />
@@ -139,18 +139,18 @@ const DailyReportRow: React.FC<DailyReportRowProps> = (props) => {
                 <div className="flex flex-col gap-0.5 h-full justify-center items-center">
                     {props.recycleValue != null ? (
                         <>
-                            <span className="text-base font-black text-gray-900 leading-tight">
+                            <span className="text-xs font-black text-gray-900 leading-tight">
                                 {props.recycleValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                             </span>
                             {/* Show percentage if available */}
                             {props.recyclePercent !== undefined && (
-                                <span className={`text-sm font-bold ${props.recycleLabel === 'Input' ? 'text-gray-400' : 'text-gray-500'}`}>
+                                <span className={`text-xs font-bold ${props.recycleLabel === 'Input' ? 'text-gray-900' : 'text-gray-900'}`}>
                                     ({props.recyclePercent.toFixed(2)}%)
                                 </span>
                             )}
                         </>
                     ) : (
-                        <span className="text-gray-400 font-bold">-</span>
+                        <span className="text-gray-900 font-bold">-</span>
                     )}
                 </div>
             </td>

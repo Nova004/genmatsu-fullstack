@@ -1,23 +1,211 @@
 {
-  "remarks": {
-    "lineA": "Day Shift PM Mix NCR AJ4 Lot no.5338B2 = 58 Kg.(A1)",
-    "lineB": "Day Shift PM",
-    "lineC": "Day Shift PM",
-    "recycle": "",
-    "lineD": ""
+  "basicData": {
+    "date": "2026-01-23",
+    "machineName": "B",
+    "lotNo": "6023B1",
+    "mcOperatorRole": "M/C operator"
   },
-  "recycleValues": [
-    { "kg": "", "percent": "" },
-    { "kg": "", "percent": "" },
-    { "kg": "", "percent": "" },
-    { "kg": "", "percent": "" },
-    { "kg": "", "percent": "" },
-    { "kg": "", "percent": "" },
-    { "kg": "", "percent": "" },
-    { "kg": "", "percent": "" }
+  "mcOperators": [
+    {
+      "id": "201671",
+      "name": "Mr.Wirachon  Chongbun",
+      "number": "5"
+    },
+    {
+      "id": "-",
+      "name": "-",
+      "number": "-"
+    },
+    {
+      "id": "-",
+      "name": "-",
+      "number": "-"
+    }
   ],
-  "recycleTotalPacking": "",
-  "recycleTotalDiff": "",
-  "genmatsuTypeHeader": "Genmatsu Type",
-  "recycleLotHeader": "-"
+  "assistants": [
+    {
+      "id": "201797",
+      "name": "Mr.Natthawut  Keawpraiwan",
+      "number": "7"
+    },
+    {
+      "id": "202061",
+      "name": "Mr.Chitsanupong Dachthuyawat",
+      "number": "12"
+    },
+    {
+      "id": "-",
+      "name": "-",
+      "number": "-"
+    },
+    {
+      "id": "-",
+      "name": "-",
+      "number": "-"
+    }
+  ],
+  "conditions": [
+    {
+      "status": "OK"
+    },
+    {
+      "status": "OK"
+    }
+  ],
+  "values": [],
+  "checklist": {
+    "coolingValve": "Mr.Wirachon  Chongbun (5)",
+    "butterflyValve": "Mr.Wirachon  Chongbun (5)"
+  },
+  "rawMaterials": {
+    "netWeightOfYieldSTD": "0.00",
+    "diaEarth": "2006.00",
+    "rowater": "40.00",
+    "calciumchloride": "40.00",
+    "sg": "1.408",
+    "activated": "16.50",
+    "perlite": "10.00",
+    "sulfur": "0.67",
+    "remainedGenmatsu": {
+      "lot": "-",
+      "actual": "0.00"
+    },
+    "shelfLife": "0",
+    "ncrGenmatsu": {
+      "lot": "-",
+      "actual": "0.00"
+    }
+  },
+  "cg1cWeighting": {
+    "row1": {
+      "bagWeight": "2.00",
+      "cg1c": 1005,
+      "bagNo": "118",
+      "net": "1003.00"
+    },
+    "row2": {
+      "bagWeight": "2.00",
+      "cg1c": 1005,
+      "bagNo": "119",
+      "net": "1003.00"
+    },
+    "total": "2006.00"
+  },
+  "rc417Weighting": {
+    "row1": {
+      "bagWeight": "0.00"
+    },
+    "row2": {
+      "bagWeight": "0.00"
+    }
+  },
+  "operationResults": [
+    {
+      "startTime": "08:02"
+    },
+    {},
+    {},
+    {
+      "subItems": [
+        null,
+        {
+          "startTime": "08:17",
+          "finishTime": "08:21"
+        }
+      ],
+      "startTime": "08:12",
+      "finishTime": "08:15"
+    },
+    {
+      "subItems": [
+        {
+          "startTime": "08:22",
+          "finishTime": "08:32"
+        }
+      ]
+    },
+    {
+      "subItems": [
+        {
+          "startTime": "08:34",
+          "finishTime": "08:47"
+        }
+      ]
+    },
+    {
+      "subItems": [
+        {
+          "startTime": "08:49",
+          "finishTime": "09:29"
+        }
+      ]
+    },
+    {
+      "humidity": 130
+    },
+    {},
+    {
+      "startTime": "09:32",
+      "finishTime": "10:22"
+    },
+    {
+      "AD": 2.7
+    },
+    {
+      "tempPoint1": 98,
+      "tempPoint2": 102,
+      "tempPoint3": 104
+    },
+    {
+      "startTime": "10:24",
+      "finishTime": "10:36"
+    }
+  ],
+  "palletInfo": [
+    {
+      "no": "118",
+      "qty": "450",
+      "canNo": "1-3"
+    },
+    {
+      "no": "119",
+      "qty": "750",
+      "canNo": "4-8"
+    },
+    {
+      "no": "120",
+      "qty": "750",
+      "canNo": "9-13"
+    },
+    {
+      "no": "121",
+      "qty": "100",
+      "canNo": "14"
+    }
+  ],
+  "inputProduct": [],
+  "outputGenmatsuA": [],
+  "outputGenmatsuB": [],
+  "outputGenmatsuBRight": [],
+  "outputFilmProduct": [],
+  "outputFilmProductRight": [],
+  "outputPEBag": [],
+  "outputDustCollector": [],
+  "outputCleaning": [],
+  "lot_no": "6023B1",
+  "calculations": {
+    "finalTotalWeight": "2073.17"
+  },
+  "packingResults": {
+    "yieldPercent": "98.88",
+    "quantityOfProduct": {
+      "cans": 13,
+      "calculated": "2050.00"
+    },
+    "weighttank": {
+      "tank": "100.00"
+    },
+    "remain": 0,
+    "meshPass40": 4.2
+  }
 }

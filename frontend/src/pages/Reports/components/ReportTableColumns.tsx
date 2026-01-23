@@ -32,15 +32,15 @@ export const getReportColumns = ({
         },
         {
             accessorKey: 'form_type',
-            header: category === 'Recycle' ? 'Machine Name' : 'ประเภทฟอร์ม',
+            header: category === 'Recycle' ? 'Machine Name' : 'Form Type',
         },
         {
             accessorKey: 'submitted_by_name',
-            header: 'ผู้บันทึก',
+            header: 'Record By',
         },
         {
             accessorKey: 'production_date',
-            header: 'วันที่ผลิต',
+            header: 'Date',
             cell: info => {
                 const val = info.getValue<string>();
                 if (!val) return "-";
@@ -73,7 +73,7 @@ export const getReportColumns = ({
         },
         {
             accessorKey: 'status',
-            header: 'สถานะ',
+            header: 'Status',
             cell: info => {
                 const status = info.getValue<string>();
                 const colorClass = getStatusColorClass(status);

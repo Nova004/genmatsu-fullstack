@@ -20,21 +20,30 @@ const FormHeader: React.FC<FormHeaderProps> = ({ title, formTypes, currentValue,
     // ค้นหา path ที่ตรงกับค่าที่เลือก
     const selectedForm = formTypes.find(form => form.value === selectedValue);
     if (selectedForm) {
+      localStorage.setItem('lastUsedFormPath', selectedForm.path); // ✅ Save to LS
       navigate(selectedForm.path); // 👈 7. สั่งให้เปลี่ยนหน้าไปยัง path ที่กำหนด
     }
   };
+
+  // ✅ Add useEffect to save current path on mount (in case of direct navigation)
+  React.useEffect(() => {
+    const currentForm = formTypes.find(form => form.value === currentValue);
+    if (currentForm) {
+      localStorage.setItem('lastUsedFormPath', currentForm.path);
+    }
+  }, [currentValue, formTypes]);
 
   return (
     <div className="flex flex-col items-center justify-between gap-4 rounded-sm border border-stroke p-4 dark:border-strokedark md:flex-row">
       <h4 className="text-lg font-semibold text-black dark:text-white">
         {title}
       </h4>
-      
+
       {formTypes.length > 1 && (
         // 8. ใช้ onChange และ value แทน register
-        <select 
-          className={`${inputClass} max-w-xs`} 
-          value={currentValue} 
+        <select
+          className={`${inputClass} max-w-xs`}
+          value={currentValue}
           onChange={handleFormChange}
         >
           {formTypes.map((form) => (

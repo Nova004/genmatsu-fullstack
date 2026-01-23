@@ -113,7 +113,7 @@ const ProductionReportPage: React.FC = () => {
 
   return (
     <>
-      <Breadcrumb pageName="Daily Production Report" />
+      <Breadcrumb pageName="Daily GenManufacturing Report" />
 
       <div className="flex flex-col gap-5">
         <div className="rounded-sm border border-stroke bg-white p-5 shadow-default dark:border-strokedark dark:bg-boxdark">
@@ -122,7 +122,7 @@ const ProductionReportPage: React.FC = () => {
             {/* Date Input */}
             <div className="w-full md:w-1/3">
               <label className="mb-2 block text-sm font-medium text-black dark:text-white">
-                Production Date
+                Date
               </label>
               <input
                 type="date"
@@ -135,7 +135,7 @@ const ProductionReportPage: React.FC = () => {
             {/* Lot No Input */}
             <div className="w-full md:w-1/3">
               <label className="mb-2 block text-sm font-medium text-black dark:text-white">
-                Lot No. (First 4 digits)
+                Lot No.
               </label>
               <div className="relative">
                 <input

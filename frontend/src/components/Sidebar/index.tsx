@@ -218,7 +218,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 (isActive && '!text-white')
                               }
                             >
-                              Data Production Amount
+                              Daily Gen Report
                             </NavLink>
                           </li>
                         </ul>

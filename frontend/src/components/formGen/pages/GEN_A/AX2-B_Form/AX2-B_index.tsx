@@ -10,6 +10,7 @@ import FormHeader from '../../../components/FormHeader';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
 import { useProductionForm } from '../../../../../hooks/useProductionForm';
 import { availableForms } from '../availableForms_GENA.ts';
+import Breadcrumb from '../../../../../components/Breadcrumbs/Breadcrumb';
 
 
 
@@ -59,6 +60,8 @@ function AX2_B_Form() {
     const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
 
     return (
+        <>
+        <Breadcrumb pageName="Form Elements" />
         <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
             <form onSubmit={onSubmit}>
                 <FormHeader
@@ -99,6 +102,7 @@ function AX2_B_Form() {
                 </div>
             </form>
         </div>
+        </>
     );
 }
 

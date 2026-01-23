@@ -195,9 +195,6 @@ const ReportHistory_GEN_A: React.FC = () => {
     manualPagination: true, // ✅ Enable server-side pagination
     onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
-    // getFilteredRowModel: getFilteredRowModel(), // Disable client-side filtering if doing server-side?
-    // Actually keep it for client-side column filters if needed, but usually we move all to server.
-    // For now, let's keep getFilteredRowModel just in case, but data coming in is already filtered.
     onGlobalFilterChange: setGlobalFilter,
     onColumnFiltersChange: setColumnFilters,
   });
@@ -206,15 +203,9 @@ const ReportHistory_GEN_A: React.FC = () => {
   // ส่วนของการแสดงผล UI ของคอมโพเนนต์
   return (
     <>
-      <Breadcrumb pageName="ประวัติการบันทึก (Report History)" />
+      <Breadcrumb pageName="Record History GEN A" />
 
       <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
-        {/* ======================================================================== */}
-        {/* 🟢 SECTION: TOOLBAR & CONTROLS (PREMIUM LAYOUT)                          */}
-        {/* ======================================================================== */}
-        {/* ======================================================================== */}
-        {/* 🟢 SECTION: TOOLBAR & CONTROLS (PREMIUM LAYOUT)                          */}
-        {/* ======================================================================== */}
         <ReportTableToolbar
           globalFilter={globalFilter}
           setGlobalFilter={setGlobalFilter}

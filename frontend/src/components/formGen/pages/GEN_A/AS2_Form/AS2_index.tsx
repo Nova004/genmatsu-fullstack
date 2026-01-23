@@ -10,6 +10,7 @@ import FormHeader from '../../../components/FormHeader';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
 import { useProductionForm } from '../../../../../hooks/useProductionForm';
 import { availableForms } from '../availableForms_GENA.ts';
+import Breadcrumb from '../../../../../components/Breadcrumbs/Breadcrumb';
 
 
 
@@ -36,13 +37,12 @@ const AS2_VALIDATION_SCHEMA = {
 function AS2_Form() {
     const navigate = useNavigate(); // ยังคงต้องใช้สำหรับปุ่ม Back to history
     const totalSteps = 4;
-    // 🚀 เรียกใช้ Hook เพื่อจัดการ Logic ของฟอร์มทั้งหมด
     const { formMethods, isSubmitting, onSubmit, handleTemplateLoaded, onDraft } = useProductionForm({
         formType: 'AS2',
         netWeightOfYieldSTD: 0,
         category: 'GEN_A'
     });
-
+    
     // ดึงสิ่งที่จำเป็นออกมาจาก formMethods
     const { register, trigger, watch, getValues, setValue, control, formState: { errors } } = formMethods;
 
@@ -59,6 +59,8 @@ function AS2_Form() {
     const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
 
     return (
+        <>
+         <Breadcrumb pageName="Form Elements" />
         <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
             <form onSubmit={onSubmit}>
                 <FormHeader
@@ -99,6 +101,7 @@ function AS2_Form() {
                 </div>
             </form>
         </div>
+        </>
     );
 }
 
