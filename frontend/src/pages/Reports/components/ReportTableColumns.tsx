@@ -32,7 +32,7 @@ export const getReportColumns = ({
         },
         {
             accessorKey: 'form_type',
-            header: 'ประเภทฟอร์ม',
+            header: category === 'Recycle' ? 'Machine Name' : 'ประเภทฟอร์ม',
         },
         {
             accessorKey: 'submitted_by_name',

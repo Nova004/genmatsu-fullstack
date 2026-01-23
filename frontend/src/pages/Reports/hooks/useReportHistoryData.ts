@@ -42,6 +42,8 @@ export const useReportHistoryData = (
           startDate: filters.startDate?.startDate || null,
           endDate: filters.startDate?.endDate || null,
           status: filters.status,
+          user: filters.user, // ✅ Send User
+          formType: filters.formType, // ✅ Send Form Type
           category: 'Recycle', // ✅ ส่ง category ตามที่ User ต้องการ
         });
 
@@ -57,6 +59,7 @@ export const useReportHistoryData = (
           endDate: filters.startDate?.endDate || null,
           status: filters.status,
           formType: filters.formType,
+          user: filters.user, // ✅ Pass User filter
         });
 
         data = response.data;
@@ -69,7 +72,7 @@ export const useReportHistoryData = (
         lot_no: item.lot_no,
         submitted_at: item.created_at || item.submitted_at || item.report_date,
         status: item.status,
-        form_type: item.form_type || item.machine_name || 'Recycle',
+        form_type: item.machine_name || item.form_type || 'Recycle', // ✅ Use machine_name as primary
         production_date: item.production_date || item.report_date,
         pending_level: item.pending_level,
         submitted_by_name:

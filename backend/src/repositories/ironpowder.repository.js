@@ -89,7 +89,7 @@ exports.getApprovedLogs = async (pool, submissionId) => {
 };
 
 exports.getAllIronpowder = async (pool, params) => {
-  const { page, pageSize, search, startDate, endDate, status } = params;
+  const { page, pageSize, search, startDate, endDate, status, user, formType } = params;
   const offset = (page - 1) * pageSize;
 
   const request = pool.request();
@@ -99,6 +99,16 @@ exports.getAllIronpowder = async (pool, params) => {
   if (search) {
     request.input('search', sql.NVarChar, `%${search}%`);
     conditions.push("(fs.lot_no LIKE @search OR u.agt_member_nameEN LIKE @search)");
+  }
+
+  if (user) {
+    request.input('user', sql.NVarChar, `%${user}%`);
+    conditions.push("u.agt_member_nameEN LIKE @user");
+  }
+
+  if (formType) {
+    request.input('formType', sql.NVarChar, formType);
+    conditions.push("fs.machine_name = @formType"); // ✅ User confirmed to use machine_name
   }
 
   // Validate dates
@@ -157,7 +167,7 @@ exports.getAllIronpowder = async (pool, params) => {
       FROM Form_Ironpowder_Submissions fs
       LEFT JOIN AGT_SMART_SY.dbo.agt_member u ON CAST(fs.submitted_by AS NVARCHAR(50)) COLLATE Thai_CI_AS = u.agt_member_id
       ${whereClause}
-      ORDER BY fs.created_at DESC
+      ORDER BY fs.submissionId DESC
       OFFSET @offset ROWS
       FETCH NEXT @limit ROWS ONLY
   `;

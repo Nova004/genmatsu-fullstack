@@ -224,7 +224,7 @@ exports.createSubmissionData = async (
 };
 
 exports.getAllSubmissions = async (pool, params) => {
-  const { page, pageSize, search, startDate, endDate, status, formType, category } = params;
+  const { page, pageSize, search, startDate, endDate, status, formType, category, user } = params;
   const offset = (page - 1) * pageSize;
 
   const request = new sql.Request(pool);
@@ -239,6 +239,11 @@ exports.getAllSubmissions = async (pool, params) => {
   if (search) {
     request.input('search', sql.NVarChar, `%${search}%`);
     conditions.push("(fs.lot_no LIKE @search OR u.agt_member_nameEN LIKE @search)");
+  }
+
+  if (user) {
+    request.input('user', sql.NVarChar, `%${user}%`);
+    conditions.push("u.agt_member_nameEN LIKE @user");
   }
 
   // Validate dates before adding to query
@@ -305,7 +310,7 @@ exports.getAllSubmissions = async (pool, params) => {
     LEFT JOIN agt_member u ON fs.submitted_by COLLATE Thai_CI_AS = u.agt_member_id
     LEFT JOIN Form_Version_Sets fvs ON fs.version_set_id = fvs.version_set_id
     ${whereClause}
-    ORDER BY fs.submitted_at DESC
+    ORDER BY fs.submission_id DESC
     OFFSET @offset ROWS
     FETCH NEXT @limit ROWS ONLY
   `;

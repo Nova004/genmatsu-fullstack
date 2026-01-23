@@ -54,7 +54,9 @@ exports.getAllIronpowder = async (req, res) => {
       startDate: startDate || null,
       endDate: endDate || null,
       status: status || '',
-      category: req.query.category || 'Recycle' // ✅ รับ Category from Query Param (Default 'Recycle')
+      category: req.query.category || 'Recycle',
+      user: req.query.user || '', // ✅ Pass User filter
+      formType: req.query.formType || '' // ✅ Pass Form Type filter
     };
 
     const data = await ironpowderService.getAllIronpowder(params);

@@ -44,6 +44,7 @@ export const getAllSubmissions = async (
     endDate?: string | null;
     status?: string;
     formType?: string;
+    user?: string; // ✅ Add User
   },
 ): Promise<PaginatedResponse<any>> => {
   try {
@@ -58,6 +59,7 @@ export const getAllSubmissions = async (
     if (params.endDate) queryParams.append('endDate', params.endDate);
     if (params.status) queryParams.append('status', params.status);
     if (params.formType) queryParams.append('formType', params.formType);
+    if (params.user) queryParams.append('user', params.user); // ✅ Append User param
 
     const response = await apiClient.get<PaginatedResponse<any>>(
       `${API_ENDPOINTS.SUBMISSIONS}?${queryParams.toString()}`,

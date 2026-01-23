@@ -39,6 +39,8 @@ export const ironpowderService = {
     endDate?: string | null;
     status?: string;
     category?: string;
+    user?: string; // ✅ Add User
+    formType?: string; // ✅ Add Form Type (if needed)
   }) => {
     try {
       const queryParams = new URLSearchParams({
@@ -51,6 +53,8 @@ export const ironpowderService = {
       if (params.endDate) queryParams.append('endDate', params.endDate);
       if (params.status) queryParams.append('status', params.status);
       if (params.category) queryParams.append('category', params.category);
+      if (params.user) queryParams.append('user', params.user); // ✅ Append User param
+      if (params.formType) queryParams.append('formType', params.formType); // ✅ Append Form Type param
 
       const response = await apiClient.get<PaginatedResponse<any>>(
         `/ironpowder?${queryParams.toString()}`,

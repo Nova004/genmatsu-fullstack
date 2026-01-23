@@ -70,7 +70,7 @@ exports.updateStPlan = async (req, res) => {
 
 exports.getAllSubmissions = async (req, res) => {
   try {
-    const { page, pageSize, search, startDate, endDate, status, formType, category } = req.query;
+    const { page, pageSize, search, startDate, endDate, status, formType, category, user } = req.query;
 
     const result = await submissionService.getAllSubmissions({
       page: parseInt(page) || 1,
@@ -80,7 +80,8 @@ exports.getAllSubmissions = async (req, res) => {
       endDate,
       status,
       formType,
-      category
+      category,
+      user // ✅ Pass User filter
     });
 
     res.status(200).send(result);
