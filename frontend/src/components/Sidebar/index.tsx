@@ -185,7 +185,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 (isActive && '!text-white')
                               }
                             >
-                              Genmatsu A
+                              Record History GEN A
                             </NavLink>
                           </li>
                           <li>
@@ -196,7 +196,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 (isActive && '!text-white')
                               }
                             >
-                              Genmatsu B
+                              Record History GEN B
                             </NavLink>
                           </li>
                           <li>
@@ -207,7 +207,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 (isActive && '!text-white')
                               }
                             >
-                              Recycle Form
+                              Record History Recycle
                             </NavLink>
                           </li>
                           <li>

@@ -2,6 +2,7 @@
 
 const sql = require("mssql");
 const dbConfig = require("../config/db.config");
+const activityLogRepo = require("../repositories/activityLog.repository"); // ✅ Import Logger
 
 // Helper to get table names and column names based on category
 const getTables = (category) => {
@@ -96,7 +97,10 @@ const getApprovalFlow = async (req, res) => {
 // ----------------------------------------------------------------
 const performApprovalAction = async (req, res) => {
   // ข้อมูลที่ Frontend ต้องส่งมา
-  const { submissionId, action, comment, approverUserId, category } = req.body; // รับ category
+  let { submissionId, action, comment, approverUserId, category } = req.body; // รับ category
+
+  // ✅ 0. Sanitize submissionId (Fix "516.00" issue)
+  submissionId = parseInt(submissionId);
 
   const { flowTable, logTable, submissionTable, submissionIdCol } = getTables(category);
 
@@ -243,6 +247,15 @@ const performApprovalAction = async (req, res) => {
         `);
     }
 
+    // ✅ Get Lot No & Form Type for better logging
+    const infoRequest = new sql.Request(transaction);
+    const infoResult = await infoRequest
+      .input("submissionId", sql.Int, submissionId)
+      .query(`SELECT lot_no, form_type FROM ${submissionTable} WHERE ${submissionIdCol} = @submissionId`);
+
+    const lotNo = infoResult.recordset[0]?.lot_no || 'Unknown';
+    const formType = infoResult.recordset[0]?.form_type || 'Submission';
+
     // --- 5. Commit Transaction ---
     await transaction.commit();
 
@@ -250,6 +263,16 @@ const performApprovalAction = async (req, res) => {
       console.log(`[Approval] Emitting 'refresh_data' for Submission ID: ${submissionId}`);
       req.io.emit("server-action", { action: "refresh_data", updatedId: submissionId });
     }
+
+    // ✅ Log Activity for Approval/Rejection
+    const reasonText = comment ? `. Reason: ${comment}` : '';
+    await activityLogRepo.createLog({
+      userId: approverUserId,
+      actionType: action.toUpperCase(), // 'APPROVED' or 'REJECTED'
+      targetModule: formType, // ✅ Use specific form type (GEN-A, Ironpowder, etc.)
+      targetId: submissionId, // ✅ Already parseInt-ed
+      details: `${action} Lot No: ${lotNo}${reasonText}`
+    });
 
     res.status(200).send({ message: `ดำเนินการ ${action} สำเร็จ!` });
   } catch (error) {

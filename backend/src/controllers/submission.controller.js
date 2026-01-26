@@ -114,7 +114,8 @@ exports.deleteSubmission = async (req, res) => {
   console.log(`[Controller] deleteSubmission called for ID: ${id}`);
 
   try {
-    const isDeleted = await submissionService.deleteSubmission(id);
+    const userId = req.user ? req.user.id : "System"; // Fallback to System if no user
+    const isDeleted = await submissionService.deleteSubmission(id, userId);
     console.log(`[Controller] isDeleted result: ${isDeleted}`);
 
     if (!isDeleted) {
@@ -151,7 +152,8 @@ exports.updateSubmission = async (req, res) => {
   }
 
   try {
-    await submissionService.updateSubmission(id, lot_no, form_data);
+    const userId = req.user ? req.user.id : "System";
+    await submissionService.updateSubmission(id, lot_no, form_data, userId);
 
     // Notify clients about update
     if (req.io) {
@@ -198,7 +200,8 @@ exports.resubmitSubmission = async (req, res) => {
   const { formDataJson } = req.body;
 
   try {
-    await submissionService.resubmitSubmission(id, formDataJson);
+    const userId = req.user ? req.user.id : "System";
+    await submissionService.resubmitSubmission(id, formDataJson, userId);
 
     if (req.io) {
       console.log(`[Controller] Emitting 'refresh_data' for resubmitted ID: ${id}`);

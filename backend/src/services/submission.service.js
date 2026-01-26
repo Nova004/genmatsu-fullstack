@@ -1,5 +1,6 @@
 const { sql, poolConnect } = require("../db"); // ✅ 1. เรียกใช้ poolConnect จากไฟล์กลาง
 const submissionRepo = require("../repositories/submission.repository");
+const activityLogRepo = require("../repositories/activityLog.repository"); // ✅ Import Logger
 const { cleanSubmissionData } = require("../utils/dataCleaner");
 
 exports.checkLotNoExists = async (lotNo) => {
@@ -256,6 +257,16 @@ exports.createSubmission = async (data) => {
       keyMetrics
     );
     await transaction.commit();
+
+    // ✅ Log Activity
+    await activityLogRepo.createLog({
+      userId: submittedBy,
+      actionType: 'CREATE',
+      targetModule: formType || 'GEN-A',
+      targetId: submissionId,
+      details: `Created new submission Lot No: ${lotNo}`
+    });
+
     return submissionId;
   } catch (error) {
     if (transaction && transaction.state === "begun") {
@@ -278,11 +289,15 @@ exports.getSubmissionById = async (id) => {
   return await this.getSubmissionDataForPdf(id);
 };
 
-exports.deleteSubmission = async (id) => {
+exports.deleteSubmission = async (id, userId) => {
   const pool = await poolConnect; // ✅ ใช้ Pool กลาง
   const transaction = new sql.Transaction(pool);
 
   try {
+    // 1. Get info before delete for logging
+    const submissionInfo = await submissionRepo.getSubmissionWithDetails(pool, id);
+    const targetModule = submissionInfo?.form_type || 'Submission';
+
     await transaction.begin();
 
     const isDeleted = await submissionRepo.deleteSubmissionRelatedData(
@@ -296,6 +311,16 @@ exports.deleteSubmission = async (id) => {
     }
 
     await transaction.commit();
+
+    // ✅ Log Activity
+    await activityLogRepo.createLog({
+      userId: userId,
+      actionType: 'DELETE',
+      targetModule: targetModule,
+      targetId: id,
+      details: `Deleted submission ID: ${id}`
+    });
+
     return true; // Deleted
   } catch (err) {
     if (transaction && transaction.state === "begun") {
@@ -307,22 +332,26 @@ exports.deleteSubmission = async (id) => {
   }
 };
 
-exports.updateSubmission = async (id, lot_no, form_data) => {
+const { getObjectDiff } = require("../utils/diffHelper"); // ✅ Import Diff Helper
+
+exports.updateSubmission = async (id, lot_no, form_data, userId) => {
   const pool = await poolConnect;
   const transaction = new sql.Transaction(pool);
 
   try {
     console.log(`🔥 [DEBUG] updateSubmission called for ID: ${id}`);
 
+    // 1. Fetch info BEFORE update for Diffing & FormType
+    const submissionInfo = await submissionRepo.getSubmissionWithDetails(pool, id);
+    if (!submissionInfo) throw new Error("Submission not found");
+
+    const formType = submissionInfo.form_type;
+    const oldFormData = JSON.parse(submissionInfo.form_data_json || "{}"); // Parse Old Data
+
     await transaction.begin();
 
     const cleanedFormData = cleanSubmissionData(form_data);
     const keyMetrics = extractKeyMetrics(cleanedFormData);
-
-    // 🔴 1. หา Form Type ก่อน (เพื่อเอาไปหา Standard Plan)
-    const submissionInfo = await submissionRepo.getSubmissionWithDetails(pool, id);
-    if (!submissionInfo) throw new Error("Submission not found");
-    const formType = submissionInfo.form_type;
 
     // 🔴 2. คำนวณ ST Value ใหม่ (Base + NCR)
     const finalStValue = await calculateTotalStValue(
@@ -332,7 +361,7 @@ exports.updateSubmission = async (id, lot_no, form_data) => {
     );
     keyMetrics.stTargetValue = finalStValue;
 
-    // 1. อัปเดตข้อมูลปกติ
+    // 3. อัปเดตข้อมูล
     await submissionRepo.updateSubmissionRecord(
       transaction,
       id,
@@ -348,6 +377,19 @@ exports.updateSubmission = async (id, lot_no, form_data) => {
 
     await transaction.commit();
     console.log("✅ [DEBUG] Update & Reset Transaction Committed!");
+
+    // ✅ Generate Diff Summary
+    const changes = getObjectDiff(oldFormData, cleanedFormData);
+    const changesText = changes.length > 0 ? ` Changes: ${changes.join(", ").substring(0, 500)}` : " (No content changes)";
+
+    // ✅ Log Activity
+    await activityLogRepo.createLog({
+      userId: userId,
+      actionType: 'UPDATE',
+      targetModule: formType || 'Submission',
+      targetId: id,
+      details: `Updated Lot No: ${lot_no}.${changesText}`
+    });
   } catch (err) {
     if (transaction && transaction.state === "begun") {
       await transaction.rollback();
@@ -496,7 +538,7 @@ exports.resubmitSubmissionData = async (
 
 // backend/src/services/submission.service.js
 
-exports.resubmitSubmission = async (id, formDataJson) => {
+exports.resubmitSubmission = async (id, formDataJson, userId) => {
   const pool = await poolConnect;
   const transaction = new sql.Transaction(pool);
 
@@ -520,6 +562,8 @@ exports.resubmitSubmission = async (id, formDataJson) => {
     const cleanedFormData = cleanSubmissionData(formDataJson);
     const keyMetrics = extractKeyMetrics(cleanedFormData);
     const formType = submission.form_type; // มีอยู่แล้วจาก getSubmissionWithDetails ข้างบน
+    const lotNo = submission.lot_no; // ✅ Get Lot No for Logging
+    const oldFormData = JSON.parse(submission.form_data_json || "{}"); // ✅ Get Old Data for Diff
 
     // 🔴 คำนวณ ST Value ใหม่ (Base + NCR)
     const finalStValue = await calculateTotalStValue(
@@ -539,6 +583,19 @@ exports.resubmitSubmission = async (id, formDataJson) => {
     );
 
     await transaction.commit();
+
+    // ✅ Generate Diff Summary
+    const changes = getObjectDiff(oldFormData, cleanedFormData);
+    const changesText = changes.length > 0 ? ` Changes: ${changes.join(", ").substring(0, 500)}` : " (No content changes)";
+
+    // ✅ Log Activity
+    await activityLogRepo.createLog({
+      userId: userId,
+      actionType: 'RESUBMIT',
+      targetModule: formType || 'Submission',
+      targetId: id,
+      details: `Resubmitted Lot No: ${lotNo}.${changesText}`
+    });
 
     // 4. สร้าง Flow อนุมัติใหม่ (เฉพาะถ้าสถานะเป็น Pending)
     if (newStatus === "Pending") {

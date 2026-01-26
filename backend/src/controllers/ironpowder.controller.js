@@ -93,7 +93,8 @@ exports.updateIronpowder = async (req, res) => {
   const { formData } = req.body;
 
   try {
-    await ironpowderService.updateIronpowder(id, formData);
+    const userId = req.user ? req.user.id : "System";
+    await ironpowderService.updateIronpowder(id, formData, userId);
     res.status(200).send({
       message: "Ironpowder updated successfully!",
     });
@@ -114,7 +115,8 @@ exports.deleteIronpowder = async (req, res) => {
   const { id } = req.params;
 
   try {
-    await ironpowderService.deleteIronpowder(id);
+    const userId = req.user ? req.user.id : "System";
+    await ironpowderService.deleteIronpowder(id, userId);
     res.status(200).send({ message: "Ironpowder deleted successfully!" });
 
     if (req.io) {
@@ -134,7 +136,8 @@ exports.resubmitIronpowder = async (req, res) => {
   const { formData, submittedBy } = req.body;
 
   try {
-    await ironpowderService.resubmitIronpowder(id, formData, submittedBy);
+    const userId = req.body.submittedBy || (req.user ? req.user.id : "System");
+    await ironpowderService.resubmitIronpowder(id, formData, userId);
     res.status(200).send({
       message: "Ironpowder resubmitted successfully!",
     });

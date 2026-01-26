@@ -2,6 +2,7 @@
 
 const { sql, poolConnect } = require("../db");
 const ironpowderRepo = require("../repositories/ironpowder.repository");
+const activityLogRepo = require("../repositories/activityLog.repository"); // ✅ Import Logger
 const { cleanSubmissionData } = require("../utils/dataCleaner");
 
 exports.checkLotNoExists = async (lotNo) => {
@@ -158,6 +159,16 @@ exports.createIronpowder = async ({ lotNo, formData, submittedBy }) => {
     console.log(
       `[Ironpowder] Successfully created ironpowder ID: ${submissionId}`
     );
+
+    // ✅ Log Activity
+    await activityLogRepo.createLog({
+      userId: submittedBy,
+      actionType: 'CREATE',
+      targetModule: 'Ironpowder (Recycle)',
+      targetId: submissionId,
+      details: `Created Recycle report Lot No: ${lotNo}`
+    });
+
     return submissionId;
   } catch (error) {
     if (transaction && transaction.state === "begun") {
@@ -227,9 +238,23 @@ exports.getIronpowderById = async (submissionId) => {
   }
 };
 
-exports.updateIronpowder = async (submissionId, formData) => {
+const { getObjectDiff } = require("../utils/diffHelper"); // ✅ Import Diff Helper
+// ironpowderRepo is already imported at the top
+
+exports.updateIronpowder = async (submissionId, formData, userId) => {
   try {
     const pool = await poolConnect;
+
+    // 1. Fetch info BEFORE update for Diffing
+    // We can use the Repo function directly if exported, or query directly
+    // Let's query directly to avoid circular dependency issues if any
+    const oldDataResult = await pool.request()
+      .input("submissionId", sql.Int, submissionId)
+      .query("SELECT form_data_json, lot_no FROM Form_Ironpowder_Submissions WHERE submissionId = @submissionId");
+
+    const oldRecord = oldDataResult.recordset[0];
+    const oldFormData = oldRecord ? JSON.parse(oldRecord.form_data_json || "{}") : {};
+    const oldLotNo = oldRecord ? oldRecord.lot_no : "Unknown";
 
     // Extract key data
     const totalInput = formData.totalInput || 0;
@@ -289,15 +314,36 @@ exports.updateIronpowder = async (submissionId, formData) => {
     console.log(
       `[Ironpowder] Successfully updated ironpowder ID: ${submissionId}`
     );
+
+    // ✅ Generate Diff Summary
+    const changes = getObjectDiff(oldFormData, formData);
+    const changesText = changes.length > 0 ? ` Changes: ${changes.join(", ").substring(0, 500)}` : " (No content changes)";
+
+    // ✅ Log Activity
+    await activityLogRepo.createLog({
+      userId: userId,
+      actionType: 'UPDATE',
+      targetModule: 'Ironpowder (Recycle)',
+      targetId: submissionId,
+      details: `Updated Lot No: ${lotNo}.${changesText}`
+    });
   } catch (error) {
     console.error("Error updating ironpowder:", error);
     throw error;
   }
 };
 
-exports.deleteIronpowder = async (submissionId) => {
+exports.deleteIronpowder = async (submissionId, userId) => {
   try {
     const pool = await poolConnect;
+
+    // 1. Get info before delete for logging
+    const checkResult = await pool.request()
+      .input("submissionId", sql.Int, submissionId)
+      .query("SELECT lot_no FROM Form_Ironpowder_Submissions WHERE submissionId = @submissionId");
+
+    const lotNo = checkResult.recordset[0]?.lot_no || 'Unknown';
+
     await pool.request().input("submissionId", sql.Int, submissionId).query(`
         DELETE FROM Form_Ironpowder_Submissions
         WHERE submissionId = @submissionId
@@ -306,15 +352,33 @@ exports.deleteIronpowder = async (submissionId) => {
     console.log(
       `[Ironpowder] Successfully deleted ironpowder ID: ${submissionId}`
     );
+
+    // ✅ Log Activity
+    await activityLogRepo.createLog({
+      userId: userId,
+      actionType: 'DELETE',
+      targetModule: 'Ironpowder (Recycle)',
+      targetId: submissionId,
+      details: `Deleted Recycle report Lot No: ${lotNo}`
+    });
   } catch (error) {
     console.error("Error deleting ironpowder:", error);
     throw error;
   }
 };
 
-exports.resubmitIronpowder = async (submissionId, formData, submittedBy) => {
+exports.resubmitIronpowder = async (submissionId, formData, userId) => {
   try {
     const pool = await poolConnect;
+
+    // 1. Fetch info BEFORE update for Diffing
+    const oldDataResult = await pool.request()
+      .input("submissionId", sql.Int, submissionId)
+      .query("SELECT form_data_json, lot_no FROM Form_Ironpowder_Submissions WHERE submissionId = @submissionId");
+
+    const oldRecord = oldDataResult.recordset[0];
+    const oldFormData = oldRecord ? JSON.parse(oldRecord.form_data_json || "{}") : {};
+    const oldLotNo = oldRecord ? oldRecord.lot_no : "Unknown";
 
     // Extract key data
     const totalInput = formData.totalInput || 0;
@@ -392,6 +456,19 @@ exports.resubmitIronpowder = async (submissionId, formData, submittedBy) => {
     console.log(
       `[Ironpowder] Successfully resubmitted ironpowder ID: ${submissionId}`
     );
+
+    // ✅ Generate Diff Summary
+    const changes = getObjectDiff(oldFormData, formData);
+    const changesText = changes.length > 0 ? ` Changes: ${changes.join(", ").substring(0, 500)}` : " (No content changes)";
+
+    // ✅ Log Activity
+    await activityLogRepo.createLog({
+      userId: userId,
+      actionType: 'RESUBMIT',
+      targetModule: 'Ironpowder (Recycle)',
+      targetId: submissionId,
+      details: `Resubmitted Recycle report Lot No: ${lotNo}.${changesText}`
+    });
   } catch (error) {
     console.error("Error resubmitting ironpowder:", error);
     throw error;

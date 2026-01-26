@@ -21,7 +21,7 @@ const ECommerce: React.FC = () => {
 
           {/* --- Card 1: GEN-A --- */}
           <MenuCard
-            title="Production Report GEN-A"
+            title="Record History GEN A"
             description="เข้าสู่หน้าบันทึกฟอร์ม GEN-A"
             linkTo="/reports/history/gen-a"
           >
@@ -30,7 +30,7 @@ const ECommerce: React.FC = () => {
 
           {/* --- Card 2: GEN-B --- */}
           <MenuCard
-            title="Production Report GEN-B"
+            title="Record History GEN B"
             description="เข้าสู่หน้าบันทึกฟอร์ม GEN-B"
             linkTo="/reports/history/gen-b"
           >
