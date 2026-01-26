@@ -63,45 +63,45 @@ function BZ3_Form() {
 
     return (
         <>
-        <Breadcrumb pageName="Form Elements" />
-        <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
-            <form onSubmit={onSubmit}>
-                <FormHeader
-                    title="ใบรายงานการผลิต (BZ3)"
-                    formTypes={availableForms}
-                    currentValue="BZ3"
-                    inputClass={inputClass}
-                />
+            <Breadcrumb pageName="Form Elements" />
+            <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
+                <form onSubmit={onSubmit}>
+                    <FormHeader
+                        title="Production Report (BZ3)"
+                        formTypes={availableForms}
+                        currentValue="BZ3"
+                        inputClass={inputClass}
+                    />
 
-                <div className="my-6">
-                    <div className={step !== 1 ? 'hidden' : ''}>
-                        <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="RC-417" errors={errors} />
+                    <div className="my-6">
+                        <div className={step !== 1 ? 'hidden' : ''}>
+                            <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="RC-417" errors={errors} />
+                        </div>
+                        <div className={step !== 2 ? 'hidden' : ''}>
+                            <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={handleTemplateLoaded} />
+                        </div>
+                        <div className={step !== 3 ? 'hidden' : ''}>
+                            <SharedFormStep3 register={register} errors={errors} trigger={trigger} control={control} getValues={getValues} onTemplateLoaded={handleTemplateLoaded} templateName="BZ3_Step3_Operations" />
+                        </div>
+                        <div className={step !== 4 ? 'hidden' : ''}>
+                            <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="bz3Calculations.totalWeightWithNcr" />
+                        </div>
                     </div>
-                    <div className={step !== 2 ? 'hidden' : ''}>
-                        <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={handleTemplateLoaded} />
-                    </div>
-                    <div className={step !== 3 ? 'hidden' : ''}>
-                        <SharedFormStep3 register={register} errors={errors} trigger={trigger} control={control} getValues={getValues} onTemplateLoaded={handleTemplateLoaded} templateName="BZ3_Step3_Operations" />
-                    </div>
-                    <div className={step !== 4 ? 'hidden' : ''}>
-                        <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="bz3Calculations.totalWeightWithNcr" />
-                    </div>
-                </div>
 
-                <div className="flex justify-center gap-4 rounded-sm border border-stroke p-4 dark:border-strokedark">
-                    {step > 1 && (<button type="button" onClick={handleBack} className="rounded-md bg-warning px-10 py-2 font-medium text-white hover:bg-opacity-90">Back</button>)}
-                    {step === 1 && (<button type="button" onClick={() => navigate('/reports/history/gen-b')} className="rounded-md bg-secondary px-10 py-2 font-medium text-white hover:bg-opacity-90" >Back</button>)}
-                    <button
-                        type="button" // 👈 1. เปลี่ยนเป็น "button"
-                        onClick={onDraft} // 👈 2. เพิ่ม onClick ให้เรียก onDraft
-                        disabled={isSubmitting}
-                        className={`rounded-md bg-primary px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
-                    >
-                        {isSubmitting ? 'กำลังบันทึก...' : 'Drafted'}
-                    </button>
-                </div>
-            </form>
-        </div>
+                    <div className="flex justify-center gap-4 rounded-sm border border-stroke p-4 dark:border-strokedark">
+                        {step > 1 && (<button type="button" onClick={handleBack} className="rounded-md bg-warning px-10 py-2 font-medium text-white hover:bg-opacity-90">Back</button>)}
+                        {step === 1 && (<button type="button" onClick={() => navigate('/reports/history/gen-b')} className="rounded-md bg-secondary px-10 py-2 font-medium text-white hover:bg-opacity-90" >Back</button>)}
+                        <button
+                            type="button" // 👈 1. เปลี่ยนเป็น "button"
+                            onClick={onDraft} // 👈 2. เพิ่ม onClick ให้เรียก onDraft
+                            disabled={isSubmitting}
+                            className={`rounded-md bg-primary px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
+                        >
+                            {isSubmitting ? 'กำลังบันทึก...' : 'Drafted'}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </>
     );
 }

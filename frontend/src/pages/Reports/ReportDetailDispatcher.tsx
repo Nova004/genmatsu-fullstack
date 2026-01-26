@@ -243,7 +243,7 @@ const ReportDetailDispatcher: React.FC = () => {
 
   return (
     <>
-      <Breadcrumb pageName={`ใบรายงานการผลิต: ${submissionData?.submission?.form_type || ''}`} />
+      <Breadcrumb pageName={`Production Report: ${submissionData?.submission?.form_type || ''}`} />
       <div className="mb-4 flex justify-end">
         <button
           onClick={handlePrintPdf}

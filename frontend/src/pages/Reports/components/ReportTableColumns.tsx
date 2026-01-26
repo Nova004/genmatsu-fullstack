@@ -97,7 +97,7 @@ export const getReportColumns = ({
                         {/* View Button */}
                         {(() => {
                             const isMyTurn = submission.status === 'Pending' && submission.pending_level === user?.LV_Approvals;
-                            const viewTooltipText = isMyTurn ? "ถึงตาคุณอนุมัติแล้ว!" : "ดูรายละเอียด";
+                            const viewTooltipText = isMyTurn ? "รออนุมัติจากคุณ" : "ดูรายละเอียด";
 
                             return (
                                 <Tooltip message={viewTooltipText}>

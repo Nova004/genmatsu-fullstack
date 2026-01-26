@@ -92,7 +92,7 @@ const AS2FormEdit: React.FC<AS2FormEditProps> = ({ initialData, onSubmit, onResu
         <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
             <form onSubmit={handleSubmit(handleFormSubmit)}>
                 <FormHeader
-                    title="แก้ไขใบรายงานการผลิต (AS2)" // เปลี่ยน Title สำหรับหน้าแก้ไข
+                    title="Edit Production Report (AS2)" // เปลี่ยน Title สำหรับหน้าแก้ไข
                     formTypes={availableForms}
                     currentValue="AS2"
                     inputClass={inputClass}

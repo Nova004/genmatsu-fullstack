@@ -4,6 +4,7 @@ import axios from 'axios';
 import Breadcrumb from '../../../../components/Breadcrumbs/Breadcrumb';
 import EditNaClModal from './EditNaClModal';
 import { fireToast } from '../../../../hooks/fireToast';
+import { useAuth } from '../../../../context/AuthContext'; // Import useAuth
 import { useLevelGuard } from '../../../../hooks/useLevelGuard';
 
 const NaClMaster = () => {
@@ -11,6 +12,7 @@ const NaClMaster = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<any | null>(null);
+  const { user } = useAuth(); // Get user context
 
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
@@ -49,11 +51,17 @@ const NaClMaster = () => {
     try {
       if (recordData.NaCl_id) {
         // Update
-        await axios.put(`/genmatsu/api/nacl/${recordData.NaCl_id}`, recordData);
+        await axios.put(`/genmatsu/api/nacl/${recordData.NaCl_id}`, {
+          ...recordData,
+          userId: user?.id || 'Admin' // Send userId
+        });
         fireToast('success', 'Record updated successfully!');
       } else {
         // Create
-        await axios.post('/genmatsu/api/nacl', recordData);
+        await axios.post('/genmatsu/api/nacl', {
+          ...recordData,
+          userId: user?.id || 'Admin' // Send userId
+        });
         fireToast('success', 'Record created successfully!');
       }
       fetchData(); // Refresh data

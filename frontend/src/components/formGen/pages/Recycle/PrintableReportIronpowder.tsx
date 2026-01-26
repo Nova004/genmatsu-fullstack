@@ -44,7 +44,7 @@ const PrintableReportIronpowder: React.FC<PrintableReportIronpowderProps> = ({
 
                 {/* Custom Print Header (Simple) */}
                 <div className="text-center mb-6 border-b pb-4">
-                    <h1 className="text-2xl font-bold">ใบรายงานการผลิต (Ironpowder)</h1>
+                    <h1 className="text-2xl font-bold">Production Report (Ironpowder)</h1>
                     <p>Job ID: {submission.submission_id} | Lot No: {submission.lot_no}</p>
                 </div>
 

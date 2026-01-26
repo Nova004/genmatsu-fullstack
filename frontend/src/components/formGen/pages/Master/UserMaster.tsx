@@ -8,6 +8,8 @@ import { fireToast } from '../../../../hooks/fireToast';
 import apiClient from '../../../../services/apiService';
 import { useLevelGuard } from '../../../../hooks/useLevelGuard';
 
+import { useAuth } from '../../../../context/AuthContext'; // Import useAuth
+
 interface AgtMember {
   agt_member_id: string;
   agt_member_nameEN: string;
@@ -24,9 +26,10 @@ const UserMaster: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<AgtMember | null>(null);
+  const { user } = useAuth(); // Get user context
   useLevelGuard(2);
 
-  // --- 1. เพิ่ม State สำหรับการค้นหา (Search Term) ---
+  // ... (search term code skipped for brevity if unchanged) ...
   const [searchTerm, setSearchTerm] = useState('');
 
   const fetchUsers = async () => {
@@ -64,7 +67,8 @@ const UserMaster: React.FC = () => {
         // 2. ส่ง Body ตามที่ Backend (updateUserGenManuData) รอรับ
         agtMemberId: userId,
         genManuMemNo: newEmployeeNo,
-        lvApprovals: newLevel
+        lvApprovals: newLevel,
+        updatedBy: user?.id || 'Admin' // Send updatedBy
       });
 
       fireToast('success', 'User data updated successfully!');

@@ -212,7 +212,7 @@ const ReportEditDispatcher: React.FC = () => {
 
     return (
         <>
-            <Breadcrumb pageName={`แก้ไขรายงาน Lot: ${submissionData?.submission?.lot_no || ''}`} />
+            <Breadcrumb pageName={`Edit Production Report Lot: ${submissionData?.submission?.lot_no || ''}`} />
             <div className="py-4">
                 {renderEditForm()}
             </div>

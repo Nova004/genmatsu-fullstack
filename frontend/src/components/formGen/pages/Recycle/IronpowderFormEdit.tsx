@@ -170,7 +170,7 @@ const IronpowderFormEdit: React.FC<IronpowderFormEditProps> = ({
     <div className="rounded-lg border border-stroke bg-white p-6 shadow-md dark:border-strokedark dark:bg-boxdark md:p-8">
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
         <FormHeader
-          title="ใบรายงานการผลิต (Ironpowder) - แก้ไข"
+          title="Production Report (Ironpowder) - แก้ไข"
           formTypes={availableForms}
           currentValue="Ironpowder"
           inputClass={inputClass}

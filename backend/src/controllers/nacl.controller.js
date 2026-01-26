@@ -1,5 +1,7 @@
 const sql = require("mssql");
 const dbConfig = require("../config/db.config");
+const activityLogRepository = require("../repositories/activityLog.repository");
+const { getObjectDiff } = require("../utils/diffHelper");
 
 // GET /api/nacl - ดึงข้อมูลทั้งหมด
 exports.getAllNaCl = async (req, res) => {
@@ -33,9 +35,16 @@ exports.createNaCl = async (req, res) => {
 // PUT /api/nacl/:id - แก้ไขข้อมูล
 exports.updateNaCl = async (req, res) => {
   const { id } = req.params;
-  const { NaCl_CG_Water, NaCl_NaCl_Water } = req.body;
+  const { NaCl_CG_Water, NaCl_NaCl_Water, userId } = req.body; // Added userId
   try {
     const pool = await sql.connect(dbConfig);
+
+    // --- 🔍 Fetch OLD Data for Diff Log ---
+    const oldDataRequest = await pool.request()
+      .input("id", sql.Int, id)
+      .query("SELECT * FROM Gen_NaCl_MT WHERE NaCl_id = @id");
+    const oldData = oldDataRequest.recordset.length > 0 ? oldDataRequest.recordset[0] : null;
+
     await pool
       .request()
       .input("id", sql.Int, id)
@@ -44,6 +53,34 @@ exports.updateNaCl = async (req, res) => {
       .query(
         "UPDATE Gen_NaCl_MT SET NaCl_CG_Water = @NaCl_CG_Water, NaCl_NaCl_Water = @NaCl_NaCl_Water WHERE NaCl_id = @id"
       );
+
+    // --- 📝 LOGGING ---
+    try {
+      const newData = { NaCl_CG_Water, NaCl_NaCl_Water };
+      // We only compare the fields we changed
+      const relevantOldData = {
+        NaCl_CG_Water: oldData ? oldData.NaCl_CG_Water : undefined,
+        NaCl_NaCl_Water: oldData ? oldData.NaCl_NaCl_Water : undefined
+      };
+
+      const differences = getObjectDiff(relevantOldData, newData);
+
+      if (differences.length > 0) {
+        await activityLogRepository.createLog({
+          userId: userId || "Unknown",
+          actionType: "UPDATE_NACL_MASTER",
+          targetModule: "MASTER_NACL",
+          targetId: id.toString(),
+          details: {
+            message: `Updated NaCl Formula ID ${id}`,
+            changes: differences
+          }
+        });
+      }
+    } catch (logErr) {
+      console.error("Failed to log NaCl update:", logErr);
+    }
+
     res.status(200).send({ message: "NaCl record updated successfully!" });
   } catch (err) {
     res.status(500).send({ message: err.message });
@@ -132,9 +169,8 @@ exports.lookupNaClValue = async (req, res) => {
       res.status(200).json(result.recordset[0]);
     } else {
       res.status(404).send({
-        message: `Value not found in NaCl table for CG Water ${cgWater}, Type ${naclType}, and Chemicals Type ${
-          chemicalsTypeValue === null ? "NULL" : chemicalsTypeValue
-        }.`,
+        message: `Value not found in NaCl table for CG Water ${cgWater}, Type ${naclType}, and Chemicals Type ${chemicalsTypeValue === null ? "NULL" : chemicalsTypeValue
+          }.`,
       });
     }
   } catch (err) {

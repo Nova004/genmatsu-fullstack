@@ -1,6 +1,8 @@
 // src/controllers/master.controller.js
 
 const { pool, sql, poolConnect } = require("../db.js");
+const activityLogRepository = require("../repositories/activityLog.repository");
+const { getObjectDiff } = require("../utils/diffHelper");
 
 // --- เปลี่ยนชื่อฟังก์ชันเป็น getLatestTemplateByName ---
 exports.getLatestTemplateByName = async (req, res) => {
@@ -137,6 +139,17 @@ exports.updateTemplateAsNewVersion = async (req, res) => {
     }
     const currentTemplate = currentTemplateResult.recordset[0];
 
+    // --- 🔍 Fetch OLD Items for Diff Log ---
+    const currentItemsResult = await new sql.Request(transaction)
+      .input("templateId", sql.Int, currentTemplate.template_id)
+      .query("SELECT * FROM Form_Master_Items WHERE template_id = @templateId ORDER BY display_order ASC");
+
+    // Parse JSON in old items to make comparison valid
+    const currentItems = currentItemsResult.recordset.map(item => {
+      try { return { ...item, config_json: JSON.parse(item.config_json) }; }
+      catch (e) { return item; }
+    });
+
     await new sql.Request(transaction)
       .input("templateId", sql.Int, currentTemplate.template_id)
       .query(
@@ -186,18 +199,45 @@ exports.updateTemplateAsNewVersion = async (req, res) => {
         .input("display_order", sql.Int, displayOrder)
         .input("config_json", sql.NVarChar, JSON.stringify(item.config_json))
         .input("is_active", sql.Bit, item.is_active).query(`
-          INSERT INTO Form_Master_Items (template_id, display_order, config_json, is_active)
-          VALUES (@template_id, @display_order, @config_json, @is_active);
-        `);
+            INSERT INTO Form_Master_Items (template_id, display_order, config_json, is_active)
+            VALUES (@template_id, @display_order, @config_json, @is_active);
+          `);
     }
 
     await transaction.commit();
+
+    // --- 📝 LOGGING: Calculate Diff & Log ---
+    try {
+      const oldData = { items: currentItems };
+      const newData = { items: items }; // items from req.body
+      const differences = getObjectDiff(oldData, newData);
+
+      if (differences.length > 0) {
+        await activityLogRepository.createLog({
+          userId: userId,
+          actionType: "UPDATE_VERSION",
+          targetModule: "MASTER_TEMPLATE",
+          targetId: `${templateName} (v${newVersion})`,
+          details: {
+            message: `Updated template to version ${newVersion}`,
+            changes: differences
+          }
+        });
+      }
+    } catch (logErr) {
+      console.error("Failed to log template update:", logErr);
+    }
+
     res.status(201).json({
       message: "Template updated successfully as new version.",
       newTemplateId: newTemplateId,
     });
   } catch (error) {
-    await transaction.rollback();
+    if (transaction._aborted === false) {
+      // Only rollback if not already aborted
+      // (mssql sometimes aborts automatically on error)
+      try { await transaction.rollback(); } catch (e) { }
+    }
     console.error("Error updating template:", error);
     res
       .status(500)
@@ -227,6 +267,13 @@ exports.saveStandardPlan = async (req, res) => {
     const { form_type, target_value, updated_by } = req.body;
     const pool = await poolConnect;
 
+    // --- 🔍 Fetch OLD Value for Diff Log ---
+    const currentPlanResult = await pool.request()
+      .input("form_type", sql.NVarChar, form_type)
+      .query("SELECT target_value FROM Gen_StandardPlan_MT WHERE form_type = @form_type");
+
+    const oldTargetValue = currentPlanResult.recordset.length > 0 ? currentPlanResult.recordset[0].target_value : null;
+
     // ใช้ MERGE (Upsert) คือถ้ามีอยู่แล้วให้ Update ถ้าไม่มีให้ Insert
     const query = `
       MERGE Gen_StandardPlan_MT AS target
@@ -245,6 +292,25 @@ exports.saveStandardPlan = async (req, res) => {
       .input("target_value", sql.Decimal(10, 2), target_value)
       .input("updated_by", sql.NVarChar, updated_by || "Admin") // ถ้าไม่มีส่งมา ให้เป็น Admin
       .query(query);
+
+    // --- 📝 LOGGING: Calculate Diff & Log ---
+    try {
+      // Compare values
+      if (Number(oldTargetValue) !== Number(target_value)) {
+        await activityLogRepository.createLog({
+          userId: updated_by || "Admin",
+          actionType: "UPDATE_STD_PLAN",
+          targetModule: "MASTER_STD_PLAN",
+          targetId: form_type,
+          details: {
+            message: `Updated Standard Plan for ${form_type}`,
+            changes: [`target_value: ${oldTargetValue || '(empty)'} -> ${target_value}`]
+          }
+        });
+      }
+    } catch (logErr) {
+      console.error("Failed to log standard plan update:", logErr);
+    }
 
     res.json({ message: "Standard Plan saved successfully" });
   } catch (err) {

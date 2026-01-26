@@ -645,6 +645,7 @@ const getNestedValue = (obj, path) => {
     );
 };
 
+// 1. Define locally so other functions in this file can call it
 function extractKeyMetrics(formData) {
   // 1. กำหนดค่า Default
   let inputKg = 0;
@@ -821,6 +822,7 @@ function extractKeyMetrics(formData) {
     ncrGenmatsuActual, // 🔴 เพิ่มค่านี้ส่งออกไป
   };
 }
+exports.extractKeyMetrics = extractKeyMetrics;
 
 // 🔴 Helper Function: คำนวณ ST Value (Base Plan + NCR)
 async function calculateTotalStValue(transaction, formType, ncrValue = 0) {

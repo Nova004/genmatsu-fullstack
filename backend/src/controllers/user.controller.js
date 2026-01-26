@@ -1,6 +1,8 @@
 // backend/src/controllers/user.controller.js
 
 const { pool, sql, poolConnect } = require("../db.js");
+const activityLogRepository = require("../repositories/activityLog.repository");
+const { getObjectDiff } = require("../utils/diffHelper");
 
 // --- ฟังก์ชันดึงข้อมูล User ทั้งหมด ---
 
@@ -68,13 +70,13 @@ exports.searchUsers = async (req, res) => {
 
 // (ใน user.controller.js)
 
-// =============================================================
+
 // === (แก้ไข) ฟังก์ชัน Upsert Employee No และ LV ===
 // (Frontend เรียกใช้: apiService.put('/api/users/gen-manu-data'))
 // =============================================================
 exports.updateUserGenManuData = async (req, res) => {
   try {
-    const { agtMemberId, genManuMemNo, lvApprovals } = req.body;
+    const { agtMemberId, genManuMemNo, lvApprovals, updatedBy } = req.body; // Added updatedBy
 
     if (!agtMemberId) {
       return res.status(400).json({ message: "agtMemberId is required." });
@@ -86,14 +88,17 @@ exports.updateUserGenManuData = async (req, res) => {
     await poolConnect;
 
     // 🚀 [แก้ไขจุดที่ 1] (เพิ่ม COLLATE)
-    const existingRecord = await pool
+    // --- 🔍 Fetch OLD Data for Diff Log ---
+    const existingRecordRequest = await pool
       .request()
       .input("id", sql.NVarChar, agtMemberId).query(`
         SELECT * FROM Gen_Manu_Member 
         WHERE Gen_Manu_mem_Memid COLLATE DATABASE_DEFAULT = @id COLLATE DATABASE_DEFAULT
       `);
 
-    if (existingRecord.recordset.length > 0) {
+    const existingRecord = existingRecordRequest.recordset.length > 0 ? existingRecordRequest.recordset[0] : null;
+
+    if (existingRecord) {
       // --- UPDATE ---
 
       // 🚀 [แก้ไขจุดที่ 2] (เพิ่ม COLLATE)
@@ -146,6 +151,33 @@ exports.updateUserGenManuData = async (req, res) => {
           VALUES 
             (@id, @no, @lv, @nameEN, @position, @shift)
         `);
+    }
+
+    // --- 📝 LOGGING ---
+    try {
+      const newData = { Gen_Manu_mem_No: genManuMemNo, LV_Approvals: lvApprovals };
+      // If specific fields were not present in old record (it was null), undefined will handle it
+      const relevantOldData = {
+        Gen_Manu_mem_No: existingRecord ? existingRecord.Gen_Manu_mem_No : undefined,
+        LV_Approvals: existingRecord ? existingRecord.LV_Approvals : undefined
+      };
+
+      const differences = getObjectDiff(relevantOldData, newData);
+
+      if (differences.length > 0) {
+        await activityLogRepository.createLog({
+          userId: updatedBy || "Unknown",
+          actionType: "UPDATE_USER_GEN_MANU",
+          targetModule: "MASTER_USER",
+          targetId: agtMemberId, // Employee ID being edited
+          details: {
+            message: `Updated User Master Data for ${agtMemberId}`,
+            changes: differences
+          }
+        });
+      }
+    } catch (logErr) {
+      console.error("Failed to log User Master update:", logErr);
     }
 
     res.status(200).json({ message: "User data updated successfully." });
@@ -207,7 +239,7 @@ exports.findUserById = async (req, res) => {
       userNumber: user.Gen_Manu_mem_No,
       level: user.LV_Approvals, // 👈 (ผมเพิ่ม Level กลับไปให้ด้วย เผื่อ Frontend ต้องใช้)
     });
-    
+
   } catch (error) {
     console.error("Error in findUserById:", error); // เพิ่ม context ให้ error log
     res.status(500).json({ message: "เกิดข้อผิดพลาดที่เซิร์ฟเวอร์" });

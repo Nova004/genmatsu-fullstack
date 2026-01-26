@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import { FaEdit, FaTrash, FaPlus, FaSearch } from 'react-icons/fa';
 import Breadcrumb from '../../../Breadcrumbs/Breadcrumb'; // ตรวจสอบ path ให้ถูกต้อง
 import EditStandardPlanModal from './EditStandardPlanModal'; // Import Modal ที่สร้างใหม่
+import { useAuth } from '../../../../context/AuthContext';
 
 interface StandardPlan {
   id: number;
@@ -17,6 +18,7 @@ const StandardPlanMaster: React.FC = () => {
   const [filteredPlans, setFilteredPlans] = useState<StandardPlan[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth(); // 👈 Call hook
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -84,7 +86,7 @@ const StandardPlanMaster: React.FC = () => {
     try {
       await axios.post(`/genmatsu/api/master/standard-plans`, {
         ...data,
-        updated_by: 'Admin' // อนาคตเปลี่ยนเป็น user context
+        updated_by: user?.id || 'Admin' // 👈 Use real user ID (mapped as 'id' in AuthContext)
       });
       Swal.fire('Success', 'Data saved successfully', 'success');
       fetchPlans();
@@ -101,7 +103,7 @@ const StandardPlanMaster: React.FC = () => {
 
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
         <div className="py-6 px-4 md:px-6 xl:px-7.5 flex flex-col md:flex-row justify-between items-center gap-4">
-          
+
           {/* Search Box */}
           <div className="relative w-full md:w-1/3">
             <span className="absolute left-4 top-3 text-bodydark2">

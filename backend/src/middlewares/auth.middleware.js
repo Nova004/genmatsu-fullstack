@@ -7,6 +7,7 @@ exports.verifyToken = (req, res, next) => {
 
     // 2. Check if no token
     if (!token) {
+        console.warn("[Auth] No token provided in header");
         return res.status(401).json({ message: "No token, authorization denied" });
     }
 
@@ -26,6 +27,7 @@ exports.verifyToken = (req, res, next) => {
         req.user = decoded.user;
         next();
     } catch (err) {
+        console.error("[Auth] Token verification failed:", err.message);
         res.status(401).json({ message: "Token is not valid" });
     }
 };

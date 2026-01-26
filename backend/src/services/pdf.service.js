@@ -23,7 +23,7 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
       <div style="width: 100%; border-bottom: 1px solid #ccc; padding: 5px 20px;
                   font-size: 12px; color: #000; font-weight: bold;
                   display: flex; justify-content: center; align-items: center;">
-        <span>ใบรายงานการผลิต: ${reportName} (Manufacturing ${reportName})</span>
+        <span>Production Report: ${reportName} (Manufacturing ${reportName})</span>
       </div>
     `;
 
