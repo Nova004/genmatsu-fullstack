@@ -74,7 +74,7 @@
 
 *   `submissionId` (PK, INT): รหัสเอกสาร unique.
 *   `lot_no` (NVARCHAR(50)): เลข Lot.
-*   `status` (NVARCHAR(50)): สถานะ (Drafted/Pending/Approved).
+*   `status` (NVARCHAR(50)): สถานะ (Draft/Pending/Approved).
 *   `submitted_by` (INT): รหัสผู้ส่ง.
 *   `total_genmatsu_a` ... `total_cleaning` (DECIMAL): ยอดรวมแยกประเภท (เพิ่มใหม่).
 *   `form_data_json` (NVARCHAR(MAX)): ข้อมูลรายละเอียดทั้งหมดในรูปแบบ JSON.

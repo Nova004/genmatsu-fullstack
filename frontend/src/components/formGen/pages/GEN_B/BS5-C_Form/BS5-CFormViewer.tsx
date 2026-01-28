@@ -13,6 +13,7 @@ import SharedFormStep4 from '../../../components/forms/SharedFormStep4_GENB';
 import { useNavigate } from 'react-router-dom';
 import ProgressBar from '../../../components/ProgressBar';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
+import FormHeader from '../../../components/FormHeader';
 
 
 
@@ -96,6 +97,12 @@ const BS5_CFormViewer: React.FC<BS5_CFormViewerProps> = ({ formData, blueprints,
     <FormProvider {...methods}>
       {/* กล่องหลักของฟอร์ม */}
       <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
+        <FormHeader
+          title="ใบรายงานการผลิต (BS5-C)"
+          formTypes={[{ value: 'BS5-C', label: 'BS5-C', path: '#' }]}
+          currentValue="BS5-C"
+          inputClass="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+        />
 
         {/* แสดง Component ProgressBar */}
         <ProgressBar

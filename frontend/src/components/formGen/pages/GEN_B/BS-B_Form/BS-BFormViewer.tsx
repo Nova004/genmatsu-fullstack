@@ -16,6 +16,7 @@ import ProgressBar from '../../../components/ProgressBar';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
 
 import { initialFormValues } from '../../formDefaults';
+import FormHeader from '../../../components/FormHeader';
 
 
 // สร้าง Interface เพื่อกำหนดว่า BS-BFormViewer ต้องรับข้อมูลอะไรเข้ามาบ้าง
@@ -98,6 +99,12 @@ const BS_BFormViewer: React.FC<BS_BFormViewerProps> = ({ formData, blueprints, i
     <FormProvider {...methods}>
       {/* กล่องหลักของฟอร์ม */}
       <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
+        <FormHeader
+          title="ใบรายงานการผลิต (BS-B)"
+          formTypes={[{ value: 'BS-B', label: 'BS-B', path: '#' }]}
+          currentValue="BS-B"
+          inputClass="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+        />
 
         {/* แสดง Component ProgressBar */}
         <ProgressBar

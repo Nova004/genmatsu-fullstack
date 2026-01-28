@@ -113,7 +113,7 @@ const ProductionReportPage: React.FC = () => {
 
   return (
     <>
-      <Breadcrumb pageName="Daily Production Amount" />
+      <Breadcrumb pageName="Daily Genmatsu report" />
 
       <div className="flex flex-col gap-5">
         <div className="rounded-sm border border-stroke bg-white p-5 shadow-default dark:border-strokedark dark:bg-boxdark">

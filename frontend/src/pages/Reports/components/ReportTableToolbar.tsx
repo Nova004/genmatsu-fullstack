@@ -47,7 +47,7 @@ export const ReportTableToolbar: React.FC<Props> = ({
                         type="text"
                         value={globalFilter}
                         onChange={e => setGlobalFilter(e.target.value)}
-                        placeholder="Search by Lot No, ID, Name..."
+                        placeholder="Search by Lot No"
                         className="w-full rounded-lg border border-stroke bg-white py-3 pl-11 pr-4 text-sm text-black placeholder-gray-400 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-strokedark dark:bg-form-input dark:text-white"
                     />
                 </div>
@@ -59,7 +59,7 @@ export const ReportTableToolbar: React.FC<Props> = ({
                         className="inline-flex w-full items-center justify-center gap-2.5 rounded-lg bg-primary py-3 px-6 text-sm font-medium text-white shadow-md hover:bg-opacity-90 hover:shadow-lg transition-all sm:w-auto"
                     >
                         <svg className="fill-current" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M15 7H9V1C9 0.447715 8.55228 0 8 0C7.44772 0 7 0.447715 7 1V7H1C0.447715 7 0 7.44772 0 8C0 8.55228 0.447715 9 1 9H7V15C7 15.5523 7.44772 16 8 16C8.55228 16 9 15.5523 9 15V9H15C15.5523 9 16 8.5523 16 8C16 7.44772 15.5523 7 15 7Z" /></svg>
-                        Create Report
+                        สร้างแบบฟอร์ม / Create Form
                     </Link>
                 </div>
             </div>
@@ -135,7 +135,7 @@ export const ReportTableToolbar: React.FC<Props> = ({
                                 <option value="Pending">Pending</option>
                                 <option value="Approved">Approved</option>
                                 <option value="Rejected">Rejected</option>
-                                <option value="Drafted">Drafted</option>
+                                <option value="Draft">Draft</option>
                             </select>
                             <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-gray-500">
                                 <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M0.47072 1.08816C0.47072 1.02932 0.500141 0.970484 0.558983 0.911642C0.676668 0.793958 0.882613 0.793958 1.0003 0.911642L5.00015 4.91149L8.99999 0.911642C9.11768 0.793958 9.32362 0.793958 9.44131 0.911642C9.55899 1.02933 9.55899 1.23527 9.44131 1.35295L5.22081 5.57345C5.10312 5.69114 4.89718 5.69114 4.77949 5.57345L0.558983 1.35295C0.500141 1.29411 0.47072 1.23527 0.47072 1.17643V1.08816Z" fill="currentColor" /></svg>

@@ -170,7 +170,7 @@ const IronpowderFormEdit: React.FC<IronpowderFormEditProps> = ({
     <div className="rounded-lg border border-stroke bg-white p-6 shadow-md dark:border-strokedark dark:bg-boxdark md:p-8">
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
         <FormHeader
-          title="Production Report (Ironpowder) - แก้ไข"
+          title="ใบรายงานการผลิต (Ironpowder)"
           formTypes={availableForms}
           currentValue="Ironpowder"
           inputClass={inputClass}
@@ -293,7 +293,7 @@ const IronpowderFormEdit: React.FC<IronpowderFormEditProps> = ({
             {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
           </button>
 
-          {(status === 'Rejected' || status === 'Drafted') && (
+          {(status === 'Rejected' || status === 'Draft') && (
             <button
               type="button"
               onClick={handleSubmit(onResubmit)} // ใช้ฟังก์ชันส่งอนุมัติ

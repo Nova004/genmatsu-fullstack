@@ -69,7 +69,7 @@ const SignIn: React.FC = () => {
               Manufacturing System
             </h1>
             <p className="text-slate-500 text-sm leading-relaxed">
-              Platform for production tracking, quality assurance, and operational excellence.
+            {/*  Platform for production tracking, quality assurance, and operational excellence.*/}
             </p>
           </div>
 
@@ -89,10 +89,7 @@ const SignIn: React.FC = () => {
               <img src={Logo} alt="Logo" className="h-8 w-auto" />
             </div>
 
-            <h2 className="text-2xl font-bold text-slate-800">Sign In</h2>
-            <p className="text-sm text-slate-500 mt-1">
-              Welcome back! Please enter your details.
-            </p>
+            <h2 className="text-2xl font-bold text-slate-800">Login User</h2>
           </div>
 
           <form onSubmit={handleSignIn} className="space-y-5">
@@ -152,7 +149,7 @@ const SignIn: React.FC = () => {
                   Processing...
                 </>
               ) : (
-                "Log In"
+                "Login"
               )}
             </button>
           </form>

@@ -234,8 +234,8 @@ exports.createSubmission = async (data) => {
     keyMetrics.stTargetValue = finalStValue;
 
     // 3. Insert Submission
-    // 🟡 แก้ไข: บังคับ status เป็น 'Drafted' เสมอ (ตามที่คุณต้องการ)
-    const initialStatus = "Drafted";
+    // 🟡 แก้ไข: บังคับ status เป็น 'Draft' เสมอ (ตามที่คุณต้องการ)
+    const initialStatus = "Draft";
 
     const submissionId = await submissionRepo.createSubmissionRecord(
       transaction,
@@ -245,7 +245,7 @@ exports.createSubmission = async (data) => {
         lotNo,
         submittedBy,
         productionLine: keyMetrics.productionLine,
-        status: initialStatus, // ส่งค่า 'Drafted' ไปบันทึก
+        status: initialStatus, // ส่งค่า 'Draft' ไปบันทึก
       }
     );
 
@@ -514,7 +514,7 @@ exports.resubmitSubmissionData = async (
               production_line = @productionLine
           WHERE 
               submission_id = @submissionId
-              AND (status = 'Rejected' OR status = 'Drafted')
+              AND (status = 'Rejected' OR status = 'Draft')
       `);
 
   // 🟡 3.3 ล้าง Flow เก่าทิ้งทั้งหมด (แก้จาก UPDATE เป็น DELETE)

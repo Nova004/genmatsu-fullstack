@@ -203,7 +203,7 @@ const ReportHistory_GEN_A: React.FC = () => {
   // ส่วนของการแสดงผล UI ของคอมโพเนนต์
   return (
     <>
-      <Breadcrumb pageName="Record History GEN A" />
+      <Breadcrumb pageName="ประวัติการบันทึก GEN-A" />
 
       <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
         <ReportTableToolbar

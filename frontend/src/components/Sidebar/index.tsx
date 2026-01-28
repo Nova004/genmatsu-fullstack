@@ -185,7 +185,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 (isActive && '!text-white')
                               }
                             >
-                              Record History GEN A
+                              Genmatsu A
                             </NavLink>
                           </li>
                           <li>
@@ -196,7 +196,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 (isActive && '!text-white')
                               }
                             >
-                              Record History GEN B
+                              Genmatsu B
                             </NavLink>
                           </li>
                           <li>
@@ -207,7 +207,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 (isActive && '!text-white')
                               }
                             >
-                              Record History Recycle
+                              Genmatsu Recycle
                             </NavLink>
                           </li>
                           <li>
@@ -218,7 +218,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 (isActive && '!text-white')
                               }
                             >
-                             Daily Production Amount
+                              Daily Genmatsu report
                             </NavLink>
                           </li>
                         </ul>
@@ -328,7 +328,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                   (isActive && '!text-white')
                                 }
                               >
-                                ST. Plan Master
+                                Std. Plan Master
                               </NavLink>
                             </li>
                           </ul>

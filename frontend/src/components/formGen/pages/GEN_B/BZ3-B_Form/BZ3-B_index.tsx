@@ -63,11 +63,11 @@ function BZ3_B_Form() {
 
     return (
         <>
-            <Breadcrumb pageName="Form Elements" />
+            <Breadcrumb pageName="ใบรายงานการผลิต GEN-B" />
             <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
                 <form onSubmit={onSubmit}>
                     <FormHeader
-                        title="Production Report (BZ3-B)"
+                        title="ใบรายงานการผลิต(BZ3-B)"
                         formTypes={availableForms}
                         currentValue="BZ3-B"
                         inputClass={inputClass}
@@ -97,7 +97,7 @@ function BZ3_B_Form() {
                             disabled={isSubmitting}
                             className={`rounded-md bg-primary px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
                         >
-                            {isSubmitting ? 'กำลังบันทึก...' : 'Drafted'}
+                            {isSubmitting ? 'กำลังบันทึก...' : 'Draft'}
                         </button>
                     </div>
                 </form>

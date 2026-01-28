@@ -16,7 +16,7 @@ exports.getAllUsersWithGenManu = async (req, res) => {
         m.agt_member_nameEN,
         m.agt_member_nickname,
         p.agt_position_name,
-        s.name_fullsection,
+        s.name_section,
         m.agt_member_type,
         m.agt_member_shift,
         m.agt_status_job,

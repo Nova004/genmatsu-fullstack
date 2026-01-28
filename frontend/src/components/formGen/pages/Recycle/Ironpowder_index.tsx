@@ -116,11 +116,11 @@ function Ironpowder_Form() {
 
     return (
         <>
-            <Breadcrumb pageName="Form Elements" />
+            <Breadcrumb pageName="ใบรายงานการผลิต (Recycle)" />
             <div className="rounded-lg border border-stroke bg-white p-4 shadow-md dark:border-strokedark dark:bg-boxdark md:p-6">
                 <form onSubmit={onSubmit} className="space-y-4">
                     <FormHeader
-                        title="Production Report (Ironpowder)"
+                        title="ใบรายงานการผลิต (Ironpowder)"
                         formTypes={availableForms}
                         currentValue="Ironpowder"
                         inputClass={inputClass}
@@ -244,7 +244,7 @@ function Ironpowder_Form() {
                             disabled={isSubmitting}
                             className={`rounded-md bg-primary px-10 py-2 font-medium text-white hover:bg-opacity-90 ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
                         >
-                            {isSubmitting ? 'กำลังบันทึก...' : 'Drafted'}
+                            {isSubmitting ? 'กำลังบันทึก...' : 'Draft'}
                         </button>
                     </div>
                 </form>

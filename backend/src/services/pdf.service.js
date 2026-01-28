@@ -18,12 +18,12 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
     );
     console.log(`[PDF Gen] 1. Data fetched successfully.`);
 
-    const reportName = dataToInject.submission.form_type || "Production Report";
+    const reportName = dataToInject.submission.form_type || "ใบรายงานการผลิต";
     const dynamicHeaderTemplate = `
       <div style="width: 100%; border-bottom: 1px solid #ccc; padding: 5px 20px;
                   font-size: 12px; color: #000; font-weight: bold;
                   display: flex; justify-content: center; align-items: center;">
-        <span>Production Report: ${reportName} (Manufacturing ${reportName})</span>
+        <span>ใบรายงานการผลิต: ${reportName} (Manufacturing ${reportName})</span>
       </div>
     `;
 

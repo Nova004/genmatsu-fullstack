@@ -111,20 +111,7 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
           </div>
         </div>
       </div>
-
-      <div className="border-b-2 border-stroke py-2 text-center bg-black dark:border-strokedark">
-        <h5 className="font-medium text-white text-lg">Check List before turn on</h5>
-      </div>
-      {/* 3. เรียกใช้ Component พร้อมส่ง props ที่จำเป็นไปให้ */}
-      <ChecklistTable
-        items={checklistItems}
-        register={register}
-        errors={errors}
-        watch={watch} // 👈 4. ส่ง watch ลงไปด้วย
-      />
-
-      {/* ส่วน Check the condition (แก้ไขเล็กน้อย) */}
-
+      
       {/* ส่วน Check the condition (แก้ไขเล็กน้อย) */}
       <div className="border-b-2 border-stroke py-2 text-center bg-black dark:border-strokedark">
         <h5 className="font-medium text-white text-lg">Check the condition (ตรวจสอบสภาพบรรจุภัณฑ์)</h5>

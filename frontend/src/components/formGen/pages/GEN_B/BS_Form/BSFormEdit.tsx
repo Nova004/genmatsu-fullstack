@@ -139,7 +139,7 @@ const BSFormEdit: React.FC<BSFormEditProps> = ({ initialData, onSubmit, onResubm
 
 
 
-                    {(status === 'Rejected' || status === 'Drafted') && step === totalSteps && (
+                    {(status === 'Rejected' || status === 'Draft') && step === totalSteps && (
                         <button
                             type="button"
                             onClick={handleSubmit(onResubmit)} // ใช้ฟังก์ชันส่งอนุมัติ

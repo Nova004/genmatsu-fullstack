@@ -29,7 +29,7 @@ const login = async (req, res) => {
           a.agt_member_nameEN, 
           a.agt_member_email, 
           p.agt_position_name AS agt_member_position, 
-          s.name_fullsection AS agt_member_section, 
+          s.name_section AS agt_member_section, 
           a.agt_member_shift, 
           a.agt_status_job,
           m.LV_Approvals,

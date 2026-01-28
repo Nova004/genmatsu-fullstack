@@ -15,6 +15,7 @@ import SharedFormStep4 from '../../../components/forms/SharedFormStep4_GENA';
 import ProgressBar from '../../../components/ProgressBar';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
 import { useProductionForm } from '../../../../../hooks/useProductionForm';
+import FormHeader from '../../../components/FormHeader';
 
 
 // สร้าง Interface เพื่อกำหนดว่า AZ1FormViewer ต้องรับข้อมูลอะไรเข้ามาบ้าง
@@ -100,6 +101,12 @@ const AZ1FormViewer: React.FC<AZ1FormViewerProps> = ({ formData, blueprints, isR
     <FormProvider {...methods}>
       {/* กล่องหลักของฟอร์ม */}
       <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
+        <FormHeader
+          title="ใบรายงานการผลิต (AZ1)"
+          formTypes={[{ value: 'AZ1', label: 'AZ1', path: '#' }]}
+          currentValue="AZ1"
+          inputClass="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+        />
 
         {/* แสดง Component ProgressBar */}
         <ProgressBar

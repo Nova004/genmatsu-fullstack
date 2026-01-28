@@ -89,7 +89,7 @@ const Header = (props: {
             {/* 2. Input Field (ขยายเต็มพื้นที่) */}
             <input
               type="text"
-              placeholder="Search Lot No, ID..."
+              placeholder="Search Lot No"
               value={searchTerm}
               // ห้ามใส่ maxLength={6} ตรงนี้นะครับ เดี๋ยวตอนก็อปวางมันจะตัดก่อนแก้
               onChange={(e) => {

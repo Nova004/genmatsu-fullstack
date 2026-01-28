@@ -6,7 +6,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import BZ_Form from './BZ_index'; 
+import BZ_Form from './BZ_index';
 
 // --- (ส่วน Mock ทั้งหมดเหมือนเดิม) ---
 import { useProductionForm } from '../../../../../hooks/useProductionForm';
@@ -19,19 +19,19 @@ const mockNavigateSpy = vi.fn();
 vi.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigateSpy,
 }));
-    
+
 import { getLatestTemplateByName } from '../../../../../services/formService';
 vi.mock('../../../../../services/formService', () => ({
   getLatestTemplateByName: vi.fn(),
 }));
 
-    
+
 // --- (ส่วน "บทพูด" Mock เหมือนเดิม) ---
 const mockUseProdForm = {
   formMethods: {
     register: vi.fn(),
     trigger: vi.fn(),
-    watch: vi.fn(() => []), 
+    watch: vi.fn(() => []),
     control: {},
     setValue: vi.fn(),
     getValues: vi.fn(),
@@ -43,7 +43,7 @@ const mockUseProdForm = {
   handleTemplateLoaded: vi.fn(),
 };
 const mockUseMultiStep = {
-  step: 1, 
+  step: 1,
   handleNext: vi.fn(),
   handleBack: vi.fn(),
   handleSubmit: vi.fn(),
@@ -53,41 +53,41 @@ const mockUseMultiStep = {
 // --- (เริ่มเทส) ---
 describe('BZ_Form Component (หน้า Draft - Step 1)', () => {
 
-  const user = userEvent.setup(); 
+  const user = userEvent.setup();
 
   beforeEach(() => {
     vi.clearAllMocks();
     (useProductionForm as vi.Mock).mockReturnValue(mockUseProdForm);
     (useMultiStepForm as vi.Mock).mockReturnValue(mockUseMultiStep);
     (getLatestTemplateByName as vi.Mock).mockResolvedValue({
-      items: [], 
+      items: [],
       template: { template_id: 99 }
     });
   });
 
   // --- 👇 [แก้ไขเทสที่ 1] ---
-  it('เทส 1: หน้า Step 1 ควรแสดงปุ่ม "Back" และ "Drafted" แต่ "Next" ต้องไม่แสดง', async () => { // 👈 1. เพิ่ม async
+  it('เทส 1: หน้า Step 1 ควรแสดงปุ่ม "Back" และ "Draft" แต่ "Next" ต้องไม่แสดง', async () => { // 👈 1. เพิ่ม async
     // Arrange: Render Component
     render(<BZ_Form />);
 
     // Assert (ตรวจสอบ):
-    
+
     // 2. 👈 เปลี่ยนเป็น await screen.findByRole
     // (นี่จะ "รอ" ให้ State update จาก FormStep2/3 ทำงานเสร็จก่อน)
     const backButton = await screen.findByRole('button', { name: /Back/i });
 
     // 3. (เมื่อรอเสร็จแล้ว ที่เหลือก็ใช้ get/query ได้เลย)
     expect(backButton).toBeTruthy();
-    expect(screen.getByRole('button', { name: /Drafted/i })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Draft/i })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /Next/i })).toBeNull();
   });
 
   // --- 👇 [แก้ไขเทสที่ 2] ---
-  it('เทส 2: เมื่อกดปุ่ม "Drafted" ฟังก์ชัน onDraft (ปลอม) ต้องถูกเรียก', async () => { // 👈 1. เพิ่ม async
+  it('เทส 2: เมื่อกดปุ่ม "Draft" ฟังก์ชัน onDraft (ปลอม) ต้องถูกเรียก', async () => { // 👈 1. เพิ่ม async
     render(<BZ_Form />);
 
     // 2. 👈 เปลี่ยนเป็น await screen.findByRole
-    const draftButton = await screen.findByRole('button', { name: /Drafted/i });
+    const draftButton = await screen.findByRole('button', { name: /Draft/i });
 
     // Act (คลิก):
     await user.click(draftButton);

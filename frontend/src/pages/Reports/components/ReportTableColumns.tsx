@@ -24,7 +24,7 @@ export const getReportColumns = ({
     return [
         {
             accessorKey: 'submission_id',
-            header: 'ID Job',
+            header: 'Job ID',
         },
         {
             accessorKey: 'lot_no',
@@ -32,7 +32,7 @@ export const getReportColumns = ({
         },
         {
             accessorKey: 'form_type',
-            header: category === 'Recycle' ? 'Machine Name' : 'Form Type',
+            header: category === 'Recycle' ? 'Product Type' : 'GEN Type',
         },
         {
             accessorKey: 'submitted_by_name',

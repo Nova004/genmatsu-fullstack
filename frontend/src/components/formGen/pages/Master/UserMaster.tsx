@@ -14,7 +14,7 @@ interface AgtMember {
   agt_member_id: string;
   agt_member_nameEN: string;
   agt_position_name: string;
-  name_fullsection: string;
+  agt_member_section: string;
   agt_member_shift: string;
   agt_status_job: string;
   Gen_Manu_mem_No: string | null;

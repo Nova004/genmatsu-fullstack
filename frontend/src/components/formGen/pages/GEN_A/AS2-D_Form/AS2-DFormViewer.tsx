@@ -15,6 +15,7 @@ import SharedFormStep4 from '../../../components/forms/SharedFormStep4_GENA';
 import ProgressBar from '../../../components/ProgressBar';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
 import { useProductionForm } from '../../../../../hooks/useProductionForm';
+import FormHeader from '../../../components/FormHeader';
 
 
 // สร้าง Interface เพื่อกำหนดว่า AS2-DFormViewer ต้องรับข้อมูลอะไรเข้ามาบ้าง
@@ -86,7 +87,7 @@ const AS2_DFormViewer: React.FC<AS2_DFormViewerProps> = ({ formData, blueprints,
 
   const { trigger, formState: { errors } } = formMethods;
 
-  const { step, setStep , handleNext, handleBack } = useMultiStepForm({
+  const { step, setStep, handleNext, handleBack } = useMultiStepForm({
     totalSteps: 4,
     trigger,
     errors,
@@ -100,6 +101,12 @@ const AS2_DFormViewer: React.FC<AS2_DFormViewerProps> = ({ formData, blueprints,
     <FormProvider {...methods}>
       {/* กล่องหลักของฟอร์ม */}
       <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
+        <FormHeader
+          title="ใบรายงานการผลิต (AS2-D)"
+          formTypes={[{ value: 'AS2-D', label: 'AS2-D', path: '#' }]}
+          currentValue="AS2-D"
+          inputClass="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+        />
 
         {/* แสดง Component ProgressBar */}
         <ProgressBar

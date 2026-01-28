@@ -115,7 +115,7 @@ exports.createIronpowder = async ({ lotNo, formData, submittedBy }) => {
       .input("lotNo", sql.NVarChar, lotNo)
       .input("formType", sql.NVarChar, "Ironpowder")
       .input("submittedBy", sql.Int, submittedBy)
-      .input("status", sql.NVarChar, "Drafted")
+      .input("status", sql.NVarChar, "Draft")
       .input("reportDate", sql.Date, reportDate)
       .input("machineName", sql.NVarChar, machineName)
       .input("totalInput", sql.Decimal(10, 2), totalInput)
@@ -397,7 +397,7 @@ exports.resubmitIronpowder = async (submissionId, formData, userId) => {
     const totalCleaning = formData.totalCleaning || 0;
     const quantityOfProductCans = formData.quantityOfProductCans || 0; // ✅ New Field
 
-    // Update status to Drafted
+    // Update status to Draft
     await pool
       .request()
       .input("submissionId", sql.Int, submissionId)

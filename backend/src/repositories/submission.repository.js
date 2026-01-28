@@ -47,10 +47,12 @@ exports.getSubmissionWithDetails = async (pool, submissionId) => {
           fs.status, 
           fsd.form_data_json,
           fsd.production_date, -- ✅ Added production_date
-          u.agt_member_nameEN AS submitted_by_name
+          u.agt_member_nameEN AS submitted_by_name,
+          fvs.category -- ✅ Added category from join
       FROM Form_Submissions fs
       JOIN Form_Submission_Data fsd ON fs.submission_id = fsd.submission_id
       LEFT JOIN agt_member u ON fs.submitted_by COLLATE Thai_CI_AS = u.agt_member_id
+      LEFT JOIN Form_Version_Sets fvs ON fs.version_set_id = fvs.version_set_id -- ✅ Join to get category
       WHERE fs.submission_id = @submissionId
     `);
   return result.recordset[0];
@@ -536,7 +538,7 @@ exports.resubmitSubmissionData = async (
               production_line = @productionLine
           WHERE 
               submission_id = @submissionId
-              AND (status = 'Rejected' OR status = 'Drafted')
+              AND (status = 'Rejected' OR status = 'Draft')
       `);
 
   // 3.3, 3.4 (ลบ Flow, Log เหมือนเดิม)

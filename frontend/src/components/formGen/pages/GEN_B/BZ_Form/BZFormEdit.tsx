@@ -135,7 +135,7 @@ const BZFormEdit: React.FC<BZFormEditProps> = ({ initialData, onSubmit, onResubm
                         {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
                     </button>
 
-                    {(status === 'Rejected' || status === 'Drafted') && step === totalSteps && (
+                    {(status === 'Rejected' || status === 'Draft') && step === totalSteps && (
                         <button
                             type="button"
                             onClick={handleSubmit(onResubmit)} // ใช้ฟังก์ชันส่งอนุมัติ

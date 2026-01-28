@@ -16,6 +16,7 @@ import ProgressBar from '../../../components/ProgressBar';
 import { useMultiStepForm } from '../../../../../hooks/useMultiStepForm';
 
 import { initialFormValues } from '../../formDefaults';
+import FormHeader from '../../../components/FormHeader';
 
 
 // สร้าง Interface เพื่อกำหนดว่า BNFormViewer ต้องรับข้อมูลอะไรเข้ามาบ้าง
@@ -98,6 +99,12 @@ const BNFormViewer: React.FC<BNFormViewerProps> = ({ formData, blueprints, isRea
     <FormProvider {...methods}>
       {/* กล่องหลักของฟอร์ม */}
       <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
+        <FormHeader
+          title="ใบรายงานการผลิต (BN)"
+          formTypes={[{ value: 'BN', label: 'BN', path: '#' }]}
+          currentValue="BN"
+          inputClass="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+        />
 
         {/* แสดง Component ProgressBar */}
         <ProgressBar
@@ -109,7 +116,7 @@ const BNFormViewer: React.FC<BNFormViewerProps> = ({ formData, blueprints, isRea
         {/* ส่วนที่แสดงเนื้อหาของแต่ละ Step */}
         <div className="my-6">
           {/* ใช้ Conditional Rendering: ถ้า `step` เท่ากับ 1 ให้แสดง <FormStep1> */}
-          {step === 1 && <SharedFormStep1 {...formStepProps} packagingWarningItemName="Zeolite (Z)"/>}
+          {step === 1 && <SharedFormStep1 {...formStepProps} packagingWarningItemName="Zeolite (Z)" />}
           {/* ถ้า `step` เท่ากับ 2 ให้แสดง <FormStep2> และส่ง `staticBlueprint` ที่ถูกต้องเข้าไปด้วย */}
           {step === 2 && <FormStep2 {...formStepProps} staticBlueprint={blueprints['BN_Step2_RawMaterials']} />}
           {/* ถ้า `step` เท่ากับ 3 ก็ทำเหมือน Step 2 */}

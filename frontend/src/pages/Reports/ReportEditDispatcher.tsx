@@ -192,7 +192,7 @@ const ReportEditDispatcher: React.FC = () => {
             case 'AZ':
                 return <ReportEditAZ submission={submission} templates={templates} />;
             case 'Ironpowder':
-                return <ReportEditIronpowder submission={submission}  />;
+                return <ReportEditIronpowder submission={submission} />;
             default:
                 return <div>ไม่รองรับการแก้ไขฟอร์มประเภท: {formType}</div>;
         }
@@ -212,7 +212,7 @@ const ReportEditDispatcher: React.FC = () => {
 
     return (
         <>
-            <Breadcrumb pageName={`Edit Production Report Lot: ${submissionData?.submission?.lot_no || ''}`} />
+            <Breadcrumb pageName={`ใบรายงานการผลิต: ${(submissionData?.submission?.category || 'Recycle').replace('_', ' ')}`} />
             <div className="py-4">
                 {renderEditForm()}
             </div>

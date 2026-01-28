@@ -137,7 +137,7 @@ const IronpowderFormViewer: React.FC<IronpowderFormViewerProps> = ({
       <div className="rounded-lg border border-stroke bg-white p-6 shadow-md dark:border-strokedark dark:bg-boxdark md:p-8">
         <div className="space-y-6">
           <FormHeader
-            title="Production Report (Ironpowder) - ดูเอกสาร"
+            title="ใบรายงานการผลิต (Ironpowder)"
             formTypes={availableForms}
             currentValue="Ironpowder"
             inputClass={inputClass}

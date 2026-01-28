@@ -13,7 +13,7 @@ export interface Submission {
     form_type: string;
     lot_no: string;
     submitted_at: string;
-    status: 'Drafted' | 'Pending' | 'Approved' | 'Rejected';
+    status: 'Draft' | 'Pending' | 'Approved' | 'Rejected';
     submitted_by: string;
     category: 'GEN_A' | 'GEN_B';
     version_set_id: number;
@@ -90,9 +90,9 @@ export interface ApprovalFlowStep {
   comment: string | null;
 
   // ✅ [เพิ่มใหม่] ฟิลด์เหล่านี้มาจากการ JOIN ใน Backend เพื่อใช้แสดงผล
-  approver_name?: string;      // ชื่อผู้อนุมัติ (เช่น "John Doe")
-  approver_user_id?: string;   // ID ของผู้อนุมัติ
-  updated_at?: string;         // วันที่อัปเดตสถานะล่าสุด (ใช้แสดงวันที่ในตาราง)
+  approver_name?: string; // ชื่อผู้อนุมัติ (เช่น "John Doe")
+  approver_user_id?: string; // ID ของผู้อนุมัติ
+  updated_at?: string; // วันที่อัปเดตสถานะล่าสุด (ใช้แสดงวันที่ในตาราง)
 }
 
 export interface ApprovalActionPayload {

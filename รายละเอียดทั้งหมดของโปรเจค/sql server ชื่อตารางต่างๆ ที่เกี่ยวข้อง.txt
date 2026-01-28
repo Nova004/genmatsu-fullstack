@@ -1,6 +1,6 @@
 
 บทสรุปการพัฒนาระบบบันทึกและแสดงผลข้อมูล (Full-stack Overview)
-เป้าหมายหลักของเราคือการสร้างระบบที่สมบูรณ์สำหรับ "สร้าง" (Create) และ "อ่าน" (Read) Production Report โดยยึดหลักสถาปัตยกรรม "พิมพ์เขียวอัจฉริยะ" ที่ยืดหยุ่นและพร้อมสำหรับการขยายตัวในอนาคต
+เป้าหมายหลักของเราคือการสร้างระบบที่สมบูรณ์สำหรับ "สร้าง" (Create) และ "อ่าน" (Read) ใบรายงานการผลิตโดยยึดหลักสถาปัตยกรรม "พิมพ์เขียวอัจฉริยะ" ที่ยืดหยุ่นและพร้อมสำหรับการขยายตัวในอนาคต
 ส่วนที่ 1: การวางรากฐาน (Database & Backend)
 เราเริ่มต้นด้วยการสร้าง "โครงสร้างพื้นฐาน" ที่แข็งแรงเพื่อรองรับข้อมูลทั้งหมด
 1.1 ฐานข้อมูล (SQL Server)
@@ -123,7 +123,7 @@ erDiagram
         int version_set_id FK "ประทับตราด้วยชุดเวอร์ชัน"
         string lot_no "Lot No."
         string submitted_by FK "ID ผู้สร้าง (agt_member_id)"
-        string status "สถานะเอกสาร (Drafted, Rejected)"
+        string status "สถานะเอกสาร (Draft, Rejected)"
 	production_line "line ผลิต"
     }
     Form_Submission_Data {
@@ -206,7 +206,7 @@ Form_Submissions:
 
 submitted_by: (เราใช้คอลัมน์นี้) เก็บ agt_member_id ของ "ผู้สร้าง/ผู้บันทึก" เอกสาร
 
-status: (สำคัญมาก) เก็บสถานะ "โดยรวม" ของเอกสาร (เช่น 'Drafted', 'Pending', 'Rejected', 'Approved') เป็นตัวกำหนดว่า User จะเห็นปุ่ม "Resubmit" หรือไม่
+status: (สำคัญมาก) เก็บสถานะ "โดยรวม" ของเอกสาร (เช่น 'Draft', 'Pending', 'Rejected', 'Approved') เป็นตัวกำหนดว่า User จะเห็นปุ่ม "Resubmit" หรือไม่
 
 Form_Submission_Data:
 
@@ -236,7 +236,7 @@ Gen_Approved_log:
 
 (ใหม่) Backend เรียก Logic createApprovalFlow (ที่เราคุยกัน) เพื่อสร้างแถวใน Gen_Approval_Flow โดยอิงตาม LV_Approvals ของผู้สร้าง (เช่น ถ้า LV1 สร้าง ให้สร้าง Flow สำหรับ LV2, LV3)
 
-Form_Submissions.status ถูกตั้งค่าเป็น 'Drafted' (หรือ 'Pending')
+Form_Submissions.status ถูกตั้งค่าเป็น 'Draft' (หรือ 'Pending')
 
 การแสดงผลหน้า View/Print (Display):
 
@@ -278,7 +278,7 @@ User กด "Resubmit" -> Frontend เรียก API resubmitSubmission (Backe
 
 UPDATE Form_Submission_Data (อัปเดต JSON)
 
-UPDATE Form_Submissions (เปลี่ยน status กลับเป็น 'Drafted')
+UPDATE Form_Submissions (เปลี่ยน status กลับเป็น 'Draft')
 
 UPDATE Gen_Approval_Flow (รีเซ็ตแถว 'Rejected'/'Pending' กลับเป็น 'Pending' และล้าง approver_user_id ออก)
 
@@ -291,7 +291,7 @@ DELETE Gen_Approved_log (ลบ Log เก่าที่มี action = 'Reject
 
 *   `submissionId` (PK, INT): รหัสเอกสาร unique.
 *   `lot_no` (NVARCHAR(50)): เลข Lot.
-*   `status` (NVARCHAR(50)): สถานะ (Drafted/Pending/Approved).
+*   `status` (NVARCHAR(50)): สถานะ (Draft/Pending/Approved).
 *   `submitted_by` (INT): รหัสผู้ส่ง.
 *   `total_genmatsu_a` ... `total_cleaning` (DECIMAL): ยอดรวมแยกประเภท (เพิ่มใหม่).
 *   `form_data_json` (NVARCHAR(MAX)): ข้อมูลรายละเอียดทั้งหมดในรูปแบบ JSON.

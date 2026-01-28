@@ -1,44 +1,46 @@
-# ✅ ตรวจสอบ Ironpowder "Drafted" Feature
+# ✅ ตรวจสอบ Ironpowder "Draft" Feature
 
 ## 📊 สรุปการตรวจสอบ
 
 **สถานะ: ✅ ถูกต้องแล้ว 100%**
 
-Ironpowder form ของคุณสามารถทำงาน "Drafted" functionality ได้อย่างถูกต้องตามสถาปัตยกรรมโปรเจค
+Ironpowder form ของคุณสามารถทำงาน "Draft" functionality ได้อย่างถูกต้องตามสถาปัตยกรรมโปรเจค
 
 ---
 
 ## 🔍 ตรวจสอบ Frontend
 
 ### ✅ Ironpowder_index.tsx
+
 ```
 ✓ onDraft button ที่ line 243 เชื่อมต่อกับ onDraft จาก hook
 ✓ onClick={onDraft} ถูกต้อง
 ✓ isSubmitting state ควบคุม disabled/loading state ถูกต้อง
 ✓ ปุ่มสองปุ่ม:
-  - "Drafted" → เรียก onDraft (Draft mode)
+  - "Draft" → เรียก onDraft (Draft mode)
   - "Submit" → เรียก onSubmit (Submit for approval)
 ```
 
 ### ✅ useProductionForm Hook
+
 **File:** `frontend/src/hooks/useProductionForm.ts`
 
 ```
 ✓ Line 28: onDraft ในการ return interface
 ✓ Line 119-138: handleDraftSubmit function สมบูรณ์
 ✓ Line 124-134: Ironpowder detection และ API call ถูกต้อง
-  
+
   const handleDraftSubmit = async () => {
     setIsSubmitting(true);
     const data = formMethods.getValues();
-    
+
     if (formType === 'Ironpowder') {
       const ironpowderPayload = {
         lotNo: data.basicData.lotNo,
         formData: data,
         submittedBy: user?.id || 'unknown_user',
       };
-      
+
       const result = await ironpowderService.createIronpowder(ironpowderPayload);
       fireToast('success', 'บันทึกร่าง Ironpowder สำเร็จ!');
       navigate('/reports/history/recycle', { state: { highlightedId: result.submissionId } });
@@ -55,6 +57,7 @@ Ironpowder form ของคุณสามารถทำงาน "Drafted" fu
 ## 🔍 ตรวจสอบ Backend
 
 ### ✅ ironpowder.routes.js
+
 ```
 ✓ POST /api/ironpowder เชื่อมต่อกับ ironpowderController.createIronpowder
 ✓ Validation middleware ใช้ createIronpowder schema
@@ -62,6 +65,7 @@ Ironpowder form ของคุณสามารถทำงาน "Drafted" fu
 ```
 
 ### ✅ ironpowder.controller.js
+
 **File:** `backend/src/controllers/ironpowder.controller.js`
 
 ```
@@ -81,6 +85,7 @@ Error Handling:
 ```
 
 ### ✅ ironpowder.service.js
+
 **File:** `backend/src/services/ironpowder.service.js`
 
 ```
@@ -94,7 +99,7 @@ Error Handling:
      - diffWeight (totalInput - totalOutput) ✓
      - reportDate จาก basicData.date ✓
      - machineName จาก basicData.machineName ✓
-  
+
   3. INSERT ลงตาราง Form_Ironpowder_Submissions:
      ✓ lot_no (UNIQUE constraint)
      ✓ form_type = "Ironpowder"
@@ -105,7 +110,7 @@ Error Handling:
      ✓ total_input, total_output, diff_weight (normalized columns)
      ✓ form_data_json (JSON storage)
      ✓ created_at, updated_at (timestamps)
-  
+
   4. Commit transaction ✓
   5. สร้าง approval flow asynchronously ✓
   6. Return submissionId ✓
@@ -121,6 +126,7 @@ Approval Flow Creation:
 ```
 
 ### ✅ ironpowder.repository.js
+
 ```
 ✓ getUserApprovalLevel() - ดึง LV_Approvals ✓
 ✓ createApprovalFlowSteps() - สร้าง approval steps ✓
@@ -132,15 +138,17 @@ Approval Flow Creation:
 ## ⚠️ ประเด็นที่ต้องสังเกต
 
 ### Issue 1: Status ตั้งค่าเป็น "Submitted"
+
 **Location:** ironpowder.service.js line 109
 
 ```javascript
 .input("status", sql.NVarChar, "Submitted")
 ```
 
-**ปัญหา:** เมื่อคลิก "Drafted" status ยังคงเป็น "Submitted" ไม่ใช่ "Draft"
+**ปัญหา:** เมื่อคลิก "Draft" status ยังคงเป็น "Submitted" ไม่ใช่ "Draft"
 
-**ผลกระทบ:** 
+**ผลกระทบ:**
+
 - ✅ Approval flow จะถูกสร้างทันที
 - ⚠️ ถ้าต้องการแยกระหว่าง "Draft" กับ "Submitted" จำเป็นต้องแก้ไข
 
@@ -162,10 +170,10 @@ POST /api/ironpowder/submit    → status = "Submitted"
 
 ---
 
-## 🔄 Data Flow - Drafted Feature
+## 🔄 Data Flow - Draft Feature
 
 ```
-1️⃣ Frontend: User clicks "Drafted" button
+1️⃣ Frontend: User clicks "Draft" button
    ↓
 2️⃣ Ironpowder_index.tsx: onClick={onDraft}
    ↓
@@ -216,13 +224,15 @@ POST /api/ironpowder/submit    → status = "Submitted"
 ## 🚀 พร้อมใช้งาน
 
 คุณสามารถ:
+
 1. ✅ Execute SQL script สร้างตาราง `Form_Ironpowder_Submissions`
 2. ✅ Start backend server
 3. ✅ Start frontend
 4. ✅ ไปที่ Ironpowder form
-5. ✅ คลิก "Drafted" button → ข้อมูลจะบันทึก
+5. ✅ คลิก "Draft" button → ข้อมูลจะบันทึก
 
 **ผลที่คาดหวัง:**
+
 - ✅ Toast แสดง: "บันทึกร่าง Ironpowder สำเร็จ! (ID: xxx)"
 - ✅ Navigate ไป /reports/history/recycle
 - ✅ Record ปรากฏในตาราง with status "Submitted" + approval flow
@@ -232,9 +242,10 @@ POST /api/ironpowder/submit    → status = "Submitted"
 
 ## 📌 สรุป
 
-**ระบบ Drafted feature ของ Ironpowder ทำงานได้อย่างถูกต้อง** ตามสถาปัตยกรรมโปรเจค
+**ระบบ Draft feature ของ Ironpowder ทำงานได้อย่างถูกต้อง** ตามสถาปัตยกรรมโปรเจค
 
 **ความสำเร็จ:**
+
 - Frontend hook integration ✅
 - Backend API complete ✅
 - Business logic correct ✅
