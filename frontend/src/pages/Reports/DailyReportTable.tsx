@@ -140,10 +140,10 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
   // Sub-component for Headers (Reusable)
   const TableHeaderGroup = ({ hasMoisture = false }: { hasMoisture?: boolean }) => (
     <>
-      <th className="border-r border-b border-gray-300 px-1 py-1 text-xs font-extrabold text-gray-800 tracking-tight bg-gray-100">Genmatsu<br />Type</th>
+      <th className="border-r border-b border-gray-300 px-1 py-1 text-xs font-extrabold text-gray-800 tracking-tight bg-gray-100">GEN Type</th>
       <th className="border-r border-b border-gray-300 px-1 py-1 text-xs font-extrabold text-gray-800 tracking-tight bg-gray-100">Lot No.</th>
-      <th className="border-r border-b border-gray-300 px-1 py-1 text-right bg-gray-100" ><span className="text-xs font-extrabold text-gray-900">Input</span><span className="text-xs text-gray-900">(kg)</span></th>
-      <th className="border-r border-b border-gray-300 px-1 py-1 text-right bg-gray-100"><span className="text-xs font-extrabold text-gray-900">Output</span><span className="text-xs text-gray-900">(kg)</span></th>
+      <th className="border-r border-b border-gray-300 px-1 py-1 text-right bg-gray-100" ><span className="text-xs font-extrabold text-gray-900">Input</span><span className="text-xs text-gray-900"> (kg)</span></th>
+      <th className="border-r border-b border-gray-300 px-1 py-1 text-right bg-gray-100"><span className="text-xs font-extrabold text-gray-900">Output</span><span className="text-xs text-gray-900"> (kg)</span></th>
       <th className="border-r border-b border-gray-300 p-0 align-top bg-gray-100 min-w-[80px]">
         <div className="border-b border-gray-300 py-0.5 text-center text-xs font-extrabold text-gray-900">Pallet</div>
         <div className="flex w-full"><div className="w-1/2 py-0.5 text-center text-xs text-gray-900 border-r border-gray-300">No.</div><div className="w-1/2 py-0.5 text-center text-xs text-gray-900">Qty</div></div>

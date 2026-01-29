@@ -245,7 +245,7 @@ exports.getAllSubmissions = async (pool, params) => {
 
   if (user) {
     request.input('user', sql.NVarChar, `%${user}%`);
-    conditions.push("u.agt_member_nameEN LIKE @user");
+    conditions.push("(u.agt_member_nameEN LIKE @user OR fs.submitted_by LIKE @user)");
   }
 
   // Validate dates before adding to query

@@ -6,15 +6,13 @@ export const toDecimal = (e: React.FocusEvent<HTMLInputElement>) => {
   }
 };
 
-
-
 // ฟังก์ชันช่วยเช็คว่าเป็นตัวเลข (number หรือ string ที่แปลงเป็น number ได้)
 export const isNumeric = (val: any): val is string | number => {
   if (typeof val === 'number') return true;
-  if (typeof val === 'string' && val.trim() !== '' && !isNaN(Number(val))) return true;
+  if (typeof val === 'string' && val.trim() !== '' && !isNaN(Number(val)))
+    return true;
   return false;
 };
-
 
 export const getCurrentDate = () => {
   const today = new Date();
@@ -24,9 +22,10 @@ export const getCurrentDate = () => {
   return `${year}-${month}-${day}`;
 };
 
-
 // ฟังก์ชันจัดรูปแบบตัวเลขเดี่ยวๆ
-export const formatNumberRound = (num: number | string | null | undefined): string => {
+export const formatNumberRound = (
+  num: number | string | null | undefined,
+): string => {
   // 1. เช็คค่าว่างเหมือนเดิม
   if (num === null || num === undefined || num === '') return '';
 
@@ -42,13 +41,11 @@ export const formatNumberRound = (num: number | string | null | undefined): stri
   return rounded.toFixed(2);
 };
 
-
-
 // ฟังก์ชันแปลงข้อมูลทั้งก้อน (Recursive)
 // มันจะวิ่งเข้าไปหาตัวเลขทุกตัวใน Object/Array แล้วจับ Format หมดเลย
 export const formatFormData = (data: any): any => {
   if (Array.isArray(data)) {
-    return data.map(item => formatFormData(item));
+    return data.map((item) => formatFormData(item));
   } else if (data !== null && typeof data === 'object') {
     const newData: any = {};
     for (const key in data) {
@@ -62,15 +59,45 @@ export const formatFormData = (data: any): any => {
   return data;
 };
 
-
 export const formatDate = (dateString: string | null) => {
-    if (!dateString) return "-";
-    // ตัดสตริง YYYY-MM-DD ออกมาเป็นชิ้นๆ (วิธีนี้ชัวร์กว่า new Date เรื่อง Timezone)
-    const [year, month, day] = dateString.split('-');
-    
-    // แปลงเลขเดือนเป็นชื่อเดือนย่อ
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const monthIndex = parseInt(month, 10) - 1;
-    
-    return `${day}-${monthNames[monthIndex]}-${year}`; // คืนค่า: 30-Apr-2025
+  if (!dateString) return '-';
+  // ตัดสตริง YYYY-MM-DD ออกมาเป็นชิ้นๆ (วิธีนี้ชัวร์กว่า new Date เรื่อง Timezone)
+  const [year, month, day] = dateString.split('-');
+
+  // แปลงเลขเดือนเป็นชื่อเดือนย่อ
+  const monthNames = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  const monthIndex = parseInt(month, 10) - 1;
+
+  return `${day}-${monthNames[monthIndex]}-${year}`; // คืนค่า: 30-Apr-2025
+};
+
+export const setupGlobalScrollHandler = () => {
+  const handleWheel = (e: Event) => {
+    const target = e.target as HTMLElement;
+    if (
+      target.tagName === 'INPUT' &&
+      (target as HTMLInputElement).type === 'number'
+    ) {
+      (target as HTMLInputElement).blur();
+    }
   };
+
+  document.addEventListener('wheel', handleWheel, { passive: false });
+
+  return () => {
+    document.removeEventListener('wheel', handleWheel);
+  };
+};

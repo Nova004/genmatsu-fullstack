@@ -314,7 +314,7 @@ const ApprovalFlowDisplay: React.FC<Props> = ({ submissionId, submissionData }) 
       {canApprove && (
         <div className="mt-6 border-t border-stroke pt-4 dark:border-strokedark">
           <h5 className="mb-2 font-medium">
-            Comment (สำหรับ {currentStep.required_level === 1 ? "LV1" : currentStep.required_level === 2 ? "LV2" : "LV3"})
+            Comment (สำหรับ {currentStep.required_level === 1 ? "Shift Leader" : currentStep.required_level === 2 ? "Sr. Staff" : "Supervisor"})
           </h5>
           <textarea
             rows={3}

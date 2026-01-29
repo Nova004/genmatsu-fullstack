@@ -113,7 +113,7 @@ const ProductionReportPage: React.FC = () => {
 
   return (
     <>
-      <Breadcrumb pageName="Daily Genmatsu report" />
+      <Breadcrumb pageName="Daily Genmatsu Report" />
 
       <div className="flex flex-col gap-5">
         <div className="rounded-sm border border-stroke bg-white p-5 shadow-default dark:border-strokedark dark:bg-boxdark">
@@ -157,14 +157,14 @@ const ProductionReportPage: React.FC = () => {
 
             {/* ปุ่มกด */}
             <div className="w-full md:w-auto ml-auto flex gap-2">
-              {/* ปุ่ม 1: Web Preview */}
+              {/* ปุ่ม 1: Web Preview
               <button
                 type="button"
                 onClick={handlePrintPreview}
                 className="flex items-center gap-2 rounded py-2 px-4 font-medium text-black border border-gray-300 hover:bg-gray-100 transition"
               >
                 <FaPrint /> Preview
-              </button>
+              </button> */}
 
               {/* ปุ่ม 2: Download PDF (สีแดง) */}
               <button

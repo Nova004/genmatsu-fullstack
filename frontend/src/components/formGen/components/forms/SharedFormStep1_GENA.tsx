@@ -89,15 +89,24 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
               type="text"
               className={inputClass}
               {...register('basicData.lotNo', {
-                required: true,
+                required: 'กรุณากรอก Lot no.',
+                maxLength: { value: 6, message: 'กรุณากรอก Lot no. ให้ครบ 6 ตัวอักษร' },
+                minLength: { value: 6, message: 'กรุณากรอก Lot no. ให้ครบ 6 ตัวอักษร' },
+                pattern: {
+                  value: /^\d{4}[A-Z]\d$/,
+                  message: 'รูปแบบ lotNo ไม่ถูกต้อง'
+                },
                 onChange: (e) => {
-                  // ดึงค่าปัจจุบันมา -> แปลงเป็นพิมพ์ใหญ่ -> ลบทุกอย่างที่ไม่ใช่ A-Z หรือ 0-9 ทิ้ง
-                  const cleanValue = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                  let cleanValue = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
 
-                  // ยัดค่าที่คลีนแล้วกลับเข้าไปใน input
+                  if (cleanValue.length > 6) {
+                    cleanValue = cleanValue.slice(0, 6);
+                  }
+
                   e.target.value = cleanValue;
                 }
               })}
+              maxLength={6}
             />
           </div>
         </div>

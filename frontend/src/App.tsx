@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import Loader from './common/Loader';
 import { Toaster } from 'react-hot-toast';
 import AppRoutes from './AppRoutes';
+import { setupGlobalScrollHandler } from './utils/utils';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -14,6 +15,11 @@ function App() {
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 1000);
+
+    // Call the global scroll handler from utils
+    const cleanup = setupGlobalScrollHandler();
+
+    return cleanup;
   }, []);
 
   return loading ? (

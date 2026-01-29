@@ -1,3 +1,5 @@
+// local src/pages/Reports/components/ReportTableToolbar.tsx 
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Datepicker, { DateValueType } from "react-tailwindcss-datepicker";
@@ -59,7 +61,7 @@ export const ReportTableToolbar: React.FC<Props> = ({
                         className="inline-flex w-full items-center justify-center gap-2.5 rounded-lg bg-primary py-3 px-6 text-sm font-medium text-white shadow-md hover:bg-opacity-90 hover:shadow-lg transition-all sm:w-auto"
                     >
                         <svg className="fill-current" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M15 7H9V1C9 0.447715 8.55228 0 8 0C7.44772 0 7 0.447715 7 1V7H1C0.447715 7 0 7.44772 0 8C0 8.55228 0.447715 9 1 9H7V15C7 15.5523 7.44772 16 8 16C8.55228 16 9 15.5523 9 15V9H15C15.5523 9 16 8.5523 16 8C16 7.44772 15.5523 7 15 7Z" /></svg>
-                        สร้างแบบฟอร์ม / Create Form
+                        Create Form
                     </Link>
                 </div>
             </div>
@@ -117,7 +119,7 @@ export const ReportTableToolbar: React.FC<Props> = ({
                             </div>
                             <input
                                 type="text"
-                                placeholder="User Name"
+                                placeholder="User Name / ID"
                                 value={filterUser}
                                 onChange={(e) => setFilterUser(e.target.value)}
                                 className="w-full rounded-md border border-stroke bg-white py-2.5 pl-10 pr-4 text-sm font-medium text-black outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 dark:border-strokedark dark:bg-form-input dark:text-white"

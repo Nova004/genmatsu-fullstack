@@ -218,7 +218,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 (isActive && '!text-white')
                               }
                             >
-                              Daily Genmatsu report
+                              Daily Genmatsu Report
                             </NavLink>
                           </li>
                         </ul>
