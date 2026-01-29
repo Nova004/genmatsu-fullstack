@@ -293,13 +293,13 @@ exports.getAllSubmissions = async (pool, params) => {
         fs.form_type, 
         fs.lot_no,
         fs.submitted_by, 
-        fs.submitted_at, 
+       -- fs.submitted_at, 
         fs.status, 
         fsd.production_date,
-        fsd.input_kg,
-        fsd.output_kg,
-        fsd.yield_percent,
-        fsd.total_qty,
+       -- fsd.input_kg,
+       -- fsd.output_kg,
+       -- fsd.yield_percent,
+       -- fsd.total_qty,
         u.agt_member_nameEN AS submitted_by_name,
         (
             SELECT TOP 1 required_level 

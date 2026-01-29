@@ -25,7 +25,7 @@ const InputProductTable: React.FC<InputProductTableProps> = ({
 
   const headerThClass = "border-b border-stroke px-3 py-3 text-center font-semibold text-xs whitespace-nowrap text-gray-700 dark:border-strokedark dark:text-gray-200 bg-gray-50 dark:bg-gray-800";
   const tdCenterClass = "border border-stroke px-4 py-3 text-center font-normal text-sm text-gray-600 dark:border-strokedark dark:text-gray-300";
-  const footerTdClass = "border border-stroke px-4 py-3 text-center align-middle text-gray-900 font-semibold text-sm dark:border-strokedark dark:text-gray-100 bg-gray-50 dark:bg-gray-800";
+  const footerTdClass = "border border-stroke px-4 py-3 text-center align-middle text-blue-600 font-semibold text-sm dark:border-strokedark dark:text-blue-600 bg-gray-50 dark:bg-gray-800 ";
 
   // Watch the weight field to calculate total
   const weights = watch(fieldName) || [];

@@ -517,7 +517,20 @@ span.flatpickr-weekday,
     position: running(footer); /* บอก browser ให้ย้าย element นี้ */
   }
   
+
 }
 
-
+/* ‼️ [ใหม่] Global Rule: บังคับให้ Disabled Input เป็นสีน้ำเงิน (ทั้งหน้าจอและตอนปริ้น) ‼️ */
+input:disabled,
+textarea:disabled,
+select:disabled,
+input[readonly],  /* 👈 เพิ่ม readonly ด้วย */
+textarea[readonly],
+.disabled-print-color,
+.text-blue-600 { /* 👈 เพิ่ม class นี้เพื่อให้ Element ทั่วไปที่เป็นสีฟ้า (เช่น Total) ปริ้นออกมาเป็นสีฟ้าด้วย */
+  -webkit-text-fill-color: #2563eb !important; /* Tailwind blue-600 */
+  color: #2563eb !important;
+  opacity: 1 !important;
+  font-weight: bold !important;
+}
 
