@@ -91,17 +91,14 @@ const ProductionReportPage: React.FC = () => {
         responseType: 'blob', // สำคัญ: รับค่าเป็นไฟล์
       });
 
-      // สร้าง Link ปลอมเพื่อกดโหลดไฟล์
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `Daily_Report_${filterDate}.pdf`);
-      document.body.appendChild(link);
-      link.click();
+      // สร้าง Link สำหรับเปิด PDF (วิธีเดียวกับ ReportHistory_GEN_A)
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      window.open(url, '_blank');
 
-      // Cleanup
-      link.parentNode?.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      // Cleanup (ปล่อยให้ Browser จัดการเอง หรือ Timeout)
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 1000);
 
     } catch (error) {
       console.error("Error downloading PDF:", error);
