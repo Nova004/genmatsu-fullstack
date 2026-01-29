@@ -107,13 +107,13 @@ const login = async (req, res) => {
 const getUserPhoto = async (req, res) => {
   try {
     const { id } = req.params;
+    const fs = require("fs");
 
     // Path ของรูปภาพ
     const photoPath = `\\\\192.168.1.68\\PhotoHRC\\${id}.jpg`;
 
-    // เช็คว่ามีไฟล์จริงไหม (ใช้ Bun.file)
-    const file = Bun.file(photoPath);
-    if (await file.exists()) {
+    // เช็คว่ามีไฟล์จริงไหม (Node.js Way)
+    if (fs.existsSync(photoPath)) {
       // ส่งไฟล์รูปกลับไป
       res.sendFile(photoPath);
     } else {
@@ -125,7 +125,6 @@ const getUserPhoto = async (req, res) => {
   }
 };
 
-// Export
 module.exports = {
   login,
   getUserPhoto,

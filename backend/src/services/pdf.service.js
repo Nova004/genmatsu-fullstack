@@ -20,9 +20,15 @@ const getBrowser = async () => {
     process.env.LOCALAPPDATA + "\\Google\\Chrome\\Application\\chrome.exe",
   ];
 
+  const fs = require("fs"); // ✅ Re-import fs
+
+  // ...
+
+
+
   let executablePath = null;
   for (const path of chromePaths) {
-    if (await Bun.file(path).exists()) {
+    if (fs.existsSync(path)) {
       executablePath = path;
       break;
     }

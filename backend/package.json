@@ -4,9 +4,9 @@
   "description": "",
   "main": "src/app.js",
   "scripts": {
-    "start": "bun src/app.js",
-    "dev": "bun --watch src/app.js",
-    "test": "bun test"
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js",
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
