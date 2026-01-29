@@ -20,6 +20,7 @@ const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
+  path: "/api/socket.io", // ✅ Custom Path เพื่อให้ผ่าน Proxy ได้ (/genmatsu/api/socket.io -> /api/socket.io)
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
@@ -39,15 +40,26 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 // --- 2. แก้ไข Route Path (ต้องมี / นำหน้า) ---
-app.use("/api/auth", authRoutes);
-app.use("/api/forms", formRoutes);
-app.use("/api/master", masterRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/submissions", submissionRoutes);
-app.use("/api/approvals", approvalRoutes);
-app.use("/api/nacl", naclRoutes);
-app.use("/api/ironpowder", ironpowderRoutes);
+// --- 2. แก้ไข Route Path (รองรับทั้ง /api และ /genmatsu/api) ---
+const routes = [
+  { path: "/auth", route: authRoutes },
+  { path: "/forms", route: formRoutes },
+  { path: "/master", route: masterRoutes },
+  { path: "/users", route: userRoutes },
+  { path: "/submissions", route: submissionRoutes },
+  { path: "/approvals", route: approvalRoutes },
+  { path: "/nacl", route: naclRoutes },
+  { path: "/ironpowder", route: ironpowderRoutes },
+];
+
+routes.forEach(({ path, route }) => {
+  app.use(`/api${path}`, route);           // รองรับ http://localhost:4000/api/...
+  app.use(`/genmatsu/api${path}`, route);  // รองรับ http://server/genmatsu/api/... (กรณี Proxy ไม่ตัด Path)
+});
+
+// Report Route (Special Case)
 app.use("/genmatsu/api/submissions/reports", reportRoutes);
+app.use("/api/submissions/reports", reportRoutes);
 
 // Error Handling
 const errorMiddleware = require("./middlewares/error.middleware");

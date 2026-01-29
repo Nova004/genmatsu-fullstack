@@ -1,8 +1,8 @@
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
-
-export const socket = io(SOCKET_URL, {
-  transports: ['websocket'],
+// ไม่ต้อง Force URL แล้ว ให้มันใช้ Relative Path (ตาม Domain/Port ปัจจุบัน)
+export const socket = io({
+  path: '/genmatsu/api/socket.io', // ✅ ยิงไปที่ Path นี้เพื่อให้ Proxy ส่งต่อเข้า Backend ได้ถูกช่อง
+  transports: ['websocket', 'polling'], // เพิ่ม polling เผื่อ websocket โดยบล็อก
   autoConnect: true,
 });
