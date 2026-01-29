@@ -22,8 +22,6 @@ exports.checkLotNoExists = async (lotNo) => {
   }
 };
 
-
-
 async function createApprovalFlow(pool, submissionId, submittedBy) {
   let transaction;
   try {

@@ -3,6 +3,21 @@
 const { pool, sql, poolConnect } = require("../db.js");
 const activityLogRepository = require("../repositories/activityLog.repository");
 const { getObjectDiff } = require("../utils/diffHelper");
+const logger = require("../utils/logger"); // 🚀 Async Logger
+
+// 🚀 Turbo: In-Memory Cache
+const CACHE = {
+  templates: new Map(), // Key: templateName -> Value: { template, items }
+  allTemplates: null,   // Value: groupedTemplates
+  standardPlans: null   // Value: Array of plans
+};
+
+// Helper to clear cache
+const clearTemplateCache = () => {
+  CACHE.templates.clear();
+  CACHE.allTemplates = null;
+  logger.info("[Cache] Template cache cleared.");
+};
 
 // --- เปลี่ยนชื่อฟังก์ชันเป็น getLatestTemplateByName ---
 exports.getLatestTemplateByName = async (req, res) => {
@@ -11,6 +26,12 @@ exports.getLatestTemplateByName = async (req, res) => {
 
     if (!templateName) {
       return res.status(400).json({ message: "กรุณาระบุชื่อ Template" });
+    }
+
+    // 🚀 Cache Hit?
+    if (CACHE.templates.has(templateName)) {
+      logger.info(`[Cache] Hit: ${templateName}`);
+      return res.status(200).json(CACHE.templates.get(templateName));
     }
 
     await poolConnect;
@@ -42,24 +63,35 @@ exports.getLatestTemplateByName = async (req, res) => {
         item.config_json = JSON.parse(item.config_json);
         return item;
       } catch (e) {
-        console.error(`Error parsing JSON for item_id: ${item.item_id}`, e);
+        logger.error(`Error parsing JSON for item_id: ${item.item_id}`, e);
         return { ...item, config_json: { error: "Invalid JSON format" } };
       }
     });
 
+    const responseData = {
+      template: templateData,
+      items: formattedItems,
+    };
+
+    // 🚀 Save to Cache
+    CACHE.templates.set(templateName, responseData);
+
     // --- ส่งข้อมูลกลับไปให้ Frontend ในรูปแบบใหม่ ---
-    res.status(200).json({
-      template: templateData, // ส่งข้อมูลของ Template ไปด้วย (เผื่อต้องใช้ template_id)
-      items: formattedItems, // ส่งรายการไอเท็ม
-    });
+    res.status(200).json(responseData);
   } catch (error) {
-    console.error("Error in getLatestTemplateByName:", error);
+    logger.error("Error in getLatestTemplateByName:", error);
     res.status(500).json({ message: "เกิดข้อผิดพลาดที่เซิร์ฟเวอร์" });
   }
 };
 
 exports.getAllLatestTemplates = async (req, res) => {
   try {
+    // 🚀 Cache Hit?
+    if (CACHE.allTemplates) {
+      logger.info(`[Cache] Hit: All Templates`);
+      return res.status(200).json(CACHE.allTemplates);
+    }
+
     await poolConnect;
     // --- 👇 1. เพิ่ม form_type เข้ามาใน SELECT 👇 ---
     const result = await pool.request().query(`
@@ -100,9 +132,12 @@ exports.getAllLatestTemplates = async (req, res) => {
       return acc;
     }, {});
 
+    // 🚀 Save to Cache
+    CACHE.allTemplates = groupedTemplates;
+
     res.status(200).json(groupedTemplates);
   } catch (error) {
-    console.error("Error fetching all latest templates:", error);
+    logger.error("Error fetching all latest templates:", error);
     res
       .status(500)
       .json({ message: "Error fetching templates", error: error.message });
@@ -225,8 +260,11 @@ exports.updateTemplateAsNewVersion = async (req, res) => {
         });
       }
     } catch (logErr) {
-      console.error("Failed to log template update:", logErr);
+      logger.error("Failed to log template update:", logErr);
     }
+
+    // 🚀 Invalidate Cache
+    clearTemplateCache();
 
     res.status(201).json({
       message: "Template updated successfully as new version.",
@@ -250,14 +288,24 @@ exports.updateTemplateAsNewVersion = async (req, res) => {
 
 exports.getStandardPlans = async (req, res) => {
   try {
+    // 🚀 Cache Hit?
+    if (CACHE.standardPlans) {
+      console.log(`[Cache] Hit: Standard Plans`);
+      return res.json(CACHE.standardPlans);
+    }
+
     const pool = await poolConnect;
     // ดึงข้อมูลทั้งหมด เรียงตามชื่อ form_type
     const result = await pool
       .request()
       .query("SELECT * FROM Gen_StandardPlan_MT ORDER BY form_type ASC");
+
+    // 🚀 Save to Cache
+    CACHE.standardPlans = result.recordset;
+
     res.json(result.recordset);
   } catch (err) {
-    console.error("Error fetching ST Plans:", err);
+    logger.error("Error fetching ST Plans:", err);
     res.status(500).json({ message: "Error fetching ST Plans" });
   }
 };
@@ -309,12 +357,15 @@ exports.saveStandardPlan = async (req, res) => {
         });
       }
     } catch (logErr) {
-      console.error("Failed to log standard plan update:", logErr);
+      logger.error("Failed to log standard plan update:", logErr);
     }
+
+    // 🚀 Invalidate Cache
+    CACHE.standardPlans = null;
 
     res.json({ message: "Standard Plan saved successfully" });
   } catch (err) {
-    console.error("Error saving ST Plan:", err);
+    logger.error("Error saving ST Plan:", err);
     res.status(500).json({ message: "Error saving ST Plan" });
   }
 };
@@ -328,9 +379,12 @@ exports.deleteStandardPlan = async (req, res) => {
       .input("id", sql.Int, id)
       .query("DELETE FROM Gen_StandardPlan_MT WHERE id = @id");
 
+    // 🚀 Invalidate Cache
+    CACHE.standardPlans = null;
+
     res.json({ message: "Deleted successfully" });
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     res.status(500).json({ message: "Error deleting" });
   }
 };

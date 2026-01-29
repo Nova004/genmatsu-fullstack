@@ -1,3 +1,5 @@
+// local src/pages/Reports/components/ReportTableColumns.tsx
+
 import React from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import { SubmissionData } from './types';
@@ -5,12 +7,12 @@ import { getStatusColorClass } from '../../../utils/statusHelpers';
 import { Tooltip } from '../../../components/Tooltip';
 
 interface GetColumnsProps {
-    user: any; // Or specific User type if available
+    user: any;
     navigate: (path: string) => void;
     handleDelete: (id: number, lotNo: string) => void;
     handlePrint: (id: number) => void;
-    printingId?: number | null; // ✅ รับค่า printingId
-    category?: string; // ✅ รับหมวดหมู่เพื่อกำหนด URL
+    printingId?: number | null;
+    category?: string;
 }
 
 export const getReportColumns = ({
@@ -18,8 +20,8 @@ export const getReportColumns = ({
     navigate,
     handleDelete,
     handlePrint,
-    printingId, // ✅
-    category // ✅
+    printingId,
+    category
 }: GetColumnsProps): ColumnDef<SubmissionData>[] => {
     return [
         {
@@ -90,7 +92,12 @@ export const getReportColumns = ({
             header: 'Actions',
             cell: ({ row }) => {
                 const submission = row.original;
-                const isPrinting = printingId === submission.submission_id; // ✅ เช็คว่า Row นี้กำลัง Print อยู่ไหม
+                const isPrinting = printingId === submission.submission_id;
+
+                // ตัวช่วยเช็คเงื่อนไข
+                const isOwner = user?.id == submission.submitted_by;
+                const isLv3 = user?.LV_Approvals === 3;
+                const isApproved = submission.status === 'Approved';
 
                 return (
                     <div className="flex items-center space-x-3.5">
@@ -129,11 +136,16 @@ export const getReportColumns = ({
 
                         {/* Edit Button */}
                         {(() => {
-                            const isNeedsEdit = submission.status === 'Rejected' && (user?.id == submission.submitted_by);
+                            const isNeedsEdit = submission.status === 'Rejected' && isOwner;
+
+                            // ✅ แก้ไขเงื่อนไข canEdit:
+                            // 1. เป็นเจ้าของ และ สถานะต้องไม่ใช่ Approved
+                            // 2. หรือเป็น LV3 และสถานะเป็น Approved (หรืออื่นๆ ก็ได้ตามสิทธิ์)
                             const canEdit = (
-                                (user?.id == submission.submitted_by) ||
-                                (user?.LV_Approvals === 3)
+                                (isOwner && !isApproved) ||
+                                (isLv3 && isApproved)
                             );
+
                             const tooltipText = isNeedsEdit ? "งานถูกตีกลับ กรุณาแก้ไข" : "แก้ไขข้อมูล";
 
                             return canEdit && (
@@ -165,7 +177,8 @@ export const getReportColumns = ({
                         })()}
 
                         {/* Delete Button */}
-                        {((user?.id == submission.submitted_by) || (user?.LV_Approvals === 3)) && (
+                        {/* ✅ แก้ไขเงื่อนไขการแสดงปุ่มลบ: เจ้าของลบได้ถ้ายังไม่ Approved หรือ LV3 ลบได้เสมอ */}
+                        {((isOwner && !isApproved) || isLv3) && (
                             <Tooltip message="ลบรายการนี้">
                                 <button
                                     onClick={() => handleDelete(submission.submission_id, submission.lot_no)}
@@ -177,14 +190,13 @@ export const getReportColumns = ({
                         )}
 
                         {/* Print Button */}
-                        <Tooltip message={isPrinting ? "กำลังสร้างไฟล์ PDF..." : "พิมพ์รายงาน"}> {/* ✅ UI: เปลี่ยน Tooltip */}
+                        <Tooltip message={isPrinting ? "กำลังสร้างไฟล์ PDF..." : "พิมพ์รายงาน"}>
                             <button
                                 onClick={() => handlePrint(submission.submission_id)}
-                                disabled={isPrinting} // ✅ Logic: ห้ามกดซ้ำ
-                                className={`hover:text-blue-500 ${isPrinting ? 'cursor-wait opacity-50' : ''}`} // ✅ UI: เปลี่ยน Cursor/Opacity
+                                disabled={isPrinting}
+                                className={`hover:text-blue-500 ${isPrinting ? 'cursor-wait opacity-50' : ''}`}
                             >
                                 {isPrinting ? (
-                                    // ✅ UI: แสดง Spinner หมุนติ้วๆ
                                     <svg className="animate-spin h-5 w-5 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

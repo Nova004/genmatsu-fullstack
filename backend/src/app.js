@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
-require("dotenv").config();
+
 const { sql, poolPromise } = require("./db");
 
 // Routes
@@ -32,6 +32,8 @@ app.use((req, res, next) => {
 });
 
 // ... (ส่วน Middleware เดิมของคุณ) ...
+const compression = require("compression"); // 👈 เพิ่ม
+app.use(compression()); // 👈 เปิดใช้งาน Compression
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));

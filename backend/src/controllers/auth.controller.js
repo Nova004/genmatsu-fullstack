@@ -4,7 +4,6 @@
 const { sql, pool, poolConnect } = require("../db");
 
 const jwt = require("jsonwebtoken");
-const fs = require("fs");
 const path = require("path");
 require("dotenv").config();
 
@@ -112,8 +111,9 @@ const getUserPhoto = async (req, res) => {
     // Path ของรูปภาพ
     const photoPath = `\\\\192.168.1.68\\PhotoHRC\\${id}.jpg`;
 
-    // เช็คว่ามีไฟล์จริงไหม
-    if (fs.existsSync(photoPath)) {
+    // เช็คว่ามีไฟล์จริงไหม (ใช้ Bun.file)
+    const file = Bun.file(photoPath);
+    if (await file.exists()) {
       // ส่งไฟล์รูปกลับไป
       res.sendFile(photoPath);
     } else {

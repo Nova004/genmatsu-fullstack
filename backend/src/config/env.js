@@ -11,6 +11,12 @@ const config = {
     options: {
       encrypt: false,
       trustServerCertificate: true
+    },
+    // 💧 Turbo: Explicit Pool Configuration
+    pool: {
+      max: 50, // Increase max connections for parallel queries
+      min: 5,  // Keep some connections open
+      idleTimeoutMillis: 30000
     }
   },
   jwtSecret: process.env.JWT_SECRET || 'secret-key',

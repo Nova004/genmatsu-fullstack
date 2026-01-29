@@ -1,5 +1,6 @@
 const sql = require("mssql");
 const dbConfig = require("../config/db.config");
+const logger = require("../utils/logger"); // 🚀 Async Logger
 
 // Helper to get a pool connection
 const getPool = async () => await sql.connect(dbConfig);
@@ -137,15 +138,24 @@ exports.addItemsToVersionSet = async (
   versionSetId,
   templateIds
 ) => {
-  for (const templateId of templateIds) {
-    const request = new sql.Request(transaction);
-    await request
-      .input("versionSetId", sql.Int, versionSetId)
-      .input("templateId", sql.Int, templateId)
-      .query(
-        "INSERT INTO Form_Version_Set_Items (version_set_id, template_id) VALUES (@versionSetId, @templateId)"
-      );
-  }
+  if (!templateIds || templateIds.length === 0) return;
+
+  const request = new sql.Request(transaction);
+  request.input("versionSetId", sql.Int, versionSetId);
+
+  // 🚀 Turbo: Construct Batch Insert SQL
+  // (Safe from injection because we bind parameters dynamically)
+  const values = templateIds.map((_, index) => `(@versionSetId, @t${index})`).join(", ");
+
+  // Bind each templateId
+  templateIds.forEach((id, index) => {
+    request.input(`t${index}`, sql.Int, id);
+  });
+
+  await request.query(`
+    INSERT INTO Form_Version_Set_Items (version_set_id, template_id) 
+    VALUES ${values}
+  `);
 };
 
 exports.createSubmissionRecord = async (transaction, data) => {
@@ -359,7 +369,7 @@ exports.getPendingSubmissionsByLevel = async (pool, userLevel) => {
 
     return result.recordset;
   } catch (error) {
-    console.error("Error fetching pending submissions:", error);
+    logger.error("Error fetching pending submissions:", error);
     throw error;
   }
 };
@@ -385,7 +395,7 @@ exports.getRejectedSubmissionsByUser = async (pool, userId) => {
       `);
     return result.recordset;
   } catch (error) {
-    console.error("Error fetching rejected submissions:", error);
+    logger.error("Error fetching rejected submissions:", error);
     throw error;
   }
 };
@@ -394,20 +404,15 @@ exports.deleteSubmissionRelatedData = async (transaction, submissionId) => {
   const request = new sql.Request(transaction);
   request.input("submissionId", sql.Int, submissionId);
 
-  await request.query(
-    "DELETE FROM Gen_Approval_Flow WHERE submission_id = @submissionId"
-  );
-  await request.query(
-    "DELETE FROM Gen_Approved_log WHERE submission_id = @submissionId"
-  );
-  await request.query(
-    "DELETE FROM Form_Submission_Data WHERE submission_id = @submissionId"
-  );
-  const result = await request.query(
-    "DELETE FROM Form_Submissions WHERE submission_id = @submissionId"
-  );
+  // 🚀 Turbo: Combine 4 DELETEs into 1 Round-Trip
+  const result = await request.query(`
+    DELETE FROM Gen_Approval_Flow WHERE submission_id = @submissionId;
+    DELETE FROM Gen_Approved_log WHERE submission_id = @submissionId;
+    DELETE FROM Form_Submission_Data WHERE submission_id = @submissionId;
+    DELETE FROM Form_Submissions WHERE submission_id = @submissionId;
+  `);
 
-  return result.rowsAffected[0] > 0;
+  return result.rowsAffected[3] > 0; // Check rows of the last delete (Form_Submissions)
 };
 
 exports.updateSubmissionRecord = async (
@@ -578,7 +583,7 @@ exports.getRecentCommentsForUser = async (pool, userId) => {
 
     return result.recordset;
   } catch (error) {
-    console.error("Error fetching comments:", error);
+    logger.error("Error fetching comments:", error);
     throw error;
   }
 };

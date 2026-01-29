@@ -24,25 +24,34 @@ exports.getUserApprovalLevel = async (pool, userId) => {
 
 exports.createApprovalFlowSteps = async (
   transaction,
-  submissionId, // ในที่นี้คือ submissionId
+  submissionId,
   flowSteps,
-  tableName = "Form_Ironpowder_Submissions" // พารามิเตอร์นี้อาจไม่ได้ใช้ใน query แต่เก็บไว้ได้
+  tableName = "Form_Ironpowder_Submissions"
 ) => {
   try {
-    for (const step of flowSteps) {
-      await transaction
-        .request()
-        .input("submissionId", sql.Int, submissionId) // เปลี่ยนชื่อ input ให้สื่อความหมาย (แต่ค่าที่ส่งมาคือ id เดิม)
-        .input("sequence", sql.Int, step.sequence)
-        .input("requiredLevel", sql.Int, step.required_level)
-        .input("status", sql.NVarChar, "Pending").query(`
-          INSERT INTO Form_Ironpowder_Approval_Flow 
-          (submissionId, sequence, required_level, status)
-          VALUES (@submissionId, @sequence, @requiredLevel, @status)
-        `);
-    }
+    if (!flowSteps || flowSteps.length === 0) return;
+
+    // 🚀 Turbo: Construct Batch Insert SQL
+    const values = flowSteps
+      .map((_, index) => `(@submissionId, @s${index}, @r${index}, 'Pending')`)
+      .join(", ");
+
+    const request = transaction.request();
+    request.input("submissionId", sql.Int, submissionId);
+
+    // Bind parameters for each step
+    flowSteps.forEach((step, index) => {
+      request.input(`s${index}`, sql.Int, step.sequence);
+      request.input(`r${index}`, sql.Int, step.required_level);
+    });
+
+    await request.query(`
+      INSERT INTO Form_Ironpowder_Approval_Flow (submissionId, sequence, required_level, status)
+      VALUES ${values}
+    `);
+
     console.log(
-      `[Repo] Created ${flowSteps.length} approval flow steps in Form_Ironpowder_Approval_Flow`
+      `[Repo] Created ${flowSteps.length} approval flow steps in Form_Ironpowder_Approval_Flow (Turbo Batch)`
     );
   } catch (error) {
     console.error("Error creating approval flow steps:", error);

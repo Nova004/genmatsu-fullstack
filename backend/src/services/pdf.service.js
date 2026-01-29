@@ -3,20 +3,64 @@
 const puppeteer = require("puppeteer");
 const submissionService = require("./submission.service"); // We will create this next
 const config = require("../config/env");
+const logger = require("../utils/logger"); // 🚀 Async Logger
+// 🚀 Turbo: Warm Browser Singleton
+let browserInstance = null;
+
+const getBrowser = async () => {
+  if (browserInstance && browserInstance.isConnected()) {
+    return browserInstance;
+  }
+
+  logger.info("[PDF Gen] Launching new 'WARM' browser instance...");
+
+  const chromePaths = [
+    "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+    process.env.LOCALAPPDATA + "\\Google\\Chrome\\Application\\chrome.exe",
+  ];
+
+  let executablePath = null;
+  for (const path of chromePaths) {
+    if (await Bun.file(path).exists()) {
+      executablePath = path;
+      break;
+    }
+  }
+
+  browserInstance = await puppeteer.launch({
+    headless: true, // or "new"
+    args: [
+      "--lang=en-GB",
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-accelerated-2d-canvas",
+      "--disable-gpu",
+      "--no-first-run",
+      "--no-zygote",
+      "--single-process",
+    ],
+    executablePath: executablePath || undefined,
+    ignoreHTTPSErrors: true,
+    dumpio: false,
+  });
+
+  browserInstance.on('disconnected', () => {
+    logger.warn("[PDF Gen] Browser disconnected! Resetting instance.");
+    browserInstance = null;
+  });
+
+  return browserInstance;
+};
 
 exports.generatePdf = async (submissionId, frontendPrintUrl) => {
-  let browser;
   let page;
 
   try {
     // 1. Fetch data
-    console.log(
-      `[PDF Gen] 1. Fetching data for ID: ${submissionId} BEFORE launching browser.`
-    );
-    const dataToInject = await submissionService.getSubmissionDataForPdf(
-      submissionId
-    );
-    console.log(`[PDF Gen] 1. Data fetched successfully.`);
+    logger.info(`[PDF Gen] 1. Fetching data for ID: ${submissionId}`);
+    const dataToInject = await submissionService.getSubmissionDataForPdf(submissionId);
 
     const reportName = dataToInject.submission.form_type || "ใบรายงานการผลิต";
     const dynamicHeaderTemplate = `
@@ -27,60 +71,21 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
       </div>
     `;
 
-    // 2. Launch Browser
-    console.log(`[PDF Gen] 2. Launching browser...`);
-
-    // Try to use system Chrome first (more stable on Windows)
-    const chromePaths = [
-      "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-      "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
-      process.env.LOCALAPPDATA + "\\Google\\Chrome\\Application\\chrome.exe",
-    ];
-
-    let executablePath = null;
-    const fs = require("fs");
-    for (const path of chromePaths) {
-      if (fs.existsSync(path)) {
-        executablePath = path;
-        console.log(`[PDF Gen] Found Chrome at: ${path}`);
-        break;
-      }
-    }
-
-    const launchOptions = {
-      headless: true,
-      args: [
-        "--lang=en-GB", // 👈 เพิ่มบรรทัดนี้เข้าไปครับ (สำคัญ!)
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-accelerated-2d-canvas",
-        "--disable-gpu",
-        "--no-first-run",
-        "--no-zygote",
-        "--single-process",
-      ],
-      ignoreHTTPSErrors: true,
-      dumpio: false,
-    };
-
-    if (executablePath) {
-      launchOptions.executablePath = executablePath;
-    }
-
-    browser = await puppeteer.launch(launchOptions);
+    // 2. Reuse Browser
+    const browser = await getBrowser(); // � Use Warm Browser
+    page = await browser.newPage();
 
     page = await browser.newPage();
 
     page.on("console", (msg) => {
-      console.log(`[PUPPETEER-CONSOLE] ${msg.type()}: ${msg.text()}`);
+      logger.info(`[PUPPETEER-CONSOLE] ${msg.type()}: ${msg.text()}`);
     });
     page.on("pageerror", (err) => {
-      console.error("[PUPPETEER-PAGE-ERROR] React Crash:", err);
+      logger.error("[PUPPETEER-PAGE-ERROR] React Crash:", err);
     });
 
     // 3. Request Interception
-    console.log(`[PDF Gen] 3. Setting up request interception...`);
+    logger.info(`[PDF Gen] 3. Setting up request interception...`);
     await page.setRequestInterception(true);
 
     const expectedApiUrl = `/genmatsu/api/submissions/${submissionId}`;
@@ -88,11 +93,11 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
     page.on("request", (request) => {
       const url = request.url();
       if (!url.startsWith("data:")) {
-        console.log(`[PUPPETEER-REQUEST] Trying to load: ${url}`);
+        logger.info(`[PUPPETEER-REQUEST] Trying to load: ${url}`);
       }
 
       if (url.includes(expectedApiUrl)) {
-        console.log(`[PDF Gen] 3.1. Intercepting API call: ${url}`);
+        logger.info(`[PDF Gen] 3.1. Intercepting API call: ${url}`);
         request.respond({
           status: 200,
           contentType: "application/json",
@@ -104,21 +109,21 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
     });
 
     // 4. Navigate
-    console.log(`[PDF Gen] 4. Navigating to: ${frontendPrintUrl}`);
+    logger.info(`[PDF Gen] 4. Navigating to: ${frontendPrintUrl}`);
     await page.goto(frontendPrintUrl, {
       waitUntil: "networkidle2",
       timeout: 60000,
     });
 
     // 5. Wait for selector
-    console.log("[PDF Gen] 5. Waiting for selector (#pdf-content-ready)...");
+    logger.info("[PDF Gen] 5. Waiting for selector (#pdf-content-ready)...");
     await page.waitForSelector(
       "#pdf-content-ready, #pdf-status-error, #pdf-status-notfound",
       { timeout: 30000 }
     );
 
     // 6. Generate PDF
-    console.log("[PDF Gen] 6. Page is ready. Generating PDF buffer...");
+    logger.info("[PDF Gen] 6. Page is ready. Generating PDF buffer...");
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
@@ -144,105 +149,46 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
       scale: 0.37,
     });
 
-    await browser.close();
-    console.log("[PDF Gen] 7. Browser closed. Sending PDF.");
+    // Do not close browser!
+    logger.info("[PDF Gen] 7. Page closed. Keeping browser warm.");
     return pdfBuffer;
   } catch (error) {
-    console.error(
-      `[PDF Gen] Error generating PDF for ID ${submissionId}:`,
-      error
-    );
-    console.error(`[PDF Gen] Error name: ${error.name}`);
-    console.error(`[PDF Gen] Error message: ${error.message}`);
-    console.error(`[PDF Gen] Error stack:`, error.stack);
-
-    if (error.name === "TimeoutError" && page) {
-      console.error(
-        "[PUPPETEER-TIMEOUT] Timeout occurred while generating PDF"
-      );
-      try {
-        const html = await page.content();
-        console.error(
-          "[PUPPETEER-TIMEOUT-HTML] Page HTML on timeout:",
-          html.substring(0, 500)
-        );
-      } catch (e) {
-        console.error(
-          "[PUPPETEER-TIMEOUT-HTML] Could not get page content:",
-          e.message
-        );
-      }
-    }
-
-    if (browser) {
-      await browser.close();
-    }
+    logger.error(`[PDF Gen] Error generating PDF for ID ${submissionId}:`, error);
     throw error;
+  } finally {
+    if (page) await page.close(); // 🚀 Only close the page
   }
 };
 
 exports.generateDailyReportPdf = async (date, lotNoPrefix) => {
-  let browser;
+  let page;
   try {
-    console.log(
-      `[PDF Gen] Starting Daily Report PDF. Date: ${date}, Lot: ${lotNoPrefix}`
-    );
+    logger.info(`[PDF Gen] Starting Daily Report PDF. Date: ${date}, Lot: ${lotNoPrefix}`);
 
-    // 1. สร้าง URL พร้อมใส่ lotNo ไปด้วย
-    // (ดึง Base URL จาก config หรือถ้าไม่ได้ตั้งค่าไว้ให้ใช้ localhost)
     const baseUrl = config.frontendUrl || "http://localhost:5173";
     let frontendPrintUrl = `${baseUrl}/genmatsu/reports/daily/print?date=${date}`;
 
-    // ✅ หัวใจสำคัญ: ถ้ามี Lot No ให้ต่อท้าย URL ไปด้วย
     if (lotNoPrefix) {
       frontendPrintUrl += `&lotNo=${lotNoPrefix}`;
     }
 
-    console.log(`[PDF Gen] Target URL: ${frontendPrintUrl}`);
+    logger.info(`[PDF Gen] Target URL: ${frontendPrintUrl}`);
 
-    // 2. Launch Browser
-    const chromePaths = [
-      "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-      "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
-      process.env.LOCALAPPDATA + "\\Google\\Chrome\\Application\\chrome.exe",
-    ];
+    // 🚀 Reuse Warm Browser
+    const browser = await getBrowser();
+    page = await browser.newPage();
 
-    let executablePath = null;
-    const fs = require("fs");
-    for (const path of chromePaths) {
-      if (fs.existsSync(path)) {
-        executablePath = path;
-        break;
-      }
-    }
-
-    browser = await puppeteer.launch({
-      headless: "new",
-      args: [
-        "--lang=en-GB",
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-gpu",
-      ],
-      executablePath: executablePath || undefined,
-    });
-
-    const page = await browser.newPage();
-
-    // 3. Navigate ไปยัง URL ที่เราสร้าง (ที่มี Lot No แล้ว)
+    // 3. Navigate
     await page.goto(frontendPrintUrl, {
       waitUntil: "networkidle2",
       timeout: 60000,
     });
 
-    // 4. รอให้หน้าเว็บโหลดเสร็จ (ดูจาก id="pdf-content-ready")
+    // 4. Wait for content
     try {
       await page.waitForSelector("#pdf-content-ready", { timeout: 30000 });
     } catch (e) {
-      console.warn(
-        "[PDF Gen] Warning: Selector #pdf-content-ready not found, creating PDF anyway."
-      );
+      logger.warn("[PDF Gen] Warning: Selector #pdf-content-ready not found, creating PDF anyway.");
     }
 
     // 5. Create PDF
@@ -256,14 +202,14 @@ exports.generateDailyReportPdf = async (date, lotNoPrefix) => {
         bottom: "0px",
         left: "0px",
       },
-      scale: 0.7, // ปรับขนาดตามความเหมาะสม
+      scale: 0.7,
     });
 
     return pdfBuffer;
   } catch (error) {
-    console.error("[PDF Gen] Error:", error);
+    logger.error("[PDF Gen] Error:", error);
     throw error;
   } finally {
-    if (browser) await browser.close();
+    if (page) await page.close(); // 🚀 Only close page
   }
 };
