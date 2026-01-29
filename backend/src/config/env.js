@@ -3,6 +3,7 @@ require('dotenv').config();
 const config = {
   port: process.env.PORT || 4000,
   nodeEnv: process.env.NODE_ENV || 'development',
+  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173', // 👈 เพิ่มค่า Default สำหรับ Frontend URL
   db: {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,

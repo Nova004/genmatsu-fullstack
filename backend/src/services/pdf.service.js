@@ -171,8 +171,16 @@ exports.generateDailyReportPdf = async (date, lotNoPrefix) => {
   try {
     logger.info(`[PDF Gen] Starting Daily Report PDF. Date: ${date}, Lot: ${lotNoPrefix}`);
 
-    const baseUrl = config.frontendUrl || "http://localhost:5173";
-    let frontendPrintUrl = `${baseUrl}/genmatsu/reports/daily/print?date=${date}`;
+    // Default URL Logic:
+    // 1. ลองใช้ค่าจาก .env (FRONTEND_URL)
+    // 2. ถ้าไม่มี ให้เดาว่าเป็น Production (IIS Port 81)
+    // 3. ถ้า Dev ให้ใช้ localhost:5173
+    const defaultUrl = process.env.NODE_ENV === 'production'
+      ? "http://localhost:81/genmatsu"
+      : "http://localhost:5173/genmatsu";
+
+    const baseUrl = config.frontendUrl || defaultUrl;
+    let frontendPrintUrl = `${baseUrl}/reports/daily/print?date=${date}`;
 
     if (lotNoPrefix) {
       frontendPrintUrl += `&lotNo=${lotNoPrefix}`;

@@ -173,7 +173,12 @@ exports.updateSubmission = async (req, res) => {
 exports.generatePdf = async (req, res) => {
   const { id } = req.params;
 
-  const baseUrl = process.env.FRONTEND_URL || "http://localhost:5173/genmatsu";
+  // Logic เดียวกับ pdf.service.js
+  const defaultUrl = process.env.NODE_ENV === 'production'
+    ? "http://localhost:81/genmatsu"
+    : "http://localhost:5173/genmatsu";
+
+  const baseUrl = process.env.FRONTEND_URL || defaultUrl;
 
   const frontendPrintUrl = `${baseUrl}/reports/print/${id}`;
 
