@@ -51,7 +51,14 @@ const DataCell = ({ item, isLineC = false, editingId, tempStValue, setTempStValu
             {/* Lot No */}
             <td className="border-r border-b border-gray-300 px-1 py-0.5 text-center align-top">
                 <Tooltip message={"ดูรายละเอียด"}>
-                    <a href={`/genmatsu/reports/view/${item.id}`} target="_blank" rel="noopener noreferrer" className="block hover:opacity-80 transition-opacity">
+                    <a
+                        href={`${['localhost', '127.0.0.1'].includes(window.location.hostname)
+                            ? 'http://192.168.1.72:81'
+                            : window.location.origin}/genmatsu/reports/view/${item.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block hover:opacity-80 transition-opacity"
+                    >
                         <span className="font-bold text-blue-800 hover:text-blue-900 hover:underline text-xs bg-blue-50 border border-blue-200 px-1 py-0.5 rounded block leading-none cursor-pointer">
                             {item.lotNo}
                         </span>
