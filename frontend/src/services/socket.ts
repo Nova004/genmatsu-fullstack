@@ -4,6 +4,6 @@ import { io } from 'socket.io-client';
 // Fallback to polling if WebSocket fails (Best for strict firewalls/IIS)
 export const socket = io({
   path: '/genmatsu/api/socket.io',
-  transports: ['websocket', 'polling'], // ✅ เปิดใช้ WebSocket (เสถียรกว่า Polling)
+  transports: ['polling'], // 👈 กลับมาใช้ Polling ตามเดิม (ไม่ต้องแก้ Server)
   autoConnect: true,
 });

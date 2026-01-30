@@ -14,7 +14,6 @@ export default defineConfig({
       '/genmatsu/api': {
         target: 'http://localhost:4000', // Backend เครื่องเรา
         changeOrigin: true,
-        ws: true, // ✅ รองรับ WebSocket (แก้ปัญหา 400 Bad Request)
         rewrite: (path) => path.replace(/^\/genmatsu\/api/, '/api'), // ตัด path ทิ้งให้เหลือแค่ /api
       },
     },
