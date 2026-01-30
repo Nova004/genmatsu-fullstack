@@ -201,21 +201,18 @@ exports.getPendingIronpowderByLevel = async (pool, userLevel) => {
           s.created_at, -- ใช้ created_at สำหรับ sorting
           s.status,
           'Recycle' AS category, -- ✅ ระบุ Category ชัดเจน
-          (
-            SELECT TOP 1 required_level 
-            FROM Form_Ironpowder_Approval_Flow 
-            WHERE submissionId = s.submissionId AND status = 'Pending' 
-            ORDER BY sequence ASC
-          ) AS pending_level
+          flow.pending_level
         FROM Form_Ironpowder_Submissions s
         LEFT JOIN AGT_SMART_SY.dbo.agt_member u ON s.submitted_by COLLATE Thai_CI_AS = u.agt_member_id
-        WHERE s.status = 'Pending' 
-          AND (
-            SELECT TOP 1 required_level 
+        -- 🚀 Turbo Optimization: CROSS APPLY for Recycle Logic
+        CROSS APPLY (
+            SELECT TOP 1 required_level as pending_level
             FROM Form_Ironpowder_Approval_Flow 
             WHERE submissionId = s.submissionId AND status = 'Pending' 
             ORDER BY sequence ASC
-          ) = @userLevel
+        ) flow
+        WHERE s.status = 'Pending' 
+          AND flow.pending_level = @userLevel
         ORDER BY s.created_at DESC
       `);
 

@@ -109,8 +109,11 @@ const getUserPhoto = async (req, res) => {
     const { id } = req.params;
     const fs = require("fs");
 
-    // Path ของรูปภาพ
-    const photoPath = `\\\\192.168.1.68\\PhotoHRC\\${id}.jpg`;
+    const config = require("../config/env"); // Require config
+
+    // Path ของรูปภาพ (อ่านจาก Config/Env)
+    const baseUrl = config.userPhotoBasePath || '\\\\192.168.1.68\\PhotoHRC\\';
+    const photoPath = `${baseUrl}${id}.jpg`;
 
     // เช็คว่ามีไฟล์จริงไหม (Node.js Way)
     if (fs.existsSync(photoPath)) {

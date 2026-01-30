@@ -3,6 +3,7 @@
 import React from 'react';
 import { FaPen, FaCheck, FaTimes } from 'react-icons/fa';
 import { ProductionRecord } from '../../../types/report';
+import { Tooltip } from '../../../components/Tooltip';
 
 interface DailyReportRowProps {
     index: number;
@@ -49,7 +50,13 @@ const DataCell = ({ item, isLineC = false, editingId, tempStValue, setTempStValu
             </td>
             {/* Lot No */}
             <td className="border-r border-b border-gray-300 px-1 py-0.5 text-center align-top">
-                <span className="font-bold text-gray-800 text-xs bg-gray-100 border border-gray-300 px-1 py-0.5 rounded block leading-none">{item.lotNo}</span>
+                <Tooltip message={"ดูรายละเอียด"}>
+                    <a href={`/genmatsu/reports/view/${item.id}`} target="_blank" rel="noopener noreferrer" className="block hover:opacity-80 transition-opacity">
+                        <span className="font-bold text-blue-800 hover:text-blue-900 hover:underline text-xs bg-blue-50 border border-blue-200 px-1 py-0.5 rounded block leading-none cursor-pointer">
+                            {item.lotNo}
+                        </span>
+                    </a>
+                </Tooltip>
             </td>
             {/* Input & Std. Plan */}
             <td className="border-r border-b border-gray-300 px-1 py-0.5 text-right align-top">

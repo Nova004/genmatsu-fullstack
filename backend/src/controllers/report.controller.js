@@ -27,15 +27,34 @@ const fetchDailyReportDataInternal = async (date, lotNoPrefix) => {
       WHERE s.status != 'Rejected'
   `;
 
-  // 2. เงื่อนไข
-  if (date) query += ` AND CAST(d.production_date AS DATE) = @date`;
-  if (lotNoPrefix) query += ` AND s.lot_no LIKE @lotNoPrefix + '%'`;
+  // 2. เงื่อนไข (Optimized for Index Usage 🚀)
+  // ใช้ Range Query แทนการ CAST เพื่อให้ SQL Server ใช้ Index ได้ (SARGable)
+  if (date) {
+    query += ` AND d.production_date >= @startDate AND d.production_date < @endDate`;
+  }
+
+  if (lotNoPrefix) {
+    query += ` AND s.lot_no LIKE @lotNoPrefix + '%'`;
+  }
 
   // 3. Order By
   query += ` ORDER BY s.lot_no ASC`;
 
   const request = pool.request();
-  if (date) request.input("date", sql.Date, date);
+
+  if (date) {
+    // Generate Range: 00:00:00 to 23:59:59 (Next Day 00:00:00)
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(date);
+    end.setDate(end.getDate() + 1);
+    end.setHours(0, 0, 0, 0);
+
+    request.input("startDate", sql.DateTime, start); // ใช้ DateTime เพื่อความแม่นยำ
+    request.input("endDate", sql.DateTime, end);
+  }
+
   if (lotNoPrefix) request.input("lotNoPrefix", sql.NVarChar, lotNoPrefix);
 
   const result = await request.query(query);

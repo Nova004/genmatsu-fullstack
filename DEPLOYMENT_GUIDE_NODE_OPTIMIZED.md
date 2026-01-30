@@ -90,27 +90,57 @@ npm run build
 
 ---
 
-## 4. การดูแลรักษา (Maintenance)
+## 4. การตั้งค่า IIS Reverse Proxy (สำคัญมาก!) 🌐
+
+เพื่อให้ Frontend เรียก API และ Socket ได้ถูกต้อง ผ่าน Port 81:
+
+1.  **Install URL Rewrite Module:**
+    - ดาวน์โหลดและติดตั้ง [IIS URL Rewrite Module](https://www.iis.net/downloads/microsoft/url-rewrite)
+2.  **Config URL Rewrite Rules:**
+    - ไปที่ Site genmatsu บน IIS
+    - เปิดเมนู **URL Rewrite**
+    - สร้าง Rule ใหม่ (Blank Rule):
+      - **Name:** `ReverseProxyApi`
+      - **Pattern:** `genmatsu/api/(.*)`
+      - **Rewrite URL:** `http://localhost:4000/api/{R:1}`
+      - **Check:** Stop processing of subsequent rules
+
+3.  **Config Web Socket Protocol:**
+    - ไปที่ Server Manager > Add Roles and Features
+    - Web Server (IIS) > Application Development > **WebSocket Protocol**
+    - (ถ้ายังไม่ได้ติ๊ก ให้ติ๊กแล้ว Install)
+
+---
+
+## 5. การดูแลรักษา (Maintenance)
 
 ### เทคนิคการรันแบบ Production (Service)
 
-แนะนำให้ใช้ **PM2** เพื่อให้ Backend ทำงานตลอดเวลา ไม่ดับเมื่อ Restart เครื่อง
-
-**ติดตั้งและใช้งาน PM2:**
+ใช้ **PM2** เพื่อให้ Backend ทำงานตลอดเวลา:
 
 ```bash
 npm install -g pm2
 cd backend
-pm2 start src/app.js --name "genmatsu-backend"
+
+# create ecosystem.config.js (Optional but good) or just start:
+pm2 start src/app.js --name "genmatsu-prod"
 pm2 save
 pm2 startup
 ```
+
+### คำสั่งที่ใช้บ่อย:
+
+- `pm2 list` : ดูสถานะ
+- `pm2 restart genmatsu-prod` : รีสตาร์ท Server (ทำทุกครั้งที่แก้ Backend)
+- `pm2 logs genmatsu-prod` : ดู Log การทำงาน (ถ้ามี Error)
 
 ---
 
 ## Check List ก่อนจบงาน ✅
 
-1. [ ] ติดตั้ง Node.js แล้ว
-2. [ ] Backend รันด้วย `npm start` ไม่เออเรอร์
-3. [ ] ลองเปิดหน้าเว็บ ล็อกอิน และโหลดข้อมูลได้เร็ว
-4. [ ] ลองกดพิมพ์ PDF (ระบบจะเร็วมาก เพราะใช้ Warm Browser)
+1. [ ] ติดตั้ง Node.js 16+ แล้ว
+2. [ ] Config IIS URL Rewrite ถูกต้อง (`/genmatsu/api` -> `http://localhost:4000/api`)
+3. [ ] Config IIS WebSocket Protocol แล้ว
+4. [ ] Backend รันบน PM2 สถานะ Online
+5. [ ] หน้าเว็บใช้งานได้ ไม่ขึ้น Error แดงๆ ใน Console
+6. [ ] PDF พิมพ์ได้ปกติ (ไม่ต้องสนใจคำเตือน insecure blob)

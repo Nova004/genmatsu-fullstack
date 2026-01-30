@@ -3,7 +3,7 @@ require('dotenv').config();
 const config = {
   port: process.env.PORT || 4000,
   nodeEnv: process.env.NODE_ENV || 'development',
-  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173', // 👈 เพิ่มค่า Default สำหรับ Frontend URL
+  frontendUrl: process.env.FRONTEND_URL, // 👈 ปล่อยว่างไว้ ให้ Service ไปตัดสินใจ Default เอง (เพราะมี logic ต่างกันระหว่าง dev/prod)
   db: {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
@@ -21,7 +21,8 @@ const config = {
     }
   },
   jwtSecret: process.env.JWT_SECRET || 'secret-key',
-  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '1d'
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '1d',
+  userPhotoBasePath: process.env.USER_PHOTO_BASE_PATH || '\\\\192.168.1.68\\PhotoHRC\\' // ✅ Default fallback
 };
 
 // Simple validation

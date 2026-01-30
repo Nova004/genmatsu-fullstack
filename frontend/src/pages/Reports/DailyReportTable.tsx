@@ -1,7 +1,7 @@
 // frontend/src/pages/Reports/DailyReportTable.tsx
 
 import React, { useState, useEffect } from 'react';
-import { FaSave, FaPen, FaTimes } from 'react-icons/fa'; // Added FaPen, FaTimes back if used in DailyReportRow
+import { FaSave } from 'react-icons/fa'; // Added FaPen, FaTimes back if used in DailyReportRow
 import { ReportData, ProductionRecord } from '../../types/report';
 import DailyReportRow from './components/DailyReportRow';
 import { getDailyReportSummary, saveDailyReportSummary } from '../../services/submissionService';
@@ -37,7 +37,7 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
   data,
   onUpdateStPlan,
   selectedDate,
-  selectedLotNo,
+  // selectedLotNo, // Unused
   mode = 'normal',
   hideLineD = false
 }) => {
@@ -386,4 +386,4 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
   );
 };
 
-export default DailyReportTable;
+export default React.memo(DailyReportTable);

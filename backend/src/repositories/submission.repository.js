@@ -340,32 +340,27 @@ exports.getPendingSubmissionsByLevel = async (pool, userLevel) => {
     const result = await pool.request().input("userLevel", sql.Int, userLevel)
       .query(`
         SELECT 
-          s.submission_id, -- ⚠️ แก้ s.id เป็น s.submission_id ให้ตรงกับตารางจริง (ถ้าตารางคุณใช้ submission_id)
+          s.submission_id,
           s.lot_no,
           s.submitted_by,
-          u.agt_member_nameEN AS submitted_by_name, -- ⚠️ แก้ u.username เป็น u.agt_member_nameEN ตาม query บนๆ
-          s.form_type, -- ✅ เพิ่ม form_type
-          s.submitted_at AS created_at, -- ⚠️ แก้ s.created_at เป็น s.submitted_at
+          u.agt_member_nameEN AS submitted_by_name,
+          s.form_type,
+          s.submitted_at AS created_at,
           s.status,
-          (
-            SELECT TOP 1 required_level 
-            FROM Gen_Approval_Flow 
-            WHERE submission_id = s.submission_id AND status = 'Pending' 
-            ORDER BY sequence ASC
-          ) AS pending_level
+          flow.pending_level
         FROM Form_Submissions s
         LEFT JOIN agt_member u ON s.submitted_by COLLATE Thai_CI_AS = u.agt_member_id
-        WHERE s.status = 'Pending' 
-          -- Logic กรอง Level (เช็คจาก Subquery ด้านบน หรือ Join Gen_Approval_Flow เพิ่ม)
-          AND (
-            SELECT TOP 1 required_level 
+        -- 🚀 Turbo Optimization: Use CROSS APPLY to calculate level ONCE and filter efficiently
+        CROSS APPLY (
+            SELECT TOP 1 required_level as pending_level
             FROM Gen_Approval_Flow 
             WHERE submission_id = s.submission_id AND status = 'Pending' 
             ORDER BY sequence ASC
-          ) = @userLevel
+        ) flow
+        WHERE s.status = 'Pending' 
+          AND flow.pending_level = @userLevel
         ORDER BY s.submitted_at DESC
       `);
-
 
     return result.recordset;
   } catch (error) {
