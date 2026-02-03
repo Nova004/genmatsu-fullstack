@@ -65,11 +65,10 @@ const SignIn: React.FC = () => {
             <img src={LogoDark} alt="AGT Gen Logo" className="h-20 w-auto mb-9" />
 
             <h1 className="text-2xl font-bold text-slate-800 leading-snug mb-3">
-              AGT GEN <br />
-              Manufacturing System
+              GEN Manufacturing System
             </h1>
             <p className="text-slate-500 text-sm leading-relaxed">
-            {/*  Platform for production tracking, quality assurance, and operational excellence.*/}
+              {/*  Platform for production tracking, quality assurance, and operational excellence.*/}
             </p>
           </div>
 

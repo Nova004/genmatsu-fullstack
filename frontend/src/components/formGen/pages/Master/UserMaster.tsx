@@ -14,9 +14,9 @@ interface AgtMember {
   agt_member_id: string;
   agt_member_nameEN: string;
   agt_position_name: string;
-  agt_member_section: string;
   agt_member_shift: string;
   agt_status_job: string;
+  name_section: string;
   Gen_Manu_mem_No: string | null;
   LV_Approvals: string | null;
 }
@@ -31,6 +31,11 @@ const UserMaster: React.FC = () => {
 
   // ... (search term code skipped for brevity if unchanged) ...
   const [searchTerm, setSearchTerm] = useState('');
+  // 🆕 Filter States
+  const [filterSection, setFilterSection] = useState('');
+  const [filterPosition, setFilterPosition] = useState('');
+  const [filterShift, setFilterShift] = useState('');
+  const [filterLevel, setFilterLevel] = useState('');
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -83,14 +88,27 @@ const UserMaster: React.FC = () => {
   };
 
   // --- 2. สร้าง Array ใหม่สำหรับเก็บผลลัพธ์ที่ฟิลเตอร์แล้ว ---
+  // 🆕 คำนวณ Unique Options สำหรับ Dropdown
+  const uniqueSections = [...new Set(users.map(u => u.name_section).filter(Boolean))].sort();
+  const uniquePositions = [...new Set(users.map(u => u.agt_position_name).filter(Boolean))].sort();
+  const uniqueShifts = [...new Set(users.map(u => u.agt_member_shift).filter(Boolean))].sort();
+  const uniqueLevels = [...new Set(users.map(u => u.LV_Approvals ? String(u.LV_Approvals) : null).filter(Boolean))].sort();
+
   const filteredUsers = users.filter(user => {
     const term = searchTerm.toLowerCase();
-    return (
+    const matchesSearch = (
       user.agt_member_id.toLowerCase().includes(term) ||
       user.agt_member_nameEN.toLowerCase().includes(term) ||
       (user.Gen_Manu_mem_No && user.Gen_Manu_mem_No.toLowerCase().includes(term)) ||
       user.agt_position_name.toLowerCase().includes(term)
     );
+
+    const matchesSection = filterSection ? user.name_section === filterSection : true;
+    const matchesPosition = filterPosition ? user.agt_position_name === filterPosition : true;
+    const matchesShift = filterShift ? user.agt_member_shift === filterShift : true;
+    const matchesLevel = filterLevel ? String(user.LV_Approvals) === filterLevel : true;
+
+    return matchesSearch && matchesSection && matchesPosition && matchesShift && matchesLevel;
   });
 
   return (
@@ -105,11 +123,75 @@ const UserMaster: React.FC = () => {
           <div className="mb-6 sm:mb-0">
             <input
               type="text"
-              placeholder="Filter by ID, Name, No., Position..."
+              placeholder="Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-2 px-4 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary sm:w-64"
             />
+          </div>
+        </div>
+
+        {/* 🆕 Filter Dropdowns Section */}
+        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
+          {/* Section Filter */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-black dark:text-white">Section</label>
+            <select
+              value={filterSection}
+              onChange={(e) => setFilterSection(e.target.value)}
+              className="w-full rounded border-[1.5px] border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input"
+            >
+              <option value="">All Sections</option>
+              {uniqueSections.map((sec) => (
+                <option key={sec} value={sec}>{sec}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Position Filter */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-black dark:text-white">Position</label>
+            <select
+              value={filterPosition}
+              onChange={(e) => setFilterPosition(e.target.value)}
+              className="w-full rounded border-[1.5px] border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input"
+            >
+              <option value="">All Positions</option>
+              {uniquePositions.map((pos) => (
+                <option key={pos} value={pos}>{pos}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Shift Filter */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-black dark:text-white">Shift</label>
+            <select
+              value={filterShift}
+              onChange={(e) => setFilterShift(e.target.value)}
+              className="w-full rounded border-[1.5px] border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input"
+            >
+              <option value="">All Shifts</option>
+              {uniqueShifts.map((shift) => (
+                <option key={shift} value={shift}>{shift}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Level Filter */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-black dark:text-white">Level (LV)</label>
+            <select
+              value={filterLevel}
+              onChange={(e) => setFilterLevel(e.target.value)}
+              className="w-full rounded border-[1.5px] border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input"
+            >
+              <option value="">All Levels</option>
+              {/* <option value="null">No Level</option> */}
+              {uniqueLevels.map((lv) => (
+                <option key={String(lv)} value={String(lv)}>{lv}</option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -120,6 +202,7 @@ const UserMaster: React.FC = () => {
                 <th className="py-4 px-4 font-medium text-black dark:text-white">ID</th>
                 <th className="py-4 px-4 font-medium text-black dark:text-white">Employee No.</th>
                 <th className="py-4 px-4 font-medium text-black dark:text-white">Name (EN)</th>
+                <th className="py-4 px-4 font-medium text-black dark:text-white">Section</th>
                 <th className="py-4 px-4 font-medium text-black dark:text-white">Position</th>
                 <th className="py-4 px-4 font-medium text-black dark:text-white">Shift</th>
                 <th className="py-4 px-4 font-medium text-black dark:text-white">LV.</th>
@@ -141,6 +224,9 @@ const UserMaster: React.FC = () => {
                     </td>
                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                       <p className="text-black dark:text-white">{user.agt_member_nameEN}</p>
+                    </td>
+                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                      <p className="text-black dark:text-white">{user.name_section}</p>
                     </td>
                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                       <p className="text-black dark:text-white">{user.agt_position_name}</p>

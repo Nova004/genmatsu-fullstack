@@ -56,7 +56,7 @@ const PackingResultTable: React.FC<PackingResultTableProps> = ({ register, watch
           <tr>
             <td className={tdLeftClass} colSpan={2}>Ø 3*5 P on</td>
             <td className={tdCenterClass}><input type="number" step="any" className={inputClass} {...register('packingResults.diameter', { valueAsNumber: true, required: 'กรุณากรอก Ø 3*5 P on' })} /></td>
-            <td className={tdCenterClass}>KG</td>
+            <td className={tdCenterClass}>Kg.</td>
             <td className={tdCenterClass}></td>
             <td className={tdCenterClass}></td>
           </tr>
@@ -66,19 +66,19 @@ const PackingResultTable: React.FC<PackingResultTableProps> = ({ register, watch
             {/* 3. แสดงผลค่าตัวคูณแบบ Dynamic */}
             <td className={tdCenterClass}>Cans x {actualMultiplier}</td>
             <td className={tdCenterClass}><input type="text" className={disabledInputClass} readOnly disabled {...register('packingResults.quantityOfProduct.calculated')} /></td>
-            <td className={tdCenterClass}>KG</td>
+            <td className={tdCenterClass}>Kg.</td>
           </tr>
           <tr>
             <td className={tdLeftClass} colSpan={2}>40 mesh Pass</td>
             <td className={tdCenterClass}><input type="number" step="any" className={inputClass} {...register('packingResults.meshPass40', { valueAsNumber: true, required: 'กรุณากรอก 40 mesh Pass' })} /></td>
-            <td className={tdCenterClass}>KG</td>
+            <td className={tdCenterClass}>Kg.</td>
             <td className={tdCenterClass}></td>
             <td className={tdCenterClass}></td>
           </tr>
           <tr>
             <td className={tdLeftClass} colSpan={2}>Remain</td>
             <td className={tdCenterClass}><input type="number" step="any" className={inputClass} {...register('packingResults.remain', { valueAsNumber: true, required: 'กรุณากรอก Remain' })} /></td>
-            <td className={tdCenterClass}>KG</td>
+            <td className={tdCenterClass}>Kg.</td>
             <td className={tdCenterClass}></td>
             <td className={tdCenterClass}></td>
           </tr>

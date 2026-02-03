@@ -60,7 +60,7 @@ export const useBZ5_CCalculations = (
       const P20 = numRc417Total;
       const P21_decimal = (Number(rc417WaterContent) / 100) || 0;
       const rawResult = P20 * P21_decimal;
-      const multiplier = Math.pow(10, 6); 
+      const multiplier = Math.pow(10, 6);
 
       calculatedWaterContentWeight_RAW = (rawResult * multiplier) / multiplier;
     }
@@ -330,7 +330,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               {/* --- ส่วนที่ 1: การชั่งน้ำหนัก CDZ-1 --- */}
               <tr>
                 <td className={tdLeftClass}>CDZ-1 : Weight</td>
-                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={inputClass} {...register('rc417Weighting.row1.weight', { valueAsNumber: true, required: 'กรุณากรอก  CDZ-1 : Weight' })} /> <span className="ml-2">KG</span></div>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={inputClass} {...register('rc417Weighting.row1.weight', { valueAsNumber: true, required: 'กรุณากรอก  CDZ-1 : Weight' })} /> <span className="ml-2">Kg.</span></div>
                   {errors.rc417Weighting?.row1?.weight &&
                     <p className="text-sm text-danger mt-1">
                       {errors.rc417Weighting.row1.weight.message}
@@ -340,13 +340,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('rc417Weighting.row1.bagNo')} /></td>
                 <td className={tdLeftClass}>Bag Weight</td>
-                <td className={tdLeftClass}><div className="flex items-center"><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row1.bagWeight')} /><span className="ml-2">KG</span></div></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row1.bagWeight')} /><span className="ml-2">Kg.</span></div></td>
                 <td className={tdLeftClass}>Net Weight</td>
-                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row1.net')} /><span className="ml-2">KG</span></div></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row1.net')} /><span className="ml-2">Kg.</span></div></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>CDZ-1 : Weight</td>
-                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={inputClass} {...register('rc417Weighting.row2.weight', { valueAsNumber: true, required: 'กรุณากรอก CDZ-1 : Weight' })} /><span className="ml-2">KG</span></div>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={inputClass} {...register('rc417Weighting.row2.weight', { valueAsNumber: true, required: 'กรุณากรอก CDZ-1 : Weight' })} /><span className="ml-2">Kg.</span></div>
                   {errors.rc417Weighting?.row2?.weight &&
                     <p className="text-sm text-danger mt-1">
                       {errors.rc417Weighting.row2.weight.message}
@@ -356,16 +356,16 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('rc417Weighting.row2.bagNo')} /></td>
                 <td className={tdLeftClass}>Bag Weight</td>
-                <td className={tdLeftClass}><div className="flex items-center"><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row2.bagWeight')} /><span className="ml-2">KG</span></div></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row2.bagWeight')} /><span className="ml-2">Kg.</span></div></td>
                 <td className={tdLeftClass}>Net Weight</td>
-                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row2.net')} /><span className="ml-2">KG</span></div></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row2.net')} /><span className="ml-2">Kg.</span></div></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>CDZ-1 :Total Weight</td>
-                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.total')} /><span className="ml-2">KG</span></div></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.total')} /><span className="ml-2">Kg.</span></div></td>
 
                 <td className={tdLeftClass}>Net Weight of Yield</td>
-                <td className={tdLeftClass}><div className="flex items-center"><input type="text" className={disabledInputClass} readOnly value="1000" /><span className="ml-2">KG</span></div> </td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="text" className={disabledInputClass} readOnly value="1000" /><span className="ml-2">Kg.</span></div> </td>
                 <td className={tdLeftClass}>CDZ-1 of AD</td>
                 <td className={tdLeftClass}><div className="flex items-center"><input type="text" className={inputClass} {...register('rc417Weighting.cdz1ofad', { valueAsNumber: true, required: 'กรุณากรอก CDZ-1 of AD' })} /><span className="ml-2">g/mL</span></div>
                   {errors.rc417Weighting?.cdz1ofad &&
@@ -381,13 +381,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>CDZ-1: Water Content (Moisture)</td>
                 <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" step="0.01" min="0" className={inputClass} {...register('bz5cCalculations.rc417WaterContentMoisture', { valueAsNumber: true })} /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass}> <span className="text-xs"> Weight of CDZ-1 + Mg(OH)<sub>2</sub> <br /> + Carbon </span> </td>
-                <td className={tdLeftClass}><div className="flex items-center"><input type="text" className={disabledInputClass} readOnly {...register('bz5cCalculations.totalWeightOfMaterials')} /><span className="ml-2">KG</span></div> </td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="text" className={disabledInputClass} readOnly {...register('bz5cCalculations.totalWeightOfMaterials')} /><span className="ml-2">Kg.</span></div> </td>
                 <td className={tdLeftClass}></td>
                 <td className={tdLeftClass}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>CDZ-1: Water Contant (weight)</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} readOnly  {...register('bz5cCalculations.rc417WaterContentweight', { valueAsNumber: true })} /><span className="ml-2">KG</span></div> </td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} readOnly  {...register('bz5cCalculations.rc417WaterContentweight', { valueAsNumber: true })} /><span className="ml-2">Kg.</span></div> </td>
                 <td className={tdLeftClass}>Moisture Gen BZ5-C (STD mean.)</td>
                 <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bz5cCalculations.stdMeanMoisture', { valueAsNumber: true })} value="33.94" readOnly disabled /><span className="ml-2">%</span></div> </td>
               </tr>

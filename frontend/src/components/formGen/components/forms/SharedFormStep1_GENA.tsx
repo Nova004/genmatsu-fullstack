@@ -61,7 +61,7 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
       <div className="rounded-b-sm border border-t-0 border-stroke p-5 dark:border-strokedark">
         <div className="mb-6 grid grid-cols-1 gap-6 border-b border-stroke pb-6 dark:border-strokedark md:grid-cols-2">
           <div className="flex items-center">
-            <label className="w-1/3 text-black dark:text-white">Date</label>
+            <label className="w-1/3 text-black dark:text-white text-base">Date</label>
             <input
               type="date"
               className={inputClass}
@@ -70,7 +70,7 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
             />
           </div>
           <div className="flex items-center">
-            <label className="w-1/3 text-black dark:text-white">Machine Name</label>
+            <label className="w-1/3 text-black dark:text-white text-base">Machine Name</label>
             <select
               className={inputClass}
               {...register('basicData.machineName', { required: true })}
@@ -84,7 +84,7 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
             </select>
           </div>
           <div className="flex items-center">
-            <label className="w-1/3 text-black dark:text-white">Lot no.</label>
+            <label className="w-1/3 text-black dark:text-white text-base">Lot no.</label>
             <input
               type="text"
               className={inputClass}

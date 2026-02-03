@@ -10,8 +10,8 @@ const ECommerce: React.FC = () => {
     <>
       <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-3 2xl:gap-7.5">
         <MenuCard
-          title="Master User"
-          description="จัดการข้อมูลหลังบ้านสำหรับแอดมิน"
+          title="Master Users"
+          description="จัดการข้อมูล ผู้ใช้งาน"
           linkTo="/master/user-master" // <-- **แก้ URL ปลายทางได้ตามต้องการ**
         >
           <FaRegUser size={22} className="text-success" />
@@ -19,7 +19,7 @@ const ECommerce: React.FC = () => {
 
         <MenuCard
           title="NaCl Master"
-          description="จัดการข้อมูลหลังบ้านNaCl Master"
+          description="จัดการข้อมูล NaCl Master"
           linkTo="/master/nacl-master" // <-- **แก้ URL ปลายทางได้ตามต้องการ**
         >
           <FaEyeDropper size={22} className="text-primary" />
@@ -27,7 +27,7 @@ const ECommerce: React.FC = () => {
 
         <MenuCard
           title="Form Master Editor"
-          description="จัดการข้อมูลหลังบ้านForm Master Editor"
+          description="จัดการข้อมูลเเบบฟอร์ม"
           linkTo="/master/form-editor" // <-- **แก้ URL ปลายทางได้ตามต้องการ**
         >
           <FaWpforms size={22} className="text-secondary" />
@@ -35,7 +35,7 @@ const ECommerce: React.FC = () => {
 
           <MenuCard
           title="Standard Plan Master"
-          description="จัดการข้อมูลหลังบ้าน Standard Plan Master"
+          description="จัดการข้อมูล Standard Plan Master"
           linkTo="/master/standard-plan-master" // <-- **แก้ URL ปลายทางได้ตามต้องการ**
         >
           <FaCogs size={22} className="text-rose-500 dark:text-rose-400" />

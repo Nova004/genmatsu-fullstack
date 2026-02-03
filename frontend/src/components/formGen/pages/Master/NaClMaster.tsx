@@ -116,7 +116,7 @@ const NaClMaster = () => {
 
   return (
     <>
-      <Breadcrumb pageName="NaCl Master" />
+      <Breadcrumb pageName="NaCl Master " />
       <div className="flex flex-col gap-10">
         <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
           <div className="flex justify-between items-center mb-4">
@@ -127,7 +127,7 @@ const NaClMaster = () => {
               onClick={() => handleOpenModal()}
               className="px-4 py-2 bg-primary text-white rounded hover:bg-opacity-90"
             >
-              Add New Record
+              Add New Master
             </button>
           </div>
 
@@ -154,15 +154,7 @@ const NaClMaster = () => {
               <option value="Zeolite">Zeolite</option>
             </select>
             {/* ===== 🔼 สิ้นสุด Dropdown ===== */}
-
-            {/* Input ค้นหาเดิม */}
-            <input
-              type="text"
-              placeholder="Filter by ID, Name, No., Position..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-2 px-4 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary sm:w-64"
-            />
+           
           </div>
 
           <div className="max-w-full overflow-x-auto">

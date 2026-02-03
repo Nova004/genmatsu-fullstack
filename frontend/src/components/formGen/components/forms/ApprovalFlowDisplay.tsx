@@ -178,7 +178,7 @@ const ApprovalFlowDisplay: React.FC<Props> = ({ submissionId, submissionData }) 
 
           {/* B: ถ้า Approved แล้ว */}
           {stepData && stepData.status === "Approved" && (
-            <span className="font-medium text-success">
+            <span className="font-medium text-success approval-print-text">
               {stepData.approver_name || "N/A"}
             </span>
           )}
@@ -186,7 +186,7 @@ const ApprovalFlowDisplay: React.FC<Props> = ({ submissionId, submissionData }) 
           {/* C: ถ้า Rejected แล้ว */}
           {stepData && stepData.status === "Rejected" && (
             <>
-              <span className="font-medium text-danger">
+              <span className="font-medium text-danger approval-print-text">
                 {stepData.approver_name || "N/A"}
               </span>
               <span className="mt-1 text-sm font-bold text-danger">
@@ -222,7 +222,7 @@ const ApprovalFlowDisplay: React.FC<Props> = ({ submissionId, submissionData }) 
         </div>
 
         {/* 3. ส่วนท้าย (Date) */}
-        <div className="border-t border-stroke p-2 text-center text-sm dark:border-strokedark">
+        <div className="border-t border-stroke p-2 text-center text-sm dark:border-strokedark approval-print-text">
           {stepData?.updated_at ? (
             new Date(stepData.updated_at).toLocaleDateString("en-GB", {
               day: "2-digit",
@@ -254,11 +254,11 @@ const ApprovalFlowDisplay: React.FC<Props> = ({ submissionId, submissionData }) 
             Record by:
           </div>
           <div className="flex min-h-[100px] flex-col items-center justify-center p-3 text-center">
-            <span className="font-medium text-black dark:text-white">
+            <span className="font-medium text-black dark:text-white approval-print-text">
               {creator.name}
             </span>
           </div>
-          <div className="border-t border-stroke p-2 text-center text-sm dark:border-strokedark">
+          <div className="border-t border-stroke p-2 text-center text-sm dark:border-strokedark approval-print-text">
             {creator.date ? (
               new Date(creator.date).toLocaleDateString("en-GB", {
                 day: "2-digit",

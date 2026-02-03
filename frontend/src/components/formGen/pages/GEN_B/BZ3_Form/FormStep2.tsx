@@ -54,7 +54,7 @@ export const useBZ3Calculations = (
       setValue('bz3Calculations.totalWeightWithNcr', null);
       return; // 👈 หยุดการทำงานของ useEffect ทันที
     }
-    
+
     setValue('bz3Calculations.totalWeightOfMaterials', calculatedTotalMaterials > 0 ? calculatedTotalMaterials.toFixed(2) : null);
 
     // ----- ขั้นตอน B: คำนวณ "15% NaCl Water" (ค่าเริ่มต้น) -----
@@ -89,8 +89,8 @@ export const useBZ3Calculations = (
     // ----- ขั้นตอน D: (แก้ไข Bug) -----
     let totalNaclWaterResult: number | null = null;
     if (rawInitialNaclWater15 !== null && rawIntermediateWater !== null) {
-      const T24_raw_final = rawInitialNaclWater15; 
-      const AD24_raw_final = rawIntermediateWater; 
+      const T24_raw_final = rawInitialNaclWater15;
+      const AD24_raw_final = rawIntermediateWater;
       const rawResult = T24_raw_final + AD24_raw_final;
 
       totalNaclWaterResult = Number(rawResult.toFixed(2));
@@ -112,8 +112,8 @@ export const useBZ3Calculations = (
     setValue('bz3Calculations.lminRate', lminRate > 0 ? lminRate.toFixed(0) : null);
 
     // คำนวณ "Total weight = NCR Genmatsu"
-   let totalWeightWithNcrResult: number | null = null;
-    
+    let totalWeightWithNcrResult: number | null = null;
+
     if (totalNaclWaterResult !== null) {
       const AD21_final = calculatedTotalMaterials;
       const AD25_final = totalNaclWaterResult;
@@ -155,8 +155,8 @@ interface FormStep2Props {
 
 const bz3WeightingConfig: WeightingCalculationConfig = {
   rows: [
-    { grossWeightPath: 'rc417Weighting.row1.weight', netWeightPath: 'rc417Weighting.row1.net',  bagWeightPath: 'cg1cWeighting.row1.bagWeight' },
-    { grossWeightPath: 'rc417Weighting.row2.weight', netWeightPath: 'rc417Weighting.row2.net',  bagWeightPath: 'cg1cWeighting.row2.bagWeight' },
+    { grossWeightPath: 'rc417Weighting.row1.weight', netWeightPath: 'rc417Weighting.row1.net', bagWeightPath: 'cg1cWeighting.row1.bagWeight' },
+    { grossWeightPath: 'rc417Weighting.row2.weight', netWeightPath: 'rc417Weighting.row2.net', bagWeightPath: 'cg1cWeighting.row2.bagWeight' },
   ],
   totalPath: 'rc417Weighting.total',
   destinationPath: 'rawMaterials.diaEarth',
@@ -223,7 +223,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               {/* --- ส่วนที่ 1: การชั่งน้ำหนัก RC-417 --- */}
               <tr>
                 <td className={tdLeftClass}>RC-417 : Weight</td>
-                <td className={tdLeftClass}><input type="number" step="0.001"  className={inputClass} {...register('rc417Weighting.row1.weight', { valueAsNumber: true, required: 'กรุณากรอก RC-417 : Weight' })} /></td>
+                <td className={tdLeftClass}><input type="number" step="0.001" className={inputClass} {...register('rc417Weighting.row1.weight', { valueAsNumber: true, required: 'กรุณากรอก RC-417 : Weight' })} /></td>
                 {errors.rc417Weighting?.row1?.weight &&
                   <p className="text-sm text-danger mt-1">
                     {errors.rc417Weighting.row1.weight.message}
@@ -234,7 +234,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>Bag Weight</td>
                 <td className={tdLeftClass}><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row1.bagWeight')} /></td>
                 <td className={tdLeftClass}>Net Weight</td>
-                <td className={tdLeftClass}><input type="number" step="0.001"  className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row1.net')} /></td>
+                <td className={tdLeftClass}><input type="number" step="0.001" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row1.net')} /></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>RC-417 : Weight</td>
@@ -258,17 +258,17 @@ const FormStep2: React.FC<FormStep2Props> = ({
 
                 <td className={tdLeftClass}>Net Weight of Yield</td>
                 <td className={tdLeftClass}><input type="text" className={disabledInputClass} readOnly value="800" /></td>
-                <td className={tdLeftClass}>KG</td>
+                <td className={tdLeftClass}>Kg.</td>
                 <td className={tdLeftClass}></td>
               </tr>
 
               {/* --- ส่วนที่ 2: การคำนวณสำหรับ BZ3 --- */}
               <tr>
                 <td className={tdLeftClass}>RC-417: Water Content ( Moisture )</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number"  step="0.01" min="0"  className={inputClass} {...register('bz3Calculations.rc417WaterContent', { valueAsNumber: true })}  /><span className="ml-2">%</span></div> </td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" step="0.01" min="0" className={inputClass} {...register('bz3Calculations.rc417WaterContent', { valueAsNumber: true })} /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass}> <span className="text-xs"> Weight of RC-417 + Mg(OH)<sub>2</sub> <br /> + Activated Carbon P-200U </span> </td>
                 <td className={tdLeftClass}><input type="text" className={disabledInputClass} readOnly {...register('bz3Calculations.totalWeightOfMaterials')} /></td>
-                <td className={tdLeftClass}>KG</td>
+                <td className={tdLeftClass}>Kg.</td>
                 <td className={tdLeftClass}></td>
               </tr>
               <tr>

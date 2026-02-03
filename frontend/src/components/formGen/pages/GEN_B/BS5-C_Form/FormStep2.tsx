@@ -380,7 +380,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               {/* --- ส่วนที่ 1: การชั่งน้ำหนัก CDZ-1 --- */}
               <tr>
                 <td className={tdLeftClass}>CDZ-1 : Weight</td>
-                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={inputClass} {...register('rc417Weighting.row1.weight', { valueAsNumber: true, required: 'กรุณากรอก  CDZ-1 : Weight' })} /><span className="ml-2">KG</span></div>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={inputClass} {...register('rc417Weighting.row1.weight', { valueAsNumber: true, required: 'กรุณากรอก  CDZ-1 : Weight' })} /><span className="ml-2">Kg.</span></div>
                   {errors.rc417Weighting?.row1?.weight &&
                     <p className="text-sm text-danger mt-1">
                       {errors.rc417Weighting.row1.weight.message}
@@ -390,13 +390,13 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('rc417Weighting.row1.bagNo')} /></td>
                 <td className={tdLeftClass}>Bag Weight</td>
-                <td className={tdLeftClass}><div className="flex items-center"><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row1.bagWeight')} /><span className="ml-2">KG</span></div></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row1.bagWeight')} /><span className="ml-2">Kg.</span></div></td>
                 <td className={tdLeftClass}>Net Weight</td>
-                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row1.net')} /><span className="ml-2">KG</span></div></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row1.net')} /><span className="ml-2">Kg.</span></div></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>CDZ-1 : Weight</td>
-                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={inputClass} {...register('rc417Weighting.row2.weight', { valueAsNumber: true, required: 'กรุณากรอก CDZ-1 : Weight' })} /><span className="ml-2">KG</span></div>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={inputClass} {...register('rc417Weighting.row2.weight', { valueAsNumber: true, required: 'กรุณากรอก CDZ-1 : Weight' })} /><span className="ml-2">Kg.</span></div>
                   {errors.rc417Weighting?.row2?.weight &&
                     <p className="text-sm text-danger mt-1">
                       {errors.rc417Weighting.row2.weight.message}
@@ -406,15 +406,15 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>Bag No.</td>
                 <td className={tdLeftClass}><input type="text" className={inputClass} {...register('rc417Weighting.row2.bagNo')} /></td>
                 <td className={tdLeftClass}>Bag Weight</td>
-                <td className={tdLeftClass}><div className="flex items-center"><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row2.bagWeight')} /><span className="ml-2">KG</span></div></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="text" step="any" className={inputClass} {...register('cg1cWeighting.row2.bagWeight')} /><span className="ml-2">Kg.</span></div></td>
                 <td className={tdLeftClass}>Net Weight</td>
-                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row2.net')} /><span className="ml-2">KG</span></div></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="number" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.row2.net')} /><span className="ml-2">Kg.</span></div></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>CDZ-1 :Total Weight</td>
-                <td className={tdLeftClass}><div className="flex items-center"><input type="text" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.total')} /><span className="ml-2">KG</span></div></td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="text" className={disabledInputClass} readOnly disabled {...register('rc417Weighting.total')} /><span className="ml-2">Kg.</span></div></td>
                 <td className={tdLeftClass}>Net Weight of Yield</td>
-                <td className={tdLeftClass}><div className="flex items-center"><input type="text" className={disabledInputClass} readOnly value="1000" /><span className="ml-2">KG</span></div> </td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="text" className={disabledInputClass} readOnly value="1000" /><span className="ml-2">Kg.</span></div> </td>
                 <td className={tdLeftClass}>CDZ-1 of AD</td>
                 <td className={tdLeftClass}><div className="flex items-center"><input type="text" className={inputClass} {...register('rc417Weighting.cdz1ofad', { valueAsNumber: true, required: 'กรุณากรอก CDZ-1 of AD' })} /><span className="ml-2">g/mL</span></div>
                   {errors.rc417Weighting?.row2?.weight &&
@@ -431,12 +431,12 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>CDZ-1: Water Content (Moisture)</td>
                 <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" step="0.01" min="0" className={inputClass} {...register('bs5cCalculations.rc417WaterContentMoisture', { valueAsNumber: true })} /><span className="ml-2">%</span></div> </td>
                 <td className={tdLeftClass}> <span className="text-xs">Weight of CDZ-1 + Carbon + Gypsum + Mg(OH)2 </span> </td>
-                <td className={tdLeftClass}><div className="flex items-center"><input type="text" className={disabledInputClass} readOnly {...register('bs5cCalculations.totalWeightOfMaterials')} /><span className="ml-2">KG</span></div> </td>
+                <td className={tdLeftClass}><div className="flex items-center"><input type="text" className={disabledInputClass} readOnly {...register('bs5cCalculations.totalWeightOfMaterials')} /><span className="ml-2">Kg.</span></div> </td>
                 <td className={tdLeftClass} colSpan={4}></td>
               </tr>
               <tr>
                 <td className={tdLeftClass}>CDZ-1: Water Contant (weight)</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} readOnly  {...register('bs5cCalculations.rc417WaterContentweight', { valueAsNumber: true })} /><span className="ml-2">KG</span></div> </td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} readOnly  {...register('bs5cCalculations.rc417WaterContentweight', { valueAsNumber: true })} /><span className="ml-2">Kg.</span></div> </td>
                 <td className={tdLeftClass} colSpan={6}></td>
               </tr>
               <tr>
@@ -462,7 +462,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               </tr>
               <tr>
                 <td className={tdLeftClass}>Net weight of water per <br></br>1000 Kg of CDZ-1 =</td>
-                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bs5cCalculations.Netweightofwaterper', { valueAsNumber: true })} value="649.80" readOnly disabled /><span className="ml-2">KG</span></div> </td>
+                <td className={tdLeftClass}> <div className="flex items-center"> <input type="number" className={disabledInputClass} {...register('bs5cCalculations.Netweightofwaterper', { valueAsNumber: true })} value="649.80" readOnly disabled /><span className="ml-2">Kg.</span></div> </td>
                 <td className={tdLeftClass}> <span className="text-xs">(Calculated by 4% NaCl 654L, Specific gravity = 1.035) </span> </td>
                 <td className={tdLeftClass} colSpan={5}></td>
               </tr>
@@ -482,7 +482,7 @@ const FormStep2: React.FC<FormStep2Props> = ({
               </tr>
               <tr>
                 <td className={tdLeftClass}>Total weight = NCR Genmatsu =</td>
-                <td className={tdLeftClass}><input type="text"  className={disabledInputClass} readOnly {...register('bs5cCalculations.totalWeightWithNcr', { valueAsNumber: true })} /></td>
+                <td className={tdLeftClass}><input type="text" className={disabledInputClass} readOnly {...register('bs5cCalculations.totalWeightWithNcr', { valueAsNumber: true })} /></td>
                 <td className={tdLeftClass}>Kg. </td>
                 <td className={tdLeftClass} colSpan={6}></td>
               </tr>

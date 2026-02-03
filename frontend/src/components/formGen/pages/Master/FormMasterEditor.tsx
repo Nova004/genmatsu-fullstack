@@ -236,7 +236,7 @@ const FormMasterEditor: React.FC = () => {
 
   return (
     <>
-      <Breadcrumb pageName="Form Master Editor" />
+      <Breadcrumb pageName="Form Master" />
       <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
         <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
           <h3 className="font-medium text-black dark:text-white">
@@ -259,7 +259,7 @@ const FormMasterEditor: React.FC = () => {
                   disabled={isLoadingTemplates}
                   className="relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-5 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                 >
-                  <option value="">-- Select a Category --</option>
+                  <option value="">-- Select GEN Group --</option>
                   {Object.keys(groupedTemplates).map(category => (
                     <option key={category} value={category}>{category}</option>
                   ))}
@@ -270,7 +270,7 @@ const FormMasterEditor: React.FC = () => {
 
             {/* --- Dropdown 2: Form Type (โค้ดที่คุณเพิ่มมา ถูกต้องแล้ว) --- */}
             <div className="mb-4.5">
-              <label className="mb-2.5 block text-black dark:text-white">2. Select Form Type</label>
+              <label className="mb-2.5 block text-black dark:text-white">2. Select GEN Type</label>
               <div className="relative z-20 bg-transparent dark:bg-form-input">
                 <select
                   value={selectedFormType}
@@ -278,7 +278,7 @@ const FormMasterEditor: React.FC = () => {
                   disabled={!selectedCategory}
                   className="relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-5 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
                 >
-                  <option value="">-- Select a Form Type --</option>
+                  <option value="">-- Select Form Type --</option>
                   {selectedCategory && groupedTemplates[selectedCategory] && Object.keys(groupedTemplates[selectedCategory]).map(formType => (
                     <option key={formType} value={formType}>{formType}</option>
                   ))}
@@ -311,7 +311,7 @@ const FormMasterEditor: React.FC = () => {
           <div className="mt-10">
             <div className="mb-4 flex items-center justify-between">
               <h4 className="font-medium text-black dark:text-white">
-                Template Items
+                {selectedTemplate?.replace(/_/g, ' ')}
               </h4>
               {/* 3. เปลี่ยนเงื่อนไขมาใช้ฟังก์ชันใหม่ */}
               {selectedTemplate && hasUnsavedChanges() && (

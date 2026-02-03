@@ -69,11 +69,12 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
     const dataToInject = await submissionService.getSubmissionDataForPdf(submissionId);
 
     const reportName = dataToInject.submission.form_type || "ใบรายงานการผลิต";
+    const reportCategory = (dataToInject.submission.category || "Recycle").replace(/_/g, '-');
     const dynamicHeaderTemplate = `
       <div style="width: 100%; border-bottom: 1px solid #ccc; padding: 5px 20px;
                   font-size: 12px; color: #000; font-weight: bold;
                   display: flex; justify-content: center; align-items: center;">
-        <span>ใบรายงานการผลิต: ${reportName} (Manufacturing ${reportName})</span>
+        <span>ใบรายงานการผลิต ${reportCategory} : ${reportName} (Manufacturing ${reportName})</span>
       </div>
     `;
 

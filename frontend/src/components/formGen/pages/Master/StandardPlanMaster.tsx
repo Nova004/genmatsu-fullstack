@@ -10,6 +10,7 @@ interface StandardPlan {
   id: number;
   form_type: string;
   target_value: number;
+  updated_by: string;
   updated_at: string;
 }
 
@@ -123,7 +124,7 @@ const StandardPlanMaster: React.FC = () => {
             className="inline-flex items-center justify-center gap-2.5 rounded-md bg-primary py-3 px-6 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-10"
           >
             <span><FaPlus /></span>
-            Add New Plan
+            Add New
           </button>
         </div>
 
@@ -132,10 +133,13 @@ const StandardPlanMaster: React.FC = () => {
             <thead>
               <tr className="bg-gray-2 text-left dark:bg-meta-4">
                 <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
-                  Form Type (Product)
+                  GEN Type
                 </th>
                 <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
                   Std. Plan Target (Kg)
+                </th>
+                <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
+                  Updated By
                 </th>
                 <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
                   Last Updated
@@ -174,7 +178,12 @@ const StandardPlanMaster: React.FC = () => {
                       </span>
                     </td>
                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                      <p className="text-sm text-bodydark2">
+                      <p className="font-medium text-black dark:text-white">
+                        {plan.updated_by}
+                      </p>
+                    </td>
+                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
+                      <p className="font-medium text-black dark:text-white">
                         {new Date(plan.updated_at).toLocaleDateString('th-TH')}
                       </p>
                     </td>
