@@ -67,6 +67,14 @@ const login = async (req, res) => {
         .json({ message: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
     }
 
+    // ถ้า LV_Approvals เป็น null หรือ ไม่อยู่ในช่วง 0-3 ให้ดีดออก
+    const userLevel = user.LV_Approvals;
+    if (userLevel === null || userLevel < 0 || userLevel > 3) {
+      return res.status(401).json({
+        message: "คุณไม่มีสิทธิ์เข้าใช้งานระบบ (No Permission / Invalid Level)"
+      });
+    }
+
     // สร้าง Token
     const payload = {
       user: {

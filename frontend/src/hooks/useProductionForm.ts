@@ -1,3 +1,5 @@
+// src/hooks/useProductionForm.ts
+
 import { useState, useCallback } from 'react';
 import { useForm, SubmitHandler, UseFormReturn } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -57,38 +59,12 @@ export const useProductionForm = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadedTemplates, setLoadedTemplates] = useState<any[]>([]);
 
-  const STORAGE_KEY = `autosave_draft_${formType}`;
-
   const formMethods = useForm<IManufacturingReportForm>({
     mode: 'onChange',
     defaultValues: initialFormValues,
   });
 
-  const { reset, watch } = formMethods;
-
-  // ✅ 1. Load Draft on Mount
-  React.useEffect(() => {
-    const savedDraft = localStorage.getItem(STORAGE_KEY);
-    if (savedDraft) {
-      try {
-        const parsedData = JSON.parse(savedDraft);
-        // Reset form with saved data
-        // Note: We merge with initial values to ensure structure integrity
-        reset({ ...initialFormValues, ...parsedData });
-        // fireToast('success', 'กู้คืนข้อมูลแบบร่างล่าสุดเรียบร้อยแล้ว');
-      } catch (error) {
-        console.error('Failed to parse draft', error);
-      }
-    }
-  }, [formType, reset]);
-
-  // ✅ 2. Auto-Save on Change
-  React.useEffect(() => {
-    const subscription = watch((value) => {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
-    });
-    return () => subscription.unsubscribe();
-  }, [watch, STORAGE_KEY]);
+  // const { reset, watch } = formMethods; // ❌ ไม่ได้ใช้แล้ว (เพราะไม่มี Draft)
 
   const handleTemplateLoaded = useCallback((templateInfo: any) => {
     setLoadedTemplates((prev) => {
@@ -98,7 +74,6 @@ export const useProductionForm = ({
       return [...prev, templateInfo];
     });
   }, []);
-
   // --- 1. onSubmit (สำหรับ Submit จริง) ---
   const onSubmit: SubmitHandler<IManufacturingReportForm> = async (data) => {
     setIsSubmitting(true);
@@ -118,9 +93,6 @@ export const useProductionForm = ({
         fireToast('success', 'Successfully Created!');
         // ต้องส่ง ID ไปด้วย (เช็คชื่อ field ID ให้ชัวร์ว่า backend ส่งกลับมาว่าอะไร เช่น submissionId หรือ id)
         const newId = result.submissionId || result.data?.submissionId;
-
-        // ✅ Clear Draft on Success
-        localStorage.removeItem(STORAGE_KEY);
 
         navigate('/reports/history/recycle', {
           state: { highlightedId: newId },
@@ -158,9 +130,6 @@ export const useProductionForm = ({
       // [ยิง API]
       const result = await submitProductionForm(submissionPayload);
       fireToast('success', `บันทึกข้อมูลสำเร็จ! (ID: ${result.submissionId})`);
-
-      // ✅ Clear Draft on Success
-      localStorage.removeItem(STORAGE_KEY);
 
       const historyPath =
         category === 'GEN_A'
@@ -202,8 +171,6 @@ export const useProductionForm = ({
           'success',
           `บันทึกร่าง Ironpowder สำเร็จ! (ID: ${result.submissionId})`,
         );
-        // ✅ Clear Draft on Success
-        localStorage.removeItem(STORAGE_KEY);
 
         navigate('/reports/history/recycle', {
           state: { highlightedId: result.submissionId },
@@ -231,9 +198,6 @@ export const useProductionForm = ({
 
       const result = await submitProductionForm(submissionPayload);
       fireToast('success', `บันทึกร่างสำเร็จ! (ID: ${result.submissionId})`);
-
-      // ✅ Clear Draft on Success
-      localStorage.removeItem(STORAGE_KEY);
 
       const historyPath =
         category === 'GEN_A'

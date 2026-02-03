@@ -17,7 +17,7 @@ const SignIn: React.FC = () => {
     e.preventDefault();
 
     if (!userId.trim() || !password.trim()) {
-      fireToast('error', 'กรุณาระบุรหัสพนักงานและรหัสผ่าน');
+      fireToast('warning', 'กรุณาระบุรหัสพนักงานและรหัสผ่าน');
       return;
     }
 
@@ -35,7 +35,7 @@ const SignIn: React.FC = () => {
         fireToast('success', 'เข้าสู่ระบบสำเร็จ');
         navigate('/');
       } else {
-        fireToast('error', 'ไม่พบข้อมูลผู้ใช้งานในระบบ');
+        fireToast('warning', 'ไม่พบข้อมูลผู้ใช้งานในระบบ');
       }
     } catch (error: any) {
       console.error('Login error:', error);
