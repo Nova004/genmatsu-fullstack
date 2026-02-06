@@ -60,6 +60,11 @@ const getBrowser = async () => {
   return browserInstance;
 };
 
+// 🚀 Turbo: Warm Browser Singleton
+const { PDFDocument } = require('pdf-lib'); // 📦 Install pdf-lib
+
+// ... (getBrowser function remains the same) ...
+
 exports.generatePdf = async (submissionId, frontendPrintUrl) => {
   let page;
 
@@ -78,60 +83,68 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
       </div>
     `;
 
-    // 2. Reuse Browser
-    const browser = await getBrowser(); // � Use Warm Browser
-    page = await browser.newPage();
+    const dynamicHeaderTemplateBarcode = `
+      <div style="width: 100%; border-bottom: 1px solid #ccc; padding: 5px 20px;
+                  font-size: 12px; color: #000; font-weight: bold;
+                  display: flex; justify-content: center; align-items: center;">
+        <span>Raw material Tag of ${reportCategory} : ${reportName} (Manufacturing ${reportName})</span>
+      </div>
+    `;
 
-    page = await browser.newPage();
+    // 🕵️‍♂️ Check if we need a Barcode Page (Lot 3-part check)
+    const lotNo = dataToInject.submission.lot_no || "";
+    const needsBarcodePage = /^(\d{4})([A-Z])(\d)$/.test(lotNo);
 
-    page.on("console", (msg) => {
-      logger.info(`[PUPPETEER-CONSOLE] ${msg.type()}: ${msg.text()}`);
-    });
-    page.on("pageerror", (err) => {
-      logger.error("[PUPPETEER-PAGE-ERROR] React Crash:", err);
-    });
+    // Helper to generate a single PDF part
+    const generatePart = async (urlSuffix, options) => {
+      logger.info(`[PDF Gen] Generating Part: ${urlSuffix}...`);
 
-    // 3. Request Interception
-    logger.info(`[PDF Gen] 3. Setting up request interception...`);
-    await page.setRequestInterception(true);
+      // Append URL Param
+      const separator = frontendPrintUrl.includes('?') ? '&' : '?';
+      const targetUrl = `${frontendPrintUrl}${separator}printPart=${urlSuffix}`;
 
-    const expectedApiUrl = `/genmatsu/api/submissions/${submissionId}`;
+      const browser = await getBrowser();
+      const partPage = await browser.newPage();
 
-    page.on("request", (request) => {
-      const url = request.url();
-      if (!url.startsWith("data:")) {
-        logger.info(`[PUPPETEER-REQUEST] Trying to load: ${url}`);
-      }
+      try {
+        // Setup Interception (Same as before)
+        await partPage.setRequestInterception(true);
+        const expectedApiUrl = `/genmatsu/api/submissions/${submissionId}`;
 
-      if (url.includes(expectedApiUrl)) {
-        logger.info(`[PDF Gen] 3.1. Intercepting API call: ${url}`);
-        request.respond({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify(dataToInject),
+        partPage.on("request", (request) => {
+          const url = request.url();
+          if (url.includes(expectedApiUrl)) {
+            request.respond({
+              status: 200,
+              contentType: "application/json",
+              body: JSON.stringify(dataToInject),
+            });
+          } else {
+            request.continue();
+          }
         });
-      } else {
-        request.continue();
+
+        await partPage.goto(targetUrl, { waitUntil: "networkidle2", timeout: 60000 });
+
+        // 🟢 Wait for specific selector based on part
+        const waitSelector = (urlSuffix === 'barcode')
+          ? "#barcode-content-ready"
+          : "#pdf-content-ready";
+
+        logger.info(`[PDF Gen] 5. Waiting for selector (${waitSelector})...`);
+        await partPage.waitForSelector(waitSelector, { timeout: 30000 });
+
+        // 🟢 Add Safety Delay to ensure Layout/Fonts settle
+        await new Promise(r => setTimeout(r, 1500));
+
+        return await partPage.pdf(options);
+      } finally {
+        await partPage.close();
       }
-    });
+    };
 
-    // 4. Navigate
-    logger.info(`[PDF Gen] 4. Navigating to: ${frontendPrintUrl}`);
-    await page.goto(frontendPrintUrl, {
-      waitUntil: "networkidle2",
-      timeout: 60000,
-    });
-
-    // 5. Wait for selector
-    logger.info("[PDF Gen] 5. Waiting for selector (#pdf-content-ready)...");
-    await page.waitForSelector(
-      "#pdf-content-ready, #pdf-status-error, #pdf-status-notfound",
-      { timeout: 30000 }
-    );
-
-    // 6. Generate PDF
-    logger.info("[PDF Gen] 6. Page is ready. Generating PDF buffer...");
-    const pdfBuffer = await page.pdf({
+    // --- Part 1: Main Report (With Header/Footer) ---
+    const mainPdfBuffer = await generatePart('main', {
       format: "A4",
       printBackground: true,
       displayHeaderFooter: true,
@@ -147,23 +160,54 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
           <span style="flex: 1; text-align: right;"></span>
         </div>
       `,
-      margin: {
-        top: "50px",
-        right: "10px",
-        bottom: "20px",
-        left: "10px",
-      },
+      margin: { top: "50px", right: "10px", bottom: "20px", left: "10px" },
       scale: 0.37,
     });
 
-    // Do not close browser!
-    logger.info("[PDF Gen] 7. Page closed. Keeping browser warm.");
-    return pdfBuffer;
+    if (!needsBarcodePage) {
+      return mainPdfBuffer;
+    }
+
+    // --- Part 2: Barcode Page (With Header/Footer as requested) ---
+    const barcodePdfBuffer = await generatePart('barcode', {
+      format: "A4",
+      printBackground: true,
+      displayHeaderFooter: true, // ✅ Custom Header/Footer enabled
+      headerTemplate: dynamicHeaderTemplateBarcode, // Reuse style
+      footerTemplate: `
+        <div style="width: 100%; padding: 5px 20px 0;
+                    font-size: 10px; color: #555;
+                    display: flex; justify-content: space-between; align-items: center;">
+          <span style="flex: 1; text-align: left;">FM-AS2-001 (Barcode)</span>
+          <span style="flex: 1; text-align: center;">
+            Page <span class="pageNumber"></span> / <span class="totalPages"></span>
+          </span>
+          <span style="flex: 1; text-align: right;"></span>
+        </div>
+      `,
+      margin: { top: "50px", right: "10px", bottom: "20px", left: "10px" }, // Match Main margins
+      scale: 0.37,
+    });
+
+    // --- Merge PDFs ---
+    logger.info("[PDF Gen] Merging Main Report + Barcode Page...");
+    const mergedPdf = await PDFDocument.create();
+
+    const pdf1 = await PDFDocument.load(mainPdfBuffer);
+    const pdf2 = await PDFDocument.load(barcodePdfBuffer);
+
+    const copiedPages1 = await mergedPdf.copyPages(pdf1, pdf1.getPageIndices());
+    copiedPages1.forEach((page) => mergedPdf.addPage(page));
+
+    const copiedPages2 = await mergedPdf.copyPages(pdf2, pdf2.getPageIndices());
+    copiedPages2.forEach((page) => mergedPdf.addPage(page));
+
+    const mergedPdfBytes = await mergedPdf.save();
+    return Buffer.from(mergedPdfBytes);
+
   } catch (error) {
     logger.error(`[PDF Gen] Error generating PDF for ID ${submissionId}:`, error);
     throw error;
-  } finally {
-    if (page) await page.close(); // 🚀 Only close the page
   }
 };
 
@@ -206,6 +250,8 @@ exports.generateDailyReportPdf = async (date, lotNoPrefix) => {
       logger.warn("[PDF Gen] Warning: Selector #pdf-content-ready not found, creating PDF anyway.");
     }
 
+    await new Promise(r => setTimeout(r, 1000));
+    
     // 5. Create PDF
     const pdfBuffer = await page.pdf({
       format: "A4",

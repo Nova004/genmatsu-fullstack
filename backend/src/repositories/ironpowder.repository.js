@@ -281,3 +281,20 @@ exports.getRecentCommentsForUser = async (pool, userId) => {
     throw error;
   }
 };
+
+exports.countPendingIronpowderByLevel = async (pool, userLevel) => {
+  const result = await pool.request().input("userLevel", sql.Int, userLevel)
+    .query(`
+      SELECT COUNT(*) AS count
+      FROM Form_Ironpowder_Submissions s
+      CROSS APPLY (
+          SELECT TOP 1 required_level as pending_level
+          FROM Form_Ironpowder_Approval_Flow 
+          WHERE submissionId = s.submissionId AND status = 'Pending' 
+          ORDER BY sequence ASC
+      ) flow
+      WHERE s.status = 'Pending' 
+        AND flow.pending_level = @userLevel
+    `);
+  return result.recordset[0].count;
+};

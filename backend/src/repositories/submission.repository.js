@@ -609,3 +609,36 @@ exports.resetRejectionStatus = async (transaction, submissionId) => {
     WHERE submission_id = @submissionId AND action = 'Rejected'
   `);
 };
+
+exports.countPendingTasksByLevel = async (pool, userLevel) => {
+  const result = await pool.request().input("userLevel", sql.Int, userLevel)
+    .query(`
+      SELECT COUNT(*) AS count
+      FROM Form_Submissions s
+      CROSS APPLY (
+          SELECT TOP 1 required_level as pending_level
+          FROM Gen_Approval_Flow 
+          WHERE submission_id = s.submission_id AND status = 'Pending' 
+          ORDER BY sequence ASC
+      ) flow
+      WHERE s.status = 'Pending' 
+        AND flow.pending_level = @userLevel
+    `);
+  return result.recordset[0].count;
+};
+
+exports.getApproverEmailsByLevel = async (pool, userLevel) => {
+  const result = await pool.request().input("userLevel", sql.Int, userLevel)
+    .query(`
+      SELECT DISTINCT a.agt_member_email
+      FROM AGT_SMART_SY.dbo.agt_member a
+      JOIN AGT_SMART_SY.dbo.Gen_Manu_Member m 
+        ON a.agt_member_id COLLATE DATABASE_DEFAULT = m.Gen_Manu_mem_Memid COLLATE DATABASE_DEFAULT
+      WHERE m.LV_Approvals = @userLevel 
+        AND a.agt_member_email IS NOT NULL 
+        AND a.agt_member_section = 'S010' 
+        AND a.agt_member_email != ''
+        AND a.agt_status_job = 'Working'
+    `);
+  return result.recordset.map(r => r.agt_member_email);
+};

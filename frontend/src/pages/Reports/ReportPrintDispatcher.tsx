@@ -26,6 +26,7 @@ import PrintableReportBS5_C from './BS5-C/PrintableReportBS5-C';
 import PrintableReportBS3_C from './BS3-C/PrintableReportBS3-C';
 import PrintableReportAZ from './AZ/PrintableReportAZ';
 import PrintableReportIronpowder from './Ironpowder/PrintableReportIronpowder';
+import BarcodePage from './components/BarcodePage';
 
 // --- ⬆️ สิ้นสุดส่วน Import Component ⬆️ ---
 
@@ -222,13 +223,47 @@ const ReportPrintDispatcher: React.FC = () => {
     return <div id="pdf-status-notfound">ไม่พบข้อมูลรายงาน (ID: {id})</div>; // 👈 เพิ่ม ID
   }
 
-  console.log(`[PrintDispatcher] ID: ${id} - Rendering printable form...`);
-  // ‼️ [แก้ไข] ‼️
-  // return <>{renderPrintableForm()}</>; // <--- ลบอันนี้ทิ้ง
+  // --- 4. Logic การแยกส่วนพิมพ์ ---
+  const query = new URLSearchParams(window.location.search);
+  const printPart = query.get('printPart'); // 'main' | 'barcode' | null (both)
+
+  console.log(`[PrintDispatcher] ID: ${id} - Rendering printable form... Part: ${printPart || 'ALL'}`);
+
   return (
     <div id="pdf-content-ready">
-      {/* 👈 เพิ่ม ID นี้เพื่อเป็น "สัญญาณ" ว่าพร้อมพิมพ์ */}
-      {renderPrintableForm()}
+
+      {/* 1. Main Report Part */}
+      {(printPart === 'main' || !printPart) && (
+        <>
+          {renderPrintableForm()}
+        </>
+      )}
+
+      {/* 2. Barcode Part */}
+      {(printPart === 'barcode' || !printPart) && (
+        (() => {
+          if (!submissionData) return null;
+
+          const fullLotNo = submissionData.submission.lot_no || "";
+          const match = fullLotNo.match(/^(\d{4})([A-Z])(\d)$/);
+
+          if (match) {
+            const [, lotOnly, lineOnly, batchOnly] = match;
+            return (
+              <div className="print-compact" style={{ zoom: 1.7 }}>
+                <BarcodePage
+                  lotNo={lotOnly}
+                  lineName={lineOnly}
+                  batch={batchOnly}
+                />
+              </div>
+            );
+          }
+          // ถ้าสั่งพิมพ์ Barcode แต่ Lot ไม่ตรงเงื่อนไข -> แสดงหน้าว่างหรือข้อความ?
+          // หรือถ้า printPart='barcode' แต่ไม่มี Barcode ก็ควร return null (Backend จะจัดการ)
+          return null;
+        })()
+      )}
     </div>
   );
 };

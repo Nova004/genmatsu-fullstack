@@ -23,34 +23,52 @@ const clearTemplateCache = () => {
 exports.getLatestTemplateByName = async (req, res) => {
   try {
     const { templateName } = req.params;
+    const { active } = req.query; // 🚀 Check for active flag
 
     if (!templateName) {
       return res.status(400).json({ message: "กรุณาระบุชื่อ Template" });
     }
 
-    // 🚀 Cache Hit?
-    if (CACHE.templates.has(templateName)) {
-      logger.info(`[Cache] Hit: ${templateName}`);
-      return res.status(200).json(CACHE.templates.get(templateName));
+    // 🚀 Cache Key Strategy
+    const cacheKey = active === 'true' ? `${templateName}_active` : templateName;
+
+    // 🚀 Cache Hit? (Only use Cache if NOT checking for active time)
+    // เหตุผล: ถ้า active=true ผลลัพธ์ขึ้นอยู่กับเวลา (Time-dependent) การ Cache อาจทำให้ได้เวอร์ชันเก่า
+    if (active !== 'true' && CACHE.templates.has(cacheKey)) {
+      logger.info(`[Cache] Hit: ${cacheKey}`);
+      return res.status(200).json(CACHE.templates.get(cacheKey));
     }
 
     await poolConnect;
 
-    // --- เพิ่ม AND is_latest = 1 เข้าไปใน query ---
+    let query;
+    if (active === 'true') {
+      // 📅 Active Mode: Get latest effective version (Always Live Query)
+      query = `
+        SELECT TOP 1 * 
+        FROM Form_Master_Templates 
+        WHERE template_name = @templateName 
+          AND (effective_date IS NULL OR effective_date <= GETUTCDATE())
+        ORDER BY version DESC
+      `;
+    } else {
+      // 🛠️ Editor Mode: Get absolute latest (HEAD)
+      query = "SELECT * FROM Form_Master_Templates WHERE template_name = @templateName AND is_latest = 1";
+    }
+
     const templateResult = await pool
       .request()
       .input("templateName", sql.NVarChar, templateName)
-      .query(
-        "SELECT * FROM Form_Master_Templates WHERE template_name = @templateName AND is_latest = 1"
-      );
+      .query(query);
 
     if (templateResult.recordset.length === 0) {
-      return res.status(404).json({ message: "ไม่พบ Template เวอร์ชันล่าสุด" });
+      return res.status(404).json({ message: "ไม่พบ Template ที่ต้องการ" });
     }
 
     const templateData = templateResult.recordset[0];
     const templateId = templateData.template_id;
 
+    // ... (Items fetching remains same)
     const itemsResult = await pool
       .request()
       .input("templateId", sql.Int, templateId)
@@ -73,10 +91,11 @@ exports.getLatestTemplateByName = async (req, res) => {
       items: formattedItems,
     };
 
-    // 🚀 Save to Cache
-    CACHE.templates.set(templateName, responseData);
+    // 🚀 Save to Cache (Only for Editor Mode)
+    if (active !== 'true') {
+      CACHE.templates.set(cacheKey, responseData);
+    }
 
-    // --- ส่งข้อมูลกลับไปให้ Frontend ในรูปแบบใหม่ ---
     res.status(200).json(responseData);
   } catch (error) {
     logger.error("Error in getLatestTemplateByName:", error);
@@ -205,21 +224,20 @@ exports.updateTemplateAsNewVersion = async (req, res) => {
       )
       .input("version", sql.Int, newVersion)
       .input("is_latest", sql.Bit, 1)
-      .input(
-        "template_category",
-        sql.NVarChar,
-        currentTemplate.template_category
-      )
-      .input("createdBy", sql.NVarChar, userId) // เพิ่ม input สำหรับ createdBy
+
+      .input("template_category", sql.NVarChar, currentTemplate.template_category)
+      .input("createdBy", sql.NVarChar, userId)
+      .input("change_reason", sql.NVarChar, req.body.changeReason || null)
+      .input("effective_date", sql.DateTime, req.body.effectiveDate ? new Date(req.body.effectiveDate) : new Date()) // 📅 Effective Date
       .query(`
         INSERT INTO Form_Master_Templates (
           template_name, template_type, form_type, description, version, 
-          is_latest, template_category, created_at, created_by
+          is_latest, template_category, created_at, created_by, change_reason, effective_date
         )
         OUTPUT inserted.template_id
         VALUES (
           @template_name, @template_type, @form_type, @description, @version, 
-          @is_latest, @template_category, GETDATE(), @createdBy
+          @is_latest, @template_category, GETDATE(), @createdBy, @change_reason, @effective_date
         );
       `);
 
@@ -265,6 +283,16 @@ exports.updateTemplateAsNewVersion = async (req, res) => {
 
     // 🚀 Invalidate Cache
     clearTemplateCache();
+
+    // 🚀 Notify Clients via Socket.io
+    if (req.io) {
+      req.io.emit("template_updated", {
+        templateName: templateName,
+        version: newVersion,
+        effectiveDate: req.body.effectiveDate ? new Date(req.body.effectiveDate) : new Date(),
+        message: "A new version of the template is available."
+      });
+    }
 
     res.status(201).json({
       message: "Template updated successfully as new version.",

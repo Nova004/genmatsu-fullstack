@@ -486,6 +486,9 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}>Kg. </td>
                 <td className={tdLeftClass} colSpan={6}></td>
               </tr>
+              <tr>
+                <td className={tdLeftClass} colSpan={10}>* ปริมาณการเติมของโซเดียมคลอไรด์คำนวณจาก % ความชื้นของ  Diatomaceous   Earth  (CDZ-1) และค่าความถ่วงจำเพาะของ โซเดียมคลอไรด์ที่วัดค่าได้จริงและ % ความชื้น <br></br>เป้าหมายของ Genmatsu  อ้างอิงสูตรคำนวณในใบรายงานการผลิต  Genmatsu</td>
+              </tr>
 
               {/* --- ส่วนที่ 3: หมายเหตุ --- */}
               <tr>

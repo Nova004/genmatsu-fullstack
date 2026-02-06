@@ -8,11 +8,12 @@ import type { LatestTemplateResponse } from '../types/api';
  */
 
 export const getLatestTemplateByName = async (
-  templateName: string
+  templateName: string,
 ): Promise<LatestTemplateResponse> => {
   try {
     const response = await apiClient.get<LatestTemplateResponse>(
-      `${API_ENDPOINTS.MASTER}/template/${templateName}/latest`
+      `${API_ENDPOINTS.MASTER}/template/${templateName}/latest`,
+      { params: { active: true } }, // 🚀 Request active version
     );
     return response.data;
   } catch (error) {

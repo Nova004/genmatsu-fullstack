@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { getLatestTemplateByName } from '../services/formService';
+import { socket } from '../services/socket';
+import Swal from 'sweetalert2';
 
 interface UseTemplateLoaderProps {
   templateName: string;
@@ -10,7 +12,11 @@ interface UseTemplateLoaderProps {
 }
 
 // Hook นี้จะคืนค่า state ที่จำเป็นสำหรับการแสดงผล
-export const useTemplateLoader = ({ templateName, onTemplateLoaded, staticBlueprint }: UseTemplateLoaderProps) => {
+export const useTemplateLoader = ({
+  templateName,
+  onTemplateLoaded,
+  staticBlueprint,
+}: UseTemplateLoaderProps) => {
   const [fields, setFields] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +50,50 @@ export const useTemplateLoader = ({ templateName, onTemplateLoaded, staticBluepr
       fetchLatestBlueprint();
     }
   }, [templateName, onTemplateLoaded, staticBlueprint]);
+
+  // 🚀 Real-time Update Listener
+  useEffect(() => {
+    if (staticBlueprint) return; // ไม่ต้องฟังถ้าใช้ Static
+
+    const handleUpdate = (data: any) => {
+      // 1. เช็คว่าเป็น Template เดียวกันไหม
+      if (data.templateName !== templateName) return;
+
+      const effectiveTime = new Date(data.effectiveDate).getTime();
+      const now = new Date().getTime();
+      const delay = effectiveTime - now;
+
+      const showUpdateAlert = () => {
+        Swal.fire({
+          title: '✨ New Version Available!',
+          text: `A new version of "${templateName}" is now active. The page will refresh to update the form.`,
+          icon: 'info',
+          confirmButtonText: 'Update Now',
+          allowOutsideClick: false,
+        }).then(() => {
+          window.location.reload();
+        });
+      };
+
+      if (delay <= 0) {
+        // 🚀 ถึงเวลาแล้ว -> แจ้งเตือนทันที
+        showUpdateAlert();
+      } else {
+        // ⏳ ยังไม่ถึงเวลา -> ตั้งเวลาแจ้งเตือน
+        console.log(`[Socket] Update scheduled in ${delay}ms`);
+        const timer = setTimeout(() => {
+          showUpdateAlert();
+        }, delay);
+        return () => clearTimeout(timer); // Clear timeout ถ้า component unmount
+      }
+    };
+
+    socket.on('template_updated', handleUpdate);
+
+    return () => {
+      socket.off('template_updated', handleUpdate);
+    };
+  }, [templateName, staticBlueprint]);
 
   return { fields, isLoading, error };
 };

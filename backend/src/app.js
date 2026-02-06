@@ -15,6 +15,7 @@ const submissionRoutes = require("./api/submission.routes");
 const reportRoutes = require("./api/report.routes");
 const approvalRoutes = require("./api/approval.routes");
 const ironpowderRoutes = require("./api/ironpowder.routes");
+const weightRoutes = require("./api/weight.routes");
 
 const app = express();
 const server = http.createServer(app);
@@ -50,6 +51,7 @@ const routes = [
   { path: "/approvals", route: approvalRoutes },
   { path: "/nacl", route: naclRoutes },
   { path: "/ironpowder", route: ironpowderRoutes },
+  { path: "/weights", route: weightRoutes },
 ];
 
 routes.forEach(({ path, route }) => {
@@ -65,6 +67,8 @@ app.use("/api/submissions/reports", reportRoutes);
 const errorMiddleware = require("./middlewares/error.middleware");
 app.use(errorMiddleware);
 
+const cronService = require("./services/cron.service");
+
 // ✅ 6. เปลี่ยนจาก app.listen เป็น server.listen
 const PORT = process.env.PORT || 4000;
 server.listen(PORT, async () => {
@@ -73,6 +77,10 @@ server.listen(PORT, async () => {
     await poolPromise;
     console.log("Database Connected!");
     console.log("Socket.io is ready!");
+
+    // ⏰ Start Cron Scheduler
+    cronService.init();
+
   } catch (err) {
     console.error("Database Connection Failed! Bad Config: ", err);
   }

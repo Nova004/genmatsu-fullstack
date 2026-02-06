@@ -79,8 +79,6 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
               <option value="" disabled hidden>เลือกเครื่องจักร</option>
               <option value="A">A</option>
               <option value="B">B</option>
-              <option value="C">C</option>
-              <option value="D">D</option>
             </select>
           </div>
           <div className="flex items-center">

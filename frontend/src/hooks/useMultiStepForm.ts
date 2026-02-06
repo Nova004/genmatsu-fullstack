@@ -70,7 +70,7 @@ export const useMultiStepForm = ({
             const errorScope = scope ? errors[scope] : errors;
             // เรียกใช้ Helper
             const firstError = findFirstErrorMessage(errorScope);
-            fireToast('warning', firstError || defaultErrorMessage);
+            fireToast('error', firstError || defaultErrorMessage);
         }
     }, [step, totalSteps, trigger, errors, validationSchema]);
 
@@ -95,7 +95,7 @@ export const useMultiStepForm = ({
 
             if (firstSpecificError) {
                 // 1a. ถ้าเจอข้อความ Error เฉพาะจุด (เช่น "กรุณากรอก Lot No.")
-                fireToast('warning', firstSpecificError);
+                fireToast('error', firstSpecificError);
             } else {
                 // 1b. ถ้าหาไม่เจอ (ซึ่งไม่น่าเกิด) ให้หา Error Message "รวม" ของ Step แรกที่ Error
                 let defaultStepMessage = "กรุณากรอกข้อมูลให้ครบถ้วน";
@@ -109,7 +109,7 @@ export const useMultiStepForm = ({
                         // (คุณสามารถเพิ่ม Logic การเช็ค errors[field] ที่ซับซ้อนขึ้นได้อีก)
                     }
                 }
-                fireToast('warning', defaultStepMessage);
+                fireToast('error', defaultStepMessage);
             }
             // 2. คืนค่า false (ไม่อนุญาตให้เซฟ)
             return false;

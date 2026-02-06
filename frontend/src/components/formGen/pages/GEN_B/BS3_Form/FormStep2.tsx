@@ -439,7 +439,9 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass}><input type="number" step="0.1" className={disabledInputClass} readOnly {...register('bs3Calculations.totalWeightWithNcr', { valueAsNumber: true })} /></td>
                 <td className={tdLeftClass}>Kg. </td>
               </tr>
-
+              <tr>
+                <td className={tdLeftClass} colSpan={10}>* ปริมาณการเติมของโซเดียมคลอไรด์คำนวณจาก % ความชื้นของ  Diatomaceous   Earth  (RC-417) และค่าความถ่วงจำเพาะของ โซเดียมคลอไรด์ที่วัดค่าได้จริงและ % ความชื้น <br></br>เป้าหมายของ Genmatsu  อ้างอิงสูตรคำนวณในใบรายงานการผลิต  Genmatsu</td>
+              </tr>
               {/* --- ส่วนที่ 3: หมายเหตุ --- */}
               <tr>
                 <td className={tdLeftClass}>Remark (หมายเหตุ) :</td>

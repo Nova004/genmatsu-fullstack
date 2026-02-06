@@ -364,6 +364,9 @@ const FormStep2: React.FC<FormStep2Props> = ({
                 <td className={tdLeftClass} colSpan={7} style={{ fontSize: 'small' }}></td>
               </tr>
               <tr>
+                <td className={tdLeftClass} colSpan={10}>* ปริมาณการเติมของโซเดียมคลอไรด์คำนวณจาก % ความชื้นของ  Diatomaceous   Earth  (CG-1C) และค่าความถ่วงจำเพาะของ โซเดียมคลอไรด์ที่วัดค่าได้จริงและ % ความชื้น <br></br>เป้าหมายของ Genmatsu  อ้างอิงสูตรคำนวณในใบรายงานการผลิต  Genmatsu</td>
+              </tr>
+              <tr>
                 <td className={tdLeftClass}>Remark (หมายเหตุ) :</td>
                 <td className={tdLeftClass} colSpan={7}><textarea className={`${inputClass} h-25`} {...register('qouRemark')} /></td>
               </tr>

@@ -1,3 +1,4 @@
+// frontend/src/pages/Reports/AS2-D/PrintableReportAS2-D.tsx
 import React from 'react';
 import AS2_DFormPrint from '../../../components/formGen/pages/GEN_A/AS2-D_Form/AS2-DFormPrint';
 import ApprovalFlowDisplay from "../../../components/formGen/components/forms/ApprovalFlowDisplay";

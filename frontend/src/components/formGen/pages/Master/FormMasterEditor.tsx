@@ -9,6 +9,8 @@ import axios from 'axios';
 import { fireToast } from '../../../../hooks/fireToast';
 import { useAuth } from '../../../../context/AuthContext';
 import { useLevelGuard } from '../../../../hooks/useLevelGuard';
+import 'sweetalert2/dist/sweetalert2.min.css'; // 🎨 Import CSS
+import Swal from 'sweetalert2';
 
 interface TemplateInfo {
   template_id: number;
@@ -180,28 +182,68 @@ const FormMasterEditor: React.FC = () => {
 
   const handleSaveChanges = async () => {
     if (!selectedTemplate || templateItems.length === 0) {
-      // ใช้ fireToast แทน alert
       fireToast('warning', 'No template selected or no items to save.');
       return;
     }
 
+    // 🚀 1. Prompt for Reason
+    const result = await Swal.fire({
+      title: 'Save Changes?',
+      html: `
+        <div class="flex flex-col gap-4 text-left">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Reason for Update</label>
+            <textarea id="swal-reason" class="swal2-textarea m-0 w-full" rows="3" placeholder="e.g. Adjusted formula..."></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Effective Date (Start Time)</label>
+            <input id="swal-date" type="datetime-local" class="swal2-input m-0 w-full" />
+          </div>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Save Version',
+      // 🎨 ใช้ Class ของ Tailwind แทนเพื่อให้สีติดแน่นอน
+      customClass: {
+        confirmButton: 'rounded-md bg-primary px-6 py-2 font-medium text-white hover:bg-opacity-90 mx-2',
+        cancelButton: 'rounded-md bg-red-500 px-6 py-2 font-medium text-white hover:bg-opacity-90 mx-2'
+      },
+      buttonsStyling: false,
+      focusConfirm: false,
+      preConfirm: () => {
+        const reason = (document.getElementById('swal-reason') as HTMLTextAreaElement).value;
+        const date = (document.getElementById('swal-date') as HTMLInputElement).value;
+
+        // Optional: Validate reason
+        if (!reason) {
+          Swal.showValidationMessage('Please provide a reason');
+          return false;
+        }
+        return { reason, date };
+      }
+    });
+
+    if (!result.isConfirmed) return;
+
+    const { reason: changeReason, date: effectiveDate } = result.value;
+
     setIsSaving(true);
     try {
-      // 1. ใช้ axios.post และส่งข้อมูลเข้าไปได้เลย
+      // 2. ส่ง changeReason + effectiveDate ไปด้วย
       await axios.post('/genmatsu/api/master/template/update', {
         templateName: selectedTemplate,
         items: templateItems,
-        userId: user.id
-      }); handleSaveChanges
+        userId: user.id,
+        changeReason: changeReason,
+        effectiveDate: effectiveDate || null // 📅 Send date (or null for immediate)
+      });
 
-      // 2. ถ้าสำเร็จ ให้แจ้งเตือนสวยๆ
       fireToast('success', 'A new version of the template has been created.');
 
       // 3. โหลดข้อมูล template เดิมซ้ำเพื่อรีเฟรชหน้า
       handleTemplateChange({ target: { value: selectedTemplate } } as any);
 
     } catch (error: any) {
-      // 4. catch จะทำงานทันทีถ้า API ตอบกลับมาเป็น Error
       console.error("Error saving template:", error);
       const errorMessage = error.response?.data?.message || 'Failed to save changes.';
       fireToast('error', errorMessage);

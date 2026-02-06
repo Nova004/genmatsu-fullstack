@@ -1,1 +1,6 @@
-"Updated Lot No: 6021B1. Changes: operationResults: [Array updated], packingResults.quantityOfProduct.cans: 13 -> 13.00, packingResults.remain: 0 -> 0.00, packingResults.meshPass40: 4.4 -> 4.40"
+{
+    "message": "Updated template to version 19",
+    "changes": [
+        "items[0].config_json.label: Iron Powder  HGN 82.29.01 (ผงเ -> Iron Powder  HGN 82.29.01 (ผงเ"
+    ]
+}
