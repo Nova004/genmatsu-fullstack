@@ -48,7 +48,7 @@ const AZ_DFormViewer: React.FC<AZ_DFormViewerProps> = ({ formData, blueprints, i
   const totalSteps = 4;
   const navigate = useNavigate();
   const { formMethods } = useProductionForm({
-    formType: 'AZ-D',
+    formType: 'G020',
     netWeightOfYieldSTD: 800,
     category: 'GEN_A'
   });
@@ -103,8 +103,8 @@ const AZ_DFormViewer: React.FC<AZ_DFormViewerProps> = ({ formData, blueprints, i
       <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
         <FormHeader
           title="ใบรายงานการผลิต (AZ-D)"
-          formTypes={[{ value: 'AZ-D', label: 'AZ-D', path: '#' }]}
-          currentValue="AZ-D"
+          formTypes={[{ value: 'G020', label: 'AZ-D', path: '#' }]}
+          currentValue="G020"
           inputClass="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
         />
 

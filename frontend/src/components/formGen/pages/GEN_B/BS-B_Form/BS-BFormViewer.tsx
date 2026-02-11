@@ -44,7 +44,7 @@ const BS_B_VALIDATION_SCHEMA = {
   },
 };
 // --- ส่วน Component หลัก ---
-const BS_BFormViewer: React.FC<BS_BFormViewerProps> = ({ formData, blueprints, isReadOnly }) => {
+const BS_BFormViewer: React.FC<BS_BFormViewerProps> = ({ formData, blueprints }) => {
 
   // สร้าง State `step` เพื่อเก็บว่าผู้ใช้กำลังดู Step ไหนอยู่, เริ่มต้นที่ 1
   const totalSteps = 4;
@@ -101,8 +101,8 @@ const BS_BFormViewer: React.FC<BS_BFormViewerProps> = ({ formData, blueprints, i
       <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
         <FormHeader
           title="ใบรายงานการผลิต (BS-B)"
-          formTypes={[{ value: 'BS-B', label: 'BS-B', path: '#' }]}
-          currentValue="BS-B"
+          formTypes={[{ value: 'G013', label: 'BS-B', path: '#' }]}
+          currentValue="G013"
           inputClass="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
         />
 

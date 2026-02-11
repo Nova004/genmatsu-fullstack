@@ -38,7 +38,7 @@ function BZ_Form() {
     const navigate = useNavigate(); // ยังคงต้องใช้สำหรับปุ่ม Back to history
     // 🚀 เรียกใช้ Hook เพื่อจัดการ Logic ของฟอร์มทั้งหมด
     const { formMethods, isSubmitting, onSubmit, onDraft, handleTemplateLoaded } = useProductionForm({
-        formType: 'BZ',
+        formType: 'G014', // BZ
         netWeightOfYieldSTD: 800,
         category: 'GEN_B'
     });

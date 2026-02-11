@@ -48,7 +48,7 @@ const AS2FormViewer: React.FC<AS2FormViewerProps> = ({ formData, blueprints, isR
   const totalSteps = 4;
   const navigate = useNavigate();
   const { formMethods } = useProductionForm({
-    formType: 'AS2',
+    formType: 'G001',
     netWeightOfYieldSTD: 800,
     category: 'GEN_A'
   });
@@ -94,7 +94,7 @@ const AS2FormViewer: React.FC<AS2FormViewerProps> = ({ formData, blueprints, isR
     validationSchema: AS2_VALIDATION_SCHEMA,
   });
 
-  const availableForms = [{ value: 'AS2', label: 'AS2', path: '#' }];
+  const availableForms = [{ value: 'G001', label: 'AS2', path: '#' }];
   const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
 
   // Return โครงสร้างหน้าเว็บที่จะแสดงผล
@@ -106,7 +106,7 @@ const AS2FormViewer: React.FC<AS2FormViewerProps> = ({ formData, blueprints, isR
         <FormHeader
           title="ใบรายงานการผลิต (AS2)"
           formTypes={availableForms}
-          currentValue="AS2"
+          currentValue="G001"
           inputClass={inputClass}
         />
 

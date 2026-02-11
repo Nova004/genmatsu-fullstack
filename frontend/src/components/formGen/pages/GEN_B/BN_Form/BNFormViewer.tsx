@@ -44,7 +44,7 @@ const BN_VALIDATION_SCHEMA = {
   },
 };
 // --- ส่วน Component หลัก ---
-const BNFormViewer: React.FC<BNFormViewerProps> = ({ formData, blueprints, isReadOnly }) => {
+const BNFormViewer: React.FC<BNFormViewerProps> = ({ formData, blueprints }) => {
 
   // สร้าง State `step` เพื่อเก็บว่าผู้ใช้กำลังดู Step ไหนอยู่, เริ่มต้นที่ 1
   const totalSteps = 4;
@@ -101,8 +101,8 @@ const BNFormViewer: React.FC<BNFormViewerProps> = ({ formData, blueprints, isRea
       <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
         <FormHeader
           title="ใบรายงานการผลิต (BN)"
-          formTypes={[{ value: 'BN', label: 'BN', path: '#' }]}
-          currentValue="BN"
+          formTypes={[{ value: 'G011', label: 'BN', path: '#' }]}
+          currentValue="G011"
           inputClass="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
         />
 
@@ -122,7 +122,7 @@ const BNFormViewer: React.FC<BNFormViewerProps> = ({ formData, blueprints, isRea
           {/* ถ้า `step` เท่ากับ 3 ก็ทำเหมือน Step 2 */}
           {step === 3 && <SharedFormStep3 {...formStepProps} staticBlueprint={blueprints['BN_Step3_Operations']} templateName="BN_Step3_Operations" />}
           {/* ถ้า `step` เท่ากับ 4 ให้แสดง <FormStep4> */}
-          {step === 4 && <SharedFormStep4 {...formStepProps} totalWeightFieldName="calculations.finalTotalWeight" formType="BN" />}
+          {step === 4 && <SharedFormStep4 {...formStepProps} totalWeightFieldName="calculations.finalTotalWeight" formType="G011" />}
         </div>
 
         {/* ส่วนของปุ่ม Navigation ด้านล่าง */}

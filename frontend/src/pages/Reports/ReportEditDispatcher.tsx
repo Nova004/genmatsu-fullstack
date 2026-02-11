@@ -149,49 +149,49 @@ const ReportEditDispatcher: React.FC = () => {
 
         // ใช้ switch case เพื่อ "จ่ายงาน" ไปยัง Component ที่ถูกต้อง
         switch (formType) {
-            case 'BZ':
+            case 'G014': // BZ
                 return <ReportEditBZ submission={submission} templates={templates} />;
-            case 'BS-B':
+            case 'G013': // BS-B
                 return <ReportEditBS_B submission={submission} templates={templates} />;
-            case 'BS':
+            case 'G012': // BS
                 return <ReportEditBS submission={submission} templates={templates} />;
-            case 'BN':
+            case 'G011': // BN
                 return <ReportEditBN submission={submission} templates={templates} />;
-            case 'BZ3':
+            case 'G015': // BZ3
                 return <ReportEditBZ3 submission={submission} templates={templates} />;
-            case 'BZ3-B':
+            case 'G016': // BZ3-B
                 return <ReportEditBZ3_B submission={submission} templates={templates} />;
-            case 'BS3-B1':
+            case 'G030': // BS3-B1
                 return <ReportEditBS3_B1 submission={submission} templates={templates} />;
-            case 'BS3':
+            case 'G017': // BS3
                 return <ReportEditBS3 submission={submission} templates={templates} />;
-            case 'BS3-C':
+            case 'G025': // BS3-C
                 return <ReportEditBS3_C submission={submission} templates={templates} />;
-            case 'BS3-B':
+            case 'G010': // BS3-B
                 return <ReportEditBS3_B submission={submission} templates={templates} />;
-            case 'BZ5-C':
+            case 'G028': // BZ5-C
                 return <ReportEditBZ5_C submission={submission} templates={templates} />;
-            case 'BS5-C':
+            case 'G029': // BS5-C
                 return <ReportEditBS5_C submission={submission} templates={templates} />;
-            case 'AS2':
+            case 'G001': // AS2
                 return <ReportEditAS2 submission={submission} templates={templates} />;
-            case 'AJ4':
+            case 'G006': // AJ4
                 return <ReportEditAJ4 submission={submission} templates={templates} />;
-            case 'AS4':
+            case 'G007': // AS4
                 return <ReportEditAS4 submission={submission} templates={templates} />;
-            case 'AS2-D':
+            case 'G009': // AS2-D
                 return <ReportEditAS2_D submission={submission} templates={templates} />;
-            case 'AZ-D':
+            case 'G020': // AZ-D
                 return <ReportEditAZ_D submission={submission} templates={templates} />;
-            case 'AZ1':
+            case 'G022': // AZ1
                 return <ReportEditAZ1 submission={submission} templates={templates} />;
-            case 'AX9-B':
+            case 'G021': // AX9-B
                 return <ReportEditAX9_B submission={submission} templates={templates} />;
-            case 'AX2-B':
+            case 'G002': // AX2-B
                 return <ReportEditAX2_B submission={submission} templates={templates} />;
-            case 'AZ':
+            case 'G004': // AZ
                 return <ReportEditAZ submission={submission} templates={templates} />;
-            case 'Ironpowder':
+            case 'Ironpowder': // Still string based?
                 return <ReportEditIronpowder submission={submission} />;
             default:
                 return <div>ไม่รองรับการแก้ไขฟอร์มประเภท: {formType}</div>;

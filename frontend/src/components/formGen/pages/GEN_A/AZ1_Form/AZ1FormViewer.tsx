@@ -48,7 +48,7 @@ const AZ1FormViewer: React.FC<AZ1FormViewerProps> = ({ formData, blueprints, isR
   const totalSteps = 4;
   const navigate = useNavigate();
   const { formMethods } = useProductionForm({
-    formType: 'AZ1',
+    formType: 'G022',
     netWeightOfYieldSTD: 800,
     category: 'GEN_A'
   });
@@ -103,8 +103,8 @@ const AZ1FormViewer: React.FC<AZ1FormViewerProps> = ({ formData, blueprints, isR
       <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
         <FormHeader
           title="ใบรายงานการผลิต (AZ1)"
-          formTypes={[{ value: 'AZ1', label: 'AZ1', path: '#' }]}
-          currentValue="AZ1"
+          formTypes={[{ value: 'G022', label: 'AZ1', path: '#' }]}
+          currentValue="G022"
           inputClass="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
         />
 

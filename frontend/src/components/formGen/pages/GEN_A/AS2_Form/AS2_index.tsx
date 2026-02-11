@@ -38,7 +38,7 @@ function AS2_Form() {
     const navigate = useNavigate(); // ยังคงต้องใช้สำหรับปุ่ม Back to history
     const totalSteps = 4;
     const { formMethods, isSubmitting, onSubmit, handleTemplateLoaded, onDraft } = useProductionForm({
-        formType: 'AS2',
+        formType: 'G001', // AS2
         netWeightOfYieldSTD: 0,
         category: 'GEN_A'
     });

@@ -82,7 +82,7 @@ const AZ1FormEdit: React.FC<AZ1FormEditProps> = ({ initialData, onSubmit, onResu
         validationSchema: AZ1_VALIDATION_SCHEMA,
     });
     // --- ค่าคงที่สำหรับ Styling และ Dropdown ---
-    const availableForms = [{ value: 'AZ1', label: 'AZ1', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข
+    const availableForms = [{ value: 'G022', label: 'AZ1', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข
     const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
 
     return (
@@ -91,7 +91,7 @@ const AZ1FormEdit: React.FC<AZ1FormEditProps> = ({ initialData, onSubmit, onResu
                 <FormHeader
                     title="แก้ไขใบรายงานการผลิต (AZ1)" // เปลี่ยน Title สำหรับหน้าแก้ไข
                     formTypes={availableForms}
-                    currentValue="AZ1"
+                    currentValue="G022"
                     inputClass={inputClass}
                 />
 

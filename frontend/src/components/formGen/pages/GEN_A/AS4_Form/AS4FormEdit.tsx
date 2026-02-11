@@ -85,7 +85,7 @@ const AS4FormEdit: React.FC<AS4FormEditProps> = ({ initialData, onSubmit, onResu
         validationSchema: AS4_VALIDATION_SCHEMA,
     });
     // --- ค่าคงที่สำหรับ Styling และ Dropdown ---
-    const availableForms = [{ value: 'AS4', label: 'AS4', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข
+    const availableForms = [{ value: 'G007', label: 'AS4', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข
     const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
 
     return (
@@ -94,7 +94,7 @@ const AS4FormEdit: React.FC<AS4FormEditProps> = ({ initialData, onSubmit, onResu
                 <FormHeader
                     title="แก้ไขใบรายงานการผลิต (AS4)" // เปลี่ยน Title สำหรับหน้าแก้ไข
                     formTypes={availableForms}
-                    currentValue="AS4"
+                    currentValue="G007"
                     inputClass={inputClass}
                 />
 

@@ -48,7 +48,7 @@ const AS2_DFormViewer: React.FC<AS2_DFormViewerProps> = ({ formData, blueprints,
   const totalSteps = 4;
   const navigate = useNavigate();
   const { formMethods } = useProductionForm({
-    formType: 'AS2-D',
+    formType: 'G009',
     netWeightOfYieldSTD: 800,
     category: 'GEN_A'
   });
@@ -103,8 +103,8 @@ const AS2_DFormViewer: React.FC<AS2_DFormViewerProps> = ({ formData, blueprints,
       <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
         <FormHeader
           title="ใบรายงานการผลิต (AS2-D)"
-          formTypes={[{ value: 'AS2-D', label: 'AS2-D', path: '#' }]}
-          currentValue="AS2-D"
+          formTypes={[{ value: 'G009', label: 'AS2-D', path: '#' }]}
+          currentValue="G009"
           inputClass="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
         />
 

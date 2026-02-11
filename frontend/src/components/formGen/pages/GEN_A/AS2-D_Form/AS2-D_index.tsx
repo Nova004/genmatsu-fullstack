@@ -38,7 +38,7 @@ function AS2_D_Form() {
     const totalSteps = 4;
     // 🚀 เรียกใช้ Hook เพื่อจัดการ Logic ของฟอร์มทั้งหมด
     const { formMethods, isSubmitting, onSubmit, handleTemplateLoaded, onDraft } = useProductionForm({
-        formType: 'AS2-D',
+        formType: 'G009', // AS2-D
         netWeightOfYieldSTD: 0,
         category: 'GEN_A'
     });

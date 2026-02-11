@@ -1,4 +1,6 @@
 /* local src/css/style.css */
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+
 
 @tailwind base;
 @tailwind components;
@@ -489,6 +491,7 @@ span.flatpickr-weekday,
   /* 1. ซ่อนทุกอย่างก่อน */
   body * {
     visibility: hidden;
+    font-family: 'Sarabun', sans-serif !important; /* 👈 บังคับ Font ตอนปริ้นทุกจุด */
   }
 
   /* 2. เปิดแสดงผลเฉพาะ Wrapper หลัก และลูกๆ ของมัน */

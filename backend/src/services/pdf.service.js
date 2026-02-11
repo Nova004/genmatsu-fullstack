@@ -46,6 +46,8 @@ const getBrowser = async () => {
       "--no-first-run",
       "--no-zygote",
       "--single-process",
+      "--font-render-hinting=none", // 👈 Fix font rendering inconsistency
+      "--force-device-scale-factor=1", // 👈 Ensure consistent scale
     ],
     executablePath: executablePath || undefined,
     ignoreHTTPSErrors: true,
@@ -73,7 +75,7 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
     logger.info(`[PDF Gen] 1. Fetching data for ID: ${submissionId}`);
     const dataToInject = await submissionService.getSubmissionDataForPdf(submissionId);
 
-    const reportName = dataToInject.submission.form_type || "ใบรายงานการผลิต";
+    const reportName = dataToInject.submission.product_name || dataToInject.submission.form_type || "ใบรายงานการผลิต";
     const reportCategory = (dataToInject.submission.category || "Recycle").replace(/_/g, '-');
     const dynamicHeaderTemplate = `
       <div style="width: 100%; border-bottom: 1px solid #ccc; padding: 5px 20px;
@@ -136,6 +138,9 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
 
         // 🟢 Add Safety Delay to ensure Layout/Fonts settle
         await new Promise(r => setTimeout(r, 1500));
+
+        // 🟢 Wait for Fonts to be ready (Critical for Server-side rendering)
+        await partPage.evaluate(() => document.fonts.ready);
 
         return await partPage.pdf(options);
       } finally {
@@ -258,6 +263,9 @@ exports.generateDailyReportPdf = async (date, lotNoPrefix) => {
     }
 
     await new Promise(r => setTimeout(r, 1000));
+
+    // 🟢 Wait for Fonts (Daily Report)
+    await page.evaluate(() => document.fonts.ready);
 
     // 5. Create PDF
     const pdfBuffer = await page.pdf({

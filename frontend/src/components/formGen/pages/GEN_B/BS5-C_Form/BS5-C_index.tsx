@@ -37,7 +37,7 @@ function BS5_C_Form() {
     const navigate = useNavigate(); // ยังคงต้องใช้สำหรับปุ่ม Back to history
     // 🚀 เรียกใช้ Hook เพื่อจัดการ Logic ของฟอร์มทั้งหมด
     const { formMethods, isSubmitting, onSubmit, onDraft, handleTemplateLoaded } = useProductionForm({
-        formType: 'BS5-C',
+        formType: 'G029', // BS5-C
         netWeightOfYieldSTD: 800,
         category: 'GEN_B'
     });

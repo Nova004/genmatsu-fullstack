@@ -42,6 +42,7 @@ exports.getSubmissionWithDetails = async (pool, submissionId) => {
           fs.submission_id, 
           fs.version_set_id, 
           fs.form_type, 
+          COALESCE(p.Gen_Name, fs.form_type) AS product_name, -- ✅ Added product_name for display
           fs.lot_no,
           fs.submitted_by, 
           fs.submitted_at, 
@@ -54,6 +55,7 @@ exports.getSubmissionWithDetails = async (pool, submissionId) => {
       JOIN Form_Submission_Data fsd ON fs.submission_id = fsd.submission_id
       LEFT JOIN agt_member u ON fs.submitted_by COLLATE Thai_CI_AS = u.agt_member_id
       LEFT JOIN Form_Version_Sets fvs ON fs.version_set_id = fvs.version_set_id -- ✅ Join to get category
+      LEFT JOIN gen_product p ON fs.form_type = p.Gen_Id COLLATE Thai_CI_AS -- ✅ Join Master Product
       WHERE fs.submission_id = @submissionId
     `);
   return result.recordset[0];
@@ -304,7 +306,7 @@ exports.getAllSubmissions = async (pool, params) => {
   const dataQuery = `
     SELECT 
         fs.submission_id, 
-        fs.form_type, 
+        COALESCE(p.Gen_Name, fs.form_type) AS form_type, -- ✅ Use Name from Master, fallback to ID
         fs.lot_no,
         fs.submitted_by, 
        -- fs.submitted_at, 
@@ -325,6 +327,7 @@ exports.getAllSubmissions = async (pool, params) => {
     JOIN Form_Submission_Data fsd ON fs.submission_id = fsd.submission_id
     LEFT JOIN agt_member u ON fs.submitted_by COLLATE Thai_CI_AS = u.agt_member_id
     LEFT JOIN Form_Version_Sets fvs ON fs.version_set_id = fvs.version_set_id
+    LEFT JOIN gen_product p ON fs.form_type = p.Gen_Id COLLATE Thai_CI_AS -- ✅ Join Master Product
     ${whereClause}
     ORDER BY fs.submission_id DESC
     OFFSET @offset ROWS
@@ -348,12 +351,13 @@ exports.getPendingSubmissionsByLevel = async (pool, userLevel) => {
           s.lot_no,
           s.submitted_by,
           u.agt_member_nameEN AS submitted_by_name,
-          s.form_type,
+          COALESCE(p.Gen_Name, s.form_type) AS form_type, -- ✅ Use Name from Master
           s.submitted_at AS created_at,
           s.status,
           flow.pending_level
         FROM Form_Submissions s
         LEFT JOIN agt_member u ON s.submitted_by COLLATE Thai_CI_AS = u.agt_member_id
+        LEFT JOIN gen_product p ON s.form_type = p.Gen_Id COLLATE Thai_CI_AS -- ✅ Join Master Product
         -- 🚀 Turbo Optimization: Use CROSS APPLY to calculate level ONCE and filter efficiently
         CROSS APPLY (
             SELECT TOP 1 required_level as pending_level
@@ -382,12 +386,13 @@ exports.getRejectedSubmissionsByUser = async (pool, userId) => {
           s.lot_no,
           s.submitted_by,
           u.agt_member_nameEN AS submitted_by_name,
-          s.form_type, -- ✅ เพิ่ม form_type
+          COALESCE(p.Gen_Name, s.form_type) AS form_type, -- ✅ Use Name from Master
           s.submitted_at AS created_at,
           s.status,
           'Rejected' AS pending_level -- Dummy field for consistency
         FROM Form_Submissions s
         LEFT JOIN agt_member u ON s.submitted_by COLLATE Thai_CI_AS = u.agt_member_id
+        LEFT JOIN gen_product p ON s.form_type = p.Gen_Id COLLATE Thai_CI_AS -- ✅ Join Master Product
         WHERE s.submitted_by COLLATE Thai_CI_AS = @userId 
           AND s.status = 'Rejected'
         ORDER BY s.submitted_at DESC

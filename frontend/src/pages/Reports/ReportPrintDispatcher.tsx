@@ -154,43 +154,43 @@ const ReportPrintDispatcher: React.FC = () => {
 
     switch (submission.form_type) {
       // --- ⬇️ ตรวจสอบ Case และชื่อ Component ให้ตรงกับที่คุณ Import มา ⬇️ ---
-      case 'AS2':
+      case 'G001': // AS2
         return <PrintableReportAS2 {...props} />;
-      case 'AJ4':
+      case 'G006': // AJ4
         return <PrintableReportAJ4 {...props} />;
-      case 'AS4':
+      case 'G007': // AS4
         return <PrintableReportAS4 {...props} />;
-      case 'AS2-D':
+      case 'G009': // AS2-D
         return <PrintableReportAS2_D {...props} />;
-      case 'AZ-D':
+      case 'G020': // AZ-D
         return <PrintableReportAZ_D {...props} />;
-      case 'AZ1':
+      case 'G022': // AZ1
         return <PrintableReportAZ1 {...props} />;
-      case 'AX9-B':
+      case 'G021': // AX9-B
         return <PrintableReportAX9_B {...props} />;
-      case 'AX2-B':
+      case 'G002': // AX2-B
         return <PrintableReportAX2_B {...props} />;
-      case 'BZ5-C':
+      case 'G028': // BZ5-C
         return <PrintableReportBZ5_C {...props} />;
-      case 'BZ3-B':
+      case 'G016': // BZ3-B
         return <PrintableReportBZ3_B {...props} />;
-      case 'BS3-B':
+      case 'G010': // BS3-B
         return <PrintableReportBS3_B {...props} />;
-      case 'BS3-B1':
+      case 'G030': // BS3-B1
         return <PrintableReportBS3_B1 {...props} />;
-      case 'BS3-C':
+      case 'G025': // BS3-C
         return <PrintableReportBS3_C {...props} />;
-      case 'BS-B':
+      case 'G013': // BS-B
         return <PrintableReportBS_B {...props} />;
-      case 'BS':
+      case 'G012': // BS
         return <PrintableReportBS {...props} />;
-      case 'BN':
+      case 'G011': // BN
         return <PrintableReportBN {...props} />;
-      case 'BZ':
+      case 'G014': // BZ
         return <PrintableReportBZ {...props} />;
-      case 'BS5-C':
+      case 'G029': // BS5-C
         return <PrintableReportBS5_C {...props} />;
-      case 'AZ':
+      case 'G004': // AZ
         return <PrintableReportAZ {...props} />;
       case 'Ironpowder': // 🟢 เพิ่ม Case ใหม่
         return <PrintableReportIronpowder {...props} />;

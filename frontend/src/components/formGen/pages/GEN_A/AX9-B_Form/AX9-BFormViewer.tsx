@@ -48,7 +48,7 @@ const AX9_BFormViewer: React.FC<AX9_BFormViewerProps> = ({ formData, blueprints,
   const totalSteps = 4;
   const navigate = useNavigate();
   const { formMethods } = useProductionForm({
-    formType: 'AX9-B',
+    formType: 'G021',
     netWeightOfYieldSTD: 800,
     category: 'GEN_A'
   });
@@ -103,8 +103,8 @@ const AX9_BFormViewer: React.FC<AX9_BFormViewerProps> = ({ formData, blueprints,
       <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
         <FormHeader
           title="ใบรายงานการผลิต (AX9-B)"
-          formTypes={[{ value: 'AX9-B', label: 'AX9-B', path: '#' }]}
-          currentValue="AX9-B"
+          formTypes={[{ value: 'G021', label: 'AX9-B', path: '#' }]}
+          currentValue="G021"
           inputClass="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
         />
 

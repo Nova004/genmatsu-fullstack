@@ -83,7 +83,7 @@ const AJ4FormEdit: React.FC<AJ4FormEditProps> = ({ initialData, onSubmit, onResu
         validationSchema: AJ4_VALIDATION_SCHEMA,
     });
     // --- ค่าคงที่สำหรับ Styling และ Dropdown ---
-    const availableForms = [{ value: 'AJ4', label: 'AJ4', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข
+    const availableForms = [{ value: 'G006', label: 'AJ4', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข
     const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
 
     return (
@@ -92,7 +92,7 @@ const AJ4FormEdit: React.FC<AJ4FormEditProps> = ({ initialData, onSubmit, onResu
                 <FormHeader
                     title="แก้ไขใบรายงานการผลิต (AJ4)" // เปลี่ยน Title สำหรับหน้าแก้ไข
                     formTypes={availableForms}
-                    currentValue="AJ4"
+                    currentValue="G006"
                     inputClass={inputClass}
                 />
 

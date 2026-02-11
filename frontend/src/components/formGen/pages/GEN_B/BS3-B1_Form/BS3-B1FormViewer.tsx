@@ -1,9 +1,9 @@
 
 // Import Library ที่จำเป็นจาก React และ React Hook Form
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { IManufacturingReportForm } from '../../types';
-import { initialFormValues } from '../../formDefaults';
+
 import FormHeader from '../../../components/FormHeader';
 
 // Import Component ของแต่ละ Step ที่จะนำมาใช้ซ้ำในการแสดงผล
@@ -42,13 +42,13 @@ const BS3_B1_VALIDATION_SCHEMA = {
   },
 };
 // --- ส่วน Component หลัก ---
-const BS3_B1FormViewer: React.FC<BS3_B1FormViewerProps> = ({ formData, blueprints, isReadOnly }) => {
+const BS3_B1FormViewer: React.FC<BS3_B1FormViewerProps> = ({ formData, blueprints }) => {
 
   // สร้าง State `step` เพื่อเก็บว่าผู้ใช้กำลังดู Step ไหนอยู่, เริ่มต้นที่ 1
   const totalSteps = 4;
   const navigate = useNavigate();
   const { formMethods } = useProductionForm({
-    formType: 'BS3-B1',
+    formType: 'G030',
     netWeightOfYieldSTD: 800,
     category: 'GEN_B'
   });
@@ -104,8 +104,8 @@ const BS3_B1FormViewer: React.FC<BS3_B1FormViewerProps> = ({ formData, blueprint
       <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
         <FormHeader
           title="ใบรายงานการผลิต (BS3-B1)"
-          formTypes={[{ value: 'BS3-B1', label: 'BS3-B1', path: '#' }]}
-          currentValue="BS3-B1"
+          formTypes={[{ value: 'G030', label: 'BS3-B1', path: '#' }]}
+          currentValue="G030"
           inputClass="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
         />
 

@@ -40,7 +40,7 @@ function BZ5_C_Form() {
     const totalSteps = 4;
     // 🚀 เรียกใช้ Hook เพื่อจัดการ Logic ของฟอร์มทั้งหมด
     const { formMethods, isSubmitting, onSubmit, onDraft, handleTemplateLoaded } = useProductionForm({
-        formType: 'BZ5-C',
+        formType: 'G028', // BZ5-C
         netWeightOfYieldSTD: 800,
         category: 'GEN_B'
     });

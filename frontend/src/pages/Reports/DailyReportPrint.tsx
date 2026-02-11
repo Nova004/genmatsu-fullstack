@@ -101,7 +101,6 @@ const DailyReportPrint: React.FC = () => {
             </div>
             <div className="flex flex-col items-end gap-0.5 text-xs font-bold text-black text-right">
               <p>*** If has NCR mix or Recycle genmatsu, record in the Remark.</p>
-              <p>*** This document should be filed untill morning at next working day of production day</p>
             </div>
           </div>
         </div>

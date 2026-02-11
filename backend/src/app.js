@@ -63,6 +63,10 @@ routes.forEach(({ path, route }) => {
 app.use("/genmatsu/api/reports", reportRoutes);
 app.use("/api/reports", reportRoutes);
 
+// Product Route (Master Data)
+const productRoutes = require("./api/product.routes");
+app.use("/api/products", productRoutes);
+
 // Error Handling
 const errorMiddleware = require("./middlewares/error.middleware");
 app.use(errorMiddleware);

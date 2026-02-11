@@ -39,7 +39,7 @@ function AZ1_Form() {
     const totalSteps = 4;
     // 🚀 เรียกใช้ Hook เพื่อจัดการ Logic ของฟอร์มทั้งหมด
     const { formMethods, isSubmitting, onSubmit, handleTemplateLoaded, onDraft } = useProductionForm({
-        formType: 'AZ1',
+        formType: 'G022', // AZ1
         netWeightOfYieldSTD: 0,
         category: 'GEN_A'
     });

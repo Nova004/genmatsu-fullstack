@@ -323,10 +323,17 @@ exports.getStandardPlans = async (req, res) => {
     }
 
     const pool = await poolConnect;
-    // ดึงข้อมูลทั้งหมด เรียงตามชื่อ form_type
+    // ดึงข้อมูลทั้งหมด และ Join เพื่อชื่อสินค้า
     const result = await pool
       .request()
-      .query("SELECT * FROM Gen_StandardPlan_MT ORDER BY form_type ASC");
+      .query(`
+        SELECT 
+          mt.*, 
+          COALESCE(p.Gen_Name, mt.form_type) AS product_name -- ✅ Fetch Name
+        FROM Gen_StandardPlan_MT mt
+        LEFT JOIN gen_product p ON mt.form_type = p.Gen_Id COLLATE Thai_CI_AS
+        ORDER BY p.Gen_Name ASC
+      `);
 
     // 🚀 Save to Cache
     CACHE.standardPlans = result.recordset;

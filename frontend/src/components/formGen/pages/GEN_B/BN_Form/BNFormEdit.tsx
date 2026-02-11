@@ -84,7 +84,7 @@ const BNFormEdit: React.FC<BNFormEditProps> = ({ initialData, onSubmit, onResubm
 
 
     // --- ค่าคงที่สำหรับ Styling และ Dropdown ---
-    const availableForms = [{ value: 'BN', label: 'BN', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข
+    const availableForms = [{ value: 'G011', label: 'BN', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข
     const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
 
     return (
@@ -93,7 +93,7 @@ const BNFormEdit: React.FC<BNFormEditProps> = ({ initialData, onSubmit, onResubm
                 <FormHeader
                     title="แก้ไขใบรายงานการผลิต (BN)" // เปลี่ยน Title สำหรับหน้าแก้ไข
                     formTypes={availableForms}
-                    currentValue="BN"
+                    currentValue="G011"
                     inputClass={inputClass}
                 />
 

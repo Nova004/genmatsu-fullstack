@@ -183,47 +183,47 @@ const ReportDetailDispatcher: React.FC = () => {
     const { submission, blueprints } = submissionData;
 
     switch (submission.form_type) {
-      case 'BZ':
+      case 'G014': // BZ
         return <ReportDetailBZ submission={submission} blueprints={blueprints} />;
-      case 'BS-B':
+      case 'G013': // BS-B
         return <ReportDetailBS_B submission={submission} blueprints={blueprints} />;
-      case 'BS':
+      case 'G012': // BS
         return <ReportDetailBS submission={submission} blueprints={blueprints} />;
-      case 'BN':
+      case 'G011': // BN
         return <ReportDetailBN submission={submission} blueprints={blueprints} />;
-      case 'BZ3':
+      case 'G015': // BZ3
         return <ReportDetailBZ3 submission={submission} blueprints={blueprints} />;
-      case 'BZ3-B':
+      case 'G016': // BZ3-B
         return <ReportDetailBZ3_B submission={submission} blueprints={blueprints} />;
-      case 'BS3':
+      case 'G017': // BS3
         return <ReportDetailBS3 submission={submission} blueprints={blueprints} />;
-      case 'BS3-C':
+      case 'G025': // BS3-C
         return <ReportDetailBS3_C submission={submission} blueprints={blueprints} />;
-      case 'BS3-B':
+      case 'G010': // BS3-B
         return <ReportDetailBS3_B submission={submission} blueprints={blueprints} />;
-      case 'BS3-B1':
+      case 'G030': // BS3-B1
         return <ReportDetailBS3_B1 submission={submission} blueprints={blueprints} />;
-      case 'BZ5-C':
+      case 'G028': // BZ5-C
         return <ReportDetailBZ5_C submission={submission} blueprints={blueprints} />;
-      case 'BS5-C':
+      case 'G029': // BS5-C
         return <ReportDetailBS5_C submission={submission} blueprints={blueprints} />;
-      case 'AS2':
+      case 'G001': // AS2
         return <ReportDetailAS2 submission={submission} blueprints={blueprints} />;
-      case 'AJ4':
+      case 'G006': // AJ4
         return <ReportDetailAJ4 submission={submission} blueprints={blueprints} />;
-      case 'AS4':
+      case 'G007': // AS4
         return <ReportDetailAS4 submission={submission} blueprints={blueprints} />;
-      case 'AS2-D':
+      case 'G009': // AS2-D
         return <ReportDetailAS2_D submission={submission} blueprints={blueprints} />;
-      case 'AZ-D':
+      case 'G020': // AZ-D
         return <ReportDetailAZ_D submission={submission} blueprints={blueprints} />;
-      case 'AZ1':
+      case 'G022': // AZ1
         return <ReportDetailAZ1 submission={submission} blueprints={blueprints} />;
-      case 'AX9-B':
+      case 'G021': // AX9-B
         return <ReportDetailAX9_B submission={submission} blueprints={blueprints} />;
-      case 'AX2-B':
+      case 'G002': // AX2-B
         return <ReportDetailAX2_B submission={submission} blueprints={blueprints} />;
-      case 'AZ':
+      case 'G004': // AZ
         return <ReportDetailAZ submission={submission} blueprints={blueprints} />;
       case 'Ironpowder':
         return <ReportDetailIronpowder submission={submission} blueprints={blueprints} />;

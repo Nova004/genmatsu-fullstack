@@ -39,7 +39,7 @@ function AX2_B_Form() {
     const totalSteps = 4;
     // 🚀 เรียกใช้ Hook เพื่อจัดการ Logic ของฟอร์มทั้งหมด
     const { formMethods, isSubmitting, onSubmit, handleTemplateLoaded, onDraft } = useProductionForm({
-        formType: 'AX2-B',
+        formType: 'G002', // AX2-B
         netWeightOfYieldSTD: 0,
         category: 'GEN_A'
     });

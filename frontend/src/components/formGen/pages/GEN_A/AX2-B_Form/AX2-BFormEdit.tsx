@@ -81,7 +81,7 @@ const AX2_BFormEdit: React.FC<AX2_BFormEditProps> = ({ initialData, onSubmit, on
 
 
     // --- ค่าคงที่สำหรับ Styling และ Dropdown ---
-    const availableForms = [{ value: 'AX2-B', label: 'AX2-B', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข
+    const availableForms = [{ value: 'G002', label: 'AX2-B', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข
     const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
 
     return (
@@ -90,7 +90,7 @@ const AX2_BFormEdit: React.FC<AX2_BFormEditProps> = ({ initialData, onSubmit, on
                 <FormHeader
                     title="แก้ไขใบรายงานการผลิต (AX2-B)" // เปลี่ยน Title สำหรับหน้าแก้ไข
                     formTypes={availableForms}
-                    currentValue="AX2-B"
+                    currentValue="G002"
                     inputClass={inputClass}
                 />
 

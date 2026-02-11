@@ -19,13 +19,16 @@ const fetchMonthlyReportDataInternal = async (year, month) => {
   let query = `
     SELECT * FROM (
       SELECT 
-        s.submission_id, s.form_type, s.lot_no, s.production_line, s.submitted_at,
+        s.submission_id, 
+        COALESCE(p.Gen_Name, s.form_type) AS form_type, -- ✅ Use Name from Master, fallback to ID/String
+        s.lot_no, s.production_line, s.submitted_at,
         d.input_kg, d.output_kg, d.yield_percent, d.st_target_value, d.pallet_data, d.production_date, d.form_data_json,
         d.AZ_RGenmatsu, -- ✅ Fetch Mix Recycle Data
         (d.st_target_value - COALESCE(mt.target_value, 0)) AS mix_ncr
       FROM Form_Submissions AS s
       JOIN Form_Submission_Data AS d ON s.submission_id = d.submission_id
-      LEFT JOIN Gen_StandardPlan_MT AS mt ON s.form_type = mt.form_type COLLATE Thai_CI_AS
+      LEFT JOIN Gen_StandardPlan_MT AS mt ON s.form_type = mt.form_type COLLATE Thai_CI_AS -- ✅ Join Standard Plan (Updated to ID)
+      LEFT JOIN gen_product AS p ON s.form_type = p.Gen_Id COLLATE Thai_CI_AS -- ✅ Join Master Product
       WHERE s.status != 'Rejected'
         AND d.production_date >= @startDate AND d.production_date < @endDate
 
@@ -47,7 +50,8 @@ const fetchMonthlyReportDataInternal = async (year, month) => {
         0 AS AZ_RGenmatsu, -- No Mix Recycle column for Ironpowder yet
         0 AS mix_ncr -- No Mix NCR for Ironpowder?
       FROM Form_Ironpowder_Submissions AS ip
-      LEFT JOIN Gen_StandardPlan_MT AS mt ON ip.machine_name = mt.form_type COLLATE Thai_CI_AS -- Match machine_name with form_type
+      LEFT JOIN gen_product p_ip ON ip.machine_name = p_ip.Gen_Name COLLATE Thai_CI_AS -- Map Name -> ID
+      LEFT JOIN Gen_StandardPlan_MT AS mt ON p_ip.Gen_Id = mt.form_type COLLATE Thai_CI_AS -- Join Standard Plan (ID)
       WHERE ip.status != 'Rejected'
         AND ip.report_date >= @startDate AND ip.report_date < @endDate
   ) AS UnifiedReport
@@ -110,7 +114,7 @@ const fetchDailyReportDataInternal = async (date, lotNoPrefix) => {
   let query = `
       SELECT 
         s.submission_id,
-        s.form_type,
+        COALESCE(p.Gen_Name, s.form_type) AS form_type, -- ✅ Use Name from Master
         s.lot_no,
         s.production_line,
         s.submitted_at,
@@ -123,6 +127,7 @@ const fetchDailyReportDataInternal = async (date, lotNoPrefix) => {
         d.moisture
       FROM Form_Submissions AS s
       JOIN Form_Submission_Data AS d ON s.submission_id = d.submission_id
+      LEFT JOIN gen_product AS p ON s.form_type = p.Gen_Id COLLATE Thai_CI_AS -- ✅ Join Master Product
       WHERE s.status != 'Rejected'
   `;
 

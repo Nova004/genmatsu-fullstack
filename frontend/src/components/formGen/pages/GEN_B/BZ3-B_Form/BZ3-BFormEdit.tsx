@@ -85,7 +85,7 @@ const BZ3_BFormEdit: React.FC<BZ3_BFormEditProps> = ({ initialData, onSubmit, on
 
 
     // --- ค่าคงที่สำหรับ Styling และ Dropdown ---
-    const availableForms = [{ value: 'BZ3-B', label: 'BZ3-B', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข
+    const availableForms = [{ value: 'G016', label: 'BZ3-B', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข
     const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
 
     return (
@@ -94,7 +94,7 @@ const BZ3_BFormEdit: React.FC<BZ3_BFormEditProps> = ({ initialData, onSubmit, on
                 <FormHeader
                     title="แก้ไขใบรายงานการผลิต (BZ3-B)" // เปลี่ยน Title สำหรับหน้าแก้ไข
                     formTypes={availableForms}
-                    currentValue="BZ3-B"
+                    currentValue="G016"
                     inputClass={inputClass}
                 />
 

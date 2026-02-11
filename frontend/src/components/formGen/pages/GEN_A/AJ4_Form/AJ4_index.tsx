@@ -38,7 +38,7 @@ function AJ4_Form() {
     const totalSteps = 4;
     // 🚀 เรียกใช้ Hook เพื่อจัดการ Logic ของฟอร์มทั้งหมด
     const { formMethods, isSubmitting, onSubmit, handleTemplateLoaded, onDraft } = useProductionForm({
-        formType: 'AJ4',
+        formType: 'G006', // AJ4
         netWeightOfYieldSTD: 0,
         category: 'GEN_A'
     });

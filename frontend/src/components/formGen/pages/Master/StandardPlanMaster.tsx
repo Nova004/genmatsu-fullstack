@@ -1,3 +1,4 @@
+// local src/components/formGen/pages/Master/StandardPlanMaster.tsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -8,7 +9,8 @@ import { useAuth } from '../../../../context/AuthContext';
 
 interface StandardPlan {
   id: number;
-  form_type: string;
+  form_type: string; // This is now Gen_Id
+  product_name?: string; // ✅ Added (from Join)
   target_value: number;
   updated_by: string;
   updated_at: string;
@@ -169,7 +171,7 @@ const StandardPlanMaster: React.FC = () => {
                   <tr key={plan.id} className="hover:bg-gray-50 dark:hover:bg-meta-4 transition-colors">
                     <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
                       <h5 className="font-medium text-black dark:text-white">
-                        {plan.form_type}
+                        {plan.product_name || plan.form_type}
                       </h5>
                     </td>
                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
@@ -177,6 +179,7 @@ const StandardPlanMaster: React.FC = () => {
                         {plan.target_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </td>
+
                     <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
                       <p className="font-medium text-black dark:text-white">
                         {plan.updated_by}

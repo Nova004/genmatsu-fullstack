@@ -48,7 +48,7 @@ const AS4FormViewer: React.FC<AS4FormViewerProps> = ({ formData, blueprints, isR
   const totalSteps = 4;
   const navigate = useNavigate();
   const { formMethods } = useProductionForm({
-    formType: 'AS4',
+    formType: 'G007',
     netWeightOfYieldSTD: 800,
     category: 'GEN_A'
   });
@@ -103,8 +103,8 @@ const AS4FormViewer: React.FC<AS4FormViewerProps> = ({ formData, blueprints, isR
       <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
         <FormHeader
           title="ใบรายงานการผลิต (AS4)"
-          formTypes={[{ value: 'AS4', label: 'AS4', path: '#' }]}
-          currentValue="AS4"
+          formTypes={[{ value: 'G007', label: 'AS4', path: '#' }]}
+          currentValue="G007"
           inputClass="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
         />
 

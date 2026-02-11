@@ -85,7 +85,7 @@ const AS2FormEdit: React.FC<AS2FormEditProps> = ({ initialData, onSubmit, onResu
         validationSchema: AS2_VALIDATION_SCHEMA,
     });
     // --- ค่าคงที่สำหรับ Styling และ Dropdown ---
-    const availableForms = [{ value: 'AS2', label: 'AS2', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข
+    const availableForms = [{ value: 'G001', label: 'AS2', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข
     const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
 
     return (
@@ -94,7 +94,7 @@ const AS2FormEdit: React.FC<AS2FormEditProps> = ({ initialData, onSubmit, onResu
                 <FormHeader
                     title="Edit ใบรายงานการผลิต(AS2)" // เปลี่ยน Title สำหรับหน้าแก้ไข
                     formTypes={availableForms}
-                    currentValue="AS2"
+                    currentValue="G001"
                     inputClass={inputClass}
                 />
 

@@ -1,7 +1,7 @@
 
 
 // Import Library ที่จำเป็นจาก React และ React Hook Form
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { IManufacturingReportForm } from '../../types';
 
@@ -42,13 +42,13 @@ const BZ5_C_VALIDATION_SCHEMA = {
   },
 };
 // --- ส่วน Component หลัก ---
-const BZ5_CFormViewer: React.FC<BZ5_CFormViewerProps> = ({ formData, blueprints, isReadOnly }) => {
+const BZ5_CFormViewer: React.FC<BZ5_CFormViewerProps> = ({ formData, blueprints }) => {
 
   // สร้าง State `step` เพื่อเก็บว่าผู้ใช้กำลังดู Step ไหนอยู่, เริ่มต้นที่ 1
   const totalSteps = 4;
   const navigate = useNavigate();
   const { formMethods } = useProductionForm({
-    formType: 'BZ5-C',
+    formType: 'G028',
     netWeightOfYieldSTD: 800,
     category: 'GEN_B'
   });
@@ -104,8 +104,8 @@ const BZ5_CFormViewer: React.FC<BZ5_CFormViewerProps> = ({ formData, blueprints,
       <div className="rounded-sm border border-stroke bg-white p-4 shadow-default dark:border-strokedark dark:bg-boxdark md:p-6">
         <FormHeader
           title="ใบรายงานการผลิต (BZ5-C)"
-          formTypes={[{ value: 'BZ5-C', label: 'BZ5-C', path: '#' }]}
-          currentValue="BZ5-C"
+          formTypes={[{ value: 'G028', label: 'BZ5-C', path: '#' }]}
+          currentValue="G028"
           inputClass="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
         />
 

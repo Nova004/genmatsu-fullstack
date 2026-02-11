@@ -82,7 +82,7 @@ const BS3_CFormEdit: React.FC<BS3_CFormEditProps> = ({ initialData, onSubmit, on
     });
 
     // --- ค่าคงที่สำหรับ Styling และ Dropdown ---
-    const availableForms = [{ value: 'BS3-C', label: 'BS3-C', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข
+    const availableForms = [{ value: 'G025', label: 'BS3-C', path: '#' }]; // ไม่จำเป็นต้องมี path จริงในโหมดแก้ไข
     const inputClass = "w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary";
 
     return (
@@ -91,7 +91,7 @@ const BS3_CFormEdit: React.FC<BS3_CFormEditProps> = ({ initialData, onSubmit, on
                 <FormHeader
                     title="แก้ไขใบรายงานการผลิต (BS3-C)" // เปลี่ยน Title สำหรับหน้าแก้ไข
                     formTypes={availableForms}
-                    currentValue="BS3-C"
+                    currentValue="G025"
                     inputClass={inputClass}
                 />
 
