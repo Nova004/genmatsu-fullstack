@@ -59,9 +59,9 @@ routes.forEach(({ path, route }) => {
   app.use(`/genmatsu/api${path}`, route);  // รองรับ http://server/genmatsu/api/... (กรณี Proxy ไม่ตัด Path)
 });
 
-// Report Route (Special Case)
-app.use("/genmatsu/api/submissions/reports", reportRoutes);
-app.use("/api/submissions/reports", reportRoutes);
+// Report Route (Special Case - Moving to root level for cleaner API)
+app.use("/genmatsu/api/reports", reportRoutes);
+app.use("/api/reports", reportRoutes);
 
 // Error Handling
 const errorMiddleware = require("./middlewares/error.middleware");

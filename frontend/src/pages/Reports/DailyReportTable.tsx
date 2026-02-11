@@ -99,9 +99,12 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
       fireToast('success', "Saved Remarks Data successfully!");
     } catch (error) {
       console.error("Error saving summary:", error);
-      fireToast('error', "Failed to save summary.");
+      fireToast('error', "Failed to save remarks.");
     }
   };
+
+
+
 
   const handleRemarkChange = (line: string, value: string) => {
     setRemarks(prev => ({ ...prev, [line]: value }));
@@ -282,7 +285,9 @@ const DailyReportTable: React.FC<DailyReportTableProps> = ({
       {/* Header Bar */}
       <div className="flex justify-between items-center bg-slate-100 p-2 border-b border-gray-300 print:hidden">
         <div className="text-xs font-bold text-gray-900 tracking-wider">Summary Data: <span className="text-black font-black">{selectedDate || "-"}</span></div>
-        <button onClick={handleSaveSummary} className="bg-blue-600 text-white px-4 py-1.5 rounded shadow hover:bg-blue-700 text-xs font-bold flex items-center gap-2"><FaSave /> Save Data</button>
+        <button onClick={handleSaveSummary} className="bg-blue-600 text-white px-4 py-1.5 rounded shadow hover:bg-blue-700 text-xs font-bold flex items-center gap-2">
+          <FaSave /> Save Data
+        </button>
       </div>
 
       <div className="overflow-x-auto">

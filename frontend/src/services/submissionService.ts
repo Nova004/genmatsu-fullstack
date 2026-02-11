@@ -225,3 +225,20 @@ export const saveDailyReportSummary = async (
     throw error;
   }
 };
+
+/**
+ * Export Monthly Report (Excel)
+ * @param month YYYY-MM
+ */
+export const exportMonthlyReport = async (month: string): Promise<Blob> => {
+  try {
+    const response = await apiClient.get(API_ENDPOINTS.REPORT_EXPORT_EXCEL, {
+      params: { month },
+      responseType: 'blob', // Important for file download
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error exporting report:', error);
+    throw error;
+  }
+};

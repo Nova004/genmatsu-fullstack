@@ -2,8 +2,107 @@
 const { sql, poolConnect } = require("../db");
 const pdfService = require("../services/pdf.service");
 const config = require("../config/env");
+const excelService = require("../services/excel.service");
 
-// --- Helper Function: ดึงข้อมูล (แก้ให้ส่ง Raw Data ออกไปเลย) ---
+// --- Helper: Fetch Data for Whole Month ---
+const fetchMonthlyReportDataInternal = async (year, month) => {
+  const pool = await poolConnect;
+
+  // Start Date: 1st of Month
+  const startDate = new Date(year, month - 1, 1);
+  startDate.setHours(0, 0, 0, 0);
+
+  // End Date: 1st of Next Month (Exclusive)
+  const endDate = new Date(year, month, 1);
+  endDate.setHours(0, 0, 0, 0);
+
+  let query = `
+    SELECT * FROM (
+      SELECT 
+        s.submission_id, s.form_type, s.lot_no, s.production_line, s.submitted_at,
+        d.input_kg, d.output_kg, d.yield_percent, d.st_target_value, d.pallet_data, d.production_date, d.form_data_json,
+        d.AZ_RGenmatsu, -- ✅ Fetch Mix Recycle Data
+        (d.st_target_value - COALESCE(mt.target_value, 0)) AS mix_ncr
+      FROM Form_Submissions AS s
+      JOIN Form_Submission_Data AS d ON s.submission_id = d.submission_id
+      LEFT JOIN Gen_StandardPlan_MT AS mt ON s.form_type = mt.form_type COLLATE Thai_CI_AS
+      WHERE s.status != 'Rejected'
+        AND d.production_date >= @startDate AND d.production_date < @endDate
+
+      UNION ALL
+
+      SELECT 
+        ip.submissionId AS submission_id,
+        ip.machine_name AS form_type,
+        ip.lot_no,
+        'Line R' AS production_line,
+        ip.created_at AS submitted_at,
+        ip.total_input AS input_kg,
+        ip.total_genmatsu_a AS output_kg,
+        0 AS yield_percent, -- Calculate later or use aggregated
+        COALESCE(mt.target_value, 0) AS st_target_value, -- ✅ Fetch Plan from Master Table
+        NULL AS pallet_data, 
+        ip.report_date AS production_date,
+        ip.form_data_json,
+        0 AS AZ_RGenmatsu, -- No Mix Recycle column for Ironpowder yet
+        0 AS mix_ncr -- No Mix NCR for Ironpowder?
+      FROM Form_Ironpowder_Submissions AS ip
+      LEFT JOIN Gen_StandardPlan_MT AS mt ON ip.machine_name = mt.form_type COLLATE Thai_CI_AS -- Match machine_name with form_type
+      WHERE ip.status != 'Rejected'
+        AND ip.report_date >= @startDate AND ip.report_date < @endDate
+  ) AS UnifiedReport
+  ORDER BY production_date ASC, production_line ASC
+  `;
+
+  const result = await pool.request()
+    .input("startDate", sql.DateTime, startDate)
+    .input("endDate", sql.DateTime, endDate)
+    .query(query);
+
+  return result.recordset;
+};
+
+// --- Controller 5: Export Monthly Excel ---
+exports.downloadMonthlyExcel = async (req, res) => {
+  try {
+    const { month } = req.query; // Format: "YYYY-MM"
+    if (!month) return res.status(400).send({ message: "Month is required (YYYY-MM)" });
+
+    const [year, monthNum] = month.split("-").map(Number);
+    const rawData = await fetchMonthlyReportDataInternal(year, monthNum);
+
+    // Map Raw Data to Formatted Items
+    const reportData = rawData.map(item => ({
+      productName: item.form_type,
+      lotNo: item.lot_no,
+      production_line: item.production_line, // Pass raw line for service to parse
+      input: item.input_kg,
+      output: item.output_kg,
+      yield: item.yield_percent,
+      production_date: item.production_date,
+      target: item.st_target_value,
+      palletData: item.pallet_data,
+      formData: item.form_data_json,
+      mixNCR: item.mix_ncr, // ✅ Passed from SQL
+      AZ_RGenmatsu: item.AZ_RGenmatsu // ✅ Passed to Service
+    }));
+
+    // Generate Excel (Pass Array directly)
+    const buffer = await excelService.generateMonthlyReport(month, reportData);
+
+    res.set({
+      "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "Content-Disposition": `attachment; filename=Monthly_Report_${month}.xlsx`,
+      "Content-Length": buffer.length,
+    });
+    res.send(buffer);
+
+  } catch (error) {
+    console.error("Error exporting Excel:", error);
+    res.status(500).send({ message: "Error generating Excel report" });
+  }
+};
+
 const fetchDailyReportDataInternal = async (date, lotNoPrefix) => {
   const pool = await poolConnect;
 

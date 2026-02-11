@@ -9,14 +9,21 @@ export const API_ENDPOINTS = {
   // Submissions
   SUBMISSIONS: `${API_BASE}/submissions`,
   SUBMISSION_BY_ID: (id: string | number) => `${API_BASE}/submissions/${id}`,
-  SUBMISSION_PRINT: (id: string | number) => `${API_BASE}/submissions/print/${id}`,
-  SUBMISSION_RESUBMIT: (id: string | number) => `${API_BASE}/submissions/resubmit/${id}`,
+  SUBMISSION_PRINT: (id: string | number) =>
+    `${API_BASE}/submissions/print/${id}`,
+  SUBMISSION_RESUBMIT: (id: string | number) =>
+    `${API_BASE}/submissions/resubmit/${id}`,
+
+  // Reports
+  REPORT_EXPORT_EXCEL: `${API_BASE}/reports/export-excel`,
 
   // Approvals
   APPROVALS: `${API_BASE}/approvals`,
   APPROVAL_BY_ID: (id: string | number) => `${API_BASE}/approvals/${id}`,
-  APPROVAL_APPROVE: (id: string | number) => `${API_BASE}/approvals/${id}/approve`,
-  APPROVAL_REJECT: (id: string | number) => `${API_BASE}/approvals/${id}/reject`,
+  APPROVAL_APPROVE: (id: string | number) =>
+    `${API_BASE}/approvals/${id}/approve`,
+  APPROVAL_REJECT: (id: string | number) =>
+    `${API_BASE}/approvals/${id}/reject`,
 
   // Forms
   FORMS: `${API_BASE}/forms`,

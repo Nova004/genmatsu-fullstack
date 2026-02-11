@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { FaSearch, FaPrint, FaFilePdf } from 'react-icons/fa'; // เพิ่ม Icon PDF
-
+import { FaSearch, FaPrint, FaFilePdf, FaFileExcel } from 'react-icons/fa'; // เพิ่ม Icon Excel
+import { exportMonthlyReport } from '../../services/submissionService';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import DailyReportTable from './DailyReportTable';
 
@@ -108,6 +108,34 @@ const ProductionReportPage: React.FC = () => {
     }
   };
 
+  // ✅ 3. ฟังก์ชัน Export Excel (ย้ายมาจาก Table)
+  const handleExportExcel = async () => {
+    if (!filterDate) return alert("Please select a date first.");
+
+    const month = filterDate.substring(0, 7);
+
+    try {
+      // ใช้ library toast หรือ alert ก็ได้ตาม UX เดิมของหน้านี้ (หน้านี้ใช้ alert)
+      // แต่ถ้าอยากสวยใช้ fireToast ก็ต้อง import มา
+      // ขอใช้ alert แบบบ้านๆ ไปก่อนตาม style เดิมของหน้านี้ หรือใช้ console log
+      console.log(`Generating Excel for ${month}...`);
+
+      const blob = await exportMonthlyReport(month);
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Monthly_Report_${month}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+
+    } catch (error) {
+      console.error("Error exporting excel:", error);
+      alert("Failed to export Excel.");
+    }
+  };
+
   return (
     <>
       <Breadcrumb pageName="Daily Genmatsu Report" />
@@ -162,6 +190,15 @@ const ProductionReportPage: React.FC = () => {
               >
                 <FaPrint /> Preview
               </button> */}
+
+              {/* ปุ่ม 3: Export Excel (สีเขียว) */}
+              <button
+                type="button"
+                onClick={handleExportExcel}
+                className="flex items-center gap-2 rounded py-2 px-6 font-medium text-white shadow-md bg-green-600 hover:bg-green-700 transition"
+              >
+                <FaFileExcel /> Export Excel (month)
+              </button>
 
               {/* ปุ่ม 2: Download PDF (สีแดง) */}
               <button

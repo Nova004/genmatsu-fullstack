@@ -201,6 +201,8 @@ exports.createSubmissionData = async (
     .input("stTargetValue", sql.Decimal(10, 2), keyMetrics.stTargetValue || 0)
     // 💧 1. เพิ่ม Input Moisture ตรงนี้
     .input("moisture", sql.Decimal(5, 2), keyMetrics.moisture || null)
+    // 💧 3. เพิ่ม Input AZ_RGenmatsu (INT)
+    .input("azRGenmatsu", sql.Int, keyMetrics.azRGenmatsu || null)
     .input(
       "palletData",
       sql.NVarChar(sql.MAX),
@@ -216,7 +218,8 @@ exports.createSubmissionData = async (
             total_qty, 
             production_date,
             st_target_value,
-            moisture, -- 💧 2. เพิ่มชื่อ Column ใน SQL
+            moisture,
+            AZ_RGenmatsu, -- 💧 2. เพิ่มชื่อ Column
             pallet_data
         ) 
         VALUES 
@@ -229,7 +232,8 @@ exports.createSubmissionData = async (
             @totalQty, 
             @productionDate,
             @stTargetValue,
-            @moisture, -- 💧 3. เพิ่ม Parameter @moisture
+            @moisture,
+            @azRGenmatsu, -- 💧 4. เพิ่ม Parameter
             @palletData
         )
       `);
@@ -446,9 +450,10 @@ exports.updateSubmissionData = async (
     .input("yieldPercent", sql.Decimal(5, 2), keyMetrics.yieldPercent || null)
     .input("totalQty", sql.Int, keyMetrics.totalQty || null)
     .input("productionDate", sql.Date, keyMetrics.productionDate || null)
-    .input("stTargetValue", sql.Decimal(10, 2), keyMetrics.stTargetValue || 0) // 🔴 เพิ่ม Input
-    // 💧 5. เพิ่ม Input Moisture ตอนแก้ไข
+    .input("stTargetValue", sql.Decimal(10, 2), keyMetrics.stTargetValue || 0)
     .input("moisture", sql.Decimal(5, 2), keyMetrics.moisture || null)
+    // 💧 5. เพิ่ม Input AZ_RGenmatsu update
+    .input("azRGenmatsu", sql.Int, keyMetrics.azRGenmatsu || null)
     .input(
       "palletData",
       sql.NVarChar(sql.MAX),
@@ -462,8 +467,9 @@ exports.updateSubmissionData = async (
             yield_percent = @yieldPercent,
             total_qty = @totalQty,
             production_date = @productionDate,
-            st_target_value = @stTargetValue, -- 🔴 เพิ่มการอัปเดต ST Value
-            moisture = @moisture, -- 💧 6. เพิ่มการอัปเดต Field Moisture
+            st_target_value = @stTargetValue,
+            moisture = @moisture,
+            AZ_RGenmatsu = @azRGenmatsu, -- 💧 6. เพิ่มการอัปเดต Field
             pallet_data = @palletData
         WHERE submission_id = @submission_id;
       `);
@@ -499,6 +505,8 @@ exports.resubmitSubmissionData = async (
   request.input("stTargetValue", sql.Decimal(10, 2), keyMetrics.stTargetValue || 0); // 🔴 เพิ่ม Input
   // 💧 7. เพิ่ม Input Moisture ตอน Resubmit
   request.input("moisture", sql.Decimal(5, 2), keyMetrics.moisture || null);
+  // 💧 8. เพิ่ม Input AZ_RGenmatsu Resubmit
+  request.input("azRGenmatsu", sql.Int, keyMetrics.azRGenmatsu || null);
   request.input(
     "palletData",
     sql.NVarChar(sql.MAX),
@@ -523,8 +531,9 @@ exports.resubmitSubmissionData = async (
             yield_percent = @yieldPercent,
             total_qty = @totalQty,
             production_date = @productionDate,
-            st_target_value = @stTargetValue, -- 🔴 เพิ่มการอัปเดต ST Value
-            moisture = @moisture, -- 💧 8. เพิ่มการอัปเดต Field Moisture
+            st_target_value = @stTargetValue,
+            moisture = @moisture,
+            AZ_RGenmatsu = @azRGenmatsu, -- 💧 9. เพิ่มการอัปเดต Field Resubmit
             pallet_data = @palletData
           WHERE submission_id = @submissionId
       `);

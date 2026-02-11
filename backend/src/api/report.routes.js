@@ -13,4 +13,7 @@ router.get("/daily/pdf", reportController.downloadDailyReportPdf);
 router.get("/daily/summary", reportController.getDailySummary);
 router.post("/daily/summary", reportController.saveDailySummary);
 
+// 4. ✅ [ใหม่] ดาวน์โหลด Monthly Report เป็น Excel
+router.get("/export-excel", reportController.downloadMonthlyExcel);
+
 module.exports = router;

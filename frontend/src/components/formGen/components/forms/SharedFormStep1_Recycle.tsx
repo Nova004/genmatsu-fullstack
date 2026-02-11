@@ -89,23 +89,25 @@ const SharedFormStep1: React.FC<SharedFormStep1Props> = ({ register, watch, setV
               className={inputClass}
               {...register('basicData.lotNo', {
                 required: 'กรุณากรอก Lot no.',
-                maxLength: { value: 6, message: 'กรุณากรอก Lot no. ให้ครบ 6 ตัวอักษร' },
-                minLength: { value: 6, message: 'กรุณากรอก Lot no. ให้ครบ 6 ตัวอักษร' },
+                maxLength: { value: 4, message: 'กรุณากรอก Lot no. ให้ครบ 4 ตัวเลข' },
+                minLength: { value: 4, message: 'กรุณากรอก Lot no. ให้ครบ 4 ตัวเลข' },
                 pattern: {
-                  value: /^\d{4}[A-Z]\d$/,
-                  message: 'รูปแบบ lotNo ไม่ถูกต้อง'
+                  value: /^\d{4}$/,
+                  message: 'กรุณากรอกเป็นตัวเลข 4 หลักเท่านั้น'
                 },
                 onChange: (e) => {
-                  let cleanValue = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                  // เปลี่ยน logic ให้รับเฉพาะตัวเลข 0-9
+                  let cleanValue = e.target.value.replace(/[^0-9]/g, '');
 
-                  if (cleanValue.length > 6) {
-                    cleanValue = cleanValue.slice(0, 6);
+                  if (cleanValue.length > 4) {
+                    cleanValue = cleanValue.slice(0, 4);
                   }
 
+                  // อัปเดตค่ากลับไปที่ input เพื่อให้ user เห็นเฉพาะตัวเลข
                   e.target.value = cleanValue;
                 }
               })}
-              maxLength={6}
+              maxLength={4}
             />
           </div>
         </div>

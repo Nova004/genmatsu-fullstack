@@ -38,7 +38,7 @@ exports.sendBacklogNotification = async (recipients, level, pendingCount) => {
         <h2 style="color: #d9534f;">⚠️ Approval Backlog Alert</h2>
         <p>Dear Approver (Level ${level}),</p>
         <p>There are currently <strong>${pendingCount}</strong> pending requests waiting for your approval.</p>
-        <p>This count has exceeded the threshold. Please log in to Genmatsu System to process them.</p>
+        <p>Please log in to Genmatsu System to process them.</p>
         <br>
         <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}" 
            style="background-color: #0275d8; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">

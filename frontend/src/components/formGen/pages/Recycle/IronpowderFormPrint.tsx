@@ -12,6 +12,7 @@ import OutputPEBag from './components/OutputPEBag';
 import OutputDustCollector from './components/OutputDustCollector';
 import OutputCleaning from './components/OutputCleaning';
 import Summary from './components/Summary';
+import RemarkField from '../../components/forms/RemarkField';
 
 import { useForm, FormProvider } from 'react-hook-form';
 import { useFieldArray } from 'react-hook-form';
@@ -40,6 +41,7 @@ const IronpowderFormPrint: React.FC<IronpowderFormPrintProps> = ({
     watch,
     control,
     setValue,
+    formState: { errors },
   } = methods;
 
   // Setup useFieldArray for each table
@@ -125,8 +127,12 @@ const IronpowderFormPrint: React.FC<IronpowderFormPrintProps> = ({
             div {
               box-shadow: none !important;
             }
-            input {
+            input, textarea {
               color: black !important;
+            }
+            .text-primary {
+              color: #3C50E0 !important;
+              -webkit-text-fill-color: #3C50e0 !important;
             }
           }
           /* Override dark mode manually to ensure black text on white paper */
@@ -240,14 +246,31 @@ const IronpowderFormPrint: React.FC<IronpowderFormPrintProps> = ({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
               <div>
                 <Summary register={register} watch={watch} setValue={setValue} />
+                <div className="border border-black p-4 mb-4 mt-6 text-xs">
+                  <h4 className="font-bold mb-2">ข้อควรปฏิบัติ</h4>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Tag ที่ติดมากับถุง Product ของกรงสุดท้ายที่ Recycle แล้วให้ดึงออกเก็บไว้เพื่อระบุหมายเลขถุงตอนลงข้อมูล (เก็บเฉพาะถุงที่นำไปคัดแยกแล้วเท่านั้น)</li>
+                    <li>ในกรณีที่ Tag บ่งชี้ชนิดของ Product ไม่ชัดเจนให้แยกเอาไว้ก่อน <span className="font-bold">ห้ามนำไปคัดแยกเด็ดขาด</span></li>
+                  </ul>
+                </div>
+
+                <RemarkField
+                  register={register}
+                  name="remark"
+                  error={errors.remark}
+                  required={true}
+                  disabled={isReadOnly}
+                />
               </div>
 
-              {/* 🟡 3. Render Approval Flow */}
-              {approvalFlowComponent && (
-                <div className="break-inside-avoid">
-                  {approvalFlowComponent}
-                </div>
-              )}
+              {/* 🟡 3. Render Approval Flow - Right Column */}
+              <div>
+                {approvalFlowComponent && (
+                  <div className="break-inside-avoid">
+                    {approvalFlowComponent}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

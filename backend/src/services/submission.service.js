@@ -799,6 +799,16 @@ function extractKeyMetrics(formData) {
     }
   }
 
+  // 🔴 Logic ใหม่: หา AZ_RGenmatsu (Lot) - เก็บเป็น INT
+  let azRGenmatsu = null;
+  const azrVal = getNestedValue(formData, "rawMaterials.AZRGenmatsu.actual");
+  if (azrVal !== null && azrVal !== undefined && azrVal !== "") {
+    const parsed = parseInt(azrVal, 10);
+    if (!isNaN(parsed)) {
+      azRGenmatsu = parsed;
+    }
+  }
+
   // หา Pallet Data
   if (Array.isArray(rawPallets)) {
     palletData = rawPallets
@@ -817,9 +827,10 @@ function extractKeyMetrics(formData) {
     productionDate,
     palletData,
     productionLine,
-    productionLine,
     moisture,
-    ncrGenmatsuActual, // 🔴 เพิ่มค่านี้ส่งออกไป
+    stTargetValue: 0, // Placeholder, calculated later
+    ncrGenmatsuActual,
+    azRGenmatsu, // ✅ Return New Field
   };
 }
 exports.extractKeyMetrics = extractKeyMetrics;

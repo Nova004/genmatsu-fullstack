@@ -16,6 +16,7 @@ import OutputCleaning from './components/OutputCleaning';
 import Summary from './components/Summary';
 import { useProductionForm } from '../../../../hooks/useProductionForm';
 import Breadcrumb from '../../../../components/Breadcrumbs/Breadcrumb';
+import RemarkField from '../../components/forms/RemarkField';
 
 
 
@@ -235,7 +236,29 @@ function Ironpowder_Form() {
                         watch={watch}
                         setValue={setValue} // <--- 1. เพิ่มบรรทัดนี้ ส่ง setValue ไปให้ลูก
                     />
-
+                    <div className="rounded-md border border-warning bg-warning bg-opacity-10 p-4 mb-6">
+                        <div className="flex items-start gap-3">
+                            <div className="flex-shrink-0">
+                                <svg className="h-5 w-5 text-warning" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                </svg>
+                            </div>
+                            <div className="flex-1">
+                                <h4 className="text-base font-semibold text-warning mb-1">ข้อควรปฏิบัติ</h4>
+                                <ul className="list-disc pl-5 text-sm text-black dark:text-white space-y-1">
+                                    <li>Tag ที่ติดมากับถุง Product ของกรงสุดท้ายที่ Recycle แล้วให้ดึงออกเก็บไว้เพื่อระบุหมายเลขถุงตอนลงข้อมูล (เก็บเฉพาะถุงที่นำไปคัดแยกแล้วเท่านั้น)</li>
+                                    <li>ในกรณีที่ Tag บ่งชี้ชนิดของ Product ไม่ชัดเจนให้แยกเอาไว้ก่อน <span className="text-meta-1 font-medium">ห้ามนำไปคัดแยกเด็ดขาด</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <RemarkField
+                        register={register}
+                        name="remark"
+                        error={errors.remark}
+                        required={true}
+                        defaultValue="งานออกมีน้ำหนักเกินงานเข้าเนื่องจากฟีล์มมีน้ำขังและมีความชื้น"
+                    />
                     {/* Action Buttons */}
                     <div className="flex justify-center gap-4 rounded-sm border border-stroke p-4 dark:border-strokedark">
                         <button

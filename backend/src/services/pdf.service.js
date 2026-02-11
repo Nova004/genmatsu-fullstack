@@ -66,7 +66,7 @@ const { PDFDocument } = require('pdf-lib'); // 📦 Install pdf-lib
 // ... (getBrowser function remains the same) ...
 
 exports.generatePdf = async (submissionId, frontendPrintUrl) => {
-  let page;
+
 
   try {
     // 1. Fetch data
@@ -96,7 +96,7 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
     const needsBarcodePage = /^(\d{4})([A-Z])(\d)$/.test(lotNo);
 
     // Helper to generate a single PDF part
-    const generatePart = async (urlSuffix, options) => {
+    const generatePart = async (urlSuffix, options, waitTimeout = 30000) => {
       logger.info(`[PDF Gen] Generating Part: ${urlSuffix}...`);
 
       // Append URL Param
@@ -132,7 +132,7 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
           : "#pdf-content-ready";
 
         logger.info(`[PDF Gen] 5. Waiting for selector (${waitSelector})...`);
-        await partPage.waitForSelector(waitSelector, { timeout: 30000 });
+        await partPage.waitForSelector(waitSelector, { timeout: waitTimeout });
 
         // 🟢 Add Safety Delay to ensure Layout/Fonts settle
         await new Promise(r => setTimeout(r, 1500));
@@ -169,41 +169,48 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
     }
 
     // --- Part 2: Barcode Page (With Header/Footer as requested) ---
-    const barcodePdfBuffer = await generatePart('barcode', {
-      format: "A4",
-      printBackground: true,
-      displayHeaderFooter: true, // ✅ Custom Header/Footer enabled
-      headerTemplate: dynamicHeaderTemplateBarcode, // Reuse style
-      footerTemplate: `
-        <div style="width: 100%; padding: 5px 20px 0;
-                    font-size: 10px; color: #555;
-                    display: flex; justify-content: space-between; align-items: center;">
-          <span style="flex: 1; text-align: left;">FM-AS2-001 (Barcode)</span>
-          <span style="flex: 1; text-align: center;">
-            Page <span class="pageNumber"></span> / <span class="totalPages"></span>
-          </span>
-          <span style="flex: 1; text-align: right;"></span>
-        </div>
-      `,
-      margin: { top: "50px", right: "10px", bottom: "20px", left: "10px" }, // Match Main margins
-      scale: 0.37,
-    });
+    try {
+      const barcodePdfBuffer = await generatePart('barcode', {
+        format: "A4",
+        printBackground: true,
+        displayHeaderFooter: true, // ✅ Custom Header/Footer enabled
+        headerTemplate: dynamicHeaderTemplateBarcode, // Reuse style
+        footerTemplate: `
+          <div style="width: 100%; padding: 5px 20px 0;
+                      font-size: 10px; color: #555;
+                      display: flex; justify-content: space-between; align-items: center;">
+            <span style="flex: 1; text-align: left;">FM-AS2-001 (Barcode)</span>
+            <span style="flex: 1; text-align: center;">
+              Page <span class="pageNumber"></span> / <span class="totalPages"></span>
+            </span>
+            <span style="flex: 1; text-align: right;"></span>
+          </div>
+        `,
+        margin: { top: "50px", right: "10px", bottom: "20px", left: "10px" }, // Match Main margins
+        scale: 0.37,
+      }, 3000); // ⏱ Fast fail (3s)
 
-    // --- Merge PDFs ---
-    logger.info("[PDF Gen] Merging Main Report + Barcode Page...");
-    const mergedPdf = await PDFDocument.create();
+      // --- Merge PDFs ---
+      logger.info("[PDF Gen] Merging Main Report + Barcode Page...");
+      const mergedPdf = await PDFDocument.create();
 
-    const pdf1 = await PDFDocument.load(mainPdfBuffer);
-    const pdf2 = await PDFDocument.load(barcodePdfBuffer);
+      const pdf1 = await PDFDocument.load(mainPdfBuffer);
+      const pdf2 = await PDFDocument.load(barcodePdfBuffer);
 
-    const copiedPages1 = await mergedPdf.copyPages(pdf1, pdf1.getPageIndices());
-    copiedPages1.forEach((page) => mergedPdf.addPage(page));
+      const copiedPages1 = await mergedPdf.copyPages(pdf1, pdf1.getPageIndices());
+      copiedPages1.forEach((page) => mergedPdf.addPage(page));
 
-    const copiedPages2 = await mergedPdf.copyPages(pdf2, pdf2.getPageIndices());
-    copiedPages2.forEach((page) => mergedPdf.addPage(page));
+      const copiedPages2 = await mergedPdf.copyPages(pdf2, pdf2.getPageIndices());
+      copiedPages2.forEach((page) => mergedPdf.addPage(page));
 
-    const mergedPdfBytes = await mergedPdf.save();
-    return Buffer.from(mergedPdfBytes);
+      const mergedPdfBytes = await mergedPdf.save();
+      return Buffer.from(mergedPdfBytes);
+
+    } catch (barcodeError) {
+      logger.warn(`[PDF Gen] ⚠️ Failed to generate Barcode Page for ID ${submissionId}. Returning Main Report only. Reason: ${barcodeError.message}`);
+      // Fallback: Return only the main report if barcode generation fails
+      return mainPdfBuffer;
+    }
 
   } catch (error) {
     logger.error(`[PDF Gen] Error generating PDF for ID ${submissionId}:`, error);
@@ -251,7 +258,7 @@ exports.generateDailyReportPdf = async (date, lotNoPrefix) => {
     }
 
     await new Promise(r => setTimeout(r, 1000));
-    
+
     // 5. Create PDF
     const pdfBuffer = await page.pdf({
       format: "A4",

@@ -17,7 +17,7 @@ const Summary: React.FC<SummaryProps> = ({
     const inputClass = "w-full rounded-lg bg-transparent px-3 py-2 text-black outline-none transition focus:border-primary active:border-primary dark:bg-form-input dark:text-white dark:focus:border-primary border-b border-stroke dark:border-strokedark";
 
     const labelClass = "font-semibold text-gray-900 dark:text-gray-100 text-sm";
-    const valueClass = "text-gray-700 dark:text-gray-300 text-sm font-semibold";
+    const valueClass = "text-primary text-sm font-semibold";
     const rowClass = "border-b border-stroke dark:border-strokedark px-4 py-3 flex items-center justify-between";
 
     // Watch data for calculations
