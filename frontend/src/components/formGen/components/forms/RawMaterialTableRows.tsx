@@ -1,3 +1,4 @@
+// src/components/formGen/components/forms/RawMaterialTableRows.tsx
 import React from 'react';
 import { UseFormRegister, FieldErrors } from 'react-hook-form';
 import { IManufacturingReportForm, IStep2ConfigJson } from '../../pages/types';

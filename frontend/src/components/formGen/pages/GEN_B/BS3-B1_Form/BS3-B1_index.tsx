@@ -66,7 +66,7 @@ function BS3_B1_Form() {
                     <FormHeader
                         title="ใบรายงานการผลิต(BS3-B1)"
                         formTypes={availableForms}
-                        currentValue="BS3-B1"
+                        currentValue="G030"
                         inputClass={inputClass}
                     />
 

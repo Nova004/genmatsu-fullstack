@@ -65,7 +65,7 @@ function BZ_Form() {
                     <FormHeader
                         title="ใบรายงานการผลิต(BZ)"
                         formTypes={availableForms}
-                        currentValue="BZ"
+                        currentValue="G014"
                         inputClass={inputClass}
                     />
 

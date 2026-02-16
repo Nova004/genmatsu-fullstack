@@ -65,7 +65,7 @@ function BN_Form() {
                     <FormHeader
                         title="ใบรายงานการผลิต(BN)"
                         formTypes={availableForms}
-                        currentValue="BN"
+                        currentValue="G011"
                         inputClass={inputClass}
                     />
 

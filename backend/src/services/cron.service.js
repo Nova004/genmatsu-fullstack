@@ -36,7 +36,7 @@ exports.init = () => {
                         // const emails = await submissionRepo.getApproverEmailsByLevel(pool, level);
 
                         // 🟡 TEST MODE: Send ONLY to Tester
-                        const emails = ['aukkharapon_@ageless.co.th'];
+                        const emails = ['aukkharapon@ageless.co.th'];
                         logger.info(`[Cron] [TEST MODE] Sending notification to ${emails[0]} (Original Recipient Logic bypassed)`);
 
                         if (emails.length > 0) {

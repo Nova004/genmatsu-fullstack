@@ -1,3 +1,4 @@
+// src/controllers/nacl.controller.js
 const sql = require("mssql");
 const dbConfig = require("../config/db.config");
 const activityLogRepository = require("../repositories/activityLog.repository");
@@ -72,7 +73,11 @@ exports.updateNaCl = async (req, res) => {
           targetModule: "MASTER_NACL",
           targetId: id.toString(),
           details: {
+            type: 'DIFF',
             message: `Updated NaCl Formula ID ${id}`,
+            summary: `Updated NaCl Formula ID ${id}`,
+            oldData: relevantOldData,
+            newData: newData,
             changes: differences
           }
         });

@@ -1,5 +1,6 @@
 // frontend/src/pages/Reports/components/BarcodePage.tsx
 import React, { useEffect, useState } from 'react';
+import QRCode from 'react-qr-code'; // ✅ Import Local QR Library
 import { getRawMaterialWeights, RawMaterialWeightData } from '../../../services/weightService';
 import { getCurrentDate, formatTime } from '../../../utils/utils';
 
@@ -39,9 +40,8 @@ const BarcodePage: React.FC<BarcodePageProps> = ({ lotNo, lineName, batch }) => 
 
     const StickerCard = ({ item }: { item: RawMaterialWeightData }) => {
         const fullLot = `${lotNo}${lineName}${batch}`;
+        // QR Value: ID/Lot/Product/Material/MatLot/PO/Invoice/Weight/Staff/Date/Time
         const qrValue = `${item.Material_Weight_Detail_Id}/${fullLot}/${item.Gen_Name}/${item.Material_Name}/${item.Material_Lot}/${item.Order_No}/${item.Invoice_No}/${item.Weight}/${item.Staff_Name}/${getCurrentDate(item.Updated_Date)}/${formatTime(item.Updated_Time)}`;
-        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(qrValue)}`;
-
 
         return (
             <div className="border-[2px] border-dashed border-black p-2 bg-white flex flex-col text-black h-fit break-inside-avoid relative">
@@ -74,8 +74,15 @@ const BarcodePage: React.FC<BarcodePageProps> = ({ lotNo, lineName, batch }) => 
                         <div className="whitespace-nowrap">Vol (kg.) : {item.Weight}</div>
 
                         {/* QR Code placed under Vol */}
-                        <div className="mt-1">
-                            <img src={qrUrl} alt="QR Code" className="w-[90px] h-[90px] object-contain" />
+                        <div className="mt-1 bg-white p-0">
+                            {/* ✅ Use Local QRCode Component */}
+                            <QRCode
+                                value={qrValue}
+                                size={90}
+                                level="M" // Error Correction Level
+                                style={{ height: "auto", maxWidth: "100%", width: "90px" }}
+                                viewBox={`0 0 256 256`}
+                            />
                         </div>
                     </div>
                 </div>

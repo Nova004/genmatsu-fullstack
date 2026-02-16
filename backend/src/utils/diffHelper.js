@@ -15,26 +15,25 @@ const areValuesEquivalent = (v1, v2) => {
     // 1. Strict equality first
     if (v1 === v2) return true;
 
-    // 2. Handle null/undefined vs empty string (optional, depends on requirement)
-    // If we want '' == null or something, add here. currently sticking to safe checks.
+    // 2. Prepare strings by trimming whitespace (Solving "0.89" vs "0.89 ")
+    const s1 = (v1 !== null && v1 !== undefined) ? String(v1).trim() : '';
+    const s2 = (v2 !== null && v2 !== undefined) ? String(v2).trim() : '';
 
-    // 3. Numeric comparison (e.g. "13.00" == 13)
-    // Check if both are "numeric"
-    const n1 = Number(v1);
-    const n2 = Number(v2);
+    // If trimmed strings are equal, they are equivalent
+    if (s1 === s2) return true;
 
-    // Ensure they are valid numbers (not NaN) and not empty strings/whitespace
-    // (Number('') === 0, which might be unsafe if we check against '0')
-    const isValidN1 = v1 !== null && v1 !== undefined && String(v1).trim() !== '' && !isNaN(n1);
-    const isValidN2 = v2 !== null && v2 !== undefined && String(v2).trim() !== '' && !isNaN(n2);
+    // 3. Status check: if strings are different, try numeric comparison (Solving "740.00" vs "740")
+    // Note: Number('') === 0, so we must check s1/s2 are not empty
+    if (s1 !== '' && s2 !== '') {
+        const n1 = Number(s1);
+        const n2 = Number(s2);
 
-    if (isValidN1 && isValidN2) {
-        // Compare with small epsilon for float safety
-        return Math.abs(n1 - n2) < Number.EPSILON;
+        if (!isNaN(n1) && !isNaN(n2)) {
+            return Math.abs(n1 - n2) < Number.EPSILON;
+        }
     }
 
-    // 4. Fallback: string comparison (e.g. "foo" vs "foo")
-    return String(v1) === String(v2);
+    return false;
 };
 
 const getObjectDiff = (oldObj, newObj, prefix = "") => {

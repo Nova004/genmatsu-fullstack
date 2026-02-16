@@ -67,7 +67,7 @@ function AS4_Form() {
                     <FormHeader
                         title="ใบรายงานการผลิต(AS4)"
                         formTypes={availableForms}
-                        currentValue="AS4"
+                        currentValue="G007"
                         inputClass={inputClass}
                     />
 

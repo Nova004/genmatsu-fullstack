@@ -171,7 +171,11 @@ exports.updateUserGenManuData = async (req, res) => {
           targetModule: "MASTER_USER",
           targetId: agtMemberId, // Employee ID being edited
           details: {
+            type: 'DIFF',
             message: `Updated User Master Data for ${agtMemberId}`,
+            summary: `Updated User Master Data for ${agtMemberId}`,
+            oldData: relevantOldData,
+            newData: newData,
             changes: differences
           }
         });

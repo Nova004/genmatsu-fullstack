@@ -16,6 +16,7 @@ const reportRoutes = require("./api/report.routes");
 const approvalRoutes = require("./api/approval.routes");
 const ironpowderRoutes = require("./api/ironpowder.routes");
 const weightRoutes = require("./api/weight.routes");
+const activityLogRoutes = require("./api/activityLog.routes");
 
 const app = express();
 const server = http.createServer(app);
@@ -52,6 +53,7 @@ const routes = [
   { path: "/nacl", route: naclRoutes },
   { path: "/ironpowder", route: ironpowderRoutes },
   { path: "/weights", route: weightRoutes },
+  { path: "/logs", route: activityLogRoutes },
 ];
 
 routes.forEach(({ path, route }) => {

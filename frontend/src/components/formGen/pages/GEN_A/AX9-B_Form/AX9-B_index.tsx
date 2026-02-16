@@ -66,7 +66,7 @@ function AX9_B_Form() {
                     <FormHeader
                         title="ใบรายงานการผลิต(AX9-B)"
                         formTypes={availableForms}
-                        currentValue="AX9-B"
+                        currentValue="G021"
                         inputClass={inputClass}
                     />
 

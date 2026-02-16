@@ -66,7 +66,7 @@ function AS2_D_Form() {
                     <FormHeader
                         title="ใบรายงานการผลิต(AS2-D)"
                         formTypes={availableForms}
-                        currentValue="AS2-D"
+                        currentValue="G009"
                         inputClass={inputClass}
                     />
 

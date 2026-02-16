@@ -1,3 +1,5 @@
+// src/services/submission.service.js
+
 const { sql, poolConnect } = require("../db"); // ✅ 1. เรียกใช้ poolConnect จากไฟล์กลาง
 const submissionRepo = require("../repositories/submission.repository");
 const activityLogRepo = require("../repositories/activityLog.repository"); // ✅ Import Logger
@@ -259,12 +261,30 @@ exports.createSubmission = async (data) => {
     await transaction.commit();
 
     // ✅ Log Activity
+    let productName = formType || 'GEN-A';
+    try {
+      const { resolveProductNames } = require("../utils/productHelper");
+      const productNames = await resolveProductNames(formType);
+      if (productNames[formType]) {
+        productName = productNames[formType];
+      }
+    } catch (e) {
+      console.error("Product resolve error:", e);
+    }
+
     await activityLogRepo.createLog({
       userId: submittedBy,
       actionType: 'CREATE',
-      targetModule: formType || 'GEN-A',
+      targetModule: productName, // ✅ Use Name
       targetId: submissionId,
-      details: `Created new submission Lot No: ${lotNo}`
+      details: {
+        type: 'DIFF',
+        message: `Created new submission for ${productName} (${formType}) Lot No: ${lotNo}`,
+        summary: `Created new submission`,
+        oldData: null,
+        newData: { ...cleanedFormData, lotNo }, // Keeping it simple
+        changes: null
+      }
     });
 
     return submissionId;
@@ -313,12 +333,23 @@ exports.deleteSubmission = async (id, userId) => {
     await transaction.commit();
 
     // ✅ Log Activity
+    let productName = targetModule; // Default to ID
+    try {
+      const { resolveProductNames } = require("../utils/productHelper");
+      const productNames = await resolveProductNames(targetModule);
+      if (productNames[targetModule]) {
+        productName = productNames[targetModule];
+      }
+    } catch (e) {
+      console.error("Product resolve error:", e);
+    }
+
     await activityLogRepo.createLog({
       userId: userId,
       actionType: 'DELETE',
-      targetModule: targetModule,
+      targetModule: productName, // ✅ Use Name
       targetId: id,
-      details: `Deleted submission ID: ${id}`
+      details: `Deleted submission for ${productName} (${targetModule}) ID: ${id}`
     });
 
     return true; // Deleted
@@ -383,12 +414,30 @@ exports.updateSubmission = async (id, lot_no, form_data, userId) => {
     const changesText = changes.length > 0 ? ` Changes: ${changes.join(", ").substring(0, 500)}` : " (No content changes)";
 
     // ✅ Log Activity
+    let productName = formType || 'Submission';
+    try {
+      const { resolveProductNames } = require("../utils/productHelper");
+      const productNames = await resolveProductNames(formType);
+      if (productNames[formType]) {
+        productName = productNames[formType];
+      }
+    } catch (e) {
+      console.error("Product resolve error:", e);
+    }
+
     await activityLogRepo.createLog({
       userId: userId,
       actionType: 'UPDATE',
-      targetModule: formType || 'Submission',
+      targetModule: productName, // ✅ Use Name
       targetId: id,
-      details: `Updated Lot No: ${lot_no}.${changesText}`
+      details: {
+        type: 'DIFF',
+        message: `Updated ${productName} (${formType}) Lot No: ${lot_no}`,
+        summary: `Updated Submission Data`,
+        oldData: oldFormData,
+        newData: cleanedFormData,
+        changes: changes
+      }
     });
   } catch (err) {
     if (transaction && transaction.state === "begun") {
@@ -589,12 +638,30 @@ exports.resubmitSubmission = async (id, formDataJson, userId) => {
     const changesText = changes.length > 0 ? ` Changes: ${changes.join(", ").substring(0, 500)}` : " (No content changes)";
 
     // ✅ Log Activity
+    let productName = formType || 'Submission';
+    try {
+      const { resolveProductNames } = require("../utils/productHelper");
+      const productNames = await resolveProductNames(formType);
+      if (productNames[formType]) {
+        productName = productNames[formType];
+      }
+    } catch (e) {
+      console.error("Product resolve error:", e);
+    }
+
     await activityLogRepo.createLog({
       userId: userId,
       actionType: 'RESUBMIT',
-      targetModule: formType || 'Submission',
+      targetModule: productName, // ✅ Use Name
       targetId: id,
-      details: `Resubmitted Lot No: ${lotNo}.${changesText}`
+      details: {
+        type: 'DIFF',
+        message: `Resubmitted ${productName} (${formType}) Lot No: ${lotNo}`,
+        summary: `Resubmitted Submission`,
+        oldData: oldFormData,
+        newData: cleanedFormData,
+        changes: changes
+      }
     });
 
     // 4. สร้าง Flow อนุมัติใหม่ (เฉพาะถ้าสถานะเป็น Pending)

@@ -1,10 +1,25 @@
-const sql = require("mssql");
-const dbConfig = require("../config/db.config");
+// backend/src/repositories/activityLog.repository.js
+const { sql, poolConnect } = require("../db");
+
+exports.getAllLogs = async () => {
+    try {
+        const pool = await poolConnect;
+        const result = await pool.request().query(`
+            SELECT TOP 1000 * 
+            FROM Gen_Activity_Logs 
+            ORDER BY timestamp DESC
+        `);
+        return result.recordset;
+    } catch (err) {
+        console.error("Error getting all activity logs:", err);
+        throw err;
+    }
+};
 
 // Ensure the table exists (Optional: can be run once)
 exports.initTable = async () => {
     try {
-        const pool = await sql.connect(dbConfig);
+        const pool = await poolConnect;
         const query = `
       IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Gen_Activity_Logs' AND xtype='U')
       CREATE TABLE Gen_Activity_Logs (
@@ -26,15 +41,19 @@ exports.initTable = async () => {
 
 exports.createLog = async ({ userId, actionType, targetModule, targetId, details }) => {
     try {
-        const pool = await sql.connect(dbConfig);
-        const request = pool.request();
+        const pool = await poolConnect;
 
-        await request
+        // Check if details is an object/array, stringify it. If it's a string, use as is.
+        const detailsData = (details && (typeof details === 'object' || Array.isArray(details)))
+            ? JSON.stringify(details)
+            : details;
+
+        await pool.request()
             .input("userId", sql.NVarChar, userId)
             .input("actionType", sql.NVarChar, actionType)
             .input("targetModule", sql.NVarChar, targetModule)
             .input("targetId", sql.NVarChar, targetId ? targetId.toString() : null)
-            .input("details", sql.NVarChar, details ? JSON.stringify(details) : null)
+            .input("details", sql.NVarChar, detailsData)
             .query(`
         INSERT INTO Gen_Activity_Logs (user_id, action_type, target_module, target_id, details)
         VALUES (@userId, @actionType, @targetModule, @targetId, @details)

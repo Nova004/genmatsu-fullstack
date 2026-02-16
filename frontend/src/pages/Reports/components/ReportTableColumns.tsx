@@ -140,10 +140,10 @@ export const getReportColumns = ({
 
                             // ✅ แก้ไขเงื่อนไข canEdit:
                             // 1. เป็นเจ้าของ และ สถานะต้องไม่ใช่ Approved
-                            // 2. หรือเป็น LV3 และสถานะเป็น Approved (หรืออื่นๆ ก็ได้ตามสิทธิ์)
+                            // 2. หรือเป็น LV3 แก้ได้ทุกสถานะ
                             const canEdit = (
                                 (isOwner && !isApproved) ||
-                                (isLv3 && isApproved)
+                                isLv3
                             );
 
                             const tooltipText = isNeedsEdit ? "งานถูกตีกลับ กรุณาแก้ไข" : "แก้ไขข้อมูล";

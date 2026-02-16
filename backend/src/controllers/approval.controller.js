@@ -266,12 +266,32 @@ const performApprovalAction = async (req, res) => {
 
     // ✅ Log Activity for Approval/Rejection
     const reasonText = comment ? `. Reason: ${comment}` : '';
+
+    // ✅ Resolve Product Name (if formType is a Product ID like G010)
+    let productName = formType;
+    try {
+      const { resolveProductNames } = require("../utils/productHelper");
+      const productNames = await resolveProductNames(formType);
+      if (productNames[formType]) {
+        productName = productNames[formType];
+      }
+    } catch (e) {
+      console.error("Product resolve error:", e);
+    }
+
     await activityLogRepo.createLog({
       userId: approverUserId,
       actionType: action.toUpperCase(), // 'APPROVED' or 'REJECTED'
-      targetModule: formType, // ✅ Use specific form type (GEN-A, Ironpowder, etc.)
+      targetModule: productName, // ✅ Use specific form type (GEN-A, Ironpowder, etc.)
       targetId: submissionId, // ✅ Already parseInt-ed
-      details: `${action} Lot No: ${lotNo}${reasonText}`
+      details: {
+        type: 'DIFF',
+        message: `${action} ${productName} (${formType}) Lot No: ${lotNo}${reasonText}`,
+        summary: `Approval Action: ${action}`,
+        oldData: { status: 'Pending' },
+        newData: { status: action },
+        changes: [`status: Pending -> ${action}`]
+      }
     });
 
     res.status(200).send({ message: `ดำเนินการ ${action} สำเร็จ!` });

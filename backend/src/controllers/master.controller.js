@@ -272,7 +272,11 @@ exports.updateTemplateAsNewVersion = async (req, res) => {
           targetModule: "MASTER_TEMPLATE",
           targetId: `${templateName} (v${newVersion})`,
           details: {
+            type: 'DIFF', // ✅ Add type for easier frontend detection
             message: `Updated template to version ${newVersion}`,
+            summary: `Updated template to version ${newVersion}`, // ✅ Compatible with my Ironpowder log format
+            oldData: oldData, // ✅ Store full object for rich diff
+            newData: newData, // ✅ Store full object for rich diff
             changes: differences
           }
         });
@@ -380,13 +384,27 @@ exports.saveStandardPlan = async (req, res) => {
     try {
       // Compare values
       if (Number(oldTargetValue) !== Number(target_value)) {
+        // ✅ Resolve Product Name (G010 -> Front Bumper)
+        try {
+          const { resolveProductNames } = require("../utils/productHelper");
+          const productNames = await resolveProductNames(form_type);
+          var productName = productNames[form_type] || form_type;
+        } catch (e) {
+          console.error("Product resolve error:", e);
+          var productName = form_type;
+        }
+
         await activityLogRepository.createLog({
           userId: updated_by || "Admin",
           actionType: "UPDATE_STD_PLAN",
           targetModule: "MASTER_STD_PLAN",
-          targetId: form_type,
+          targetId: productName,
           details: {
-            message: `Updated Standard Plan for ${form_type}`,
+            type: 'DIFF',
+            message: `Updated Standard Plan for ${productName} (${form_type})`,
+            summary: `Updated Standard Plan for ${productName}`,
+            oldData: { target_value: oldTargetValue },
+            newData: { target_value: target_value },
             changes: [`target_value: ${oldTargetValue || '(empty)'} -> ${target_value}`]
           }
         });

@@ -315,7 +315,7 @@ exports.updateIronpowder = async (submissionId, formData, userId) => {
 
     // ✅ Generate Diff Summary
     const changes = getObjectDiff(oldFormData, formData);
-    const changesText = changes.length > 0 ? ` Changes: ${changes.join(", ").substring(0, 500)}` : " (No content changes)";
+    const summary = changes.length > 0 ? `Updated with ${changes.length} changes.` : "Updated (No content changes)";
 
     // ✅ Log Activity
     await activityLogRepo.createLog({
@@ -323,7 +323,14 @@ exports.updateIronpowder = async (submissionId, formData, userId) => {
       actionType: 'UPDATE',
       targetModule: 'Ironpowder (Recycle)',
       targetId: submissionId,
-      details: `Updated Lot No: ${lotNo}.${changesText}`
+      details: {
+        type: 'DIFF',
+        message: `Updated Ironpowder Lot No: ${lotNo}`,
+        summary: `Updated Lot No: ${lotNo}. ${summary}`,
+        oldData: oldFormData,
+        newData: formData,
+        changes: changes
+      }
     });
   } catch (error) {
     console.error("Error updating ironpowder:", error);
@@ -338,9 +345,10 @@ exports.deleteIronpowder = async (submissionId, userId) => {
     // 1. Get info before delete for logging
     const checkResult = await pool.request()
       .input("submissionId", sql.Int, submissionId)
-      .query("SELECT lot_no FROM Form_Ironpowder_Submissions WHERE submissionId = @submissionId");
+      .query("SELECT lot_no, form_data_json FROM Form_Ironpowder_Submissions WHERE submissionId = @submissionId");
 
     const lotNo = checkResult.recordset[0]?.lot_no || 'Unknown';
+    const oldFormData = checkResult.recordset[0]?.form_data_json ? JSON.parse(checkResult.recordset[0].form_data_json) : {};
 
     await pool.request().input("submissionId", sql.Int, submissionId).query(`
         DELETE FROM Form_Ironpowder_Submissions
@@ -357,7 +365,7 @@ exports.deleteIronpowder = async (submissionId, userId) => {
       actionType: 'DELETE',
       targetModule: 'Ironpowder (Recycle)',
       targetId: submissionId,
-      details: `Deleted Recycle report Lot No: ${lotNo}`
+      details: `Deleted Ironpowder Lot No: ${lotNo}`
     });
   } catch (error) {
     console.error("Error deleting ironpowder:", error);
@@ -457,7 +465,7 @@ exports.resubmitIronpowder = async (submissionId, formData, userId) => {
 
     // ✅ Generate Diff Summary
     const changes = getObjectDiff(oldFormData, formData);
-    const changesText = changes.length > 0 ? ` Changes: ${changes.join(", ").substring(0, 500)}` : " (No content changes)";
+    const summary = changes.length > 0 ? `Resubmitted with ${changes.length} changes.` : "Resubmitted (No content changes)";
 
     // ✅ Log Activity
     await activityLogRepo.createLog({
@@ -465,7 +473,14 @@ exports.resubmitIronpowder = async (submissionId, formData, userId) => {
       actionType: 'RESUBMIT',
       targetModule: 'Ironpowder (Recycle)',
       targetId: submissionId,
-      details: `Resubmitted Recycle report Lot No: ${lotNo}.${changesText}`
+      details: {
+        type: 'DIFF',
+        message: `Resubmitted Ironpowder Lot No: ${lotNo}`,
+        summary: `Resubmitted Lot No: ${lotNo}. ${summary}`,
+        oldData: oldFormData,
+        newData: formData,
+        changes: changes
+      }
     });
   } catch (error) {
     console.error("Error resubmitting ironpowder:", error);

@@ -31,7 +31,10 @@ const ReportPrintDispatcher = lazy(() => import('./pages/Reports/ReportPrintDisp
 const StandardPlanMaster = lazy(() => import('./components/formGen/pages/Master/StandardPlanMaster'));
 const ProductionReportPage = lazy(() => import('./pages/Reports/ProductionReportPage'));
 const DailyReportPrint = lazy(() => import('./pages/Reports/DailyReportPrint')); // ✅ Import เข้ามา
+
 const IronpowderFormPrint = lazy(() => import('./pages/Reports/Ironpowder/PrintableReportIronpowder.tsx')); // ✅ Import เข้ามา
+const ActivityLogPage = lazy(() => import('./pages/Reports/ActivityLogPage')); // ✅ New Page
+
 // Forms
 const BZ_Form = lazy(() => import('./components/formGen/pages/GEN_B/BZ_Form/BZ_index'));
 const BN_Form = lazy(() => import('./components/formGen/pages/GEN_B/BN_Form/BN_index'));
@@ -297,6 +300,18 @@ const AppRoutes = () => {
                         <Route
                           path="/reports/view/:id"
                           element={<ReportDetailDispatcher />}
+                        />
+                        {/* ✅ Activity Log Route */}
+                        <Route
+                          path="/admin/activity-logs"
+                          element={
+                            <ProtectedRoute>
+                              <>
+                                <PageTitle title="Activity Logs | Genmatsu" />
+                                <ActivityLogPage />
+                              </>
+                            </ProtectedRoute>
+                          }
                         />
                         {/* ✅ Add specific routes for Recycle to match the links in History page */}
                         <Route

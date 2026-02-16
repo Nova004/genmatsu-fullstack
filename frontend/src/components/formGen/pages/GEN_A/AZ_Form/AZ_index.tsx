@@ -67,7 +67,7 @@ function AZ_Form() {
                     <FormHeader
                         title="ใบรายงานการผลิต(AZ)"
                         formTypes={availableForms}
-                        currentValue="AZ"
+                        currentValue="G004"
                         inputClass={inputClass}
                     />
 

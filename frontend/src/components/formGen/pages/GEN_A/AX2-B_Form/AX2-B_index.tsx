@@ -67,7 +67,7 @@ function AX2_B_Form() {
                     <FormHeader
                         title="ใบรายงานการผลิต(AX2-B)"
                         formTypes={availableForms}
-                        currentValue="AX2-B"
+                        currentValue="G002"
                         inputClass={inputClass}
                     />
 

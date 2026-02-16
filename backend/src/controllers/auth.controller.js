@@ -95,7 +95,7 @@ const login = async (req, res) => {
     const token = jwt.sign(
       payload,
       process.env.JWT_SECRET || "default_secret",
-      { expiresIn: "1h" }
+      { expiresIn: "9h" } // ✅ Modified to 9 hours
     );
 
     res.status(200).json({

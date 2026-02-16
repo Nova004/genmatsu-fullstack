@@ -44,7 +44,7 @@ const runTest = async () => {
             }
 
             // [TEST MODE] Override (ยังคงส่งหาคุณคนเดียวเหมือนเดิม เพื่อความปลอดภัย)
-            const emails = ['aukkharapon_@ageless.co.th'];
+            const emails = ['aukkharapon@ageless.co.th'];
             console.log(`   - 🛡️ [TEST MODE ACTIVE]: Email will be sent ONLY to: ${emails[0]}`);
 
             if (totalPending > 0) { // Force trigger if > 0 (Ignore Threshold 5 for test)

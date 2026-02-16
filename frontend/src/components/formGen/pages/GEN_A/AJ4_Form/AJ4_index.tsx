@@ -66,7 +66,7 @@ function AJ4_Form() {
                     <FormHeader
                         title="ใบรายงานการผลิต(AJ4)"
                         formTypes={availableForms}
-                        currentValue="AJ4"
+                        currentValue="G006"
                         inputClass={inputClass}
                     />
 
