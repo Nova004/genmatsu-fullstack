@@ -1,3 +1,5 @@
+// scripts/manual_trigger_email.js
+
 const { sql, poolConnect } = require("../src/db");
 const submissionRepo = require("../src/repositories/submission.repository");
 const ironpowderRepo = require("../src/repositories/ironpowder.repository");
@@ -35,35 +37,27 @@ const runTest = async () => {
             console.log(`   - Total Pending:    ${totalPending}`);
 
             // 4. Get Approvers Emails
-            console.log(`   - 👥 [CHECKING REAL RECIPIENTS]:`);
-            const realApprovers = await submissionRepo.getApproverEmailsByLevel(pool, level);
-            if (realApprovers.length > 0) {
-                realApprovers.forEach(email => console.log(`      • ${email}`));
+            console.log(`   - 👥 [TARGET RECIPIENTS]:`);
+            const emails = await submissionRepo.getApproverEmailsByLevel(pool, level);
+
+            if (emails.length > 0) {
+                emails.forEach(email => console.log(`      • ${email}`));
             } else {
                 console.log(`      • (No active users found for Level ${level})`);
             }
 
-            // [TEST MODE] Override (ยังคงส่งหาคุณคนเดียวเหมือนเดิม เพื่อความปลอดภัย)
-            const emails = ['aukkharapon@ageless.co.th'];
-            console.log(`   - 🛡️ [TEST MODE ACTIVE]: Email will be sent ONLY to: ${emails[0]}`);
+            if (totalPending > 0) {
+                console.log(`   ----------------------------------------------------------------`);
+                console.log(`   📢 [DRY RUN] Found ${totalPending} pending tasks.`);
+                console.log(`   🚫 Email sending is DISABLED in this script.`);
+                console.log(`   ✅ If enabled, notification WOULD be sent to the list above.`);
+                console.log(`   ----------------------------------------------------------------`);
 
-            if (totalPending > 0) { // Force trigger if > 0 (Ignore Threshold 5 for test)
-                console.log(`   📧 Sending Email...`);
-                try {
-                    const result = await emailService.sendBacklogNotification(emails, level, totalPending);
+                // 🛑 SAFETY: Commented out actual sending
+                // await emailService.sendBacklogNotification(emails, level, totalPending);
 
-                    if (result) {
-                        console.log(`   ✅ Email Sent Successfully! MessageID: ${result.messageId}`);
-                    } else {
-                        console.log(`   ❌ Email FAILED. The service returned undefined.`);
-                        console.log(`   🔎 Check the [ERROR] logs above for details.`);
-                        console.log(`   💡 Check .env credentials, Port 587, or Firewall.`);
-                    }
-                } catch (error) {
-                    console.error(`   ❌ Failed to send email:`, error.message);
-                }
             } else {
-                console.log(`   ⚠️ No pending tasks, skipping email.`);
+                console.log(`   ⚠️ No pending tasks, no action needed.`);
             }
         }
 

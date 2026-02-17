@@ -143,7 +143,84 @@ const LogDetailModal: React.FC<LogDetailModalProps> = ({ isOpen, onClose, log })
         return <div className="p-4 text-center">No data available for comparison.</div>;
     };
 
+    const areValuesEquivalent = (v1: any, v2: any) => {
+        // 1. Strict equality first
+        if (v1 === v2) return true;
+
+        // 2. Prepare strings by trimming whitespace (Solving "0.89" vs "0.89 ")
+        const s1 = (v1 !== null && v1 !== undefined) ? String(v1).trim() : '';
+        const s2 = (v2 !== null && v2 !== undefined) ? String(v2).trim() : '';
+
+        // If trimmed strings are equal, they are equivalent
+        if (s1 === s2) return true;
+
+        // 3. Status check: if strings are different, try numeric comparison (Solving "740.00" vs "740")
+        if (s1 !== '' && s2 !== '') {
+            const n1 = Number(s1);
+            const n2 = Number(s2);
+
+            if (!isNaN(n1) && !isNaN(n2)) {
+                // Use a slightly larger epsilon than Number.EPSILON
+                const FLOAT_EPSILON = 1e-9;
+                return Math.abs(n1 - n2) < FLOAT_EPSILON;
+            }
+        }
+        return false;
+    };
+
     const renderTable = (allKeys: string[], oldFlat: Record<string, any>, newFlat: Record<string, any>) => {
+        // Filter out keys where values are equivalent
+        const keysWithChanges = allKeys.filter(key => {
+            const oldVal = oldFlat[key];
+            const newVal = newFlat[key];
+            return !areValuesEquivalent(oldVal, newVal);
+        });
+
+        // Loop only keys with actual changes
+        const rows = keysWithChanges.map((key) => {
+            const oldVal = oldFlat[key];
+            const newVal = newFlat[key];
+
+            const showOld =
+                oldVal === undefined || oldVal === null ? '(empty)' :
+                    typeof oldVal === 'object' ? JSON.stringify(oldVal, null, 2) : String(oldVal);
+
+            const showNew =
+                newVal === undefined || newVal === null ? '(empty)' :
+                    typeof newVal === 'object' ? JSON.stringify(newVal, null, 2) : String(newVal);
+
+            const formattedKey = key
+                .replace(/\[(\d+)\]/g, ' #$1 ') // [0] -> #0
+                .replace(/^\./, '')             // remove leading dot if any
+                .replace(/\./g, ' > ')          // dots to arrows
+                .replace(/([A-Z])/g, ' $1')    // Space before Caps
+                .replace(/_/g, ' ')            // Underscores to spaces
+                .replace(/^\w/, (c: string) => c.toUpperCase()) // Capitalize first letter
+                .trim();
+
+            return (
+                <tr key={key} className="border-b border-gray-200 dark:border-strokedark bg-yellow-50 dark:bg-slate-700">
+                    <td className="py-2 px-3 font-medium text-gray-700 dark:text-gray-300 max-w-xs break-words align-top">
+                        {formattedKey}
+                    </td>
+                    <td className="py-2 px-3 align-top">
+                        <div className="w-full bg-red-100 text-red-800 border border-red-200 rounded px-2 py-1 text-xs break-all whitespace-pre-wrap font-mono dark:bg-red-900/30 dark:border-red-800 dark:text-red-200">
+                            {showOld}
+                        </div>
+                    </td>
+                    <td className="py-2 px-3 align-top">
+                        <div className="w-full bg-green-100 text-green-800 border border-green-200 rounded px-2 py-1 text-xs break-all whitespace-pre-wrap font-mono dark:bg-green-900/30 dark:border-green-800 dark:text-green-200">
+                            {showNew}
+                        </div>
+                    </td>
+                </tr>
+            );
+        });
+
+        if (keysWithChanges.length === 0) {
+            return <div className="p-4 text-center text-gray-500">No content changes detected.</div>;
+        }
+
         return (
             <div className="overflow-x-auto">
                 <table className="min-w-full text-sm">
@@ -155,56 +232,7 @@ const LogDetailModal: React.FC<LogDetailModalProps> = ({ isOpen, onClose, log })
                         </tr>
                     </thead>
                     <tbody>
-                        {/* ... Existing row rendering logic ... */}
-                        {allKeys.map((key) => {
-                            const oldVal = oldFlat[key];
-                            const newVal = newFlat[key];
-
-                            if (oldVal === newVal) return null;
-
-                            const showOld =
-                                oldVal === undefined || oldVal === null ? '(empty)' :
-                                    typeof oldVal === 'object' ? JSON.stringify(oldVal, null, 2) : String(oldVal);
-
-                            const showNew =
-                                newVal === undefined || newVal === null ? '(empty)' :
-                                    typeof newVal === 'object' ? JSON.stringify(newVal, null, 2) : String(newVal);
-
-                            const isChanged = oldVal !== newVal;
-                            const rowClass = isChanged ? "bg-yellow-50 dark:bg-slate-700" : "";
-
-                            if (!isChanged) return null;
-
-                            const formattedKey = key
-                                .replace(/\[(\d+)\]/g, ' #$1 ') // [0] -> #0
-                                .replace(/^\./, '')             // remove leading dot if any
-                                .replace(/\./g, ' > ')          // dots to arrows
-                                .replace(/([A-Z])/g, ' $1')    // Space before Caps
-                                .replace(/_/g, ' ')            // Underscores to spaces
-                                .replace(/^\w/, (c: string) => c.toUpperCase()) // Capitalize first letter
-                                .trim();
-
-                            return (
-                                <tr key={key} className={`border-b border-gray-200 dark:border-strokedark ${rowClass}`}>
-                                    <td className="py-2 px-3 font-medium text-gray-700 dark:text-gray-300 max-w-xs break-words align-top">
-                                        {formattedKey}
-                                    </td>
-                                    <td className="py-2 px-3 align-top">
-                                        <div className="w-full bg-red-100 text-red-800 border border-red-200 rounded px-2 py-1 text-xs break-all whitespace-pre-wrap font-mono dark:bg-red-900/30 dark:border-red-800 dark:text-red-200">
-                                            {showOld}
-                                        </div>
-                                    </td>
-                                    <td className="py-2 px-3 align-top">
-                                        <div className="w-full bg-green-100 text-green-800 border border-green-200 rounded px-2 py-1 text-xs break-all whitespace-pre-wrap font-mono dark:bg-green-900/30 dark:border-green-800 dark:text-green-200">
-                                            {showNew}
-                                        </div>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                        {allKeys.every(k => oldFlat[k] === newFlat[k]) && (
-                            <tr><td colSpan={3} className="text-center py-4 text-gray-500">No content changes detected.</td></tr>
-                        )}
+                        {rows}
                     </tbody>
                 </table>
             </div>

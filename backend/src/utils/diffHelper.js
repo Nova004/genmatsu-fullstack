@@ -1,3 +1,5 @@
+// src/utils/diffHelper.js
+
 /**
  * Deep compare two objects and return a summary of changes
  * @param {Object} oldObj - The original object
@@ -29,7 +31,10 @@ const areValuesEquivalent = (v1, v2) => {
         const n2 = Number(s2);
 
         if (!isNaN(n1) && !isNaN(n2)) {
-            return Math.abs(n1 - n2) < Number.EPSILON;
+            // Use a slightly larger epsilon than Number.EPSILON to handle floating point math errors
+            // e.g. 2.0000000000000004 vs 2
+            const FLOAT_EPSILON = 1e-9;
+            return Math.abs(n1 - n2) < FLOAT_EPSILON;
         }
     }
 

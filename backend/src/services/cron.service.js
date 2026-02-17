@@ -1,3 +1,4 @@
+// src/services/cron.service.js
 const cron = require("node-cron");
 const logger = require("../utils/logger");
 const { poolConnect } = require("../db");
@@ -32,14 +33,13 @@ exports.init = () => {
 
                     // 3. Check Threshold
                     if (totalPending > THRESHOLD) {
-                        // 4. Get Approvers Emails
+                        // 4. Get Approvers Emails (Production)
                         // const emails = await submissionRepo.getApproverEmailsByLevel(pool, level);
-
-                        // 🟡 TEST MODE: Send ONLY to Tester
                         const emails = ['aukkharapon@ageless.co.th'];
-                        logger.info(`[Cron] [TEST MODE] Sending notification to ${emails[0]} (Original Recipient Logic bypassed)`);
 
                         if (emails.length > 0) {
+                            logger.info(`[Cron] Sending notification to ${emails.length} recipients: ${emails.join(', ')}`);
+
                             // 5. Send Email
                             await emailService.sendBacklogNotification(emails, level, totalPending);
                         } else {
