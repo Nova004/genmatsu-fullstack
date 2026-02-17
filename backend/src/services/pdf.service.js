@@ -68,11 +68,12 @@ const { PDFDocument } = require('pdf-lib'); // 📦 Install pdf-lib
 // ... (getBrowser function remains the same) ...
 
 exports.generatePdf = async (submissionId, frontendPrintUrl) => {
+  const startTime = Date.now();
 
 
   try {
     // 1. Fetch data
-    logger.info(`[PDF Gen] 1. Fetching data for ID: ${submissionId}`);
+    // 1. Fetch data
     const dataToInject = await submissionService.getSubmissionDataForPdf(submissionId);
 
     const reportName = dataToInject.submission.product_name || dataToInject.submission.form_type || "ใบรายงานการผลิต";
@@ -98,8 +99,7 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
     const needsBarcodePage = /^(\d{4})([A-Z])(\d)$/.test(lotNo);
 
     // Helper to generate a single PDF part
-    const generatePart = async (urlSuffix, options, waitTimeout = 30000) => {
-      logger.info(`[PDF Gen] Generating Part: ${urlSuffix}...`);
+    const generatePart = async (urlSuffix, options, waitSelectorOverride = null, waitTimeout = 30000) => {
 
       // Append URL Param
       const separator = frontendPrintUrl.includes('?') ? '&' : '?';
@@ -126,18 +126,18 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
           }
         });
 
-        await partPage.goto(targetUrl, { waitUntil: "networkidle2", timeout: 60000 });
+        // 🚀 Optimize: Wait for DOMContentLoaded (Faster than networkidle2)
+        await partPage.goto(targetUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
 
         // 🟢 Wait for specific selector based on part
-        const waitSelector = (urlSuffix === 'barcode')
+        const waitSelector = waitSelectorOverride || (urlSuffix === 'barcode'
           ? "#barcode-content-ready"
-          : "#pdf-content-ready";
+          : "#pdf-content-ready");
 
-        logger.info(`[PDF Gen] 5. Waiting for selector (${waitSelector})...`);
         await partPage.waitForSelector(waitSelector, { timeout: waitTimeout });
 
-        // 🟢 Add Safety Delay to ensure Layout/Fonts settle
-        await new Promise(r => setTimeout(r, 1500));
+        // 🟢 Optimize: Reduce Safety Delay (from 1500ms to 500ms)
+        await new Promise(r => setTimeout(r, 500));
 
         // 🟢 Wait for Fonts to be ready (Critical for Server-side rendering)
         await partPage.evaluate(() => document.fonts.ready);
@@ -148,8 +148,8 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
       }
     };
 
-    // --- Part 1: Main Report (With Header/Footer) ---
-    const mainPdfBuffer = await generatePart('main', {
+    // --- Prepare Promises for Parallel Execution ---
+    const mainReportPromise = generatePart('main', {
       format: "A4",
       printBackground: true,
       displayHeaderFooter: true,
@@ -167,19 +167,16 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
       `,
       margin: { top: "50px", right: "10px", bottom: "20px", left: "10px" },
       scale: 0.37,
-    });
+    }); // Default timeout 30s
 
-    if (!needsBarcodePage) {
-      return mainPdfBuffer;
-    }
+    let barcodeReportPromise = Promise.resolve(null);
 
-    // --- Part 2: Barcode Page (With Header/Footer as requested) ---
-    try {
-      const barcodePdfBuffer = await generatePart('barcode', {
+    if (needsBarcodePage) {
+      barcodeReportPromise = generatePart('barcode', {
         format: "A4",
         printBackground: true,
-        displayHeaderFooter: true, // ✅ Custom Header/Footer enabled
-        headerTemplate: dynamicHeaderTemplateBarcode, // Reuse style
+        displayHeaderFooter: true,
+        headerTemplate: dynamicHeaderTemplateBarcode,
         footerTemplate: `
           <div style="width: 100%; padding: 5px 20px 0;
                       font-size: 10px; color: #555;
@@ -191,31 +188,40 @@ exports.generatePdf = async (submissionId, frontendPrintUrl) => {
             <span style="flex: 1; text-align: right;"></span>
           </div>
         `,
-        margin: { top: "50px", right: "10px", bottom: "20px", left: "10px" }, // Match Main margins
+        margin: { top: "50px", right: "10px", bottom: "20px", left: "10px" },
         scale: 0.37,
-      }, 3000); // ⏱ Fast fail (3s)
+      }, "#barcode-content-ready", 2000) // ⏱ Check selector for 2s
+        .catch(err => {
+          logger.warn(`[PDF Gen] ⚠️ Barcode generation failed/timed out: ${err.message}`);
+          return null; // Return null to skip merging
+        });
+    }
 
-      // --- Merge PDFs ---
-      logger.info("[PDF Gen] Merging Main Report + Barcode Page...");
-      const mergedPdf = await PDFDocument.create();
+    // 🚀 Execute in Parallel
+    const [mainPdfBuffer, barcodePdfBuffer] = await Promise.all([mainReportPromise, barcodeReportPromise]);
 
+    // --- Merge PDFs ---
+    const mergedPdf = await PDFDocument.create();
+
+    if (mainPdfBuffer) {
       const pdf1 = await PDFDocument.load(mainPdfBuffer);
-      const pdf2 = await PDFDocument.load(barcodePdfBuffer);
-
       const copiedPages1 = await mergedPdf.copyPages(pdf1, pdf1.getPageIndices());
       copiedPages1.forEach((page) => mergedPdf.addPage(page));
+    }
 
+    if (barcodePdfBuffer) {
+      const pdf2 = await PDFDocument.load(barcodePdfBuffer);
       const copiedPages2 = await mergedPdf.copyPages(pdf2, pdf2.getPageIndices());
       copiedPages2.forEach((page) => mergedPdf.addPage(page));
-
-      const mergedPdfBytes = await mergedPdf.save();
-      return Buffer.from(mergedPdfBytes);
-
-    } catch (barcodeError) {
-      logger.warn(`[PDF Gen] ⚠️ Failed to generate Barcode Page for ID ${submissionId}. Returning Main Report only. Reason: ${barcodeError.message}`);
-      // Fallback: Return only the main report if barcode generation fails
-      return mainPdfBuffer;
     }
+
+    const mergedPdfBytes = await mergedPdf.save();
+
+    // ⏱ Log Duration
+    const duration = (Date.now() - startTime) / 1000;
+    logger.info(`[PDF Gen] ✅ Finished generation for ID: ${submissionId} in ${duration}s`);
+
+    return Buffer.from(mergedPdfBytes);
 
   } catch (error) {
     logger.error(`[PDF Gen] Error generating PDF for ID ${submissionId}:`, error);
