@@ -1,0 +1,285 @@
+
+บทสรุปการพัฒนาระบบบันทึกและแสดงผลข้อมูล (Full-stack Overview)
+เป้าหมายหลักของเราคือการสร้างระบบที่สมบูรณ์สำหรับ "สร้าง" (Create) และ "อ่าน" (Read) ใบรายงานการผลิต โดยยึดหลักสถาปัตยกรรม "พิมพ์เขียวอัจฉริยะ" ที่ยืดหยุ่นและพร้อมสำหรับการขยายตัวในอนาคต
+ส่วนที่ 1: การวางรากฐาน (Database & Backend)
+เราเริ่มต้นด้วยการสร้าง "โครงสร้างพื้นฐาน" ที่แข็งแรงเพื่อรองรับข้อมูลทั้งหมด
+1.1 ฐานข้อมูล (SQL Server)
+เราได้เพิ่มตารางใหม่ 4 ตาราง ซึ่งแต่ละตารางมีหน้าที่เฉพาะเจาะจง:
+	• Form_Version_Sets: ทำหน้าที่เป็น "สารบัญชุดเวอร์ชัน" จะสร้างแถวใหม่ก็ต่อเมื่อโครงสร้างของฟอร์ม (พิมพ์เขียว) มีการเปลี่ยนแปลงเท่านั้น
+	• Form_Version_Set_Items: บอกว่าใน "สารบัญ" แต่ละชุด ประกอบด้วย template_id (พิมพ์เขียวเวอร์ชันเฉพาะ) อะไรบ้าง
+	• Form_Submissions: เปรียบเสมือน "หน้าปก" ของเอกสารที่บันทึก โดยมีการ "ประทับตรา" ด้วย version_set_id เพื่ออ้างอิงถึงโครงสร้างฟอร์มที่ใช้ ณ เวลานั้น
+	• Form_Submission_Data: เก็บ "เนื้อหา" ของฟอร์มทั้งหมดในรูปแบบ JSON ก้อนเดียว ทำให้มีความยืดหยุ่นสูงมาก
+1.2 Backend API (Node.js & Express)
+เราได้สร้างและอัปเกรด API ในฝั่ง Backend เพื่อจัดการกับข้อมูล:
+	• POST /api/submissions: Endpoint สำหรับ "สร้าง" ข้อมูลใหม่ โดยมี Logic อัจฉริยะในการ "ค้นหาหรือสร้าง" version_set_id ก่อนที่จะบันทึกข้อมูลลง Form_Submissions และ Form_Submission_Data
+	• GET /api/submissions: Endpoint สำหรับ "อ่าน" ข้อมูลทั้งหมดในรูปแบบรายการ เพื่อใช้ในหน้า "Report History"
+	• GET /api/submissions/:id: Endpoint สำหรับ "อ่าน" ข้อมูลเพียงรายการเดียวแบบละเอียด โดยจะดึงทั้ง "ข้อมูลที่กรอก" และ "พิมพ์เขียวเวอร์ชันที่ถูกต้อง" กลับมาคู่กันเสมอ
+
+ส่วนที่ 2: การเชื่อมต่อและการจัดระเบียบ (Frontend Infrastructure)
+ก่อนที่จะเริ่มสร้างหน้าเว็บ เราได้วางรากฐานที่สำคัญในฝั่ง Frontend เพื่อให้การพัฒนาราบรื่นและมีมาตรฐาน
+2.1 การตั้งค่า Proxy (vite.config.js)
+	• ปัญหาที่แก้ไข: แก้ปัญหา Network Error และ CORS ที่เกิดจากการที่ Frontend (localhost:5173) ไม่สามารถเรียก API ของ Backend (localhost:4000) ได้โดยตรง
+	• สิ่งที่เราทำ: เราตั้งค่า Proxy ให้ Vite Dev Server ทำหน้าที่เป็น "ตัวกลาง" เมื่อมีการเรียก /api/... จาก Frontend, Vite จะส่งคำขอนั้นต่อไปยัง Backend ให้โดยอัตโนมัติ ทำให้การเชื่อมต่อราบรื่นและปลอดภัย
+2.2 การสร้าง Service Layer (/services)
+	• ปัญหาที่แก้ไข: หลีกเลี่ยงการเขียนโค้ดเรียก axios ซ้ำซ้อนและกระจัดกระจายอยู่ในหลายๆ Component
+	• สิ่งที่เราทำ: เราสร้างไฟล์ Service ขึ้นมา 3 ไฟล์:
+		○ apiService.ts: เป็นศูนย์กลางการเชื่อมต่อ axios
+		○ submissionService.ts: รวมฟังก์ชันที่เกี่ยวกับการ "สร้าง" และ "อ่าน" ข้อมูลที่บันทึกไว้
+		○ formService.ts: รวมฟังก์ชันที่เกี่ยวกับการดึง "พิมพ์เขียว"
+
+ส่วนที่ 3: การสร้างฟีเจอร์ "บันทึกข้อมูล" (Create Feature)
+เราได้ "อัปเกรด" ฟอร์ม BZ_Form เดิมให้สามารถบันทึกข้อมูลได้จริง
+3.1 การอัปเกรด BZ_Form/index.tsx
+	• เพิ่ม State: เราเพิ่ม isSubmitting (สำหรับควบคุมปุ่ม) และ loadedTemplates (สำหรับเก็บ ID พิมพ์เขียว)
+	• แก้ปัญหา Loop ไม่รู้จบ: เราใช้ useCallback เพื่อสร้างฟังก์ชัน handleTemplateLoaded ที่เสถียรและไม่ถูกสร้างใหม่ทุกครั้งที่ re-render ซึ่งเป็นการแก้ปัญหา Maximum update depth exceeded ที่เคยเกิดขึ้น
+	• เชื่อมต่อ Component ลูก: เราส่ง onTemplateLoaded เป็น Prop ลงไปให้ FormStep2 และ FormStep3 เพื่อให้ลูกสามารถส่งข้อมูล template_id กลับขึ้นมาให้แม่ได้
+	• อัปเกรด onSubmit: เราเปลี่ยน onSubmit เดิมให้กลายเป็น Logic การบันทึกข้อมูลที่สมบูรณ์ โดยมีการสร้าง submissionPayload, เรียกใช้ Service, และแสดงผลลัพธ์ด้วย fireToast
+
+ส่วนที่ 4: การสร้างฟีเจอร์ "แสดงผลข้อมูล" (Read Feature)
+หลังจากบันทึกข้อมูลได้แล้ว เราได้สร้างระบบเพื่อให้ผู้ใช้สามารถย้อนกลับมาดูข้อมูลได้
+4.1 หน้ารายการ (ReportHistory.tsx)
+	• สิ่งที่เราทำ: สร้างหน้าใหม่ทั้งหมดที่ useEffect จะเรียกใช้ getAllSubmissions จาก Service เพื่อดึงรายการทั้งหมดมาแสดงในรูปแบบตาราง
+	• ฟีเจอร์เพิ่มเติม: เราได้เพิ่มปุ่ม "สร้างรายงานใหม่" ที่ลิงก์กลับไปหน้าฟอร์ม และสร้าง ลิงก์สำหรับดูรายละเอียด (/reports/view/:id) ในแต่ละแถวของตาราง
+4.2 การจัดระเบียบหน้าแสดงผล
+	• ปัญหาที่แก้ไข: ป้องกันความสับสนในอนาคตเมื่อมีฟอร์ม 26 แบบ
+	• สิ่งที่เราทำ: เราได้จัดโครงสร้างโฟลเดอร์ใหม่ โดยสร้าง /pages/Reports ขึ้นมา และวางแผนให้หน้าแสดงรายละเอียดของแต่ละฟอร์มถูกแยกเก็บไว้ในโฟลเดอร์ของตัวเอง (เช่น /BZ/ReportDetailBZ.tsx)
+4.3 หน้าแสดงรายละเอียด (ReportDetailDispatcher.tsx และ ReportDetailBZ.tsx)
+	• ReportDetailDispatcher.tsx (ตัวจ่ายงาน):
+		○ เราสร้าง Component อัจฉริยะนี้ขึ้นมาเพื่อทำหน้าที่เป็น "ผู้จัดการ" ของหน้ารายละเอียด
+		○ มันจะดึง id จาก URL, เรียก API getSubmissionById, และตรวจสอบ form_type ของข้อมูล
+		○ จากนั้น มันจะ "จ่ายงาน" ต่อไปให้ Component ที่ถูกต้อง (ในกรณีนี้คือ ReportDetailBZ)
+	• ReportDetailBZ.tsx และ BZFormViewer.tsx (การนำฟอร์มกลับมาใช้ใหม่):
+		○ แนวคิดสำคัญ: แทนที่จะสร้างหน้าแสดงผลใหม่ทั้งหมด เราได้นำ Component FormStep 1-4 ที่ใช้ในการ "สร้าง" ฟอร์มกลับมาใช้ซ้ำ
+		○ BZFormViewer.tsx: เราสร้าง Component นี้ขึ้นมาเพื่อ "ห่อหุ้ม" FormStep ทั้งหมด โดยรับ formData มาเติมลงในฟอร์มผ่าน react-hook-form และส่ง Prop isReadOnly={true} ลงไป
+		○ ผลลัพธ์: ทำให้หน้า "ดูรายละเอียด" มีหน้าตาเหมือนกับฟอร์มตอนกรอกทุกประการ แต่ไม่สามารถแก้ไขได้ ซึ่งเป็นประสบการณ์ใช้งานที่ดีและบำรุงรักษาง่ายมาก
+ทั้งหมดนี้คือภาพรวมการทำงานที่เราได้ทำร่วมกันจนสำเร็จครับ! ตอนนี้คุณมีระบบ Create และ Read ที่แข็งแรง, ยืดหยุ่น, และพร้อมที่จะต่อยอดไปสู่ฟีเจอร์ "แก้ไข" (Update) ต่อไปแล้วครับ
+
+ภาพรวมสถาปัตยกรรมฐานข้อมูล (Database Architecture Overview)
+ฐานข้อมูลของเราถูกแบ่งออกเป็น 4 ระบบหลักที่ทำงานประสานกัน:
+
+ระบบข้อมูลหลัก (Master Data & User System): รากฐานข้อมูลพนักงาน, สิทธิ์การอนุมัติ (Level) และข้อมูลอ้างอิง
+
+ระบบพิมพ์เขียวอัจฉริยะ (Smart Blueprint System): หัวใจของความยืดหยุ่น ทำให้ Admin สร้าง/แก้ไขฟอร์มได้เอง
+
+ระบบบันทึกข้อมูลฟอร์ม (Form Submission System): ระบบเก็บข้อมูลที่ผู้ใช้กรอก โดยยังคงรักษาเวอร์ชันของพิมพ์เขียวไว้
+
+ระบบอนุมัติเอกสาร (Form Approval System): [ใหม่] ระบบที่จัดการ Flow การอนุมัติ, สถานะ, ประวัติคอมเมนต์ และการส่งซ้ำ (Resubmit)
+
+แผนภาพความสัมพันธ์ (Entity-Relationship Diagram - ERD)
+ข้อมูลโค้ด
+
+erDiagram
+    %% 1. Master Data & User System (อัปเดต)
+    agt_member {
+        string agt_member_id PK "รหัสพนักงาน (ID กลาง)"
+        string agt_member_nameEN "ชื่อภาษาอังกฤษ (สำหรับแสดงผล)"
+        string agt_member_password "รหัสผ่าน (ที่ใช้ Login)"
+    }
+    Gen_Manu_Member {
+        int gen_manu_member_id PK
+        string Gen_Manu_mem_Memid FK "เชื่อมกับ agt_member_id"
+        string Gen_Manu_mem_No "รหัสฝ่ายผลิต (ที่แสดงในฟอร์ม)"
+        int LV_Approvals "ระดับสิทธิ์อนุมัติ (1, 2, 3)"
+	
+    }
+    Gen_NaCl_MT {
+        int nacl_id PK
+        float moisture_value "ค่า Moisture"
+        float nacl_water_value "ค่า NaCl Water"
+	NaCl_per_centum "เปอร์เซ็น เเต่ละ form จะใช้ % ไม่เหมือนกัน เเละเราจะใช้คอลั่มนี้กรอง"
+	Chemicals_Type "บางไทป ก็มีค่า % ที่ไม่เหมือนคนอื่น เราก็เลยส้รางตรงนี้เเยก"
+    }
+
+    agt_member ||--o{ Gen_Manu_Member : "ถูกกำหนดสิทธิ์"
+
+    %% 2. Smart Blueprint System (คงเดิม)
+    Form_Master_Templates {
+        int template_id PK "รหัสแม่แบบ (แต่ละเวอร์ชัน)"
+        string template_name "ชื่ออ้างอิง (BZ_Step2)"
+        string template_category "กลุ่ม (BZ)"
+        int version "เลขเวอร์ชัน"
+        bit is_latest "เป็นเวอร์ชันล่าสุด?"
+    }
+    Form_Master_Items {
+        int item_id PK
+        int template_id FK "เป็นของแม่แบบเวอร์ชันไหน"
+        string config_json "เก็บโครงสร้าง UI และกฎ"
+    }
+    Form_Master_Templates ||--|{ Form_Master_Items : "ประกอบด้วย"
+
+    %% 3. Form Submission System (อัปเดต)
+    Form_Version_Sets {
+        int version_set_id PK "รหัสชุดเวอร์ชัน"
+        string category "กลุ่มของฟอร์ม (GEN_A)" //GEN_A หรือ GEN_B
+        bit is_latest "เป็นชุดล่าสุด?"
+    }
+    Form_Version_Set_Items {
+        int set_item_id PK
+        int version_set_id FK "อยู่ในชุดเวอร์ชันไหน"
+        int template_id FK "ประกอบด้วยพิมพ์เขียวเวอร์ชันอะไร"
+    }
+    Form_Submissions {
+        int submission_id PK "รหัสการบันทึก (เลขที่เอกสาร)"
+        int version_set_id FK "ประทับตราด้วยชุดเวอร์ชัน"
+        string lot_no "Lot No."
+        string submitted_by FK "ID ผู้สร้าง (agt_member_id)"
+        string status "สถานะเอกสาร (Drafted, Rejected)"
+	production_line "line ผลิต"
+    }
+    Form_Submission_Data {
+        int data_id PK
+        int submission_id FK "เป็นเนื้อหาของเอกสารไหน"
+        string form_data_json "ข้อมูลที่กรอกทั้งหมด (JSON)"
+	input_kg "ค่าที่เราบันทึกเเยกออกมาจาก json เพื่อให้ง่ายจ่อการดึงไปทำ report"
+	yield_percent "ค่าที่เราบันทึกเเยกออกมาจาก json เพื่อให้ง่ายจ่อการดึงไปทำ report"
+	production_date "ค่าที่เราบันทึกเเยกออกมาจาก json เพื่อให้ง่ายจ่อการดึงไปทำ report"
+	output_kg "ค่าที่เราบันทึกเเยกออกมาจาก json เพื่อให้ง่ายจ่อการดึงไปทำ report"
+	pallet_data "ค่าที่เราบันทึกเเยกออกมาจาก json เพื่อให้ง่ายจ่อการดึงไปทำ report"
+    }
+    Form_Version_Sets ||--|{ Form_Version_Set_Items : "ประกอบด้วย"
+    Form_Master_Templates ||--o{ Form_Version_Set_Items : "ถูกนำไปใช้ใน"
+    Form_Version_Sets ||--o{ Form_Submissions : "ถูกใช้ในการบันทึก"
+    Form_Submissions ||--|| Form_Submission_Data : "มีเนื้อหาเป็น"
+    agt_member ||--o{ Form_Submissions : "สร้างโดย"
+
+    %% 4. Form Approval System (ใหม่)
+    Gen_Approval_Flow {
+        int flow_id PK
+        int submission_id FK "เป็นของเอกสารไหน"
+        int required_level "Level ที่ต้องอนุมัติ (1, 2, 3)"
+        string status "สถานะขั้นนี้ (Pending, Approved, Rejected)"
+        string approver_user_id FK "ID ผู้อนุมัติ (agt_member_id)"
+        datetime updated_at "เวลาที่อนุมัติ"
+    }
+    Gen_Approved_log {
+        int log_id PK
+        int submission_id FK "เป็นของเอกสารไหน"
+        int level "Level ที่กระทำ"
+        string action "การกระทำ (Approved, Rejected)"
+        string comment "คอมเมนต์"
+        string User_approver_id FK "ID ผู้กระทำ (agt_member_id)"
+    }
+    Form_Submissions ||--|{ Gen_Approval_Flow : "มีขั้นตอนอนุมัติ"
+    Form_Submissions ||--o{ Gen_Approved_log : "มีประวัติการอนุมัติ"
+    Gen_Approval_Flow ||--o{ Gen_Approved_log : "ถูกบันทึกประวัติ"
+    agt_member ||--o{ Gen_Approval_Flow : "อนุมัติโดย"
+    agt_member ||--o{ Gen_Approved_log : "บันทึกประวัติโดย"
+คำอธิบายความสัมพันธ์โดยละเอียด (เวอร์ชันอัปเดต)
+ส่วนที่ 1: ระบบข้อมูลหลัก (Master Data)
+(อัปเดตส่วน agt_member และ Gen_Manu_Member)
+
+agt_member และ Gen_Manu_Member:
+
+ความสัมพันธ์: agt_member เป็นตาราง User กลาง (จากระบบ SMART) ที่เราใช้อ้างอิง ID, ชื่อ (agt_member_nameEN) และการ Login
+
+Gen_Manu_Member เป็นตาราง "ขยาย" ของเราเอง ใช้เก็บข้อมูลเฉพาะของแอปนี้ โดยเชื่อมกับ agt_member ผ่าน Gen_Manu_mem_Memid
+
+คอลัมน์สำคัญ (ใหม่): Gen_Manu_Member.LV_Approvals คือ "ระดับสิทธิ์" (เช่น 1, 2, 3) ที่บอกว่าพนักงานคนนี้สามารถอนุมัติเอกสารใน Level ใด เป็นหัวใจของ Logic การแสดงปุ่ม Approve/Reject
+
+Gen_NaCl_MT:
+
+(คงเดิม) เป็น Master อิสระสำหรับเก็บค่าคำนวณในฟอร์ม
+
+ส่วนที่ 2: ระบบพิมพ์เขียวอัจฉริยะ (Smart Blueprint System)
+(ไม่มีการเปลี่ยนแปลงในส่วนนี้ Logic ยังคงเดิม)
+
+Form_Master_Templates:
+
+(คงเดิม) "แฟ้มแม่แบบ" ของฟอร์ม (เช่น BZ_Step3_Operations) แต่ละแถวคือ 1 เวอร์ชัน
+
+Form_Master_Items:
+
+(คงเดิม) "รายการ" (config_json) ที่ประกอบกันเป็นแม่แบบนั้นๆ
+
+ส่วนที่ 3: ระบบบันทึกข้อมูลฟอร์ม (Form Submission System)
+(อัปเดต Form_Submissions ให้รองรับระบบใหม่)
+
+Form_Version_Sets และ Form_Version_Set_Items:
+
+(คงเดิม) ทำหน้าที่ "แช่แข็ง" (Snapshot) ชุดของพิมพ์เขียว (template_id) ที่ใช้ในการบันทึกเอกสารแต่ละครั้ง
+
+Form_Submissions:
+
+(คงเดิม) "หัวเอกสาร" ที่เชื่อมโยงกับ version_set_id
+
+คอลัมน์สำคัญ (ใหม่):
+
+submitted_by: (เราใช้คอลัมน์นี้) เก็บ agt_member_id ของ "ผู้สร้าง/ผู้บันทึก" เอกสาร
+
+status: (สำคัญมาก) เก็บสถานะ "โดยรวม" ของเอกสาร (เช่น 'Drafted', 'Pending', 'Rejected', 'Approved') เป็นตัวกำหนดว่า User จะเห็นปุ่ม "Resubmit" หรือไม่
+
+Form_Submission_Data:
+
+(คงเดิม) "เนื้อหา" (JSON) ของเอกสารนั้นๆ
+
+ส่วนที่ 4: ระบบอนุมัติเอกสาร (Form Approval System)
+(ใหม่ทั้งหมด) นี่คือ Logic ที่เราเพิ่งสร้างเสร็จ
+
+Gen_Approval_Flow:
+
+หน้าที่: เป็น "ตารางสถานะ" (State Table) บอกว่าเอกสารนี้ (submission_id) ต้องผ่านกี่ด่าน (Level 1, 2, 3) และตอนนี้แต่ละด่านมีสถานะอะไร ('Pending', 'Approved', 'Rejected')
+
+การเชื่อมโยง: submission_id เชื่อมกับ Form_Submissions และ approver_user_id เชื่อมกับ agt_member (เพื่อดึงชื่อผู้อนุมัติ)
+
+Gen_Approved_log:
+
+หน้าที่: เป็น "ตารางประวัติ" (Log Table) บันทึกทุกการกระทำ (Action) ที่เกิดขึ้น
+
+คอลัมน์สำคัญ (ใหม่): comment ถูกเก็บไว้ที่นี่
+
+การเชื่อมโยง: เราใช้ submission_id และ level จากตารางนี้ JOIN กับ gaf.submission_id และ gaf.required_level ใน Gen_Approval_Flow เพื่อดึงคอมเมนต์ที่ถูกต้องของขั้นนั้นๆ มาแสดง
+
+ภาพรวมกระบวนการทำงาน (Workflow) (เวอร์ชันอัปเดต)
+การสร้างฟอร์ม (Create):
+
+(คงเดิม) User กรอกข้อมูล -> Backend ค้นหา (หรือสร้าง) version_set_id -> บันทึก Form_Submissions (ประทับตรา version_set_id) และ Form_Submission_Data (เนื้อหา JSON)
+
+(ใหม่) Backend เรียก Logic createApprovalFlow (ที่เราคุยกัน) เพื่อสร้างแถวใน Gen_Approval_Flow โดยอิงตาม LV_Approvals ของผู้สร้าง (เช่น ถ้า LV1 สร้าง ให้สร้าง Flow สำหรับ LV2, LV3)
+
+Form_Submissions.status ถูกตั้งค่าเป็น 'Drafted' (หรือ 'Pending')
+
+การแสดงผลหน้า View/Print (Display):
+
+Frontend เรียก ApprovalFlowDisplay.tsx
+
+Component นี้เรียก API getApprovalFlow (Backend)
+
+Controller getApprovalFlow (Backend) ทำการ JOIN 5 ตาราง ( Gen_Approval_Flow + Gen_Approved_log (เพื่อเอา comment) + Gen_Manu_Member + agt_member (เพื่อเอา approver_name)) แล้วส่งกลับไป
+
+Frontend Render ตาราง 4 ช่อง (ผู้สร้าง, LV1, LV2, LV3) พร้อมแสดงชื่อ, สถานะ, วันที่, และคอมเมนต์
+
+การอนุมัติ (Action):
+
+User (ที่มี LV_Approvals ตรงกับ required_level ที่ 'Pending') กด "Approve" หรือ "Reject"
+
+Frontend เรียก API performApprovalAction (Backend)
+
+Controller performApprovalAction (Backend) ทำ 2 อย่าง:
+
+UPDATE Gen_Approval_Flow: เปลี่ยน status (เช่น เป็น 'Approved') และบันทึก approver_user_id
+
+INSERT Gen_Approved_log: บันทึกประวัติการกระทำ (action และ comment)
+
+(ถ้าอนุมัติครบทุกขั้น Controller จะ UPDATE Form_Submissions.status เป็น 'Approved')
+
+(ถ้าถูก Reject Controller จะ UPDATE Form_Submissions.status เป็น 'Rejected')
+
+การส่งซ้ำ (Resubmit):
+
+User เห็นเอกสารที่ status = 'Rejected'
+
+User กดปุ่ม "แก้ไข" (Edit) -> Frontend โหลดหน้า AS2FormEdit.tsx (โดยส่ง status ไปด้วย)
+
+ปุ่ม "ส่งอนุมัติใหม่" (Resubmit) แสดงขึ้นมา (เพราะ status === 'Rejected')
+
+User กด "Resubmit" -> Frontend เรียก API resubmitSubmission (Backend)
+
+(หัวใจสำคัญ) Controller resubmitSubmission (Backend) ทำงานใน Transaction:
+
+UPDATE Form_Submission_Data (อัปเดต JSON)
+
+UPDATE Form_Submissions (เปลี่ยน status กลับเป็น 'Drafted')
+
+UPDATE Gen_Approval_Flow (รีเซ็ตแถว 'Rejected'/'Pending' กลับเป็น 'Pending' และล้าง approver_user_id ออก)
+
+DELETE Gen_Approved_log (ลบ Log เก่าที่มี action = 'Rejected')

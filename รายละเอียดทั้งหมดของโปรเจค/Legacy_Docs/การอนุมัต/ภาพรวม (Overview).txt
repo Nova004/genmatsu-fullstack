@@ -1,0 +1,86 @@
+นี่คือสรุปแบบละเอียดว่าระบบของคุณทำงานอย่างไร:
+1. ภาพรวม (Overview)
+เราได้สร้างระบบอนุมัติแบบหลายขั้นตอน (Multi-step Approval) ที่เชื่อมโยงกับเอกสาร (Submissions) โดยมี Flow หลัก 3 ส่วน:
+	1. การแสดงผล (Display): แสดงตาราง 4 ช่อง (ผู้จัดทำ, LV1, LV2, LV3) ที่ชัดเจน แสดงชื่อ, สถานะ, วันที่, และคอมเมนต์
+	2. การดำเนินการ (Action): ผู้มีสิทธิ์ (Level ตรงกัน) สามารถกด "Approve" หรือ "Reject" พร้อมแนบคอมเมนต์ได้
+	3. การแก้ไข (Resubmit): ผู้สร้างเอกสารที่ถูก "Reject" สามารถ "ส่งอนุมัติใหม่" ได้ โดยระบบจะรีเซ็ตเฉพาะขั้นตอนที่ถูก Reject (โดยยังคงขั้นตอนที่ Approved ไว้)
+
+2. ฐานข้อมูล (Database Schema)
+ระบบนี้ต้องอาศัยการทำงานร่วมกันของตารางหลักๆ 5-6 ตาราง:
+	• Form_Submissions (ตารางหลัก):
+		○ เก็บข้อมูลหลักของเอกสาร
+		○ คอลัมน์สำคัญ: submission_id (Key หลัก), status (เช่น 'Drafted', 'Pending', 'Approved', 'Rejected')
+		○ ที่เราแก้ไข: เราทำให้แน่ใจว่า API ที่ดึงข้อมูลนี้ (getSubmissionById) ต้อง SELECT คอลัมน์ status ออกมาด้วยเสมอ
+	• Form_Submission_Data (ตารางข้อมูล):
+		○ เก็บ form_data_json (ข้อมูลดิบของฟอร์ม)
+	• Gen_Approval_Flow (ตารางหัวใจ):
+		○ เก็บ "ขั้นตอน" การอนุมัติของแต่ละเอกสาร
+		○ คอลัมน์สำคัญ: flow_id, submission_id (Foreign Key), required_level (เช่น 1, 2, 3), status ('Pending', 'Approved', 'Rejected'), approver_user_id, updated_at
+	• AGT_SMART_SY.dbo.Gen_Approved_log (ตาราง Log):
+		○ เก็บ "ประวัติ" การกดอนุมัติ/ปฏิเสธ
+		○ คอลัมน์สำคัญ: log_id, submission_id, level, action, comment (เราดึงคอมเมนต์จากที่นี่)
+	• AGT_SMART_SY.dbo.agt_member (ตาราง User - ชื่อ):
+		○ เก็บ "ชื่อ" ของพนักงาน
+		○ คอลัมน์สำคัญ: agt_member_id, agt_member_nameEN
+	• AGT_SMART_SY.dbo.Gen_Manu_Member (ตาราง User - สิทธิ์):
+		○ เก็บ "Level" การอนุมัติของพนักงาน
+		○ คอลัมน์สำคัญ: Gen_Manu_mem_Memid (ID), LV_Approvals
+
+3. หลังบ้าน (Backend - API & Logic)
+เราได้แก้ไขและสร้าง Controller/Route หลายตัว:
+getSubmissionById (Controller: submission.controller.js)
+	• หน้าที่: ดึงข้อมูลเอกสาร (สำหรับหน้า View และ Edit)
+	• การแก้ไข: เรา LEFT JOIN ตาราง agt_member เข้ามา เพื่อให้ได้ submitted_by_name (ชื่อผู้สร้าง) และเรา SELECT fs.status เพื่อให้ Frontend รู้สถานะปัจจุบัน
+getApprovalFlow (Controller: approval.controller.js)
+	• หน้าที่: ดึงข้อมูลตาราง 4 ช่อง
+	• การแก้ไข (ซับซ้อนที่สุด):
+		1. FROM Gen_Approval_Flow (gaf)
+		2. LEFT JOIN ตาราง Gen_Manu_Member และ agt_member (เพื่อดึง approver_name ของคนที่อนุมัติไปแล้ว)
+		3. LEFT JOIN ตาราง Gen_Approved_log (gal) โดยใช้ gaf.submission_id = gal.submission_id และ gaf.required_level = gal.level (เพื่อดึง gal.comment มาแสดง)
+resubmitSubmission (Controller: submission.controller.js)
+	• หน้าที่: รับการ "ส่งอนุมัติใหม่" (นี่คือ Flow ที่เราเพิ่งทำเสร็จ)
+	• การทำงาน (Transaction):
+		1. (Query 1) UPDATE Form_Submission_Data: อัปเดต form_data_json เป็นข้อมูลใหม่
+		2. (Query 2) UPDATE Form_Submissions: อัปเดต submitted_at = GETDATE() และที่สำคัญคือ status = 'Drafted' (หรือ 'Pending') เพื่อให้เอกสารกลับสู่สถานะรออนุมัติ
+		3. (Query 3) UPDATE Gen_Approval_Flow: รีเซ็ต Flow เฉพาะส่วนที่จำเป็น SET status = 'Pending', approver_user_id = NULL ... WHERE status = 'Rejected' OR status = 'Pending' (ขั้นที่ 'Approved' แล้วจะไม่ถูกยุ่ง)
+		4. (Query 4) DELETE Gen_Approved_log: ลบ Log เก่า WHERE action = 'Rejected' เพื่อไม่ให้ Comment เก่าค้างในหน้าเว็บ
+submission.routes.js (Route)
+	• เราได้เพิ่ม router.put('/resubmit/:id', submissionController.resubmitSubmission) (โดยที่ app.js ตั้ง prefix ไว้ที่ /api/submissions)
+
+4. หน้าบ้าน (Frontend - UI & UX)
+เราแก้ไข Component หลายส่วนเพื่อให้ทำงานเชื่อมกัน:
+ApprovalFlowDisplay.tsx (ตาราง 4 ช่อง)
+	• Props: รับ submissionData (เพื่อเอา creator.name) และ submissionId
+	• Data: เรียก getApprovalFlow (จาก Backend) เพื่อดึง flowSteps (ที่มี approver_name และ comment ติดมาด้วย)
+	• UI (ตาราง):
+		○ Render ตาราง 4 ช่องคงที่ (ผู้จัดทำ, LV1, LV2, LV3)
+		○ "ผู้จัดทำ" ดึงข้อมูลจาก submissionData.submitted_by_name
+		○ LV1, 2, 3 ดึงข้อมูลจาก flowSteps.find(...)
+		○ ถ้าไม่พบ Step (เช่น LV1 สร้างงาน) จะแสดง - (ข้าม) -
+		○ ถ้าพบ Step จะแสดงสถานะ (Pending, Approved, Rejected)
+	• UI (ปุ่ม Action):
+		○ แสดงปุ่ม "Approve" / "Reject" (ในตาราง) ต่อเมื่อ canApprove เป็น true (เช็คว่า user.LV_Approvals === currentStep.required_level)
+	• UI (Comment):
+		○ Log: สร้างกล่อง "ประวัติคอมเมนต์" แยกไว้ด้านล่าง โดย flowSteps.filter(...) หา step.comment ที่มี
+		○ Input: แสดง <textarea> ให้กรอก ต่อเมื่อ canApprove เป็น true
+ReportHistory_GEN_A.tsx (หน้าประวัติ)
+	• UI: เพิ่มปุ่ม "แก้ไข" (Edit) ที่ลิงก์ไป /reports/edit/:id
+	• UI: เพิ่มเงื่อนไขให้ปุ่มนี้ (status === 'Rejected' && isCreator) (ยังไม่ได้ทำ แต่เป็นขั้นตอนถัดไป)
+	• UX (Highlight): ใช้ useLocation() เพื่อดึง highlightedId ที่ถูกส่งมาจาก Maps เมื่อมีการ "Save" หรือ "Resubmit" และเพิ่ม Class bg-yellow-100 ให้กับ <tr> ที่ตรงกัน
+ReportEditDispatcher.tsx (ตัวจ่ายงานแก้ไข)
+	• หน้าที่: เป็นตัวกลาง รับ /reports/edit/:id
+	• Data: เรียก getSubmissionById (จาก Backend) เพื่อดึง submission (ที่มี status, form_data_json ฯลฯ)
+	• UI: ส่ง Props 3 ตัวสำคัญให้ฟอร์มลูก (AS2FormEdit):
+		1. initialData={submission.form_data_json}
+		2. submissionId={submission.submission_id}
+		3. status={submission.status}
+AS2FormEdit.tsx (หน้าฟอร์มแก้ไข)
+	• Props: รับ initialData, submissionId, และ status
+	• Data: ใช้ useEffect + reset(initialData) เพื่อเติมข้อมูลเก่าลงในฟอร์ม
+	• UI (ปุ่ม):
+		○ ปุ่ม "บันทึก" (Save): เรียก onSubmit (ซึ่งส่งมาจาก ReportEditAS2.tsx) เพื่อเรียก API updateSubmission (Save ธรรมดา)
+		○ ปุ่ม "ส่งอนุมัติใหม่" (Resubmit):
+			§ แสดงผล ต่อเมื่อ status === 'Rejected'
+			§ เปลี่ยนสีเป็น bg-success (สีเขียว) หรือสีอื่นที่โดดเด่น
+			§ เรียก onResubmit ซึ่งจะเรียก resubmitSubmission (API เส้นใหม่)
+			§ เมื่อสำเร็จ ใช้ Maps('/reports/history/gen-a', { state: { highlightedId: ... } }) เพื่อกลับไปหน้าประวัติและไฮไลท์แถว

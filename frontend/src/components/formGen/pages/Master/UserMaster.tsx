@@ -93,7 +93,7 @@ const UserMaster: React.FC = () => {
   const uniqueSections = [...new Set(users.map(u => u.name_section).filter(Boolean))].sort();
   const uniquePositions = [...new Set(users.map(u => u.agt_position_name).filter(Boolean))].sort();
   const uniqueShifts = [...new Set(users.map(u => u.agt_member_shift).filter(Boolean))].sort();
-  const uniqueLevels = [...new Set(users.map(u => u.LV_Approvals ? String(u.LV_Approvals) : null).filter(Boolean))].sort();
+  const uniqueLevels = [...new Set(users.map(u => u.LV_Approvals !== null && u.LV_Approvals !== undefined ? String(u.LV_Approvals) : null).filter(val => val !== null))].sort();
 
   const filteredUsers = users.filter(user => {
     const term = searchTerm.toLowerCase();
@@ -302,7 +302,7 @@ const UserMaster: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 border-b border-gray-100 dark:border-strokedark text-center">
-                        {user.LV_Approvals ? (
+                        {user.LV_Approvals !== null && user.LV_Approvals !== undefined ? (
                           <span className="inline-flex rounded-full bg-blue-100 text-blue-800 py-0.5 px-2.5 text-xs font-bold dark:bg-blue-900 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                             LV.{user.LV_Approvals}
                           </span>

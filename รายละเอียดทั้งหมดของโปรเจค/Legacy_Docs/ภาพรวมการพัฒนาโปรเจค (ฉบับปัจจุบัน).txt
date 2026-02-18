@@ -1,32 +1,24 @@
-ภาพรวมการพัฒนาโปรเจค (ฉบับปัจจุบัน - Node.js Performance Optimized)
 
-เรากำลังพัฒนาเว็บแอปพลิเคชันสำหรับบันทึกข้อมูล "ใบรายงานการผลิต" ทั้ง 22 รูปแบบ เพื่อเปลี่ยนกระบวนการทำงานจากเดิมที่ใช้ Excel มาสู่ระบบดิจิทัลที่มีประสิทธิภาพสูงสุด
-
+ภาพรวมการพัฒนาโปรเจค (ฉบับปัจจุบัน)
+เรากำลังพัฒนาเว็บแอปพลิเคชันสำหรับบันทึกข้อมูล "ใบรายงานการผลิต" ทั้ง 22 รูปแบบ เพื่อเปลี่ยนกระบวนการทำงานจากเดิมที่ใช้ Excel มาสู่ระบบดิจิทัล
 Phase 1: สถาปัตยกรรมและฐานข้อมูล (Architecture & Database)
 	1. ออกแบบสถาปัตยกรรม (Architecture Design):
-		○ Frontend (React + Vite): รับผิดชอบการสร้าง UI และ Logic ของฟอร์มทั้ง 22 รูปแบบ
-		○ Backend (Node.js Optimized): ใช้ Node.js ที่ปรับจูนประสิทธิภาพสูงสุด รองรับการเชื่อมต่อ Parallel และ Caching
-		○ Database (SQL Server): ออกแบบ Table แบบ Hybrid (Relational + JSON) รองรับข้อมูลที่หลากหลาย และมีการทำ Indexing เต็มรูปแบบ
-	2. ฐานข้อมูล (Database):
-		○ ตารางหลัก: Form_Submissions, Form_Submission_Data, Form_Version_Sets
-
-Phase 2: การพัฒนา Backend (API & Performance)
-	1. Runtime & Server:
-		○ ใช้ **Node.js** เป็นแกนหลักในการรัน Server
-		○ ใช้ **Express JS** เป็น Web Server Framework
-	2. Performance Features (จุดเด่นระบบ - แม้ใช้ Node.js ก็เร็ว):
-		○ **In-Memory Caching:** ระบบจำข้อมูล Master Data (Template) ลงใน RAM ทำให้การดึงข้อมูลซ้ำๆ ทำได้ในเวลา 0ms
-		○ **Warm Browser (PDF):** ระบบเปิด Browser รอไว้เบื้องหลัง (Singleton Pattern) ทำให้การกดพิมพ์ PDF ทำได้ทันที (< 1 วินาที)
-		○ **Async Logging (Pino):** ระบบบันทึก Log แบบ Asynchronous ลดภาระการทำงานของ CPU
-		○ **Database Indexing:** สร้างสารบัญ (Index) ให้กับคอลัมน์สำคัญ (Status, Lot No, Date) ทำให้ค้นหาและกรองข้อมูลได้รวดเร็ว
-	3. APIs หลัก:
-		○ Authentication, Submission Management, Reporting
-
-Phase 3: การพัฒนา Frontend (UI/UX)
-	1. Tech Stack: React 18, Tailwind CSS, Vite, Axios
-	2. Form Generation Engine: ระบบ Render ฟอร์มอัตโนมัติตาม Config
-	3. Report & Dashboard: หน้าแสดงรายการที่ทำงานร่วมกับ DB Indexing ได้อย่างลื่นไหล
-
-Phase 4: Security & Deployment
-	1. Security: CORS Policy, Env Variables
-	2. Deployment: รองรับ Windows Server (Node.js) และการจัดการ Process ด้วย PM2
+		○ เราใช้สถาปัตยกรรมแบบ Hybrid ที่มีความยืดหยุ่นสูง
+		○ Frontend (React): รับผิดชอบการสร้างและจัดการโครงสร้างฟอร์มทั้ง 22 รูปแบบ โดยเขียนเป็น React Components โดยตรงในโค้ด ทำให้มีความยืดหยุ่นในการออกแบบ UI และ Logic สูงสุด
+		○ Backend (Node.js): ทำหน้าที่เป็น API Server สำหรับจัดการข้อมูล การยืนยันตัวตน และการสื่อสารกับฐานข้อมูล
+		○ Database (SQL Server): เก็บข้อมูลที่ผู้ใช้กรอกในรูปแบบ JSON เพื่อรองรับโครงสร้างข้อมูลที่แตกต่างกันของแต่ละฟอร์ม
+	2. สร้างฐานข้อมูล (Database Creation):
+		○ เราได้สร้างตารางหลักคือ agt_ProductionRecords_gen ใน SQL Server เพื่อจัดเก็บข้อมูลการผลิตทั้งหมดที่ผู้ใช้บันทึกเข้ามาในรูปแบบ JSON
+Phase 2: การพัฒนา Backend (API)
+	1. ตั้งค่าโปรเจค (Project Setup):
+		○ เราใช้โปรเจค Node.js + Express เป็นพื้นฐาน และติดตั้ง Dependencies ที่จำเป็น เช่น mssql
+	2. การเชื่อมต่อฐานข้อมูล (Database Connection):
+		○ เราได้พัฒนาระบบการเชื่อมต่อฐานข้อมูล (db.js) ที่มีความเสถียร โดยใช้ Connection Pool (poolConnect) เพื่อให้ทุกส่วนของแอปพลิเคชันรอจนกว่าการเชื่อมต่อจะสำเร็จก่อนเริ่มทำงาน
+	3. พัฒนา API หลัก (Core APIs):
+		○ Authentication: พัฒนา API สำหรับการ Login ใน auth.controller.js ให้สามารถเชื่อมต่อและตรวจสอบสิทธิ์ผู้ใช้กับฐานข้อมูลได้อย่างสมบูรณ์
+		○ Production Records: สร้าง API endpoint สำหรับให้ Frontend ส่งข้อมูลที่ผู้ใช้กรอกในฟอร์มมาบันทึกลงฐานข้อมูล
+Phase 3: การพัฒนา Frontend (UI)
+	1. ตั้งค่าโปรเจค (Project Setup):
+		○ เราใช้ React ในการสร้างหน้าเว็บ, Tailwind CSS ในการจัดสไตล์ และ Vite เป็นเครื่องมือช่วยพัฒนา เพื่อให้เว็บแอปพลิเคชันทำงานได้รวดเร็วและทันสมัย
+	2. การสร้างคอมโพเนนต์ฟอร์ม (Form Components):
+		○ เป้าหมายคือการพัฒนาฟอร์มทั้ง 22 รูปแบบให้เป็น React Components ที่แยกจากกันอย่างชัดเจน เพื่อให้ง่ายต่อการจัดการและบำรุงรักษาในอนาคต
