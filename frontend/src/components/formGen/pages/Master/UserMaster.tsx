@@ -1,6 +1,7 @@
 // src/components/formGen/pages/Master/UserMaster.tsx
 
 import React, { useState, useEffect } from 'react';
+import { FaEdit, FaSearch, FaUsers, FaFilter } from 'react-icons/fa';
 import Breadcrumb from '../../../Breadcrumbs/Breadcrumb';
 import EditUserModal from './EditUserModal';
 import axios from 'axios';
@@ -114,141 +115,216 @@ const UserMaster: React.FC = () => {
   return (
     <>
       <Breadcrumb pageName="User Master" />
-      <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-          <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
-            All Members from AGT System
-          </h4>
-          {/* --- 3. เพิ่มช่อง Input สำหรับค้นหาใน JSX --- */}
-          <div className="mb-6 sm:mb-0">
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-2 px-4 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary sm:w-64"
-            />
+
+      <div className="flex flex-col gap-6">
+        {/* 🔍 Controls Section */}
+        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <span className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+              </span>
+              Filter User Master
+            </h2>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full dark:bg-meta-4 dark:text-gray-400">
+                {users.length} Total Users
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            {/* Search Box */}
+            <div className="relative xl:col-span-1">
+              <div className="relative">
+                <span className="absolute left-3 top-3 text-gray-400">
+                  <FaSearch className="w-4 h-4" />
+                </span>
+                <input
+                  type="text"
+                  placeholder="Search Name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-900 focus:border-primary focus:ring-1 focus:ring-primary dark:border-form-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary transition-all"
+                />
+              </div>
+            </div>
+
+            {/* Section Filter */}
+            <div className="relative">
+              <select
+                value={filterSection}
+                onChange={(e) => setFilterSection(e.target.value)}
+                className="w-full appearance-none rounded-lg border border-gray-300 bg-gray-50 py-2.5 px-4 text-sm text-gray-900 focus:border-primary focus:ring-1 focus:ring-primary dark:border-form-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary cursor-pointer"
+              >
+                <option value="">All Sections</option>
+                {uniqueSections.map((sec) => (
+                  <option key={sec} value={sec}>{sec}</option>
+                ))}
+              </select>
+              <span className="absolute right-3 top-3 pointer-events-none text-gray-500">
+                <FaFilter className="w-3 h-3" />
+              </span>
+            </div>
+
+            {/* Position Filter */}
+            <div className="relative">
+              <select
+                value={filterPosition}
+                onChange={(e) => setFilterPosition(e.target.value)}
+                className="w-full appearance-none rounded-lg border border-gray-300 bg-gray-50 py-2.5 px-4 text-sm text-gray-900 focus:border-primary focus:ring-1 focus:ring-primary dark:border-form-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary cursor-pointer"
+              >
+                <option value="">All Positions</option>
+                {uniquePositions.map((pos) => (
+                  <option key={pos} value={pos}>{pos}</option>
+                ))}
+              </select>
+              <span className="absolute right-3 top-3 pointer-events-none text-gray-500">
+                <FaFilter className="w-3 h-3" />
+              </span>
+            </div>
+
+            {/* Shift Filter */}
+            <div className="relative">
+              <select
+                value={filterShift}
+                onChange={(e) => setFilterShift(e.target.value)}
+                className="w-full appearance-none rounded-lg border border-gray-300 bg-gray-50 py-2.5 px-4 text-sm text-gray-900 focus:border-primary focus:ring-1 focus:ring-primary dark:border-form-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary cursor-pointer"
+              >
+                <option value="">All Shifts</option>
+                {uniqueShifts.map((shift) => (
+                  <option key={shift} value={shift}>{shift}</option>
+                ))}
+              </select>
+              <span className="absolute right-3 top-3 pointer-events-none text-gray-500">
+                <FaFilter className="w-3 h-3" />
+              </span>
+            </div>
+
+            {/* Level Filter */}
+            <div className="relative">
+              <select
+                value={filterLevel}
+                onChange={(e) => setFilterLevel(e.target.value)}
+                className="w-full appearance-none rounded-lg border border-gray-300 bg-gray-50 py-2.5 px-4 text-sm text-gray-900 focus:border-primary focus:ring-1 focus:ring-primary dark:border-form-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary cursor-pointer"
+              >
+                <option value="">All Levels</option>
+                {uniqueLevels.map((lv) => (
+                  <option key={String(lv)} value={String(lv)}>Level {lv}</option>
+                ))}
+              </select>
+              <span className="absolute right-3 top-3 pointer-events-none text-gray-500">
+                <FaFilter className="w-3 h-3" />
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* 🆕 Filter Dropdowns Section */}
-        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
-          {/* Section Filter */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-black dark:text-white">Section</label>
-            <select
-              value={filterSection}
-              onChange={(e) => setFilterSection(e.target.value)}
-              className="w-full rounded border-[1.5px] border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input"
-            >
-              <option value="">All Sections</option>
-              {uniqueSections.map((sec) => (
-                <option key={sec} value={sec}>{sec}</option>
-              ))}
-            </select>
+        {/* 📋 Data Table */}
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-strokedark dark:bg-boxdark overflow-hidden">
+          <div className="border-b border-gray-200 px-6 py-4 dark:border-strokedark flex justify-between items-center bg-gray-50/50 dark:bg-meta-4/30">
+            <h3 className="font-bold text-gray-900 dark:text-white">
+              User List
+              <span className="ml-2 text-xs font-normal text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-meta-4 px-2 py-0.5 rounded-full border border-gray-200 dark:border-gray-600">
+                {filteredUsers.length} Filtered
+              </span>
+            </h3>
           </div>
 
-          {/* Position Filter */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-black dark:text-white">Position</label>
-            <select
-              value={filterPosition}
-              onChange={(e) => setFilterPosition(e.target.value)}
-              className="w-full rounded border-[1.5px] border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input"
-            >
-              <option value="">All Positions</option>
-              {uniquePositions.map((pos) => (
-                <option key={pos} value={pos}>{pos}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Shift Filter */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-black dark:text-white">Shift</label>
-            <select
-              value={filterShift}
-              onChange={(e) => setFilterShift(e.target.value)}
-              className="w-full rounded border-[1.5px] border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input"
-            >
-              <option value="">All Shifts</option>
-              {uniqueShifts.map((shift) => (
-                <option key={shift} value={shift}>{shift}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Level Filter */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-black dark:text-white">Level (LV)</label>
-            <select
-              value={filterLevel}
-              onChange={(e) => setFilterLevel(e.target.value)}
-              className="w-full rounded border-[1.5px] border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input"
-            >
-              <option value="">All Levels</option>
-              {/* <option value="null">No Level</option> */}
-              {uniqueLevels.map((lv) => (
-                <option key={String(lv)} value={String(lv)}>{lv}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="max-w-full overflow-x-auto">
-          <table className="w-full table-auto">
-            <thead>
-              <tr className="bg-gray-2 text-left dark:bg-meta-4">
-                <th className="py-4 px-4 font-medium text-black dark:text-white">ID</th>
-                <th className="py-4 px-4 font-medium text-black dark:text-white">Employee No.</th>
-                <th className="py-4 px-4 font-medium text-black dark:text-white">Name (EN)</th>
-                <th className="py-4 px-4 font-medium text-black dark:text-white">Section</th>
-                <th className="py-4 px-4 font-medium text-black dark:text-white">Position</th>
-                <th className="py-4 px-4 font-medium text-black dark:text-white">Shift</th>
-                <th className="py-4 px-4 font-medium text-black dark:text-white">LV.</th>
-                <th className="py-4 px-4 font-medium text-black dark:text-white">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr><td colSpan={7} className="text-center p-10">Loading users...</td></tr>
-              ) : (
-                // --- 4. อัปเดตตารางให้แสดงผลจากข้อมูลที่ฟิลเตอร์แล้ว ---
-                filteredUsers.map((user) => (
-                  <tr key={user.agt_member_id}>
-                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                      <p className="text-black dark:text-white">{user.agt_member_id}</p>
-                    </td>
-                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                      <p className="font-medium text-primary">{user.Gen_Manu_mem_No || '-'}</p>
-                    </td>
-                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                      <p className="text-black dark:text-white">{user.agt_member_nameEN}</p>
-                    </td>
-                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                      <p className="text-black dark:text-white">{user.name_section}</p>
-                    </td>
-                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                      <p className="text-black dark:text-white">{user.agt_position_name}</p>
-                    </td>
-                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                      <p className="text-black dark:text-white">{user.agt_member_shift}</p>
-                    </td>
-                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                      <p className="text-black dark:text-white">{user.LV_Approvals}</p>
-                    </td>
-                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                      <div className="flex items-center space-x-3.5">
-                        <button onClick={() => handleEditClick(user)} className="text-primary hover:underline">
-                          Edit
-                        </button>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left">
+              <thead className="bg-gray-50 dark:bg-meta-4">
+                <tr>
+                  <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">ID</th>
+                  <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Emp No.</th>
+                  <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Name (EN)</th>
+                  <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Section</th>
+                  <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Position</th>
+                  <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Shift</th>
+                  <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-center">Level</th>
+                  <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-strokedark">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={8} className="p-10 text-center">
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+                        <span className="mt-2 text-base text-gray-500">Loading users...</span>
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : filteredUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="p-10 text-center text-gray-500 flex flex-col items-center">
+                      <div className="bg-gray-100 p-3 rounded-full mb-3 dark:bg-meta-4">
+                        <FaSearch className="text-gray-400 text-xl" />
+                      </div>
+                      <span className="text-base">No users found.</span>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredUsers.map((user) => (
+                    <tr key={user.agt_member_id} className="group hover:bg-blue-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                      <td className="px-6 py-4 border-b border-gray-100 dark:border-strokedark">
+                        <span className="text-base text-gray-500 dark:text-gray-400 font-mono text-sm">
+                          {user.agt_member_id}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 border-b border-gray-100 dark:border-strokedark">
+                        <span className="inline-flex rounded-full bg-primary/10 py-1 px-3 text-sm font-bold text-primary border border-primary/20">
+                          {user.Gen_Manu_mem_No || '-'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 border-b border-gray-100 dark:border-strokedark">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base font-medium text-gray-900 dark:text-white">
+                            {user.agt_member_nameEN}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 border-b border-gray-100 dark:border-strokedark">
+                        <span className="text-base text-gray-700 dark:text-gray-300">
+                          {user.name_section}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 border-b border-gray-100 dark:border-strokedark">
+                        <span className="text-base text-gray-700 dark:text-gray-300">
+                          {user.agt_position_name}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 border-b border-gray-100 dark:border-strokedark">
+                        <span className="text-base text-gray-700 dark:text-gray-300">
+                          {user.agt_member_shift}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 border-b border-gray-100 dark:border-strokedark text-center">
+                        {user.LV_Approvals ? (
+                          <span className="inline-flex rounded-full bg-blue-100 text-blue-800 py-0.5 px-2.5 text-xs font-bold dark:bg-blue-900 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                            LV.{user.LV_Approvals}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 text-sm">-</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 border-b border-gray-100 dark:border-strokedark text-center">
+                        <button
+                          onClick={() => handleEditClick(user)}
+                          className="p-2.5 rounded-lg text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-meta-4 transition-all"
+                          title="Edit User"
+                        >
+                          <FaEdit size={18} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 

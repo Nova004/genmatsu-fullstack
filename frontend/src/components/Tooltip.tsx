@@ -8,7 +8,7 @@ interface TooltipProps {
 
 export const Tooltip = ({ message, children }: TooltipProps) => {
   return (
-    <div className="group relative flex items-center justify-center">
+    <div className="group/tooltip relative flex items-center justify-center">
       {/* ตัวเนื้อหาหลัก (ปุ่ม) */}
       {children}
 
@@ -17,7 +17,7 @@ export const Tooltip = ({ message, children }: TooltipProps) => {
         pointer-events-none absolute bottom-full left-1/2 z-[9999] mb-2 
         w-max -translate-x-1/2 origin-bottom scale-95 opacity-0 
         transition-all duration-200 ease-out 
-        group-hover:scale-100 group-hover:opacity-100 group-hover:-translate-y-1
+        group-hover/tooltip:scale-100 group-hover/tooltip:opacity-100 group-hover/tooltip:-translate-y-1
       ">
         <div className="relative rounded-md bg-gray-900 px-3 py-1.5 text-xs font-semibold text-white shadow-lg ring-1 ring-white/10">
           {message}

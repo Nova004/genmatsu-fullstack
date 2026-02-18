@@ -6,6 +6,7 @@ import { FaEdit, FaTrash, FaPlus, FaSearch } from 'react-icons/fa';
 import Breadcrumb from '../../../Breadcrumbs/Breadcrumb'; // ตรวจสอบ path ให้ถูกต้อง
 import EditStandardPlanModal from './EditStandardPlanModal'; // Import Modal ที่สร้างใหม่
 import { useAuth } from '../../../../context/AuthContext';
+import { useLevelGuard } from '../../../../hooks/useLevelGuard';
 
 interface StandardPlan {
   id: number;
@@ -22,6 +23,7 @@ const StandardPlanMaster: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth(); // 👈 Call hook
+  useLevelGuard(2);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -104,124 +106,150 @@ const StandardPlanMaster: React.FC = () => {
     <>
       <Breadcrumb pageName="Standard Plan Master" />
 
-      <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-        <div className="py-6 px-4 md:px-6 xl:px-7.5 flex flex-col md:flex-row justify-between items-center gap-4">
-
-          {/* Search Box */}
-          <div className="relative w-full md:w-1/3">
-            <span className="absolute left-4 top-3 text-bodydark2">
-              <FaSearch />
-            </span>
-            <input
-              type="text"
-              placeholder="Search Product..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded bg-gray-50 border border-stroke py-2.5 pl-10 pr-4 outline-none focus:border-primary dark:bg-meta-4 dark:border-strokedark dark:focus:border-primary"
-            />
+      <div className="flex flex-col gap-6">
+        {/* 🔍 Controls Section */}
+        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-strokedark dark:bg-boxdark">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <span className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+              </span>
+              Filter Standard Plan
+            </h2>
+            <button
+              onClick={handleAddNew}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary py-2.5 px-6 font-medium text-white hover:bg-opacity-90 transition-all shadow-md shadow-primary/20"
+            >
+              <FaPlus size={14} />
+              Add New Plan
+            </button>
           </div>
 
-          <button
-            onClick={handleAddNew}
-            className="inline-flex items-center justify-center gap-2.5 rounded-md bg-primary py-3 px-6 text-center font-medium text-white hover:bg-opacity-90 lg:px-8 xl:px-10"
-          >
-            <span><FaPlus /></span>
-            Add New
-          </button>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Search Box */}
+            <div className="relative">
+              <span className="absolute left-3 top-3 text-gray-400">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </span>
+              <input
+                type="text"
+                placeholder="Search Product or Type..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-900 focus:border-primary focus:ring-1 focus:ring-primary dark:border-form-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary transition-all"
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="max-w-full overflow-x-auto">
-          <table className="w-full table-auto">
-            <thead>
-              <tr className="bg-gray-2 text-left dark:bg-meta-4">
-                <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
-                  GEN Type
-                </th>
-                <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
-                  Std. Plan Target (Kg)
-                </th>
-                <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">
-                  Updated By
-                </th>
-                <th className="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white">
-                  Last Updated
-                </th>
-                <th className="py-4 px-4 font-medium text-black dark:text-white text-center">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={4} className="text-center py-10">
-                    <div className="flex justify-center items-center">
-                      <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>
-                    </div>
-                  </td>
-                </tr>
-              ) : filteredPlans.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="text-center py-8 text-gray-500 dark:text-bodydark2">
-                    No Standard Plans found.
-                  </td>
-                </tr>
-              ) : (
-                filteredPlans.map((plan) => (
-                  <tr key={plan.id} className="hover:bg-gray-50 dark:hover:bg-meta-4 transition-colors">
-                    <td className="border-b border-[#eee] py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
-                      <h5 className="font-medium text-black dark:text-white">
-                        {plan.product_name || plan.form_type}
-                      </h5>
-                    </td>
-                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                      <span className="inline-flex rounded-full bg-success bg-opacity-10 py-1 px-3 text-sm font-medium text-success">
-                        {plan.target_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
-                    </td>
+        {/* 📋 Data Table */}
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-strokedark dark:bg-boxdark overflow-hidden">
+          <div className="border-b border-gray-200 px-6 py-4 dark:border-strokedark flex justify-between items-center bg-gray-50/50 dark:bg-meta-4/30">
+            <h3 className="font-bold text-gray-900 dark:text-white">
+              Standard Plans
+              <span className="ml-2 text-xs font-normal text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-meta-4 px-2 py-0.5 rounded-full border border-gray-200 dark:border-gray-600">
+                {filteredPlans.length} Records
+              </span>
+            </h3>
+          </div>
 
-                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                      <p className="font-medium text-black dark:text-white">
-                        {plan.updated_by}
-                      </p>
-                    </td>
-                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                      <p className="font-medium text-black dark:text-white">
-                        {new Date(plan.updated_at).toLocaleDateString('th-TH')}
-                      </p>
-                    </td>
-                    <td className="border-b border-[#eee] py-5 px-4 dark:border-strokedark">
-                      <div className="flex items-center justify-center space-x-3.5">
-                        <button
-                          onClick={() => handleEdit(plan)}
-                          className="hover:text-primary transition-colors"
-                          title="Edit"
-                        >
-                          <FaEdit size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(plan.id)}
-                          className="hover:text-danger transition-colors"
-                          title="Delete"
-                        >
-                          <FaTrash size={18} />
-                        </button>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left">
+              <thead className="bg-gray-50 dark:bg-meta-4">
+                <tr>
+                  <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">GEN Type / Product</th>
+                  <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Target (Kg)</th>
+                  <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Updated By</th>
+                  <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Last Updated</th>
+                  <th className="px-6 py-4 text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-strokedark">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={5} className="p-10 text-center">
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+                        <span className="mt-2 text-base text-gray-500">Loading data...</span>
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : filteredPlans.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="p-10 text-center text-gray-500 flex flex-col items-center">
+                      <div className="bg-gray-100 p-3 rounded-full mb-3 dark:bg-meta-4">
+                        <FaSearch className="text-gray-400 text-xl" />
+                      </div>
+                      <span className="text-base">No Standard Plans found.</span>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredPlans.map((plan) => (
+                    <tr key={plan.id} className="group hover:bg-blue-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                      <td className="px-6 py-4 border-b border-gray-100 dark:border-strokedark">
+                        <h5 className="font-medium text-black dark:text-white text-base flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-primary/80"></span>
+                          {plan.product_name || plan.form_type}
+                        </h5>
+                        {plan.product_name && plan.form_type !== plan.product_name && (
+                          <p className="text-sm text-gray-500 ml-4 mt-0.5">{plan.form_type}</p>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 border-b border-gray-100 dark:border-strokedark">
+                        <span className="inline-flex rounded-full bg-success/10 py-1 px-3 text-base font-medium text-success border border-success/20">
+                          {plan.target_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 border-b border-gray-100 dark:border-strokedark">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base text-gray-700 dark:text-gray-300">{plan.updated_by}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 border-b border-gray-100 dark:border-strokedark">
+                        <div className="flex items-center gap-2 text-base text-gray-600 dark:text-gray-400">
+                          <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          {new Date(plan.updated_at).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 border-b border-gray-100 dark:border-strokedark text-center">
+                        <div className="flex items-center justify-center space-x-2">
+                          <button
+                            onClick={() => handleEdit(plan)}
+                            className="p-2.5 rounded-lg text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-meta-4 transition-all"
+                            title="Edit"
+                          >
+                            <FaEdit size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(plan.id)}
+                            className="p-2.5 rounded-lg text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-meta-4 transition-all"
+                            title="Delete"
+                          >
+                            <FaTrash size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
 
-      <EditStandardPlanModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSave}
-        initialData={editingPlan}
-      />
+        <EditStandardPlanModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSave}
+          initialData={editingPlan}
+        />
+      </div>
     </>
   );
 };

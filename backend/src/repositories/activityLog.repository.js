@@ -5,9 +5,14 @@ exports.getAllLogs = async () => {
     try {
         const pool = await poolConnect;
         const result = await pool.request().query(`
-            SELECT TOP 1000 * 
-            FROM Gen_Activity_Logs 
-            ORDER BY timestamp DESC
+            SELECT TOP 1000 
+                l.*,
+                t.change_reason AS extra_change_reason
+            FROM Gen_Activity_Logs l
+            LEFT JOIN Form_Master_Templates t ON 
+                l.target_module = 'MASTER_TEMPLATE' 
+                AND l.target_id = t.template_name + ' (v' + CAST(t.version AS NVARCHAR(10)) + ')'
+            ORDER BY l.timestamp DESC
         `);
         return result.recordset;
     } catch (err) {

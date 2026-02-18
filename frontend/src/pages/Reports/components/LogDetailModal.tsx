@@ -239,65 +239,135 @@ const LogDetailModal: React.FC<LogDetailModalProps> = ({ isOpen, onClose, log })
         );
     }
 
+    // Helper to get Action Icon/Color
+    const getActionStyle = (action: string) => {
+        const lower = action.toLowerCase();
+        if (lower.includes('create') || lower.includes('add')) return { color: 'text-green-600', bg: 'bg-green-100', borderColor: 'border-green-200' };
+        if (lower.includes('update') || lower.includes('edit')) return { color: 'text-blue-600', bg: 'bg-blue-100', borderColor: 'border-blue-200' };
+        if (lower.includes('delete') || lower.includes('remove')) return { color: 'text-red-600', bg: 'bg-red-100', borderColor: 'border-red-200' };
+        return { color: 'text-gray-600', bg: 'bg-gray-100', borderColor: 'border-gray-200' };
+    };
+
+    const actionStyle = getActionStyle(log.action_type);
+
     return (
         <div
-            className={`fixed top-0 left-0 z-999999 flex h-full w-full items-center justify-center bg-black/50 px-4 py-5 ${isOpen ? 'block' : 'hidden'
-                }`}
+            className={`fixed inset-0 z-999999 flex h-full w-full items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity px-4 py-5 ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
         >
-            <div className="relative w-full max-w-4xl rounded-lg bg-white p-8 shadow-md dark:bg-boxdark max-h-[90vh] overflow-y-auto">
+            <div className="relative w-full max-w-4xl rounded-xl bg-white shadow-2xl dark:bg-boxdark max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-bold text-black dark:text-white">
-                        Log Details
-                    </h3>
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-strokedark bg-gray-50/50 dark:bg-meta-4/30">
+                    <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg ${actionStyle.bg} ${actionStyle.color} dark:bg-opacity-20`}>
+                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                                Activity Details
+                            </h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                Log ID: <span className="font-mono text-gray-700 dark:text-gray-300">#{log.log_id}</span>
+                            </p>
+                        </div>
+                    </div>
                     <button
                         onClick={onClose}
-                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                        className="p-2 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-meta-4 dark:hover:text-gray-200 transition-colors"
                     >
-                        <svg
-                            className="h-6 w-6"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M6 18L18 6M6 6l12 12"
-                            />
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
 
-                {/* Content */}
-                <div className="mt-4">
-                    {/* Meta Data */}
-                    <div className="grid grid-cols-2 gap-4 mb-6 text-sm text-gray-600 dark:text-gray-300 border-b pb-4 mb-4 dark:border-strokedark">
-                        <div><strong>Log ID:</strong> {log.log_id}</div>
-                        <div><strong>Time:</strong> {new Date(log.timestamp).toLocaleString("th-TH", { timeZone: "UTC" })}</div>
-                        <div><strong>User:</strong> {log.user_id}</div>
-                        <div><strong>Action:</strong> {log.action_type}</div>
-                        <div><strong>Module:</strong> {log.target_module} ({log.target_id})</div>
+                {/* Body - Scrollable */}
+                <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar">
+                    {/* Meta Data Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div className="p-3 rounded-lg border border-gray-100 bg-gray-50/50 dark:border-strokedark dark:bg-meta-4/30">
+                            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Time</span>
+                            <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+                                <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {new Date(log.timestamp).toLocaleString("th-TH", { timeZone: "UTC" })}
+                            </div>
+                        </div>
+                        <div className="p-3 rounded-lg border border-gray-100 bg-gray-50/50 dark:border-strokedark dark:bg-meta-4/30">
+                            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">User</span>
+                            <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+                                <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                {log.user_id}
+                            </div>
+                        </div>
+                        <div className="p-3 rounded-lg border border-gray-100 bg-gray-50/50 dark:border-strokedark dark:bg-meta-4/30">
+                            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Action</span>
+                            <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${actionStyle.bg} ${actionStyle.color} ${actionStyle.borderColor} dark:bg-opacity-20`}>
+                                {log.action_type}
+                            </div>
+                        </div>
+                        <div className="p-3 rounded-lg border border-gray-100 bg-gray-50/50 dark:border-strokedark dark:bg-meta-4/30">
+                            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Target</span>
+                            <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 truncate" title={`${log.target_module} (${log.target_id})`}>
+                                <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                </svg>
+                                <span className="truncate">{log.target_module}</span>
+                            </div>
+                        </div>
                     </div>
 
-                    {isDiff ? (
-                        renderDiffContent()
-                    ) : (
-                        <div className="bg-gray-100 p-4 rounded text-sm whitespace-pre-wrap dark:bg-meta-4 break-words">
-                            {typeof parsedDetails === 'string' ? parsedDetails : JSON.stringify(parsedDetails, null, 2)}
+                    {/* Change Reason Box */}
+                    {(parsedDetails?.change_reason || (log as any).extra_change_reason) && (
+                        <div className="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg dark:bg-blue-900/20 dark:border-blue-400">
+                            <div className="flex">
+                                <div className="flex-shrink-0">
+                                    <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div className="ml-3">
+                                    <p className="text-sm text-blue-700 dark:text-blue-200">
+                                        <strong className="font-semibold block mb-1">Change Reason:</strong>
+                                        {parsedDetails?.change_reason || (log as any).extra_change_reason}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     )}
+
+                    {/* Diff Viewer / Content */}
+                    <div className="bg-white rounded-lg border border-gray-200 shadow-sm dark:bg-boxdark dark:border-strokedark overflow-hidden">
+                        {isDiff ? (
+                            renderDiffContent()
+                        ) : (
+                            <div className="p-0">
+                                <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 dark:bg-meta-4 dark:border-strokedark">
+                                    <span className="text-xs font-semibold text-gray-500 uppercase">Raw Detail View</span>
+                                </div>
+                                <div className="p-4 bg-gray-50 dark:bg-boxdark">
+                                    <pre className="text-xs font-mono text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-all">
+                                        {typeof parsedDetails === 'string' ? parsedDetails : JSON.stringify(parsedDetails, null, 2)}
+                                    </pre>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Footer */}
-                <div className="mt-8 flex justify-end">
+                <div className="flex items-center justify-end gap-3 px-6 py-4 bg-gray-50 border-t border-gray-100 dark:bg-meta-4/30 dark:border-strokedark">
                     <button
                         onClick={onClose}
-                        className="rounded bg-primary px-6 py-2 font-medium text-gray hover:bg-opacity-90"
+                        className="px-5 py-2.5 rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 transition-colors dark:bg-meta-4 dark:text-gray-200 dark:border-strokedark dark:hover:bg-boxdark"
                     >
                         Close
                     </button>
+                    {/* Could add a 'Copy Details' button here in future */}
                 </div>
             </div>
         </div>

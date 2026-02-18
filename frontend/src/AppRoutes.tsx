@@ -303,7 +303,7 @@ const AppRoutes = () => {
                         />
                         {/* ✅ Activity Log Route */}
                         <Route
-                          path="/admin/activity-logs"
+                          path="/master/activity-logs"
                           element={
                             <ProtectedRoute>
                               <>

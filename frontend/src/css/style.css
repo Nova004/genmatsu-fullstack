@@ -33,7 +33,6 @@
   font-display: swap;
 }
 
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -44,10 +43,10 @@
   }
 }
 
-@layer components {}
+@layer components {
+}
 
 @layer utilities {
-
   /* Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -71,11 +70,11 @@
 
 /* third-party libraries CSS */
 
-.tableCheckbox:checked~div span {
+.tableCheckbox:checked ~ div span {
   @apply opacity-100;
 }
 
-.tableCheckbox:checked~div {
+.tableCheckbox:checked ~ div {
   @apply bg-primary border-primary;
 }
 
@@ -179,7 +178,9 @@ span.flatpickr-weekday,
 
 .flatpickr-day.inRange {
   @apply dark:!shadow-7;
-  box-shadow: -5px 0 0 #EFF4FB, 5px 0 0 #EFF4FB;
+  box-shadow:
+    -5px 0 0 #eff4fb,
+    5px 0 0 #eff4fb;
 }
 
 .flatpickr-day.inRange,
@@ -226,9 +227,9 @@ span.flatpickr-weekday,
   @apply !border-primary !bg-primary hover:!border-primary hover:!bg-primary;
 }
 
-.flatpickr-day.selected.startRange+.endRange:not(:nth-child(7n + 1)),
-.flatpickr-day.startRange.startRange+.endRange:not(:nth-child(7n + 1)),
-.flatpickr-day.endRange.startRange+.endRange:not(:nth-child(7n + 1)) {
+.flatpickr-day.selected.startRange + .endRange:not(:nth-child(7n + 1)),
+.flatpickr-day.startRange.startRange + .endRange:not(:nth-child(7n + 1)),
+.flatpickr-day.endRange.startRange + .endRange:not(:nth-child(7n + 1)) {
   box-shadow: -10px 0 0 #3c50e0;
 }
 
@@ -260,15 +261,15 @@ span.flatpickr-weekday,
   @apply left-10;
 }
 
-.taskCheckbox:checked~.box span {
+.taskCheckbox:checked ~ .box span {
   @apply opacity-100;
 }
 
-.taskCheckbox:checked~p {
+.taskCheckbox:checked ~ p {
   @apply line-through;
 }
 
-.taskCheckbox:checked~.box {
+.taskCheckbox:checked ~ .box {
   @apply bg-primary border-primary dark:border-primary;
 }
 
@@ -290,7 +291,6 @@ span.flatpickr-weekday,
   display: none !important;
 }
 
-
 /* ===== Highlight Row Animation ===== */
 @keyframes highlight-fade {
   from {
@@ -305,7 +305,7 @@ span.flatpickr-weekday,
 }
 
 .highlight-row {
-  animation: highlight-fade 10s ease-out 1.0s forwards;
+  animation: highlight-fade 10s ease-out 1s forwards;
 }
 
 /* --- สำหรับ Dark Mode --- */
@@ -324,41 +324,80 @@ span.flatpickr-weekday,
   animation-name: highlight-fade-dark;
 }
 
-
 /* ===== Delete Row Animation ===== */
 @keyframes delete-fade-out {
-  from {
+  0% {
     background-color: #fecaca;
-    /* สีแดงอ่อน */
     opacity: 1;
     transform: scale(1);
+    max-height: 100px; /* Adjust based on typical row height */
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    line-height: inherit;
+    border-bottom-width: 1px;
   }
 
-  to {
+  50% {
+    background-color: #fecaca;
+    opacity: 0.5;
+    transform: scale(0.98);
+  }
+
+  100% {
     background-color: #fecaca;
     opacity: 0;
     transform: scale(0.95);
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    line-height: 0;
+    border-bottom-width: 0;
+    display: none;
   }
 }
 
 .deleting-row {
-  animation: delete-fade-out 0.5s ease-out forwards;
+  animation: delete-fade-out 0.7s ease-out forwards;
+  overflow: hidden; /* Ensure content is clipped during collapse */
+  display: block; /* Required for height animation on tr/td */
+}
+
+/* Apply specific styles to td within deleting row for smooth collapse */
+.deleting-row td {
+  transition: all 0.7s ease-out;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  height: 0 !important;
+  line-height: 0 !important;
+  border: none !important;
 }
 
 /* --- สำหรับ Dark Mode --- */
 @keyframes delete-fade-out-dark {
-  from {
+  0% {
     background-color: #7f1d1d;
-    /* สีแดงเข้ม */
     opacity: 1;
+    max-height: 100px;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    border-bottom-width: 1px;
   }
 
-  to {
+  50% {
+    background-color: #7f1d1d;
+    opacity: 0.5;
+  }
+
+  100% {
     background-color: #7f1d1d;
     opacity: 0;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-bottom-width: 0;
+    display: none;
   }
 }
-
 
 /* 1. ทำให้ Input (text, number, date, select) และ Textarea เตี้ยลง */
 .a4-page-container .form-section input[type="text"],
@@ -372,7 +411,7 @@ span.flatpickr-weekday,
 
   /* ❌ ลบ font-size: 0.8rem ออก เพื่อให้ใช้ค่า 16px จากด้านล่างแทน */
   /* font-size: 0.8rem !important; */
-  
+
   /* ลดความสูงขั้นต่ำ */
   min-height: auto !important;
 }
@@ -388,9 +427,9 @@ span.flatpickr-weekday,
 
 /* 3. ลดช่องว่าง "บน" Input (ถ้า Input อยู่ใต้ Label หรือ Element อื่น) */
 /* (Selector นี้อาจจะต้องปรับตามโครงสร้าง HTML ของคุณ) */
-.a4-page-container .form-section div>input,
-.a4-page-container .form-section div>select,
-.a4-page-container .form-section div>textarea {
+.a4-page-container .form-section div > input,
+.a4-page-container .form-section div > select,
+.a4-page-container .form-section div > textarea {
   margin-top: 0.1rem !important;
   /* ลดช่องว่างเหนือ Input (ค่าตัวอย่าง) */
 }
@@ -402,7 +441,6 @@ span.flatpickr-weekday,
   margin-bottom: 0.25rem !important;
   /* ลดช่องว่างใต้กลุ่ม Input (ค่าตัวอย่าง) */
 }
-
 
 /* --- สิ้นสุด CSS ที่เพิ่ม --- */
 /* ============================================= */
@@ -427,48 +465,35 @@ span.flatpickr-weekday,
   /* ลด margin ล่าง */
 }
 
-
 @media print {
   .print-compact .flex.flex-shrink-0.items-center.gap-x-5.md\:w-40 span {
     margin: 8px !important; /* ลด margin ขณะปริ้นเฉพาะ .print-compact */
   }
 
-  [class="border-b border-stroke px-4 py-3 text-center font-medium text-black dark:border-strokedark dark:text-white"] {
-    border-bottom : 1px solid #000 !important; /* กำหนดเส้นขอบทั้ง 4 ด้าน */
+  [class='border-b border-stroke px-4 py-3 text-center font-medium text-black dark:border-strokedark dark:text-white'] {
+    border-bottom: 1px solid #000 !important; /* กำหนดเส้นขอบทั้ง 4 ด้าน */
     margin-bottom: 3px;
     margin-top: 3px;
   }
 
-   [class="rounded-b-sm border border-t-0 border-stroke p-5 dark:border-strokedark"] {
+  [class='rounded-b-sm border border-t-0 border-stroke p-5 dark:border-strokedark'] {
     border: 1px solid #000 !important; /* กำหนดเส้นขอบทั้ง 4 ด้าน */
     margin-bottom: 3px;
     margin-top: 3px;
   }
 
-
-
-   [class="border-b border-stroke px-4 py-3 text-black dark:border-strokedark dark:text-white align-top pt-4"] {
+  [class='border-b border-stroke px-4 py-3 text-black dark:border-strokedark dark:text-white align-top pt-4'] {
     border-bottom: 1px solid #000 !important;
-     margin-bottom: 3px;
-     margin-top: 3px;
+    margin-bottom: 3px;
+    margin-top: 3px;
   }
 
-
-
-
-   [class="border-b border-stroke px-4 py-3 text-black dark:border-strokedark dark:text-white text-center align-top pt-4"] {
+  [class='border-b border-stroke px-4 py-3 text-black dark:border-strokedark dark:text-white text-center align-top pt-4'] {
     border-bottom: 1px solid #000 !important;
-     margin-bottom: 3px;
-     margin-top: 3px;
+    margin-bottom: 3px;
+    margin-top: 3px;
   }
-  
 }
-
-
-
-
-
-
 
 /* ‼️ [ใหม่] บังคับให้ตัวหนังสือทั้งหมดเป็นตัวหนา ‼️ */
 .print-compact h4,
@@ -476,8 +501,6 @@ span.flatpickr-weekday,
   font-weight: bold !important;
   font-size: 18px !important;
 }
-
-
 
 .print-compact div,
 .print-compact th,
@@ -495,10 +518,8 @@ span.flatpickr-weekday,
   color: #000 !important;
 }
 
-
-
 /* ลดช่องว่างระหว่าง Grid Items */
-.print-compact [class*="gap-"] {
+.print-compact [class*='gap-'] {
   /* เลือก element ที่มี class 'gap-' */
   gap: 2px !important;
   /* ลด gap เหลือน้อยๆ */
@@ -572,7 +593,7 @@ span.flatpickr-weekday,
 .a4-page-container textarea,
 .a4-page-container select,
 .a4-page-container .disabled-print-color,
-.a4-page-container .text-blue-600 { 
+.a4-page-container .text-blue-600 {
   -webkit-text-fill-color: #0051ff !important; /* Tailwind blue-600 */
   color: #0051ff !important;
   font-family: 'Sarabun', sans-serif !important;
@@ -597,9 +618,10 @@ span.flatpickr-weekday,
 .a4-page-container td,
 .a4-page-container th,
 .a4-page-container label,
-.a4-page-container h5 { /* 👈 เพิ่ม h5 */
+.a4-page-container h5 {
+  /* 👈 เพิ่ม h5 */
   font-size: 16px !important; /* 👈 บังคับขนาด 14px เท่ากันหมด */
-  font-family: 'Sarabun', sans-serif !important;  /* (ถ้าต้องการบังคับ Font ด้วย เปิดบรรทัดนี้ได้เลย) */
+  font-family: 'Sarabun', sans-serif !important; /* (ถ้าต้องการบังคับ Font ด้วย เปิดบรรทัดนี้ได้เลย) */
 }
 
 /* ‼️ [ใหม่] บังคับสีฟ้าสำหรับชื่อและวันที่ใน Approval Flow (ตอนปริ้น) ‼️ */

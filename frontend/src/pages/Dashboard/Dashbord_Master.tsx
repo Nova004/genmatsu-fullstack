@@ -1,8 +1,9 @@
 import React from 'react';
 import MenuCard from '../../components/MenuCard';
-import { FaRegUser, FaCogs, FaHome, FaWpforms, FaEyeDropper } from 'react-icons/fa';
+import { FaRegUser, FaHome, FaWpforms, FaEyeDropper, FaList , FaRegChartBar } from 'react-icons/fa';
 import ButtonLink from '../../components/button/button_back';
 import { useLevelGuard } from '../../hooks/useLevelGuard';
+
 
 const ECommerce: React.FC = () => {
   useLevelGuard(2);
@@ -33,13 +34,23 @@ const ECommerce: React.FC = () => {
           <FaWpforms size={22} className="text-secondary" />
         </MenuCard>
 
-          <MenuCard
+        <MenuCard
           title="Standard Plan Master"
           description="จัดการข้อมูล Standard Plan Master"
           linkTo="/master/standard-plan-master" // <-- **แก้ URL ปลายทางได้ตามต้องการ**
         >
-          <FaCogs size={22} className="text-rose-500 dark:text-rose-400" />
+          <FaRegChartBar size={22} className="text-rose-500 dark:text-rose-400" />
         </MenuCard>
+
+        <MenuCard
+          title="ActivityLog"
+          description="จัดการข้อมูล ActivityLog"
+          linkTo="/master/activity-logs" // <-- **แก้ URL ปลายทางได้ตามต้องการ**
+        >
+          <FaList size={22} className="text-amber-500 dark:text-rose-400" />
+        </MenuCard>
+
+
       </div>
 
       <div className="mt-4 flex justify-end">
