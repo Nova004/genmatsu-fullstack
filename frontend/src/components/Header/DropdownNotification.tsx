@@ -7,37 +7,52 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { socket } from '../../services/socket';
 
+// Helper for relative time (e.g., "2 hours ago")
+const timeAgo = (dateInfo: string | Date) => {
+  const date = new Date(dateInfo);
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  let interval = seconds / 31536000;
+  if (interval > 1) return Math.floor(interval) + " years ago";
+  interval = seconds / 2592000;
+  if (interval > 1) return Math.floor(interval) + " months ago";
+  interval = seconds / 86400;
+  if (interval > 1) return Math.floor(interval) + " days ago";
+  interval = seconds / 3600;
+  if (interval > 1) return Math.floor(interval) + " hours ago";
+  interval = seconds / 60;
+  if (interval > 1) return Math.floor(interval) + " minutes ago";
+  return "Just now";
+};
 
 const DropdownNotification = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifying, setNotifying] = useState(true);
 
   const { user } = useAuth();
-  const location = useLocation(); // ใช้ Hook นี้เพื่อจับการเปลี่ยนหน้า
+  const location = useLocation();
   const [notificationList, setNotificationList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchNotifications = async () => {
+    if (!user) return;
+    if (user.LV_Approvals === undefined || user.LV_Approvals === null) return;
+
+    try {
+      const myTasks = await getMyPendingTasks(user.LV_Approvals, user.id);
+      setNotificationList(myTasks);
+      setNotifying(myTasks.length > 0);
+    } catch (error) {
+      console.error("Failed to fetch notifications", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchNotifications = async () => {
-      if (!user) return;
-      // ถ้า User ไม่มี Level หรือไม่ใช่ผู้อนุมัติ ก็ไม่ต้องยิง API เลย
-      if (user.LV_Approvals === undefined || user.LV_Approvals === null) return;
-
-      try {
-        const myTasks = await getMyPendingTasks(user.LV_Approvals, user.id); // ✅ ส่ง User ID ไปด้วย
-        setNotificationList(myTasks);
-        setNotifying(myTasks.length > 0);
-      } catch (error) {
-        console.error("Failed to fetch notifications", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // 1. เรียกทันทีเมื่อโหลด หรือเปลี่ยนหน้า
     fetchNotifications();
 
-    // ✅ Socket.io Listener: อัปเดตทันทีเมื่อมี Action (Create, Update, Delete, Approve, etc.)
     const handleServerAction = (data: any) => {
       if (data.action === 'refresh_data') {
         console.log("🔔 Notification Refresh Triggered by Socket");
@@ -47,11 +62,9 @@ const DropdownNotification = () => {
 
     socket.on('server-action', handleServerAction);
 
-    // Cleanup
     return () => {
       socket.off('server-action', handleServerAction);
     };
-
   }, [user, location]);
 
   return (
@@ -63,14 +76,13 @@ const DropdownNotification = () => {
             setDropdownOpen(!dropdownOpen);
           }}
           to="#"
-          className="relative flex h-8.5 w-8.5 items-center justify-center rounded-full border-[0.5px] border-stroke bg-gray hover:text-primary dark:border-strokedark dark:bg-meta-4 dark:text-white"
+          className="relative flex h-8.5 w-8.5 items-center justify-center rounded-full border-[0.5px] border-stroke bg-gray hover:text-primary dark:border-strokedark dark:bg-meta-4 dark:text-white transition-colors duration-200"
         >
-          {/* --- จุดแดงแจ้งเตือน (Pulse Effect) --- */}
           <span
-            className={`absolute -top-0.5 right-0 z-1 h-2 w-2 rounded-full bg-danger ${!notifying || notificationList.length === 0 ? 'hidden' : 'inline'
+            className={`absolute -top-0.5 -right-0.5 z-1 h-2 w-2 rounded-full bg-meta-1 ${!notifying || notificationList.length === 0 ? 'hidden' : 'inline'
               }`}
           >
-            <span className="absolute -z-1 inline-flex h-full w-full animate-ping rounded-full bg-danger opacity-75"></span>
+            <span className="absolute -z-1 inline-flex h-full w-full animate-ping rounded-full bg-meta-1 opacity-75"></span>
           </span>
 
           <svg
@@ -90,42 +102,43 @@ const DropdownNotification = () => {
 
         {dropdownOpen && (
           <div
-            className={`absolute -right-27 mt-2.5 flex h-90 w-75 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark sm:right-0 sm:w-80`}
+            className={`absolute -right-27 mt-2.5 flex h-90 w-75 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark sm:right-0 sm:w-80 z-99999`}
           >
-            <div className="px-4.5 py-3 bg-gray-50 dark:bg-meta-4 border-b border-stroke dark:border-strokedark">
-              <h5 className="text-sm font-semibold text-bodydark2 flex justify-between items-center">
-                การแจ้งเตือน
-                {notificationList.length > 0 && (
-                  <span className="bg-danger text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                    {notificationList.length}
-                  </span>
-                )}
+            <div className="px-4.5 py-3 border-b border-stroke dark:border-strokedark flex items-center justify-between">
+              <h5 className="text-sm font-medium text-bodydark2 dark:text-gray-300">
+                Notifications
               </h5>
+              {notificationList.length > 0 && (
+                <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full border border-primary/20">
+                  {notificationList.length} New
+                </span>
+              )}
             </div>
 
-            <ul className="flex h-auto flex-col overflow-y-auto">
+            <ul className="flex h-auto flex-col overflow-y-auto no-scrollbar">
               {loading ? (
                 <li className="px-4.5 py-3 animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
+                    <div className="flex-1">
+                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                  </div>
                 </li>
               ) : notificationList.length === 0 ? (
-                <li className="flex flex-col items-center justify-center py-8 text-center px-4">
-                  <div className="bg-gray-100 dark:bg-meta-4 p-3 rounded-full mb-3">
-                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                <li className="flex flex-col items-center justify-center py-10 text-center px-4">
+                  <div className="bg-gray-50 dark:bg-meta-4 p-4 rounded-full mb-3">
+                    <svg className="w-8 h-8 text-gray-400/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
                   </div>
-                  <p className="text-sm font-medium text-black dark:text-white">ไม่มีการแจ้งเตือน</p>
-                  <p className="text-xs text-body">คุณดำเนินการครบทุกงานแล้ว</p>
+                  <p className="text-sm text-gray-500 font-medium dark:text-gray-400">No new notifications</p>
+                  <p className="text-xs text-gray-400 mt-1">You're all caught up!</p>
                 </li>
               ) : (
                 notificationList.map((item, index) => {
-                  // ✅ เช็คว่าเป็น Rejected หรือไม่
                   const isRejected = item.status === 'Rejected';
                   const isRecycle = item.category === 'Recycle' || item.form_type === 'Recycle' || item.machine_name;
 
-                  // ✅ กำหนด Link 
-                  // - ถ้า Rejected -> ไปหน้า Edit (เพื่อแก้ส่งใหม่)
-                  // - ถ้า Pending -> ไปหน้า View (เพื่ออนุมัติ)
                   let linkPath = isRecycle
                     ? `/reports/view/recycle/${item.submission_id}`
                     : `/reports/view/${item.submission_id}`;
@@ -136,45 +149,46 @@ const DropdownNotification = () => {
                       : `/reports/edit/${item.submission_id}`;
                   }
 
+                  const timeDisplay = item.created_at || item.submitted_at ? timeAgo(item.created_at || item.submitted_at) : '';
+
                   return (
                     <li key={index}>
                       <Link
-                        className={`flex gap-4 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4 transition-colors duration-200 ${isRejected ? 'bg-red-50 dark:bg-red-900/20' : ''}`} // Highlight rejected row
+                        className={`group flex items-start gap-4 border-b border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4 transition-all duration-200 ${isRejected ? 'bg-red-50/50 dark:bg-red-900/10' : ''}`}
                         to={linkPath}
                         onClick={() => setDropdownOpen(false)}
                       >
-                        {isRejected ? (
-                          // ❌ Icon for Rejected
-                          <div className="h-10 w-10 flex-shrink-0 rounded-full bg-danger/10 flex items-center justify-center text-danger">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                          </div>
-                        ) : (
-                          // 📄 Icon for Pending
-                          <div className="h-10 w-10 flex-shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                            </svg>
-                          </div>
-                        )}
+                        {/* Icon Container */}
+                        <div className={`
+                          h-10 w-10 flex-shrink-0 rounded-full flex items-center justify-center border
+                          ${isRejected
+                            ? 'bg-red-100 text-red-500 border-red-200 dark:bg-red-900/30 dark:border-red-800'
+                            : 'bg-blue-50 text-blue-500 border-blue-100 dark:bg-blue-900/30 dark:border-blue-800'}
+                        `}>
+                          {isRejected ? (
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                          ) : (
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                          )}
+                        </div>
 
-                        <div className="flex flex-col gap-1 w-full">
+                        {/* Content */}
+                        <div className="flex flex-col gap-0.5 w-full">
                           <div className="flex justify-between items-start">
-                            <p className="text-sm font-semibold text-black dark:text-white truncate w-32">
-                              {/* {isRejected ? '[ถูกปฏิเสธ] ' : ''} */}
-                              Lot: {item.lot_no}
-                            </p>
-                            <span className="text-[10px] text-body">
-                              {new Date(item.created_at || item.submitted_at).toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' })}
+                            <span className={`text-sm font-semibold ${isRejected ? 'text-red-600 dark:text-red-400' : 'text-black dark:text-white'}`}>
+                              {isRejected ? 'Request Rejected' : 'Approval Request'}
+                            </span>
+                            <span className="text-[10px] text-gray-400 whitespace-nowrap ml-2">
+                              {timeDisplay}
                             </span>
                           </div>
 
-                          <p className="text-xs text-body truncate">
-                            <span className={isRejected ? 'text-danger font-medium' : ''}>
-                              {isRejected ? 'ถูกปฏิเสธ' : 'รออนุมัติ'}
-                            </span>
-                            • {item.form_type || (isRecycle ? 'Recycle' : 'N/A')} • โดย {item.submitted_by_name || item.submitted_by || 'User'}
+                          <p className="text-sm text-black dark:text-white font-medium">
+                            Lot: {item.lot_no}
+                          </p>
+
+                          <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
+                            {item.form_type || (isRecycle ? 'Recycle' : 'General')} • by {item.submitted_by_name || item.submitted_by || 'Unknown'}
                           </p>
                         </div>
                       </Link>

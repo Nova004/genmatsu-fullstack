@@ -85,6 +85,7 @@ export const ReportTableToolbar: React.FC<Props> = ({
                             <Datepicker
                                 value={dateRange}
                                 onChange={(newValue) => setDateRange(newValue)}
+                                showShortcuts={true}
                                 placeholder="Date Range"
                                 inputClassName="w-full rounded-lg border border-gray-300 bg-gray-50 py-2.5 px-4 text-sm text-gray-900 focus:border-primary focus:ring-1 focus:ring-primary dark:border-form-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
                                 toggleClassName="absolute right-0 top-0 h-full px-3 text-gray-400 focus:outline-none"

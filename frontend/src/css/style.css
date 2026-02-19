@@ -632,3 +632,38 @@ span.flatpickr-weekday,
   font-weight: bold !important;
   font-family: 'Sarabun', sans-serif !important;
 }
+
+/* ================================================================= */
+/* 🚀 Custom Animations: Toast Slide from Right */
+/* ================================================================= */
+
+@keyframes toast-slide-in-right {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toast-slide-out-right {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Ensure these class names match what is used in fireToast.tsx */
+.animate-enter {
+  animation: toast-slide-in-right 0.35s cubic-bezier(0.21, 1.02, 0.73, 1) forwards !important;
+}
+
+.animate-leave {
+  animation: toast-slide-out-right 0.4s cubic-bezier(0.06, 0.71, 0.55, 1) forwards !important;
+}
