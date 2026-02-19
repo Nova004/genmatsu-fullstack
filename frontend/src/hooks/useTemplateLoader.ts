@@ -70,6 +70,10 @@ export const useTemplateLoader = ({
           icon: 'info',
           confirmButtonText: 'Update Now',
           allowOutsideClick: false,
+          customClass: {
+            confirmButton:
+              'bg-primary text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all font-medium',
+          },
         }).then(() => {
           window.location.reload();
         });

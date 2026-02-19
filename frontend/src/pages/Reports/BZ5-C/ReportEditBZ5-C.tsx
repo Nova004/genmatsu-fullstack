@@ -54,6 +54,7 @@ const ReportEditBZ5_C: React.FC<ReportEditBZ5_CProps> = ({ submission, templates
                 submissionId={submission.submission_id}
                 status={submission.status}
                 onResubmit={handleResubmit}
+                templates={templates} // 👈 Pass templates
             />
 
             <ApprovalFlowDisplay

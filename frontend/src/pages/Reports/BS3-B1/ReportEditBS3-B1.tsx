@@ -54,6 +54,7 @@ const ReportEditBS3_B1: React.FC<ReportEditBS3_B1Props> = ({ submission, templat
                 submissionId={submission.submission_id}
                 status={submission.status}
                 onResubmit={handleResubmit}
+                templates={templates} // 👈 Pass templates
             />
 
             <ApprovalFlowDisplay

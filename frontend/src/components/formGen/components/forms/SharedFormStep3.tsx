@@ -1,10 +1,11 @@
 // path: frontend/src/components/formGen/components/forms/SharedFormStep3.tsx
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { UseFormRegister, FieldErrors, Control, Controller, UseFormGetValues, UseFormTrigger } from 'react-hook-form';
-import { getLatestTemplateByName } from '../../../../services/formService';
+// import { getLatestTemplateByName } from '../../../../services/formService'; // 👈 ไม่ใช้แล้ว
 import { IManufacturingReportForm, IConfigJson } from '../../pages/types';
 import InputMask from 'react-input-mask';
+import { useTemplateLoader } from '../../../../hooks/useTemplateLoader'; // 👈 Import Hook
 
 
 interface SharedFormStep3Props {
@@ -31,39 +32,19 @@ const SharedFormStep3: React.FC<SharedFormStep3Props> = ({
   templateName
 }) => {
 
-  const [fields, setFields] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // ✨ ใช้ Hook แทนการ Fetch เอง เพื่อให้ได้ฟีเจอร์แจ้งเตือน Version ใหม่
+  const { fields, isLoading, error } = useTemplateLoader({
+    templateName,
+    onTemplateLoaded,
+    staticBlueprint
+  });
 
-  useEffect(() => {
-    const processBlueprint = (data: any) => {
-      if (data && data.items) {
-        setFields(data.items);
-        if (onTemplateLoaded) {
-          onTemplateLoaded(data.template);
-        }
-      } else {
-        setError('โครงสร้าง Master ของ Step 3 ไม่ถูกต้อง');
-      }
-      setIsLoading(false);
-    };
+  // ลบ State และ useEffect เดิมออกทั้งหมด เพราะ Hook จัดการให้แล้ว
+  // const [fields, setFields] = useState<any[]>([]);
+  // const [isLoading, setIsLoading] = useState(true);
+  // const [error, setError] = useState<string | null>(null);
 
-    const fetchLatestBlueprint = async () => {
-      try {
-        const data = await getLatestTemplateByName(templateName);
-        processBlueprint(data);
-      } catch (err) {
-        setError(`ไม่สามารถโหลดข้อมูล Master (${templateName}) ของ Step 3 ได้`);
-        setIsLoading(false);
-      }
-    };
-
-    if (staticBlueprint) {
-      processBlueprint(staticBlueprint);
-    } else {
-      fetchLatestBlueprint();
-    }
-  }, [onTemplateLoaded, staticBlueprint, templateName]);
+  // useEffect(...) <- ลบออก
 
   if (isLoading) return <div className="p-4">Loading Form Step 3...</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;

@@ -22,6 +22,7 @@ interface BSFormEditProps {
     onResubmit: SubmitHandler<IManufacturingReportForm>; // ฟังก์ชันที่จะทำงานเมื่อกดส่งอนุมัติใหม่
     submissionId: number; // ID ของ submission ที่กำลังแก้ไ
     status: string;
+    templates?: any; // 👈 รับ Blueprints ของเวอร์ชันเก่าเข้ามา
 }
 
 const BS_VALIDATION_SCHEMA = {
@@ -46,7 +47,7 @@ const BS_VALIDATION_SCHEMA = {
         message: 'กรุณาตรวจสอบข้อมูลเงื่อนไขและผลการปฏิบัติงานให้ถูกต้อง',
     },
 };
-const BSFormEdit: React.FC<BSFormEditProps> = ({ initialData, onSubmit, onResubmit, submissionId, status }) => {
+const BSFormEdit: React.FC<BSFormEditProps> = ({ initialData, onSubmit, onResubmit, status, templates }) => {
 
     const totalSteps = 4;
     const navigate = useNavigate();
@@ -111,8 +112,30 @@ const BSFormEdit: React.FC<BSFormEditProps> = ({ initialData, onSubmit, onResubm
                       แต่ยังคงส่ง props ที่จำเป็นอื่นๆ ให้กับ Step Components
                     */}
                     {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="CG-1C" errors={errors} />}
-                    {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={() => { }} />}
-                    {step === 3 && <SharedFormStep3 register={register} errors={errors} trigger={trigger} control={control} getValues={getValues} onTemplateLoaded={() => { }} templateName="BS_Step3_Operations" />}
+                    {step === 2 && (
+                        <FormStep2
+                            register={register}
+                            watch={watch}
+                            setValue={setValue}
+                            errors={errors}
+                            onTemplateLoaded={() => { }}
+                            // 👇 Pass logic Approved ? Old : New
+                            staticBlueprint={status === 'Approved' && templates ? templates['BS_Step2_RawMaterials'] : undefined}
+                        />
+                    )}
+                    {step === 3 && (
+                        <SharedFormStep3
+                            register={register}
+                            errors={errors}
+                            trigger={trigger}
+                            control={control}
+                            getValues={getValues}
+                            onTemplateLoaded={() => { }}
+                            templateName="BS_Step3_Operations"
+                            // 👇 Pass logic Approved ? Old : New
+                            staticBlueprint={status === 'Approved' && templates ? templates['BS_Step3_Operations'] : undefined}
+                        />
+                    )}
                     {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="calculations.finalTotalWeight" />}
                 </div>
 

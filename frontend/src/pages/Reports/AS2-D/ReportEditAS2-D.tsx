@@ -53,6 +53,7 @@ const ReportEditAS2_D: React.FC<ReportEditAS2_DProps> = ({ submission, templates
                 submissionId={submission.submission_id}
                 status={submission.status}
                 onResubmit={handleResubmit}
+                templates={templates} // 👈 Pass templates
             />
 
             <ApprovalFlowDisplay

@@ -44,7 +44,7 @@ const ReportEditBS5_C: React.FC<ReportEditBS5_CProps> = ({ submission, templates
             redirectTo: '/reports/view/' + submission.submission_id // ดีดกลับไปหน้าดูเฉยๆ
         }
     );
-    
+
     return (
         <>
             <BS5_CFormEdit
@@ -53,6 +53,7 @@ const ReportEditBS5_C: React.FC<ReportEditBS5_CProps> = ({ submission, templates
                 submissionId={submission.submission_id}
                 status={submission.status}
                 onResubmit={handleResubmit}
+                templates={templates} // 👈 Pass templates
             />
 
             <ApprovalFlowDisplay

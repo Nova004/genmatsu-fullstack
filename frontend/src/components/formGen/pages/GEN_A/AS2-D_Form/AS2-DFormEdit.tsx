@@ -21,6 +21,7 @@ interface AS2_DFormEditProps {
     onResubmit: SubmitHandler<IManufacturingReportForm>; // ฟังก์ชันที่จะทำงานเมื่อกดส่งอนุมัติใหม่
     submissionId: number; // ID ของ submission ที่กำลังแก้ไข
     status: string;
+    templates?: any; // 👈 รับ Blueprints ของเวอร์ชันเก่าเข้ามา
 }
 
 const AS2_D_VALIDATION_SCHEMA = {
@@ -49,7 +50,7 @@ const AS2_D_VALIDATION_SCHEMA = {
 };
 
 
-const AS2_DFormEdit: React.FC<AS2_DFormEditProps> = ({ initialData, onSubmit, onResubmit, submissionId, status }) => {
+const AS2_DFormEdit: React.FC<AS2_DFormEditProps> = ({ initialData, onSubmit, onResubmit, submissionId, status, templates }) => {
 
     console.log('--- ตรวจสอบ Status ที่ได้รับมา ---');
     console.log('Status คือ:', status);
@@ -115,8 +116,35 @@ const AS2_DFormEdit: React.FC<AS2_DFormEditProps> = ({ initialData, onSubmit, on
                       แต่ยังคงส่ง props ที่จำเป็นอื่นๆ ให้กับ Step Components
                     */}
                     {step === 1 && <SharedFormStep1 register={register} watch={watch} setValue={setValue} packagingWarningItemName="Iron Powder" errors={errors} />}
-                    {step === 2 && <FormStep2 register={register} watch={watch} setValue={setValue} errors={errors} onTemplateLoaded={() => { }} />}
-                    {step === 3 && <SharedFormStep3 register={register} errors={errors} trigger={trigger} control={control} getValues={getValues} onTemplateLoaded={() => { }} templateName="AS2-D_Step3_Operations" />}
+                    {/* 
+                      Logic for Conditional Form Loading:
+                      - If Status == 'Approved': Use Static Blueprint (Old Version)
+                      - If Status != 'Approved': Use Latest Blueprint (API)
+                    */}
+                    {step === 2 && (
+                        <FormStep2
+                            register={register}
+                            watch={watch}
+                            setValue={setValue}
+                            errors={errors}
+                            onTemplateLoaded={() => { }}
+                            // 👇 Pass staticBlueprint if Approved
+                            staticBlueprint={status === 'Approved' && templates ? templates['AS2-D_Step2_RawMaterials'] : undefined}
+                        />
+                    )}
+                    {step === 3 && (
+                        <SharedFormStep3
+                            register={register}
+                            errors={errors}
+                            trigger={trigger}
+                            control={control}
+                            getValues={getValues}
+                            onTemplateLoaded={() => { }}
+                            templateName="AS2-D_Step3_Operations"
+                            // 👇 Pass logic Approved ? Old : New
+                            staticBlueprint={status === 'Approved' && templates ? templates['AS2-D_Step3_Operations'] : undefined}
+                        />
+                    )}
                     {step === 4 && <SharedFormStep4 register={register} watch={watch} setValue={setValue} totalWeightFieldName="calculations.finalTotalWeight" />}
                 </div>
 

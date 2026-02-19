@@ -33,7 +33,7 @@ const ReportEditBS3_B: React.FC<ReportEditBS3_BProps> = ({ submission, templates
     });
 
     const isEditable = (submission.status !== 'Approved' && String(submission.submitted_by) === String(user?.id)) || user?.LV_Approvals === 3;
-   // console.log(`id ${submission.submitted_by} = id ${user?.id}`);
+    // console.log(`id ${submission.submitted_by} = id ${user?.id}`);
 
     useConditionGuard(
         isEditable,      // เงื่อนไขความถูกต้อง
@@ -53,6 +53,7 @@ const ReportEditBS3_B: React.FC<ReportEditBS3_BProps> = ({ submission, templates
                 submissionId={submission.submission_id}
                 status={submission.status}
                 onResubmit={handleResubmit}
+                templates={templates} // 👈 Pass templates
             />
 
             <ApprovalFlowDisplay

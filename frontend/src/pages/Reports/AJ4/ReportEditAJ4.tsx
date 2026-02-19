@@ -53,6 +53,7 @@ const ReportEditAJ4: React.FC<ReportEditAJ4Props> = ({ submission, templates }) 
                 submissionId={submission.submission_id}
                 status={submission.status}
                 onResubmit={handleResubmit}
+                templates={templates} // 👈 Pass templates
             />
 
             <ApprovalFlowDisplay

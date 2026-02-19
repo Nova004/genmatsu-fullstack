@@ -32,7 +32,7 @@ const ReportEditAZ1: React.FC<ReportEditAZ1Props> = ({ submission, templates }) 
         redirectPath: '/reports/history/gen-a' // ถ้าเป็น Gen A ก็แก้เป็น gen-a ได้เลย
     });
 
-   const isEditable = (submission.status !== 'Approved' && String(submission.submitted_by) === String(user?.id)) || user?.LV_Approvals === 3;
+    const isEditable = (submission.status !== 'Approved' && String(submission.submitted_by) === String(user?.id)) || user?.LV_Approvals === 3;
     console.log(`id ${submission.submitted_by} = id ${user?.id}`);
 
     useConditionGuard(
@@ -54,6 +54,7 @@ const ReportEditAZ1: React.FC<ReportEditAZ1Props> = ({ submission, templates }) 
                 submissionId={submission.submission_id}
                 status={submission.status}
                 onResubmit={handleResubmit}
+                templates={templates} // 👈 Pass templates
             />
             <ApprovalFlowDisplay
                 submissionId={submission.submission_id}

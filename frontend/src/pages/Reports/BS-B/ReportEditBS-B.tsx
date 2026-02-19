@@ -22,7 +22,7 @@ const ReportEditBS_B: React.FC<ReportEditBS_BProps> = ({ submission, templates }
         // หากมี field อื่นๆ ที่อยู่นอก form_data_json ก็ให้เพิ่มที่นี่
     };
 
-   const { handleUpdate } = useUpdateSubmission({
+    const { handleUpdate } = useUpdateSubmission({
         submission,
         redirectPath: '/reports/history/gen-b'
     });
@@ -53,6 +53,7 @@ const ReportEditBS_B: React.FC<ReportEditBS_BProps> = ({ submission, templates }
                 submissionId={submission.submission_id}
                 status={submission.status}
                 onResubmit={handleResubmit}
+                templates={templates} // 👈 Pass templates
             />
 
             <ApprovalFlowDisplay
