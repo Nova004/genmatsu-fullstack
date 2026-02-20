@@ -1,3 +1,4 @@
+// frontend/src/components/formGen/pages/GEN_A/AS2-D_Form/AS2-DFormPrint.tsx
 import React, { useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { IManufacturingReportForm } from '../../types';

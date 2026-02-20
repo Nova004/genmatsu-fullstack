@@ -75,9 +75,9 @@ const OutputProductGenmatsuB: React.FC<OutputProductGenmatsuBProps> = ({
           <thead>
             <tr className="bg-gray-2 text-left dark:bg-meta-4">
               <th className={`${headerThClass} w-[80px]`}>Bag no</th>
-              <th className={headerThClass}>Weight ≦ 20 kg / bag</th>
+              <th className={headerThClass}>Weight ≤ 20 kg / bag</th>
               <th className={`${headerThClass} w-[80px]`}>Bag no</th>
-              <th className={headerThClass}>Weight ≦ 20 kg / bag</th>
+              <th className={headerThClass}>Weight ≤ 20 kg / bag</th>
               {!isReadOnly && <th className="border-b border-stroke px-3 py-3 text-center font-semibold text-xs text-gray-700 dark:border-strokedark dark:text-gray-200 bg-gray-50 dark:bg-gray-800">Action</th>}
             </tr>
           </thead>

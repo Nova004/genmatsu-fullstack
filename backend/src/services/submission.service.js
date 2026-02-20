@@ -392,12 +392,70 @@ exports.updateSubmission = async (id, lot_no, form_data, userId) => {
     );
     keyMetrics.stTargetValue = finalStValue;
 
+    // --- 🚀 NEW: Version Logic (Active Version) ---
+    // 1. Get Latest Active Template ID (using pool) (Read-only check)
+    let newVersionSetId = null;
+
+    // 🛡️ Conditional Update: Only update version if NOT 'Approved'
+    // User Requirement: "if status = Approved, should use same form"
+    if (submissionInfo.status !== 'Approved') {
+      try {
+        // ... (Logic เดิม) ...
+        // Note: getLatestActiveTemplateId uses 'pool' internally so we pass pool? 
+        // Actually my implementation above uses 'pool' directly.
+        // But we are in transaction. It is safe to use pool for reading master.
+        // 1.1 Get current templates used in this submission
+        const currentItems = await submissionRepo.getVersionSetItems(pool, submissionInfo.version_set_id);
+
+        if (currentItems && currentItems.length > 0) {
+          const newTemplateIds = [];
+          let isSuccess = true;
+
+          // 1.2 Loop through each template name to find its latest active version
+          // 🚀 Fix: Get UNIQUE template names first to avoid duplicates
+          const uniqueTemplateNames = [...new Set(currentItems.map(item => item.template_name))];
+
+          for (const templateName of uniqueTemplateNames) {
+            const latestId = await submissionRepo.getLatestActiveTemplateIdByName(pool, templateName);
+            if (latestId) {
+              newTemplateIds.push(latestId);
+            } else {
+              console.warn(`⚠️ Could not find active version for template: ${templateName}`);
+              isSuccess = false;
+              break; // If any template fails, abort update to avoid broken form
+            }
+          }
+
+          if (isSuccess && newTemplateIds.length > 0) {
+            // 2. Find Category (from first template)
+            const category = await submissionRepo.getTemplateCategory(transaction, newTemplateIds[0]);
+            if (category) {
+              // 3. Find or Create Version Set
+              newVersionSetId = await submissionRepo.findExistingVersionSet(transaction, category, newTemplateIds);
+
+              if (!newVersionSetId) {
+                await submissionRepo.deprecateOldVersionSet(transaction, category);
+                newVersionSetId = await submissionRepo.createNewVersionSet(transaction, category);
+                await submissionRepo.addItemsToVersionSet(transaction, newVersionSetId, newTemplateIds);
+              }
+            }
+          }
+        }
+      } catch (verErr) {
+        console.error("❌ Error updating version set:", verErr);
+        // Fallback: keep old version (newVersionSetId = null)
+      }
+    } else {
+      console.log("ℹ️ Submission is Approved. Skipping version update.");
+    }
+
     // 3. อัปเดตข้อมูล
     await submissionRepo.updateSubmissionRecord(
       transaction,
       id,
       lot_no,
-      keyMetrics.productionLine
+      keyMetrics.productionLine,
+      newVersionSetId // ✅ Pass new Version Set ID
     );
     await submissionRepo.updateSubmissionData(
       transaction,
@@ -622,13 +680,61 @@ exports.resubmitSubmission = async (id, formDataJson, userId) => {
     );
     keyMetrics.stTargetValue = finalStValue;
 
+    // --- 🚀 NEW: Version Logic (Active Version) ---
+    let newVersionSetId = null;
+
+    // 🛡️ Conditional Update: Only update version if NOT 'Approved'
+    if (submission.status !== 'Approved') {
+      try {
+        // 1.1 Get current templates used in this submission
+        // We need version_set_id from submission object
+        const currentItems = await submissionRepo.getVersionSetItems(pool, submission.version_set_id);
+
+        if (currentItems && currentItems.length > 0) {
+          const newTemplateIds = [];
+          let isSuccess = true;
+
+          // 🚀 Fix: Get UNIQUE template names first
+          const uniqueTemplateNames = [...new Set(currentItems.map(item => item.template_name))];
+
+          for (const templateName of uniqueTemplateNames) {
+            const latestId = await submissionRepo.getLatestActiveTemplateIdByName(pool, templateName);
+            if (latestId) {
+              newTemplateIds.push(latestId);
+            } else {
+              isSuccess = false;
+              break;
+            }
+          }
+
+          if (isSuccess && newTemplateIds.length > 0) {
+            const category = await submissionRepo.getTemplateCategory(transaction, newTemplateIds[0]);
+            if (category) {
+              newVersionSetId = await submissionRepo.findExistingVersionSet(transaction, category, newTemplateIds);
+
+              if (!newVersionSetId) {
+                await submissionRepo.deprecateOldVersionSet(transaction, category);
+                newVersionSetId = await submissionRepo.createNewVersionSet(transaction, category);
+                await submissionRepo.addItemsToVersionSet(transaction, newVersionSetId, newTemplateIds);
+              }
+            }
+          }
+        }
+      } catch (verErr) {
+        console.error("❌ Error updating version set:", verErr);
+      }
+    } else {
+      console.log("ℹ️ Submission (Resubmit) is Approved. Skipping version update.");
+    }
+
     // 3. อัปเดตข้อมูล (ส่ง Status ใหม่ และ keyMetrics ที่มี productionLine ไปด้วย)
     await submissionRepo.resubmitSubmissionData(
       transaction,
       id,
       cleanedFormData,
       keyMetrics,
-      newStatus
+      newStatus,
+      newVersionSetId // ✅ Pass new Version Set ID
     );
 
     await transaction.commit();

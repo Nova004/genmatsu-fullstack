@@ -27,7 +27,7 @@ const OutputFilmProduct: React.FC<OutputFilmProductProps> = ({
 
     const headerThClass = "border-b border-stroke px-3 py-3 text-center font-semibold text-xs whitespace-nowrap text-gray-700 dark:border-strokedark dark:text-gray-200 bg-gray-50 dark:bg-gray-800";
     const tdCenterClass = "border border-stroke px-4 py-3 text-center font-normal text-sm text-gray-600 dark:border-strokedark dark:text-gray-300";
- const footerTdClass = "border border-stroke px-4 py-3 text-center align-middle text-blue-600 font-semibold text-sm dark:border-strokedark dark:text-blue-600 bg-gray-50 dark:bg-gray-800 ";
+    const footerTdClass = "border border-stroke px-4 py-3 text-center align-middle text-blue-600 font-semibold text-sm dark:border-strokedark dark:text-blue-600 bg-gray-50 dark:bg-gray-800 ";
     // Watch the weight fields to calculate total
     const itemsLeft = watch(fieldName) || [];
     const itemsRight = watch(`${fieldName}Right`) || [];
@@ -75,9 +75,9 @@ const OutputFilmProduct: React.FC<OutputFilmProductProps> = ({
                     <thead>
                         <tr className="bg-gray-2 text-left dark:bg-meta-4">
                             <th className={`${headerThClass} w-[80px]`}>Bag no</th>
-                            <th className={headerThClass}>Weight ≦ 20 kg / bag</th>
+                            <th className={headerThClass}>Weight ≤ 20 kg / bag</th>
                             <th className={`${headerThClass} w-[80px]`}>Bag no</th>
-                            <th className={headerThClass}>Weight ≦ 20 kg / bag</th>
+                            <th className={headerThClass}>Weight ≤ 20 kg / bag</th>
                             {!isReadOnly && <th className="border-b border-stroke px-3 py-3 text-center font-semibold text-xs text-gray-700 dark:border-strokedark dark:text-gray-200 bg-gray-50 dark:bg-gray-800">Action</th>}
                         </tr>
                     </thead>

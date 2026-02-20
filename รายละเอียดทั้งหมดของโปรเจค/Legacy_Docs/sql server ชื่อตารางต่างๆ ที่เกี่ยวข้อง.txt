@@ -5,13 +5,15 @@
 เราเริ่มต้นด้วยการสร้าง "โครงสร้างพื้นฐาน" ที่แข็งแรงเพื่อรองรับข้อมูลทั้งหมด
 1.1 ฐานข้อมูล (SQL Server)
 เราได้เพิ่มตารางใหม่ 4 ตาราง ซึ่งแต่ละตารางมีหน้าที่เฉพาะเจาะจง:
-	• Form_Version_Sets: ทำหน้าที่เป็น "สารบัญชุดเวอร์ชัน" จะสร้างแถวใหม่ก็ต่อเมื่อโครงสร้างของฟอร์ม (พิมพ์เขียว) มีการเปลี่ยนแปลงเท่านั้น
+	• Form_Version_Sets: ทำหน้าที่เป็น "สารบัญชุดเวอร์ชัน" (Smart Versioning) โดยระบบจะเลือก Template ที่ Active ล่าสุด (ตาม Effective Date) มาจับคู่กัน และมีระบบ Strict Matching ป้องกันข้อมูลซ้ำซ้อน
 	• Form_Version_Set_Items: บอกว่าใน "สารบัญ" แต่ละชุด ประกอบด้วย template_id (พิมพ์เขียวเวอร์ชันเฉพาะ) อะไรบ้าง
 	• Form_Submissions: เปรียบเสมือน "หน้าปก" ของเอกสารที่บันทึก โดยมีการ "ประทับตรา" ด้วย version_set_id เพื่ออ้างอิงถึงโครงสร้างฟอร์มที่ใช้ ณ เวลานั้น
 	• Form_Submission_Data: เก็บ "เนื้อหา" ของฟอร์มทั้งหมดในรูปแบบ JSON ก้อนเดียว ทำให้มีความยืดหยุ่นสูงมาก
 1.2 Backend API (Node.js & Express)
 เราได้สร้างและอัปเกรด API ในฝั่ง Backend เพื่อจัดการกับข้อมูล:
-	• POST /api/submissions: Endpoint สำหรับ "สร้าง" ข้อมูลใหม่ โดยมี Logic อัจฉริยะในการ "ค้นหาหรือสร้าง" version_set_id ก่อนที่จะบันทึกข้อมูลลง Form_Submissions และ Form_Submission_Data
+	• POST /api/submissions: Endpoint สำหรับ "สร้าง/แก้ไข" ข้อมูล โดยมี Logic จัดการ Version 2 แบบ:
+		1) Dynamic Update: ถ้าเป็น Draft/Rejected จะหา Active Version ล่าสุดมาใช้เสมอ 
+		2) Locked History: ถ้าเป็น Approved จะล็อค Version เดิมไว้เพื่อรักษาความถูกต้องของข้อมูล (Data Integrity)
 	• GET /api/submissions: Endpoint สำหรับ "อ่าน" ข้อมูลทั้งหมดในรูปแบบรายการ เพื่อใช้ในหน้า "Report History"
 	• GET /api/submissions/:id: Endpoint สำหรับ "อ่าน" ข้อมูลเพียงรายการเดียวแบบละเอียด โดยจะดึงทั้ง "ข้อมูลที่กรอก" และ "พิมพ์เขียวเวอร์ชันที่ถูกต้อง" กลับมาคู่กันเสมอ
 
@@ -232,7 +234,7 @@ Gen_Approved_log:
 ภาพรวมกระบวนการทำงาน (Workflow) (เวอร์ชันอัปเดต)
 การสร้างฟอร์ม (Create):
 
-(คงเดิม) User กรอกข้อมูล -> Backend ค้นหา (หรือสร้าง) version_set_id -> บันทึก Form_Submissions (ประทับตรา version_set_id) และ Form_Submission_Data (เนื้อหา JSON)
+(คงเดิม+ใหม่) User กรอกข้อมูล -> Backend ค้นหา Active Template ล่าสุด -> ค้นหา (หรือสร้าง) version_set_id -> บันทึก Form_Submissions (ประทับตรา version_set_id) และ Form_Submission_Data (เนื้อหา JSON)
 
 (ใหม่) Backend เรียก Logic createApprovalFlow (ที่เราคุยกัน) เพื่อสร้างแถวใน Gen_Approval_Flow โดยอิงตาม LV_Approvals ของผู้สร้าง (เช่น ถ้า LV1 สร้าง ให้สร้าง Flow สำหรับ LV2, LV3)
 
@@ -278,7 +280,7 @@ User กด "Resubmit" -> Frontend เรียก API resubmitSubmission (Backe
 
 UPDATE Form_Submission_Data (อัปเดต JSON)
 
-UPDATE Form_Submissions (เปลี่ยน status กลับเป็น 'Drafted')
+UPDATE Form_Submissions (เปลี่ยน status กลับเป็น 'Drafted' และอัปเดต version_set_id เป็นปัจจุบัน ถ้ายังไม่ Approved)
 
 UPDATE Gen_Approval_Flow (รีเซ็ตแถว 'Rejected'/'Pending' กลับเป็น 'Pending' และล้าง approver_user_id ออก)
 

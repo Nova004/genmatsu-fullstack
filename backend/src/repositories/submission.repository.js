@@ -5,6 +5,19 @@ const logger = require("../utils/logger"); // 🚀 Async Logger
 // Helper to get a pool connection
 const getPool = async () => await sql.connect(dbConfig);
 
+exports.getLatestActiveTemplateIdByName = async (pool, templateName) => {
+  const request = new sql.Request(pool);
+  const result = await request.input("templateName", sql.NVarChar, templateName)
+    .query(`
+      SELECT TOP 1 template_id 
+      FROM Form_Master_Templates 
+      WHERE template_name = @templateName 
+        AND (effective_date IS NULL OR effective_date <= GETUTCDATE())
+      ORDER BY version DESC
+    `);
+  return result.recordset[0] ? result.recordset[0].template_id : null;
+};
+
 exports.getUserApprovalLevel = async (pool, submittedBy) => {
   const request = new sql.Request(pool);
   const result = await request
@@ -92,7 +105,9 @@ exports.findExistingVersionSet = async (transaction, category, templateIds) => {
       SELECT vs.version_set_id
       FROM Form_Version_Sets vs
       WHERE vs.category = @categoryToUse AND vs.is_latest = 1
-        AND (SELECT COUNT(DISTINCT vsi.template_id) FROM Form_Version_Set_Items vsi WHERE vsi.version_set_id = vs.version_set_id) = @templateCount
+        -- 🚀 Fix: Use COUNT(vsi.template_id) to count ALL rows, not just distinct ones
+        -- This prevents matching a corrupted set with duplicate rows (e.g., 10 rows of same template)
+        AND (SELECT COUNT(vsi.template_id) FROM Form_Version_Set_Items vsi WHERE vsi.version_set_id = vs.version_set_id) = @templateCount
         AND NOT EXISTS (
           SELECT 1
           FROM (VALUES ${templateIds.map((id) => `(${id})`).join(",")}) AS t(id)
@@ -423,16 +438,20 @@ exports.updateSubmissionRecord = async (
   transaction,
   submissionId,
   lotNo,
-  productionLine
+  productionLine,
+  versionSetId // ✅ Added versionSetId
 ) => {
   const request = new sql.Request(transaction);
   await request
     .input("submission_id", sql.Int, submissionId)
     .input("production_line", sql.NVarChar, productionLine || null)
-    .input("lot_no", sql.NVarChar, lotNo).query(`
+    .input("lot_no", sql.NVarChar, lotNo)
+    .input("version_set_id", sql.Int, versionSetId) // ✅ Input versionSetId
+    .query(`
         UPDATE Form_Submissions
         SET lot_no = @lot_no,
-        production_line = @production_line,
+            production_line = @production_line,
+            version_set_id = COALESCE(@version_set_id, version_set_id), -- ✅ Update if provided
             submitted_at = GETDATE()
         WHERE submission_id = @submission_id;
       `);
@@ -485,7 +504,8 @@ exports.resubmitSubmissionData = async (
   submissionId,
   formDataJson,
   keyMetrics,
-  status
+  status,
+  versionSetId // ✅ Added versionSetId
 ) => {
   const request = new sql.Request(transaction);
 
@@ -518,13 +538,14 @@ exports.resubmitSubmissionData = async (
     JSON.stringify(keyMetrics.palletData || [])
   );
 
-  // Status & Production Line Inputs
+  // Status & Production Line & VersionSet Inputs
   request.input("status", sql.NVarChar, status || "Pending");
   request.input(
     "productionLine",
     sql.NVarChar,
     keyMetrics.productionLine || null
   );
+  request.input("version_set_id", sql.Int, versionSetId); // ✅ Input
 
   // 3.1 Update Data Content (เนื้อหา)
   await request.query(`

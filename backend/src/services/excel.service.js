@@ -62,12 +62,14 @@ const generateChartImage = async (title, labels, data, color) => {
  */
 const aggregateLineData = (lineData) => {
     const groups = {};
+    const datesWithData = new Set(); // To track dates that have at least one record
 
+    // 1. First Pass: Process actual data
     lineData.forEach(item => {
-        // 1. Extract Short Lot (First 4 digits) e.g., "6005"
+        // Extract Short Lot (First 4 digits) e.g., "6005"
         const shortLot = item.lotNo ? item.lotNo.substring(0, 4) : item.lotNo;
 
-        // 2. Extract Line from Lot No (5th char) OR use DB production_line
+        // Extract Line from Lot No (5th char) OR use DB production_line
         let line = "Line_Unknown";
         if (item.lotNo && item.lotNo.length >= 5) {
             const lineChar = item.lotNo.charAt(4);
@@ -77,9 +79,11 @@ const aggregateLineData = (lineData) => {
             line = `Line_${cleanLine}`;
         }
 
-        // 3. Create Group Key
+        // Create Group Key
         const dateKey = new Date(item.production_date).toISOString().split('T')[0];
-        const key = `${dateKey}_${shortLot}_${line}_${item.productName}`;
+        datesWithData.add(dateKey); // Mark this date as having data
+
+        const key = `${dateKey}_${line}_${shortLot}_${item.productName}`; // Adjusted key order for logic clarity, but logic remains same
 
         if (!groups[key]) {
             groups[key] = {
@@ -141,12 +145,67 @@ const aggregateLineData = (lineData) => {
         if (item.remarks) group.remarks.add(item.remarks);
     });
 
+    // 2. Second Pass: Ensure ALL lines (A, B, C, D, R) exist for dates with data
+    const requiredLines = ["Line_A", "Line_B", "Line_C", "Line_D", "Line_R"];
+
+    // Helper: Find a representative Lot No for the date
+    const getLotNoForDate = (targetDate) => {
+        // Find ANY group that matches this date and has a Lot No
+        const sampleGroup = Object.values(groups).find(g => {
+            const gDate = new Date(g.production_date).toISOString().split('T')[0];
+            return gDate === targetDate && g.lotNo;
+        });
+        return sampleGroup ? sampleGroup.lotNo : "";
+    };
+
+    datesWithData.forEach(dateStr => {
+        const commonLotNo = getLotNoForDate(dateStr); // Get the Lot No to share
+
+        requiredLines.forEach(reqLine => {
+            // Check if any group exists for this date + line
+            // We use .some() because keys contain LotNo & ProductName which vary
+            const existingEntry = Object.values(groups).find(g => {
+                const gDate = new Date(g.production_date).toISOString().split('T')[0];
+                return gDate === dateStr && g.line === reqLine;
+            });
+
+            if (!existingEntry) {
+                // If missing, create a dummy empty entry
+                // Unique Key for dummy: Date_Line_DUMMY
+                const dummyKey = `${dateStr}_${reqLine}_DUMMY`;
+                groups[dummyKey] = {
+                    production_date: new Date(dateStr), // Use the date we found
+                    lotNo: commonLotNo, // ✅ Use the Lot No from other lines
+                    line: reqLine,
+                    productName: "",     // Empty
+                    batchCount: 0,
+                    plan: 0,
+                    input: 0,
+                    output: 0,
+                    ncr: 0,
+                    recycle: 0,
+                    scrap: 0,
+                    remarks: new Set(),
+                    rawRecords: 0
+                };
+            }
+        });
+    });
+
     // Convert Groups to Array
     return Object.values(groups).sort((a, b) => {
         const dateDiff = new Date(a.production_date) - new Date(b.production_date);
         if (dateDiff !== 0) return dateDiff;
+
+        // Custom Sort for Lines: A, B, C, D, R
+        const lineOrder = { "Line_A": 1, "Line_B": 2, "Line_C": 3, "Line_D": 4, "Line_R": 5 };
+        const orderA = lineOrder[a.line] || 99;
+        const orderB = lineOrder[b.line] || 99;
+
+        if (orderA !== orderB) return orderA - orderB;
+
         if (a.lotNo !== b.lotNo) return a.lotNo.localeCompare(b.lotNo);
-        return a.line.localeCompare(b.line);
+        return 0;
     });
 };
 
@@ -175,7 +234,7 @@ exports.generateMonthlyReport = async (monthStr, reportData) => {
 
     worksheet.mergeCells("A3:N3");
     const subTitle = worksheet.getCell("A3");
-    subTitle.value = `Generated on: ${new Date().toLocaleString('en-GB')} | Genmatsu Technology`;
+    subTitle.value = `Generated on: ${new Date().toLocaleString('en-GB')} | Genmatsu`;
     subTitle.font = { name: "Calibri", size: 11, italic: true, color: { argb: "FF555555" } };
 
     // --- 3. Define Columns ---
@@ -205,9 +264,22 @@ exports.generateMonthlyReport = async (monthStr, reportData) => {
     // --- 4. Styling Headers ---
     const headerRow = worksheet.getRow(5);
     headerRow.height = 35;
-    headerRow.eachCell((cell) => {
-        cell.font = { name: "Arial", size: 11, bold: true, color: whiteColor };
-        cell.fill = { type: "pattern", pattern: "solid", fgColor: corporateBlue };
+
+    // Headers to be yellow (1-based index)
+    const yellowColumns = [5, 6, 8, 9, 11, 12, 13]; // Type, Batch, Input, Output, Scrap, NCR, Recycle
+    const yellowColor = { argb: "FFFFFF00" }; // Standard Excel Bright Yellow
+
+    headerRow.eachCell((cell, colNum) => {
+        if (yellowColumns.includes(colNum)) {
+            // Yellow Header: Black Text
+            cell.font = { name: "Arial", size: 11, bold: true, color: { argb: "FF000000" } };
+            cell.fill = { type: "pattern", pattern: "solid", fgColor: yellowColor };
+        } else {
+            // Standard Header: White Text + Corporate Blue
+            cell.font = { name: "Arial", size: 11, bold: true, color: whiteColor };
+            cell.fill = { type: "pattern", pattern: "solid", fgColor: corporateBlue };
+        }
+
         cell.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
         cell.border = {
             top: { style: "medium", color: corporateDark },
@@ -230,6 +302,12 @@ exports.generateMonthlyReport = async (monthStr, reportData) => {
     // Chart Data Accumulator
     const lineTotals = {};
 
+    // Color Setup for Alternate Dates
+    const colorBlue = { argb: "FFE1EEF4" };   // Light Blue (Updated)
+    const colorOrange = { argb: "FFFDE9D9" }; // Light Orange (Updated)
+    let currentDateStr = "";
+    let isBlue = true; // Start with Blue
+
     aggregatedGroups.forEach((group) => {
         // Accumulate Chart Data
         const lineName = group.line || "Unknown";
@@ -238,6 +316,14 @@ exports.generateMonthlyReport = async (monthStr, reportData) => {
 
         // Calculate Yield
         const yieldPercent = group.input > 0 ? (group.output / group.input) * 100 : 0;
+
+        // Check Date Change for Color Switching
+        const thisDateStr = new Date(group.production_date).toISOString().split('T')[0];
+        if (thisDateStr !== currentDateStr) {
+            isBlue = !isBlue; // Flip Color
+            currentDateStr = thisDateStr;
+        }
+        const rowColor = isBlue ? colorBlue : colorOrange;
 
         // Row Value
         const row = worksheet.addRow({
@@ -265,10 +351,8 @@ exports.generateMonthlyReport = async (monthStr, reportData) => {
             cell.alignment = { vertical: 'middle', horizontal: 'center' };
             cell.border = { bottom: { style: 'thin', color: { argb: "FFCCCCCC" } } };
 
-            // Zebra Striping
-            if (row.number % 2 === 0) {
-                cell.fill = { type: "pattern", pattern: "solid", fgColor: stripeColor };
-            }
+            // Apply Alternate Date Color
+            cell.fill = { type: "pattern", pattern: "solid", fgColor: rowColor };
 
             // Number Formats
             if ([7, 8, 9, 11, 12, 13].includes(colNum)) { // Plan, Input, Output, Scrap, NCR, Recycle
